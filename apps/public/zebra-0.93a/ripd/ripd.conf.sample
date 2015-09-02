@@ -1,0 +1,24 @@
+! -*- rip -*-
+!
+! RIPd sample configuration file
+!
+! $Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/apps/public/zebra-0.93a/ripd/ripd.conf.sample#1 $
+!
+hostname ripd
+password zebra
+!
+! debug rip events
+! debug rip packet
+!
+router rip
+! network 11.0.0.0/8
+! network eth0
+! route 10.0.0.0/8
+! distribute-list private-only in eth0
+!
+!access-list private-only permit 10.0.0.0/8
+!access-list private-only deny any
+! 
+!log file ripd.log
+!
+log stdout

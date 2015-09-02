@@ -1,0 +1,252 @@
+#CFLAGS= -msoft-float -mips1 -O2 -fomit-frame-pointer
+LDLIBS=-lcrypt -lpthread
+KERNEL_DIR=../../../linux
+INCLUDE = -I$(KERNEL_DIR)/include
+SRC=.
+TCAPILIB=-L ../lib -ltcapi
+
+ifneq ($(TCSUPPORT_CWMP_SSL),)
+TCAPILIB+=-L ../lib -lmatrixssl
+endif
+
+#if/*TCSUPPORT_COMPILE*/ defined(TCSUPPORT_CT_E8DDNS)
+ifeq ($(TCSUPPORT_CT_E8DDNS),1)
+ CFLAGS+= -DTCSUPPORT_CT_E8DDNS
+endif
+#endif/*TCSUPPORT_COMPILE*/
+
+
+EXEC=tr69
+
+ifneq ($(TCSUPPORT_CT),)
+VPATH=$(SRC)/rompager/Sources:$(SRC)/cwmp/Sources:$(SRC)/cwmp/cwmpParameter_ct/Sources:$(SRC)/clmp:$(SRC)/linos:$(SRC)/main
+else
+VPATH=$(SRC)/rompager/Sources:$(SRC)/cwmp/Sources:$(SRC)/cwmp/cwmpParameter/Sources:$(SRC)/clmp:$(SRC)/linos:$(SRC)/main
+endif
+
+OBJS = AsBase64.o AsCustom.o ASMD5.o ASPARSE.o ASCOMMON.o ASDATE.o ASMAIN.o AsSnmp.o \
+	AsConvrt.o ASGLOBAL.o ASMIMES.o AsVarAcc.o \
+	RpSoap.o RuData.o RuSoapOb.o \
+	RxData.o RxFrame.o RxParse.o RxTrans.o \
+	IPPSHELL.o RPACCESS.o RPDATA.o RPHTML.o RPIPP.o RPMULTI.o \
+    RPQUERY.o  RPCALLBACK.o RPFORM.o RPHTTPDY.o \
+	RPPUT.o \
+	RPUSER.o \
+	rpusrdct.o \
+	RPLOG.o RPURL.o SPWD.o \
+	IPPSHELL.o RPFILE.o RPFRMITM.o RPHTTP.o RPHTTPPS.o RPHTTPRQ.o \
+	WcClient.o WcData.o WcHttp.o WcHttpPs.o \
+	main.o open_code.o messageHandle.o tctimer.o mbuf.o cwmpXmlmembuf.o  cwmpXmlparser.o \
+	cwmpRpc.o  cwmpNode.o  cwmpAttr.o \
+	node.o  nodeList.o  namedNodeMap.o  cwmpSoap.o cwmpDocument.o  cwmpElement.o  cwmpXml.o \
+	cwmpParameter_table.o cwmpParamApi.o \
+	Sfil.o Stcp.o Sudp.o RpPage1.o utily.o Httpd.o \
+	cp_core.o cp_dynamicnodetable.o cp_deviceinfo_nodetable_d.o\
+	cp_deviceinfo_func_d.o cp_landev_func.o cp_landev_nodetable.o\
+	cp_managerment_func.o cp_managerment_nodetable.o cp_topnodetable.o\
+	cp_wandev_func.o cp_wandev_nodetable.o\
+	cp_wandev_wanconndev_dslLinkCfg_func.o cp_wandev_wanconndev_dslLinkCfg_nodetable.o\
+	cp_wandev_wanconndev_func.o cp_wandev_wanconndev_ip_ppp_conn_func.o\
+	cp_wandev_wanconndev_ip_ppp_conn_nodetable.o cp_wandev_wanconndev_nodetable.o\
+	cp_wandev_wanconndev_atmF5LBDiag_nodetable.o cp_wandev_wanconndev_atmF5LBDiag_func.o\
+	cp_IPPingDiagnostics_func.o cp_IPPingDiagnostics_nodetable.o\
+	cp_wandev_wandsldiag_nodetable.o cp_wandev_wandsldiag_func.o\
+	cp_DeviceInfo_nodetable.o cp_DeviceInfo_func.o\
+	cp_time_nodetable.o cp_time_func.o\
+	cp_wandev_wandslInterCfg_nodetable.o cp_wandev_wandslInterCfg_func.o\
+	cp_wandev_wandslConnMgmt_nodetable.o cp_wandev_wandslConnMgmt_func.o\
+	cp_devConfig_nodetable.o cp_devConfig_func.o\
+	cp_layer3forwarding_func.o cp_layer3forwarding_nodetable.o\
+	cp_wandev_wandslInterCfg_stats_nodetable.o cp_wandev_wandslInterCfg_stats_func.o\
+	cp_lanconfigsecurity_func.o cp_lanconfigsecurity_nodetable.o\
+	cp_landev_ipInterface_func.o cp_landev_ipInterface_nodetable.o\
+	cp_landev_ethInterCfg_func.o cp_landev_ethInterCfg_nodetable.o\
+	cp_landev_hosts_func.o cp_landev_hosts_nodetable.o\
+   	cp_userInterface_nodetable.o cp_userInterface_func.o\
+	cp_Services_nodetable.o cp_Services_func.o
+        #	#RpCgiTs1.o \
+
+#	JavaTest.o JvClass1.o JvClass2.o WcTest.o \
+#	RpChassi.o RpImages.o RpNumber.o RpValid.o RpVars.o RpVarTst.o \
+# RpFreDct.o RpGerDct.o RpItaDct.o RpPorDct.o RpSpaDct.o
+# RpCookie.o RpMarket.o RpPage1.o RpPages.o
+#	RxObjct1.o RxTest1.o \
+#	RpSvgTst.o \ 	RpTask.o 
+#	Igd.o IgdVars.o IgdPg.o IgdFuncs.o IgdUpnp.o RuIcons.o \
+#   cwmpParameter.o cwmpParamApi.o \
+
+RELEASEOBJS = open_code.o tctimer.o cwmpParameter_table.o cwmp_customer_operation.o \
+			 cp_core.o cp_dynamicnodetable.o cp_deviceinfo_nodetable_d.o\
+			 cp_deviceinfo_func_d.o cp_landev_func.o cp_landev_nodetable.o\
+			 cp_managerment_func.o cp_managerment_nodetable.o cp_topnodetable.o\
+			 cp_wandev_func.o cp_wandev_nodetable.o\
+			 cp_wandev_wanconndev_dslLinkCfg_func.o cp_wandev_wanconndev_dslLinkCfg_nodetable.o\
+		     cp_wandev_wanconndev_func.o cp_wandev_wanconndev_ip_ppp_conn_func.o\
+			 cp_wandev_wanconndev_ip_ppp_conn_nodetable.o cp_wandev_wanconndev_nodetable.o\
+			 cp_wandev_wanconndev_atmF5LBDiag_nodetable.o cp_wandev_wanconndev_atmF5LBDiag_func.o\
+			 cp_IPPingDiagnostics_func.o cp_IPPingDiagnostics_nodetable.o\
+			 cp_wandev_wandsldiag_nodetable.o cp_wandev_wandsldiag_func.o\
+			 cp_DeviceInfo_nodetable.o cp_DeviceInfo_func.o\
+			 cp_time_nodetable.o cp_time_func.o\
+			 cp_wandev_wandslInterCfg_nodetable.o cp_wandev_wandslInterCfg_func.o\
+			 cp_wandev_wandslConnMgmt_nodetable.o cp_wandev_wandslConnMgmt_func.o\
+			 cp_devConfig_nodetable.o cp_devConfig_func.o\
+			 cp_layer3forwarding_func.o cp_layer3forwarding_nodetable.o\
+			 cp_wandev_wandslInterCfg_stats_nodetable.o cp_wandev_wandslInterCfg_stats_func.o\
+			 cp_lanconfigsecurity_func.o cp_lanconfigsecurity_nodetable.o\
+			 cp_landev_ipInterface_func.o cp_landev_ipInterface_nodetable.o\
+			 cp_landev_ethInterCfg_func.o cp_landev_ethInterCfg_nodetable.o\
+			 cp_landev_hosts_func.o cp_landev_hosts_nodetable.o\
+   			 cp_userInterface_nodetable.o cp_userInterface_func.o\
+			 cp_Services_nodetable.o cp_Services_func.o
+
+ifneq ($(TCSUPPORT_CWMP_VDSL),)
+OBJS+=cp_wandev_wanconndev_ptmLinkCfg_func.o cp_wandev_wanconndev_ptmLinkCfg_nodetable.o
+RELEASEOBJS+=cp_wandev_wanconndev_ptmLinkCfg_func.o cp_wandev_wanconndev_ptmLinkCfg_nodetable.o
+endif
+
+ifneq ($(TCSUPPORT_CT_DEVICEREG),)
+OBJS+=cp_deviceregistration_nodetable.o cp_deviceregistration_func.o
+RELEASEOBJS+=cp_deviceregistration_nodetable.o cp_deviceregistration_func.o
+endif
+
+ifeq ($(TCSUPPORT_CT),)
+	OBJS+=RuUpnp.o RuUpnpAd.o IgdClmp.o IgdStubsClmp.o IgdPg.o IgdUpnp.o UPNP_VAR.o
+else
+ifeq ($(CLMP),1)
+	OBJS+=RuUpnp.o RuUpnpAd.o IgdClmp.o IgdStubsClmp.o IgdPg.o IgdUpnp.o UPNP_VAR.o
+endif	
+endif
+
+ifeq ($(TR143),1)
+OBJS+=cp_tr143_nodetable.o cp_tr143_func.o
+RELEASEOBJS+=cp_tr143_nodetable.o cp_tr143_func.o
+endif
+
+ifeq ($(WITHVOIP),1)
+OBJS+= cp_Services_voiceProf_nodetable.o\
+	cp_Services_voiceProf_func.o cp_Services_capab_nodetable.o cp_Services_capab_func.o\
+	cp_Services_voiceProf_Line_nodetable.o cp_Services_voiceProf_Line_func.o
+RELEASEOBJS+=cp_Services_voiceProf_nodetable.o\
+	cp_Services_voiceProf_func.o cp_Services_capab_nodetable.o cp_Services_capab_func.o\
+	cp_Services_voiceProf_Line_nodetable.o cp_Services_voiceProf_Line_func.o\
+
+endif
+
+ifneq ($(DHCP_PROFILE),)
+OBJS+=cp_landev_dhcpOption_nodetable.o cp_landev_dhcpOption_func.o
+RELEASEOBJS+=cp_landev_dhcpOption_nodetable.o cp_landev_dhcpOption_func.o
+endif
+
+ifneq ($(TCSUPPORT_CT_QOS),)
+OBJS+=cp_ctqos_nodetable.o cp_ctqos_func.o
+RELEASEOBJS+=cp_ctqos_nodetable.o cp_ctqos_func.o
+else
+OBJS+=cp_qos_nodetable.o cp_qos_func.o
+RELEASEOBJS+=cp_qos_nodetable.o cp_qos_func.o
+endif
+
+ifeq ($(TCSUPPORT_CT),)
+OBJS+=cwmp_customer_operation.o cwmp.o
+RELEASEOBJS+=cwmp_customer_operation.o
+else
+OBJS+=cwmp_ct.o
+endif
+
+ifneq ($(TCSUPPORT_CT_IPPINGDIAGNOSTIC),)
+OBJS+=ct_IPPingDiagnostics_nodetable.o ct_IPPingDiagnostics_func.o
+RELEASEOBJS+=ct_IPPingDiagnostics_nodetable.o ct_IPPingDiagnostics_func.o
+endif
+#if/*TCSUPPORT_COMPILE*/ defined(TCSUPPORT_C1_CUC)
+ifneq ($(TCSUPPORT_C1_CUC),)
+OBJS+=cp_X_CU_Function_nodetable.o cp_X_CU_Function_func.o
+RELEASEOBJS+=cp_X_CU_Function_nodetable.o cp_X_CU_Function_func.o
+endif
+#endif/*TCSUPPORT_COMPILE*/
+
+ifneq ($(TCSUPPORT_WLAN),)
+OBJS+=cp_landev_wlan_func.o cp_landev_wlan_nodetable.o
+RELEASEOBJS+=cp_landev_wlan_func.o cp_landev_wlan_nodetable.o
+endif
+ifneq ($(TCSUPPORT_TRACEROUTE),)
+OBJS+=cp_TraceRouteDiagnostics_func.o cp_TraceRouteDiagnostics_nodetable.o
+RELEASEOBJS+=cp_TraceRouteDiagnostics_func.o cp_TraceRouteDiagnostics_nodetable.o
+endif
+
+#if/*TCSUPPORT_COMPILE*/ defined(TCSUPPORT_LAYER2BRIDGING)
+ifeq ($(TCSUPPORT_LAYER2BRIDGING),1)
+OBJS +=  cp_bridge_nodetable.o cp_bridge_func.o
+RELEASEOBJS += cp_bridge_nodetable.o cp_bridge_func.o
+endif
+#endif/*TCSUPPORT_COMPILE*/
+#if/*TCSUPPORT_COMPILE*/ defined(TCSUPPORT_TTNET)
+ifeq ($(TCSUPPORT_TTNET),1)
+OBJS += cp_X_TTNET_Service_nodetable.o cp_X_TTNET_Service_func.o
+RELEASEOBJS+=cp_X_TTNET_Service_nodetable.o cp_X_TTNET_Service_func.o
+endif
+#endif/*TCSUPPORT_COMPILE*/
+#INCLUDES = -I/home/vlinux/vLinux/apps/romupnp/Engine/Includes
+INCLUDES = -I.\
+	-I./rompager/Includes \
+	-I./cwmp/Includes \
+	-I./linos \
+	-I./main \
+
+ifneq ($(TCSUPPORT_CT),)
+INCLUDES+=-I./cwmp/cwmpParameter_ct/Includes
+else
+INCLUDES+=-I./cwmp/cwmpParameter/Includes
+endif
+
+CFLAGS+= $(INCLUDES)
+CFLAGS+= $(INCLUDE)
+ifeq ($(TR111),1)
+	CFLAGS += -DTR111
+endif
+
+#ifeq ($(TR143),1)
+#	CFLAGS += -DTR143
+#endif
+#ifeq ($(DHCP_PROFILE),1)
+#	CFLAGS += -DDHCP_PROFILE
+#endif
+ifeq ($(TCSUPPORT_CT),)
+	CFLAGS+=-DCODE_SHRINK -DUPNP -DCWMP -DCLMP -DTHREAD_REDUCE
+else
+ifeq ($(CLMP),1)
+	CFLAGS+=-DCODE_SHRINK -DUPNP -DCWMP -DCLMP -DTHREAD_REDUCE
+else
+	CFLAGS+=-DCODE_SHRINK  -DCWMP -DTHREAD_REDUCE
+endif 
+endif
+LDFLAGS+= $(INCLUDE)
+
+#ifeq ($(USE_SSL),1)
+#CFLAGS += -DUSE_SSL
+#endif
+#ifeq ($(CWMP_MULTI_CA),1)
+#CFLAGS += -DCWMP_MULTI_CA
+#endif
+
+
+ifeq ($(RT3390),1)
+	CFLAGS += -DRT3390
+endif
+ifeq ($(WSC_AP_SUPPORT),1)
+	CFLAGS += -DWSC_AP_SUPPORT
+endif
+
+ifneq ($(TC_CFLAGS),)
+CFLAGS+=$(TC_CFLAGS)
+endif
+all: $(EXEC)
+
+$(EXEC): $(OBJS)
+	#$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+	#$(CONVERT)
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -o $@ $(OBJS) $(EXTRALIBS) $(LDLIBS) $(TCAPILIB)
+	$(CROSS)strip tr69
+
+clean:
+	$(RM) $(EXEC) *.elf $(RELEASEOBJS)
+

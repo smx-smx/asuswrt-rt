@@ -1,0 +1,128 @@
+#CROSS_PATH=mips-linux-gnu-
+#CROSS=$(CROSS_PATH)
+#CC=$(CROSS)gcc -mips32r2 -msoft-float -muclibc
+AR=$(CROSS)ar
+LD=$(CROSS)ld
+STRIP=$(CROSS)strip
+RANLIB=$(CROSS)ranlib
+SIZE=$(CROSS)size
+#LIBDIR=$(CROSS_PATH)/lib
+
+ifneq ($(strip $(TCSUPPORT_MT7530_SWITCH_API)),)
+LIBMTKSWITCH = libmtkswitch
+LIBSO = ../lib/$(LIBMTKSWITCH).so.1.0
+CFLAGS_LINK_SO = -L. -lmtkswitch
+else
+LIBSO =
+CFLAGS_LINK_SO =
+endif
+
+INCLUDE = -I$(KERNEL_DIR)/include
+INCLUDE += -I$(APP_SHARED_DIR)
+INCLUDE += -I$(APP_ETHCMD_DIR)
+#TCAPILIBDIR = /usr/local/lib/
+#TCAPILIB=-L $(TCAPILIBDIR) -ltcapi
+TCAPILIB=-ltcapi
+
+CFLAGS= -O2 -Wall $(INCLUDE)
+ifeq ($(WITHVOIP),1)
+CFLAGS += -DWITHVOIP
+endif
+ifeq ($(PURE_BRIDGE),1)
+  	CFLAGS+= -DPURE_BRIDGE
+endif
+#CFLAGS+= -DCWMP
+#CFLAGS+= -DUSE_SSL
+#CFLAGS+= -DSTATIC_DHCP 
+
+ifeq ($(TR111),1)
+  	CFLAGS+= -DTR111
+endif
+
+ifeq ($(ALIAS_IP),1)
+  	CFLAGS+= -DALIAS_IP
+endif
+ifeq ($(IPV6),1)
+  	CFLAGS+= -DIPV6
+endif
+ifeq ($(RT3390),1)
+  	CFLAGS+= -DRT3390
+endif
+ifeq ($(WSC_AP_SUPPORT),1)
+  	CFLAGS+= -DWSC_AP_SUPPORT
+endif
+ifeq ($(TR068_LED),1)
+  	CFLAGS+= -DTR068_LED
+endif
+ifeq ($(IGMP_SNOOP_SUPPORT),1)
+	CFLAGS+= -DIGMP_SNOOP_SUPPORT
+endif
+ifeq ($(DHCP_PROFILE),1)
+  	CFLAGS+= -DDHCP_PROFILE
+endif
+ifneq ($(strip $(TCSUPPORT_CWMP)),)
+  	CFLAGS+= -DCLMP
+endif
+
+ifneq ($(TC_CFLAGS), )
+        CFLAGS+=$(TC_CFLAGS)
+endif
+
+ifeq ($(TCSUPPORT_DNSEACHPVC),1)
+  	CFLAGS+= -DTCSUPPORT_DNSEACHPVC
+endif
+LIBS = -lcrypt -L ../lib/ -lmxml -lpthread
+
+CFLAGS += -I$(APP_OPENSSL_DIR)/include
+LIBS += -L$(APP_OPENSSL_DIR) -lcrypto -lssl
+	
+#CFLAGS+=-DDEBUG
+
+LIBS += $(TCAPILIB)
+OBJS = cfg_manager.o open_code.o interface.o advanced.o access.o maintenance.o web.o cc.o tcapi_proc.o utility.o init.o voip.o romfile_operation.o apps.o qos.o
+RELEASEOBJS = interface.o advanced.o access.o maintenance.o web.o cc.o tcapi_proc.o utility.o init.o voip.o romfile_operation.o apps.o qos.o
+#NEWOBJS
+#if/*TCSUPPORT_COMPILE*/ defined(TCSUPPORT_RESTORE_ROM_T)
+ifeq ($(TCSUPPORT_RESTORE_ROM_T),1)
+OBJS +=  restore_rom_t.o
+RELEASEOBJS +=  restore_rom_t.o
+endif
+#endif/*TCSUPPORT_COMPILE*/
+OBJS += dla.o
+
+TARGET= cfg_manager
+
+all: mxml_lib tcapi_lib $(TARGET)
+
+#new: init.o $(NEWOBJS)
+#	$(CC) -Wall -o $(TARGET) $(OBJS) $(NEWOBJS) $(LIBS) 
+#	$(STRIP) $(TARGET) 
+
+mxml_lib:
+	$(MAKE) -C $(APP_MXML_DIR) clean
+	$(MAKE) -C $(APP_MXML_DIR)
+	$(MAKE) -C $(APP_MXML_DIR) install
+
+tcapi_lib:
+	$(MAKE) -C $(APP_TCAPILIB_DIR) clean
+	$(MAKE) -C $(APP_TCAPILIB_DIR)
+	$(MAKE) -C $(APP_TCAPILIB_DIR) install
+
+ifneq ($(TCSUPPORT_PMMGR), )
+pmapi_lib:
+ifneq ($(strip $(TCSUPPORT_MT7530_SWITCH_API)),)
+	$(MAKE) -C $(APP_ETHCMD_DIR) clean
+	$(MAKE) -C $(APP_ETHCMD_DIR)
+	$(MAKE) -C $(APP_ETHCMD_DIR) install
+endif
+	$(MAKE) -C $(APP_PMMGR_DIR) clean
+	$(MAKE) -C $(APP_PMMGR_DIR)
+else
+pmapi_lib:
+endif
+cfg_manager: $(OBJS)
+	$(CC) -Wall -o $(TARGET) $(OBJS) $(LIBS) 
+	$(STRIP) $(TARGET)
+
+clean:
+	rm -f $(TARGET)

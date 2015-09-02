@@ -1,0 +1,68 @@
+#
+#Configured directories
+#
+#prefix	=	/usr/local
+#exec_prefix	=	/usr/local
+#libdir	=	$(exec_prefix)/lib
+libdir=	../lib
+#
+#Install commands
+#
+INSTALL=	/usr/bin/install -c
+INSTALL_DIR	=	$(INSTALL) -d
+INSTALL_LIB	=	$(LIBTOOL)	$(INSTALL) -m 755
+
+#CROSS=mips-linux-gnu-
+
+#CC=$(CROSS)gcc -mips32r2 -msoft-float -muclibc
+AR=$(CROSS)ar
+LD=$(CROSS)ld 
+STRIP=$(CROSS)strip
+RANLIB=$(CROSS)ranlib
+SIZE=$(CROSS)size
+LIBDIR=$(CROSS_PATH)/lib
+
+DSOFLAGS=	-Wl,-soname,libtcapi.so.1,-rpath,$(libdir) -shared $(OPTIM)
+LN      =	/bin/ln -s
+RM      =	/bin/rm -f
+OPTIM	=	-fPIC -Os -g
+
+#KERNEL_DIR=../../linux
+
+#INCLUDE = -I$(KERNEL_DIR)/include 
+
+#CFLAGS= -mips1 -msoft-float 
+CFLAGS +=-fPIC -Os -g  -Wall
+
+.SUFFIXES:  .c .o
+.c.o:
+	$(CC) $(CFLAGS) -c $<
+
+LIBOBJS =       tcapi.o
+LIBTCAPI=       libtcapi.so.1.4
+TARGETS =       $(LIBTCAPI)
+SOFTLINK=		libtcapi.so libtcapi.so.1
+
+all:  $(TARGETS)
+
+$(LIBOBJS): tcapi.h
+tcapi.o:tcapi.h
+
+libtcapi.so.1.4: $(LIBOBJS)
+	$(CC) $(CFLAGS) $(DSOFLAGS) -o libtcapi.so.1.4 $(LIBOBJS)
+	$(STRIP) --strip-unneeded $(LIBTCAPI)
+	$(RM) libtcapi.so libtcapi.so.1
+	$(LN) libtcapi.so.1.4 libtcapi.so
+	$(LN) libtcapi.so.1.4 libtcapi.so.1
+
+install:
+	$(INSTALL_DIR) $(BUILDROOT)$(libdir)
+	$(INSTALL_LIB) libtcapi.so.1.4 $(BUILDROOT)$(libdir)
+	$(RM) $(BUILDROOT)$(libdir)/libtcapi.so
+	$(LN) libtcapi.so.1.4 $(BUILDROOT)$(libdir)/libtcapi.so
+	$(RM) $(BUILDROOT)$(libdir)/libtcapi.so.1
+	$(LN) libtcapi.so.1.4 $(BUILDROOT)$(libdir)/libtcapi.so.1
+	cp libtcapi.h $(BUILDROOT)$(libdir)
+	
+clean:
+	@echo "do nothing"

@@ -1,0 +1,16 @@
+\.bak$
+\.o$
+~$
+^Makefile$
+^Makefile.old$
+\.bs$
+\.bso$
+\.c
+\.em
+^include
+^host$
+CVS
+pm_to_blib
+.*.orig$
+^\.#
+/\.#

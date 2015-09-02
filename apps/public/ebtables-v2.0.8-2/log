@@ -1,0 +1,73 @@
+rm -f ebtables ebtables-restore ebtablesd ebtablesu static
+rm -f *.o *~ *.so
+rm -f extensions/*.o extensions/*.c~ extensions/*.so include/*~
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o getethertype.o getethertype.c -Iinclude/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o communication.o communication.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o libebtc.o libebtc.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o useful_functions.o useful_functions.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o ebtables.o ebtables.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_802_3.o extensions/ebt_802_3.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_nat.o extensions/ebt_nat.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_arp.o extensions/ebt_arp.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_arpreply.o extensions/ebt_arpreply.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_ip.o extensions/ebt_ip.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_standard.o extensions/ebt_standard.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_log.o extensions/ebt_log.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_redirect.o extensions/ebt_redirect.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_vlan.o extensions/ebt_vlan.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_mark_m.o extensions/ebt_mark_m.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_mark.o extensions/ebt_mark.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_pkttype.o extensions/ebt_pkttype.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_stp.o extensions/ebt_stp.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_among.o extensions/ebt_among.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_limit.o extensions/ebt_limit.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_ulog.o extensions/ebt_ulog.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebt_ftos.o extensions/ebt_ftos.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebtable_filter.o extensions/ebtable_filter.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebtable_nat.o extensions/ebtable_nat.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c -o extensions/ebtable_broute.o extensions/ebtable_broute.c -I../../linux/include/
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_802_3.so -lc extensions/ebt_802_3.o -nostartfiles
+mv extensions/ebt_802_3.so extensions/libebt_802_3.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_nat.so -lc extensions/ebt_nat.o -nostartfiles
+mv extensions/ebt_nat.so extensions/libebt_nat.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_arp.so -lc extensions/ebt_arp.o -nostartfiles
+mv extensions/ebt_arp.so extensions/libebt_arp.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_arpreply.so -lc extensions/ebt_arpreply.o -nostartfiles
+mv extensions/ebt_arpreply.so extensions/libebt_arpreply.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_ip.so -lc extensions/ebt_ip.o -nostartfiles
+mv extensions/ebt_ip.so extensions/libebt_ip.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_standard.so -lc extensions/ebt_standard.o -nostartfiles
+mv extensions/ebt_standard.so extensions/libebt_standard.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_log.so -lc extensions/ebt_log.o -nostartfiles
+mv extensions/ebt_log.so extensions/libebt_log.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_redirect.so -lc extensions/ebt_redirect.o -nostartfiles
+mv extensions/ebt_redirect.so extensions/libebt_redirect.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_vlan.so -lc extensions/ebt_vlan.o -nostartfiles
+mv extensions/ebt_vlan.so extensions/libebt_vlan.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_mark_m.so -lc extensions/ebt_mark_m.o -nostartfiles
+mv extensions/ebt_mark_m.so extensions/libebt_mark_m.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_mark.so -lc extensions/ebt_mark.o -nostartfiles
+mv extensions/ebt_mark.so extensions/libebt_mark.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_pkttype.so -lc extensions/ebt_pkttype.o -nostartfiles
+mv extensions/ebt_pkttype.so extensions/libebt_pkttype.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_stp.so -lc extensions/ebt_stp.o -nostartfiles
+mv extensions/ebt_stp.so extensions/libebt_stp.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_among.so -lc extensions/ebt_among.o -nostartfiles
+mv extensions/ebt_among.so extensions/libebt_among.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_limit.so -lc extensions/ebt_limit.o -nostartfiles
+mv extensions/ebt_limit.so extensions/libebt_limit.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_ulog.so -lc extensions/ebt_ulog.o -nostartfiles
+mv extensions/ebt_ulog.so extensions/libebt_ulog.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebt_ftos.so -lc extensions/ebt_ftos.o -nostartfiles
+mv extensions/ebt_ftos.so extensions/libebt_ftos.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebtable_filter.so -lc extensions/ebtable_filter.o -nostartfiles
+mv extensions/ebtable_filter.so extensions/libebtable_filter.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebtable_nat.so -lc extensions/ebtable_nat.o -nostartfiles
+mv extensions/ebtable_nat.so extensions/libebtable_nat.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -shared -o extensions/ebtable_broute.so -lc extensions/ebtable_broute.o -nostartfiles
+mv extensions/ebtable_broute.so extensions/libebtable_broute.so
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -DPROGVERSION=\"2.0.8-2\" -DPROGNAME=\"ebtables\" -DPROGDATE=\"May\ 2007\" -D_PATH_ETHERTYPES=\"/etc/ethertypes\" -DEBTD_ARGC_MAX=50 -DEBTD_CMDLINE_MAXLN=2048 -c ebtables-standalone.c -o ebtables-standalone.o -I../../linux/include/
+#mips-linux-gnu-ld -shared -soname libebtc.so -o libebtc.so -lc getethertype.o communication.o libebtc.o useful_functions.o ebtables.o
+mips-linux-gnu-ld -L /home/user/socsw/svn/toolchain/CodeSourcery/mips-4.2/mips-linux-gnu/libc/uclibc/soft-float/lib/ -shared -soname libebtc.so -o libebtc.so -lc getethertype.o communication.o libebtc.o useful_functions.o ebtables.o
+mips-linux-gnu-gcc -mips32r2 -msoft-float -muclibc -Wall -Wunused -fPIC -o ebtables ebtables-standalone.o -I../../linux/include/ -L. -Lextensions -lebtc  -lebt_802_3  -lebt_nat  -lebt_arp  -lebt_arpreply  -lebt_ip  -lebt_standard  -lebt_log  -lebt_redirect  -lebt_vlan  -lebt_mark_m  -lebt_mark  -lebt_pkttype  -lebt_stp  -lebt_among  -lebt_limit  -lebt_ulog  -lebt_ftos  -lebtable_filter  -lebtable_nat  -lebtable_broute \
+-Wl,-rpath,/usr/lib

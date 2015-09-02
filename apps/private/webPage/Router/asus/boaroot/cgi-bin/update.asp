@@ -1,0 +1,1 @@
+<% tcWebApi_UpdateNetdev() %>

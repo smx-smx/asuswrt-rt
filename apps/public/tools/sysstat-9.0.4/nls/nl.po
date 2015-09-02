@@ -1,0 +1,380 @@
+# Dutch translations for sysstat
+# This file is distributed under the same license as the sysstat package.
+#
+# Bram Schoenmakers <bramschoenmakers@kde.nl>, 2007.
+# Benno Schulenberg <benno@vertaalt.nl>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: sysstat-9.0.3\n"
+"Report-Msgid-Bugs-To: sysstat <at> orange.fr\n"
+"POT-Creation-Date: 2009-05-17 16:16+0200\n"
+"PO-Revision-Date: 2009-06-27 10:33+0100\n"
+"Last-Translator: Erwin Poeze <erwin.poeze@gmail.com>\n"
+"Language-Team: Dutch <vertaling@vrijschrift.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: common.c:57
+#, c-format
+msgid "sysstat version %s\n"
+msgstr "sysstat-versie %s\n"
+
+#: ioconf.c:479 iostat.c:504 rd_stats.c:69 rd_stats.c:2126 rd_stats.c:2243
+#: sa_common.c:1052 sadc.c:591 sadc.c:600 sadc.c:660
+#, c-format
+msgid "Cannot open %s: %s\n"
+msgstr "Kan %s niet openen: %s\n"
+
+#: iostat.c:81 mpstat.c:83 pidstat.c:77 sar.c:88
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ]\n"
+msgstr "Gebruik:  %s [OPTIE...] [<interval> [<aantal>]]\n"
+
+#: iostat.c:84
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -c ] [ -d ] [ -N ] [ -n ] [ -h ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <device> [...] | ALL ] [ -p [ <device> [,...] | ALL ] ]\n"
+msgstr ""
+"Mogelijke opties zijn:\n"
+"[ -c ] [ -d ] [ -N ] [ -n ] [ -h ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ]\n"
+"[ <apparaat> [ ... ] | ALL ] [ -p [ <apparaat> [,...] | ALL ] ]\n"
+
+#: mpstat.c:86
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -I { SUM | CPU | ALL } ] [ -u ] [ -P { <cpu> [,...] | ALL } ] [ -V ]\n"
+msgstr ""
+"Mogelijke opties zijn:\n"
+"[ -A ] [ -I { SUM | CPU | ALL } ] [ -u ] [ -P { <cpu> [,...] | ALL } ] [ -V ]\n"
+
+# sar.c:
+#: mpstat.c:457 pidstat.c:1683 sar.c:354
+msgid "Average:"
+msgstr "Gemiddeld:"
+
+#: mpstat.c:769
+#, c-format
+msgid "Not that many processors!\n"
+msgstr "Er zijn niet zoveel processoren!\n"
+
+#: pidstat.c:80
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <command> ] [ -d ] [ -h ] [ -I ] [ -l ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> [,...] | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+msgstr ""
+"Mogelijke opties zijn:\n"
+"[ -C <commando> ] [ -d ] [ -h ] [ -I ] [ -l ] [ -r ] [ -t ] [ -u ] [ -V ] [ -w ]\n"
+"[ -p { <pid> [,...] | SELF | ALL } ] [ -T { TASK | CHILD | ALL } ]\n"
+
+#: pidstat.c:197 sar.c:968
+#, c-format
+msgid "Requested activities not available\n"
+msgstr "De gevraagde activiteiten zijn niet beschikbaar\n"
+
+#: rd_stats.c:2289
+#, c-format
+msgid "Cannot handle so many processors!\n"
+msgstr "Kan niet zoveel processoren bijhouden!\n"
+
+#: sa_common.c:866
+#, c-format
+msgid "Error while reading system activity file: %s\n"
+msgstr "Er is een fout opgetreden bij het uitlezen van het activiteitsbestand: %s\n"
+
+#: sa_common.c:876
+#, c-format
+msgid "End of system activity file unexpected\n"
+msgstr "Onverwacht einde van activiteitsbestand\n"
+
+#: sa_common.c:894
+#, c-format
+msgid "File created using sar/sadc from sysstat version %d.%d.%d"
+msgstr "Bestand is aangemaakt met 'sar/sadc' door sysstat-versie %d.%d.%d."
+
+#: sa_common.c:925
+#, c-format
+msgid "Invalid system activity file: %s\n"
+msgstr "Ongeldig systeemactiviteitsbestand: %s\n"
+
+#: sa_common.c:932
+#, c-format
+msgid "Current sysstat version can no longer read the format of this file (%#x)\n"
+msgstr "Deze versie van sysstat kan de indeling van dit bestand niet meer lezen (%#x)\n"
+
+#: sa_common.c:1135
+#, c-format
+msgid "Requested activities not available in file %s\n"
+msgstr "De gevraagde activiteiten zijn niet beschikbaar in bestand %s\n"
+
+#: sadc.c:76
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <outfile> ]\n"
+msgstr "Gebruik:  %s [OPTIE...] [<interval> [<aantal>]] [<uitvoerbestand>]\n"
+
+#: sadc.c:79
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -C <comment> ] [ -F ] [ -L ] [ -V ]\n"
+"[ -S { INT | DISK | IPV6 | POWER | SNMP | XDISK | ALL | XALL } ]\n"
+msgstr ""
+"Opties zijn:\n"
+"[ -C <opmerking> ] [ -F ] [ -L ] [ -V ]\n"
+"[ -S { INT | DISK | IPV6 | POWER | SNMP | XDISK | ALL | XALL } ]\n"
+
+#: sadc.c:199
+#, c-format
+msgid "Cannot write data to system activity file: %s\n"
+msgstr "Kan geen gegevens schrijven naar het activiteitsbestand: %s\n"
+
+#: sadc.c:478
+#, c-format
+msgid "Cannot write system activity file header: %s\n"
+msgstr "Kan geen kopregels schrijven naar het activiteitsbestand: %s\n"
+
+#: sadc.c:754
+#, c-format
+msgid "Cannot append data to that file (%s)\n"
+msgstr "Kan geen gegevens toevoegen aan bestand %s\n"
+
+#: sadf.c:85
+#, c-format
+msgid "Usage: %s [ options ] [ <interval> [ <count> ] ] [ <datafile> ]\n"
+msgstr "Gebruik:  %s [OPTIE...] [<interval> [<aantal>]] [<gegevensbestand>]\n"
+
+#: sadf.c:88
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -d | -D | -H | -p | -x ] [ -h ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> [,...] | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <sar_options> ]\n"
+msgstr ""
+"Mogelijke opties zijn:\n"
+"[ -d | -D | -H | -p | -x ] [ -h ] [ -t ] [ -V ]\n"
+"[ -P { <cpu> [,...] | ALL } ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+"[ -- <SAR-optie...> ]\n"
+
+#: sadf.c:541
+#, c-format
+msgid "System activity data file: %s (%#x)\n"
+msgstr "Bestand systeemactiviteit: %s (%#x)\n"
+
+#: sadf.c:550
+#, c-format
+msgid "Host: "
+msgstr "Host: "
+
+#: sadf.c:556
+#, c-format
+msgid "Size of a long int: %d\n"
+msgstr "Lengte van lange integer: %d\n"
+
+#: sadf.c:558
+#, c-format
+msgid "List of activities:\n"
+msgstr "Lijst van activiteiten:\n"
+
+#: sar.c:104
+#, c-format
+msgid ""
+"Options are:\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -h ] [ -m ] [ -p ] [ -q ] [ -r ] [ -R ]\n"
+"[ -S ] [ -t ] [ -u [ ALL ] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <int> [,...] | SUM | ALL | XALL } ] [ -P { <cpu> [,...] | ALL } ]\n"
+"[ -n { <keyword> [,...] | ALL } ]\n"
+"[ -o [ <filename> ] | -f [ <filename> ] ]\n"
+"[ -i <interval> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+msgstr ""
+"Opties zijn:\n"
+"[ -A ] [ -b ] [ -B ] [ -C ] [ -d ] [ -h ] [ -m ] [ -p ] [ -q ] [ -r ] [ -R ]\n"
+"[ -S ] [ -t ] [ -u [ALL] ] [ -v ] [ -V ] [ -w ] [ -W ] [ -y ]\n"
+"[ -I { <geheel_getal> [,...] | SUM | ALL | XALL } ] [ -P { <cpu> [,...] | ALL } ]\n"
+"[ -n { <trefwoord> [,...] | ALL } ]\n"
+"[ -o [ <bestandsnaam> ] | -f [ <bestandsnaam> ] ]\n"
+"[ -i <interval> ] [ -s [ <hh:mm:ss> ] ] [ -e [ <hh:mm:ss> ] ]\n"
+
+#: sar.c:126
+#, c-format
+msgid "Main options and reports:\n"
+msgstr "Hoofdopties en -rapporten:\n"
+
+#: sar.c:127
+#, c-format
+msgid "\t-b\tI/O and transfer rate statistics\n"
+msgstr "\t-b\tStatistieken I/O- en overdrachtsnelheid\n"
+
+#: sar.c:128
+#, c-format
+msgid "\t-B\tPaging statistics\n"
+msgstr "\t-B\tPaging-statistieken\n"
+
+#: sar.c:129
+#, c-format
+msgid "\t-d\tBlock device statistics\n"
+msgstr "\t-d\tStatistieken block-apparaat\n"
+
+#: sar.c:130
+#, c-format
+msgid ""
+"\t-I { <int> | SUM | ALL | XALL }\n"
+"\t\tInterrupts statistics\n"
+msgstr ""
+"\t-I { <int> | SUM | ALL | XALL }\n"
+"\t\tInterruptsstatistieken\n"
+
+#: sar.c:132
+#, c-format
+msgid "\t-m\tPower management statistics\n"
+msgstr "\t-m\tStatistieken energiebeheer\n"
+
+#: sar.c:133
+#, c-format
+msgid ""
+"\t-n { <keyword> [,...] | ALL }\n"
+"\t\tNetwork statistics\n"
+"\t\tKeywords are:\n"
+"\t\tDEV\tNetwork interfaces\n"
+"\t\tEDEV\tNetwork interfaces (errors)\n"
+"\t\tNFS\tNFS client\n"
+"\t\tNFSD\tNFS server\n"
+"\t\tSOCK\tSockets\t(v4)\n"
+"\t\tIP\tIP traffic\t(v4)\n"
+"\t\tEIP\tIP traffic\t(v4) (errors)\n"
+"\t\tICMP\tICMP traffic\t(v4)\n"
+"\t\tEICMP\tICMP traffic\t(v4) (errors)\n"
+"\t\tTCP\tTCP traffic\t(v4)\n"
+"\t\tETCP\tTCP traffic\t(v4) (errors)\n"
+"\t\tUDP\tUDP traffic\t(v4)\n"
+"\t\tSOCK6\tSockets\t(v6)\n"
+"\t\tIP6\tIP traffic\t(v6)\n"
+"\t\tEIP6\tIP traffic\t(v6) (errors)\n"
+"\t\tICMP6\tICMP traffic\t(v6)\n"
+"\t\tEICMP6\tICMP traffic\t(v6) (errors)\n"
+"\t\tUDP6\tUDP traffic\t(v6)\n"
+msgstr ""
+"\t-n { <trefwoord> [,...] | ALL }\n"
+"\t\tNetwerkstatistieken\n"
+"\t\tTrefwoorden zijn:\n"
+"\t\tDEV\tNetwerkinterfaces\n"
+"\t\tEDEV\tNetwerkinterfaces (fouten)\n"
+"\t\tNFS\tNFS-client\n"
+"\t\tNFSD\tNFS-server\n"
+"\t\tSOCK\tSockets\t(v4)\n"
+"\t\tIP\tIP-verkeer\t(v4)\n"
+"\t\tEIP\tIP-verkeer\t(v4) (fouten)\n"
+"\t\tICMP\tICMP-verkeer\t(v4)\n"
+"\t\tEICMP\tICMP-verkeer\t(v4) (fouten)\n"
+"\t\tTCP\tTCP-verkeer\t(v4)\n"
+"\t\tETCP\tTCP-verkeer\t(v4) (fouten)\n"
+"\t\tUDP\tUDP-verkeer\t(v4)\n"
+"\t\tSOCK6\tSockets\t(v6)\n"
+"\t\tIP6\tIP-verkeer\t(v6)\n"
+"\t\tEIP6\tIP-verkeer\t(v6) (fouten)\n"
+"\t\tICMP6\tICMP-verkeer\t(v6)\n"
+"\t\tEICMP6\tICMP-verkeer\t(v6) (fouten)\n"
+"\t\tUDP6\tUDP-verkeer\t(v6)\n"
+
+#: sar.c:154
+#, c-format
+msgid "\t-q\tQueue length and load average statistics\n"
+msgstr "\t-q\tStatistieken queue-lengte en gemiddelde belasting\n"
+
+#: sar.c:155
+#, c-format
+msgid "\t-r\tMemory utilization statistics\n"
+msgstr "\t-r\tStatistieken benutting geheugen\n"
+
+#: sar.c:156
+#, c-format
+msgid "\t-R\tMemory statistics\n"
+msgstr "\t-R\tGeheugenstatistieken\n"
+
+#: sar.c:157
+#, c-format
+msgid "\t-S\tSwap space utilization statistics\n"
+msgstr "\t-S\tStatistieken benutting swap-ruimte\n"
+
+#: sar.c:158
+#, c-format
+msgid ""
+"\t-u [ ALL ]\n"
+"\t\tCPU utilization statistics\n"
+msgstr ""
+"\t-u [ ALL ]\n"
+"\t\tStatistieken benutting processor\n"
+
+#: sar.c:160
+#, c-format
+msgid "\t-v\tKernel table statistics\n"
+msgstr "\t-v\tStatistieken kerneltabel\n"
+
+#: sar.c:161
+#, c-format
+msgid "\t-w\tTask creation and system switching statistics\n"
+msgstr "\t-w\tStatistieken taakcreatie en systeemschakeling\n"
+
+#: sar.c:162
+#, c-format
+msgid "\t-W\tSwapping statistics\n"
+msgstr "\t-W\tSwappingstatistieken\n"
+
+#: sar.c:163
+#, c-format
+msgid "\t-y\tTTY device statistics\n"
+msgstr "\t-y\tStatistieken TTY-apparaat\n"
+
+#: sar.c:206
+#, c-format
+msgid "End of data collecting unexpected\n"
+msgstr "Onverwacht einde van verzamelen van gegevens\n"
+
+#: sar.c:774
+#, c-format
+msgid "Invalid data format\n"
+msgstr "Ongeldige gegevensindeling\n"
+
+#: sar.c:778
+#, c-format
+msgid "Using a wrong data collector from a different sysstat version\n"
+msgstr "Een verkeerde gegevensverzamelaar van een andere sysstat-versie wordt gebruikt\n"
+
+#: sar.c:798
+#, c-format
+msgid "Inconsistent input data\n"
+msgstr "Inconsistente gegevens gelezen\n"
+
+#: sar.c:1203
+#, c-format
+msgid "-f and -o options are mutually exclusive\n"
+msgstr "Opties '-f' en '-o' gaan niet samen.\n"
+
+#: sar.c:1209
+#, c-format
+msgid "Not reading from a system activity file (use -f option)\n"
+msgstr "Er wordt geen activiteitsbestand gelezen (gebruik optie '-f')\n"
+
+#: sar.c:1310
+#, c-format
+msgid "Cannot find the data collector (%s)\n"
+msgstr "Kan de gegevensverzamelaar niet vinden (%s)\n"
+
+#~ msgid "-x and -p options are mutually exclusive\n"
+#~ msgstr "Opties '-x' en '-p' gaan niet samen.\n"
+
+#~ msgid "Time: %s\n"
+#~ msgstr "Tijd:  %s\n"
+
+#~ msgid ""
+#~ "Options are:\n"
+#~ "[ -P { <cpu> | ALL } ] [ -V ]\n"
+#~ msgstr ""
+#~ "Mogelijke opties zijn:\n"
+#~ "[ -P { <cpu> | ALL } ] [ -V ]\n"

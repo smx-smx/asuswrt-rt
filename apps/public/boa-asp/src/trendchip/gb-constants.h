@@ -1,0 +1,584 @@
+
+ /*
+  *  This file is generated from gb-constants.gba
+  * please update values there.
+  */
+ #ifndef GB_CONSTANTS_H
+ #define GB_CONSTANTS_H
+
+/*trendchip asp constant*/
+/*interface:0x00~0xFF reserve to wan*/
+#define GB_C_WAN_SETTING 0
+#define GB_C_WAN_VC	1 
+#define GB_C_WAN_STATUS	2
+#define GB_C_WAN_VPI 3
+#define GB_C_WAN_VCI 4
+#define GB_C_WAN_QOS 5
+#define GB_C_WAN_PCR 6
+#define GB_C_WAN_SCR 7
+#define GB_C_WAN_MBS 8
+#define GB_C_WAN_ISP 9
+#define GB_C_WAN_ENCAPSULATION 10
+#define GB_C_WAN_NATENABLE 11
+#define GB_C_WAN_DEFAULTROUTE 12
+#define GB_C_WAN_MTU 13
+#define GB_C_WAN_RIPVERSION 14
+#define GB_C_WAN_DIRECTION 15
+#define GB_C_WAN_IGMP 16
+#define GB_C_WAN_IPADDRESS 17
+#define GB_C_WAN_NETMASK 18
+#define GB_C_WAN_GATEWAY 19
+#define GB_C_WAN_USRNAME 20
+#define GB_C_WAN_PASSWORD 21
+#define GB_C_WAN_CONNECTION 22
+#define GB_C_WAN_CLOSEIFIDLE 23
+#define GB_C_WAN_MSS 24
+#define GB_C_WAN_PPPGETIP 25
+#define GB_C_WAN_ACTIVATED 26
+#define GB_C_WAN_DEACTIVATED 27
+#define GB_C_WAN_DYNAMICIP 28
+#define GB_C_WAN_STATICIP 29
+#define GB_C_WAN_PPPOE 30
+#define GB_C_WAN_BRIDGEMODE 31
+#define GB_C_WAN_DEFAULTROUTEYES 32
+#define GB_C_WAN_DEFAULTROUTENO 33
+#define GB_C_WAN_CONNECTIONONACTIVE 34
+#define GB_C_WAN_CONNECTIONONDEMAND 35
+#define GB_C_WAN_PPPGETIPSTATIC 36
+#define GB_C_WAN_PPPGETIPDYNAMIC 37
+#define GB_C_WAN_SAVE 38
+#define GB_C_WAN_PVCLIST			39
+#define GB_C_WAN_CHANGEISP			40
+#define GB_C_WAN_DELETE			41
+#define GB_C_WAN_CONNTYPE_DYN	42
+#define GB_C_WAN_CONNTYPE_STATIC	43
+#define GB_C_WAN_CONNTYPE_PPP	44
+#define GB_C_WAN_CONNTYPE_BRIDGE	45
+#define GB_C_WAN_DELETE_BUTTON	46  			
+#define GB_C_WAN_PVC0_VCI	0x40  //lee 12-27 add
+#define GB_C_WAN_PVC1_VCI	0x41 
+#define GB_C_WAN_PVC2_VCI	0x42 
+#define GB_C_WAN_PVC3_VCI	0x43 
+#define GB_C_WAN_PVC4_VCI	0x44 
+#define GB_C_WAN_PVC5_VCI	0x45 
+#define GB_C_WAN_PVC6_VCI	0x46 
+#define GB_C_WAN_PVC7_VCI	0x47 
+#define GB_C_WAN_END			0x4f
+
+#define GB_C_LAN_SETTING		0x50
+#define GB_C_LAN_IP				0x51
+#define GB_C_LAN_NETMASK		0x52
+#define GB_C_LAN_DYNAMICROUTE		0x53
+#define GB_C_LAN_DIRECTION		0x54
+#define GB_C_LAN_MULTICAST		0x55
+
+#define GB_C_DHCP_STATUS		0x70
+#define GB_C_DHCP_DISABLE		0x71
+#define GB_C_DHCP_ENABLE		0x72
+#define GB_C_DHCP_RELAY			0x73
+#define GB_C_DHCP_STARTIP		0x74
+#define GB_C_DHCP_POOLSIZE		0x75
+#define GB_C_DHCP_LEASETIME		0x76
+#if 0
+#define GB_C_DHCP_NETMASK		0x76
+#define GB_C_DHCP_ROUTER		0x77
+#define GB_C_DHCP_WINS			0x78
+#endif
+#define GB_C_DHCP_SERVERIP		0x79
+
+#define GB_C_DNS_TYPE			0x80
+#define GB_C_DNS_DIRECTORY		0x81
+#define GB_C_DNS_RELAY			0x82
+#define GB_C_DNS_PRIMARY		0x83
+#define GB_C_DNS_SECOND			0x84
+#define GB_C_LAN_CHANGEDHCP			0x85
+#define GB_C_LAN_END			0xff
+
+
+/*status:0x100 ~0x1FF*/
+#define GB_C_SYSTEM_LOG 0x150
+
+#define GB_C_STATISTICS_INTERFACE 0x160
+#define GB_C_STATISTICS_ADSL 0x161
+#define GB_C_STATISTICS_ETHERNET 0x162
+#define GB_C_STATISTICS_INTERFACEADSL 0x163
+#define GB_C_STATISTICS_INTERFACEETHERNET 0x164
+#define GB_C_STATISTICS_WLAN 0x165
+#define GB_C_STATISTICS_INTERFACEWLAN 0x166
+#define GB_C_STATISTICS_END 0x170
+
+/*mantenance:0x1ff~0x2FF*/
+#define GB_C_ADMIN_SETTING 			    0x1ff
+#define GB_C_ADMIN_PASSWORD 			0x200
+
+#define GB_C_TIME_NOW					0x201 
+#define GB_C_TIME_SYNC					0x202
+#define GB_C_TIME_SYNCWITHNTP			0x203
+#define GB_C_TIME_SYNCWITHPC			0x204
+#define GB_C_TIME_SYNCWITHMANUALLY		0x205
+#define GB_C_TIME_ZONE					0x206
+#define GB_C_TIME_DAYLIGHT				0x207
+#define GB_C_TIME_DAYLIGHTENABLE		0x208
+#define GB_C_TIME_DAYLIGHTDISABLE		0x209
+#define GB_C_TIME_NTPSERVERIP			0x20a
+#define GB_C_TIME_DATE					0x20b
+#define GB_C_TIME_MONTH					0x20c
+#define GB_C_TIME_YEAR					0x20d
+#define GB_C_TIME_HOUR					0x20e
+#define GB_C_TIME_MINUTE				0x20f
+#define GB_C_TIME_SECOND				0x210
+#define GB_C_TIME_SETTING				0x21a
+
+#define GB_C_FIRMWARE_UPDATE			0x220
+#define GB_C_FIRMWARE_LOCATION			0x221
+#define GB_C_FIRMWARE_KERNAL			0x222
+#define GB_C_FIRMWARE_ROOTFS			0x223
+#define GB_C_UPDATE_TYPE				0x224
+#define GB_C_FTP_UPDATE					0x225
+#define GB_C_UPDATE_STATUS				0x226
+
+#define GB_C_SYSTEM_RESTART				0x230
+#define GB_C_SYSTEM_RESTARTWITHSETTING			0x231
+#define GB_C_SYSTEM_RESTARTWITHDEFAULT			0x232
+
+#define GB_C_DIAGNOSTIC					0x240
+#define GB_C_DIAGNOSTIC_VC				0x241
+#define GB_C_DIAGNOSTIC_TEST			0x242
+
+#define GB_C_DIAGNOSTIC_TEST_LAN_CONTNET 			0x243
+#define GB_C_DIAGNOSTIC_TEST_ADSL_SYNCH  			0x244
+#define GB_C_DIAGNOSTIC_TEST_SEG_PING   			0x245
+#define GB_C_DIAGNOSTIC_TEST_END_PING   			0x246
+#define GB_C_DIAGNOSTIC_TEST_PING_DNS   			0x247
+#define GB_C_DIAGNOSTIC_TEST_PING_YAHOO 			0x248
+
+#define GB_C_SAVE_CONFIG					0x250
+
+
+/*access:0x300~0x3FF*/
+#define GB_C_ACL_STATUS					0x300
+#define GB_C_ACL_ACTIVATED				0x301
+#define GB_C_ACL_DEACTIVATED			0x302
+#define GB_C_ACL_RULEINDEX				0x303
+#define GB_C_ACL_RULEACTIVE				0x304
+#define GB_C_ACL_RULEACTIVEYES			0x305
+#define GB_C_ACL_RULEACTIVENO			0x306
+#define GB_C_ACL_SECUREIP				0x307
+#define GB_C_ACL_APPLICATION			0x308
+#define GB_C_ACL_INTERFACE				0x309
+#define GB_C_ACL_LIST					0x30a
+#define GB_C_ACL_SETTING				0x30b
+#define GB_C_ACL_DELETE					0x30c
+#define GB_C_ACL_END					0x30f
+
+#define GB_C_IPFILTER					0x320
+#define GB_C_IPFILTER_SETTING			0x321
+#define GB_C_IPFILTER_SETINDEX			0x322
+#define GB_C_IPFILTER_INTERFACE			0x323
+#define GB_C_IPFILTER_DIRECTION			0x324
+#define GB_C_IPFILTER_RULEINDEX			0x325
+#define GB_C_IPFILTER_RULEACTIVE		0x326
+#define GB_C_IPFILTER_RULEACTIVEYES		0x327
+#define GB_C_IPFILTER_RULEACTIVENO		0x328
+#define GB_C_IPFILTER_SOURCEIP			0x329
+#define GB_C_IPFILTER_SOURCENETMASK		0x32a
+#define GB_C_IPFILTER_SOURCEPORT		0x32b
+#define GB_C_IPFILTER_DESTINATIONIP		0x32c
+#define GB_C_IPFILTER_DESTINATIONNETMASK			0x32d
+#define GB_C_IPFILTER_DESTINATIONPORT				0x32e
+#define GB_C_IPFILTER_PROTOCOL			0x32f
+// wtw del #define GB_C_IPFILTER_RULEUNMATCHED		0x330
+#define GB_C_IPFILTER_LISTINDEX			0x331
+#define GB_C_IPFILTER_LIST				0x332
+#define GB_C_IPFILTER_LISTINTERFACE		0x333
+#define GB_C_IPFILTER_LISTDIRECTION		0x334
+#define GB_C_IPFILTER_DELETE			0x335
+#define GB_C_IPFILTER_END		        0x33f
+
+#define GB_C_SNMP_SETTING				0x340
+#define GB_C_SNMP_GETCOMMUNITY			0x341
+#define GB_C_SNMP_SETCOMMUNITY			0x342
+#define GB_C_SNMP_END					0x34f
+
+#define GB_C_UPNP_SETTING				0x350
+#define GB_C_UPNP_STATUS				0x351
+#define GB_C_UPNP_ACTIVATED				0x352
+#define GB_C_UPNP_DEACVIVATED				0x353
+#define GB_C_UPNP_AUTO					0x354
+#define GB_C_UPNP_AUTOACTIVATED			0x355
+#define GB_C_UPNP_AUTODEACTIVATED		0x356
+
+
+#define GB_C_DDNS_SETTING				0x360
+#define GB_C_DDNS_STATUS				0x361
+#define GB_C_DDNS_ACTIVATED				0x362
+#define GB_C_DDNS_DEACTIVATED			0x363
+#define GB_C_DDNS_PROVIDER				0x364
+#define GB_C_DDNS_MYHOST				0x365
+#define GB_C_DDNS_EMAIL					0x366
+//#define GB_C_DDNS_STATUS				0x367
+#define GB_C_DDNS_USRNAME				0x368
+#define GB_C_DDNS_PASSWORD				0x369
+#define GB_C_DDNS_WILDCARD				0x36a
+#define GB_C_DDNS_WILDCARDYES			0x36b
+#define GB_C_DDNS_WILDCARDNO			0x36c
+#define GB_C_DDNS_END					0x37f
+
+/*advancd:0x400~0x5FF*/
+#define GB_C_ROUTING_SETTING			0x400
+#define GB_C_ROUTING_LIST				0x401
+#define GB_C_ROUTING_ADD				0x402
+#define GB_C_ROUTING_SAVE				0x403
+#define GB_C_ROUTING_DELETE				0x404
+#define GB_C_ROUTING_DESTINATIONIP		0x405
+#define GB_C_ROUTING_NETMASK			0x406
+#define GB_C_ROUTING_GATEWAY			0x407
+#define GB_C_ROUTING_PVCGATEWAY			0x408
+#define GB_C_ROUTING_PVCGATEWAYPVCNO				0x409
+#define GB_C_ROUTING_PVCGATEWAYPVCYES				0x40a
+#define GB_C_ROUTING_PVC				0x40b
+#define GB_C_ROUTING_METRIC				0x40c
+#define GB_C_ROUTING_ANNOUNCEDINRIP	0x40d
+#define GB_C_ROUTING_INDEX				0x40e
+#define GB_C_ROUTING_END				0x41f
+
+#define GB_C_NAT_SETTING				0x420
+#define GB_C_NAT_VC							0x421
+#define GB_C_NAT_STATUS					0x422
+#define GB_C_NAT_NUMBEROFIPS		0x423
+#define GB_C_NAT_SINGLE					0x424
+#define GB_C_NAT_MULTIPLE				0x425
+#define GB_C_NAT_SHOWVC				0x426
+#define GB_C_NAT_CHECKSTATUS			0x427
+#define GB_C_NAT_TOPEND					0x42f
+
+#define GB_C_DMZ_SETTING				0x430
+#define GB_C_DMZ_STATUS					0x431
+#define GB_C_DMZ_ENABLE					0x432
+#define GB_C_DMZ_DISABLE				0x433
+#define GB_C_DMZ_HOSTIP					0x434
+#define GB_C_DMZ_END						0x43f
+
+#define GB_C_VSERVER_SETTING				0x440
+#define GB_C_VSERVER_RULEINDEX			0x441
+#define GB_C_VSERVER_STARTPORT			0x442
+#define GB_C_VSERVER_ENDPORT				0x443
+#define GB_C_VSERVER_LOCALIP				0x444
+#define GB_C_VSERVER_ADD						0x445
+#define GB_C_VSERVER_DELETE					0x446
+#define GB_C_VSERVER_LIST					0x447
+#define GB_C_VSERVER_LISTALL				0x448	
+#define GB_C_VSERVER_END						0x44f
+#define GB_C_VSERVER_PORT11				0x56
+#define GB_C_VSERVER_PORT12				0x57
+#define GB_C_VSERVER_PORT21				0x58
+#define GB_C_VSERVER_PORT22				0x59
+#define GB_C_VSERVER_PORT31				0x5a
+#define GB_C_VSERVER_PORT32				0x5b
+#define GB_C_VSERVER_PORT41				0x5c
+#define GB_C_VSERVER_PORT42				0x5d
+#define GB_C_VSERVER_PORT51				0x5e
+#define GB_C_VSERVER_PORT52				0x5f
+#define GB_C_VSERVER_PORT61				0x60
+#define GB_C_VSERVER_PORT62				0x61
+#define GB_C_VSERVER_PORT71				0x62
+#define GB_C_VSERVER_PORT72				0x63
+#define GB_C_VSERVER_PORT81				0x64
+#define GB_C_VSERVER_PORT82				0x65
+#define GB_C_VSERVER_PORT91				0x66
+#define GB_C_VSERVER_PORT92				0x67
+#define GB_C_VSERVER_PORT101				0x68
+#define GB_C_VSERVER_PORT102				0x69
+
+#define GB_C_IPMAPPING_SETTING			0x450
+#define GB_C_IPMAPPING_RULEINDEX		0x451
+#define GB_C_IPMAPPING_RULETYPE			0x452
+#define GB_C_IPMAPPING_LOCALSTARTIP		0x453
+#define GB_C_IPMAPPING_LOCALENDIP		0x454
+#define GB_C_IPMAPPING_PUBLICSTARTIP	0x455
+#define GB_C_IPMAPPING_PUBLICENDIP		0x456
+#define GB_C_IPMAPPING_ADD				0x457					
+#define GB_C_IPMAPPING_DELETE			0x458
+#define GB_C_IPMAPPING_LIST				0x459
+#define GB_C_IPMAPPING_LISTALL			0x45a
+#define GB_C_IPMAPPING_SERVERIP			0x45b
+#define GB_C_IPMAPPING_END				0x45f
+#define GB_C_NAT_END					0x46f
+
+#define GB_C_QOS_SETTING				0x470
+#define GB_C_QOS_STATUS					0x471
+#define GB_C_QOS_ACTIVATED				0x472
+#define GB_C_QOS_DEACTIVATED			0x473
+
+#define GB_C_QOS_8021PSTATUS			0x475
+#define GB_C_QOS_8021PACTIVATED			0x476
+#define GB_C_QOS_8021PDEACTIVATED		0x477
+#define GB_C_QOS_8021PVALUE0			0x478
+#define GB_C_QOS_8021PVALUE1			0x479
+#define GB_C_QOS_8021PVALUE2			0x47a
+#define GB_C_QOS_8021PVALUE3			0x47b
+#define GB_C_QOS_8021PVALUE4			0x47c
+#define GB_C_QOS_8021PVALUE5			0x47d
+#define GB_C_QOS_8021PVALUE6			0x47e
+#define GB_C_QOS_8021PVALUE7			0x47f
+
+#define GB_C_QOS_IPSTATUS				0x480
+#define GB_C_QOS_IPACTIVATED			0x481
+#define GB_C_QOS_IPDEACTIVATED			0x482
+#define GB_C_QOS_IPTYPE					0x483
+#define GB_C_QOS_IPTOS					0x484
+#define GB_C_QOS_IPDIFFSERV				0x485
+#define GB_C_QOS_IPVALUE0				0x486
+#define GB_C_QOS_IPVALUE1				0x487
+#define GB_C_QOS_IPVALUE2				0x488
+#define GB_C_QOS_IPVALUE3				0x489
+#define GB_C_QOS_IPVALUE4				0x48a
+#define GB_C_QOS_IPVALUE5				0x48b
+#define GB_C_QOS_IPVALUE6				0x48c
+#define GB_C_QOS_IPVALUE7				0x48d
+
+#define GB_C_QOS_APSTATUS				0x48f
+#define GB_C_QOS_APACTIVATED			0x490
+#define GB_C_QOS_APDEACTIVATED			0x491
+#define GB_C_QOS_APVOICEQUEUE			0x492
+#define GB_C_QOS_APVOICERIPFROM			0x493
+#define GB_C_QOS_APVOICERIPTO			0x494
+#define GB_C_QOS_APVIDEOQUEUE			0x495
+#define GB_C_QOS_APVIDEORIPFROM			0x496
+#define GB_C_QOS_APVIDEORIPTO			0x497
+#define GB_C_QOS_APIGMPQUEUE			0x498
+#define GB_C_QOS_APDATAQUEUE			0x499
+
+#define GB_C_QOS_VLANSTATUS				0x49a
+#define GB_C_QOS_VLANACTIVATED			0x49b
+#define GB_C_QOS_VLANDEACTIVATED		0x49c
+#define GB_C_QOS_VID0					0x49d
+#define GB_C_QOS_VID1					0x49e
+#define GB_C_QOS_VID2					0x49f
+#define GB_C_QOS_VID3					0x4a0
+#define GB_C_QOS_VID4					0x4a1
+#define GB_C_QOS_VID5					0x4a2
+#define GB_C_QOS_VID6					0x4a3
+#define GB_C_QOS_VID7					0x4a4
+
+
+#define GB_C_VLAN_SETTING				0x500
+#define GB_C_VLAN_STATUS				0x501
+#define GB_C_VLAN_ACTIVATED				0x502
+#define GB_C_VLAN_DEACTIVATED			0x503
+//#define GB_C_VLAN_DEACTIVATED			0x504
+
+#define GB_C_VLAN_ATMPVID0				0x510
+#define GB_C_VLAN_ATMPVID1				0x512
+#define GB_C_VLAN_ATMPVID2				0x513
+#define GB_C_VLAN_ATMPVID3				0x514
+#define GB_C_VLAN_ATMPVID4				0x515
+#define GB_C_VLAN_ATMPVID5				0x516
+#define GB_C_VLAN_ATMPVID6				0x517
+#define GB_C_VLAN_ATMPVID7				0x518
+
+#define GB_C_VLAN_ETHERNETPVID1			0x520
+#define GB_C_VLAN_ETHERNETPVID2			0x521
+#define GB_C_VLAN_ETHERNETPVID3			0x522
+#define GB_C_VLAN_ETHERNETPVID4			0x523
+
+#define GB_C_VLAN_USBPVID4				0x530
+#define GB_C_VLAN_PVIDSETTING			0x531
+#define GB_C_VLAN_PVIDNEXT				0x532
+#define GB_C_VLAN_PVIDEND				0x53F
+
+#define GB_C_VLAN_INDEX					0x540
+#define GB_C_VLAN_ACTIVE				0x541
+#define GB_C_VLAN_ACTIVEYES				0x542
+#define GB_C_VLAN_ACTIVENO				0x543
+
+#define GB_C_VLAN_ID					0x544
+
+#define GB_C_VLAN_ATMTAGGED0			0x550
+#define GB_C_VLAN_ATMTAGGED1			0x551
+#define GB_C_VLAN_ATMTAGGED2			0x552
+#define GB_C_VLAN_ATMTAGGED3			0x553
+#define GB_C_VLAN_ATMTAGGED4			0x554
+#define GB_C_VLAN_ATMTAGGED5			0x555
+#define GB_C_VLAN_ATMTAGGED6			0x556
+#define GB_C_VLAN_ATMTAGGED7			0x557
+
+#define GB_C_VLAN_ATMPORT0				0x560
+#define GB_C_VLAN_ATMPORT1				0x561
+#define GB_C_VLAN_ATMPORT2				0x562
+#define GB_C_VLAN_ATMPORT3				0x563
+#define GB_C_VLAN_ATMPORT4				0x564
+#define GB_C_VLAN_ATMPORT5				0x565
+#define GB_C_VLAN_ATMPORT6				0x566
+#define GB_C_VLAN_ATMPORT7				0x567
+
+#define GB_C_VLAN_ETHERNETTAGGED1		0x570
+#define GB_C_VLAN_ETHERNETTAGGED2		0x571
+#define GB_C_VLAN_ETHERNETTAGGED3		0x572
+#define GB_C_VLAN_ETHERNETTAGGED4		0x573
+
+#define GB_C_VLAN_ETHERNETPORT1			0x580
+#define GB_C_VLAN_ETHERNETPORT2			0x581
+#define GB_C_VLAN_ETHERNETPORT3			0x582
+#define GB_C_VLAN_ETHERNETPORT4			0x583
+
+#define GB_C_VLAN_USBTAGGED1			0x590
+#define GB_C_VLAN_USBPORT1				0x591
+#define GB_C_VLAN_GROUPDELETE			0x59e
+#define GB_C_VLAN_GROUPSETTING			0x59f
+#define GB_C_VLAN_SUMMARY				0x5a0
+
+
+#define GB_C_ADSL_SETTING				0x5b0
+#define GB_C_ADSL_MODE					0x5b1
+#define GB_C_ADSL_TYPE					0x5b2
+#define GB_C_ADSL_END					0x5bf
+
+/*status:0x600~0x6FF*/
+#define GB_C_DEVICEINFO_SETTING			0x600
+#define GB_C_DEVICEINFO_FIRMWAREVER 0x601
+#define GB_C_DEVICEINFO_MACADDRESS  0x602
+
+#define GB_C_DEVICEINFO_LANIP	  0x603
+#define GB_C_DEVICEINFO_LANNETMASK    0x604
+
+#define GB_C_DEVICEINFO_PVC     0x605
+#define GB_C_DEVICEINFO_WANSTATUS     0x606
+#define GB_C_DEVICEINFO_WANCONNECTIONTYPE      0x607
+#define GB_C_DEVICEINFO_WANIP     0x608
+#define GB_C_DEVICEINFO_WANNETMASK    0x609
+#define GB_C_DEVICEINFO_WANDEFAULTGATEWAY      0x60a
+#define GB_C_DEVICEINFO_DNSSERVER     0x60b
+
+#define GB_C_ADSL_FIRMWAREVER     0x60c
+#define GB_C_ADSL_LINESTATE      0x60d
+#define GB_C_ADSL_MODULATION     0x60e
+#define GB_C_ADSL_ANNEXMODE      0x60f
+#define GB_C_ADSL_SNRMARGIN_DOWN      0x610
+#define GB_C_ADSL_SNRMARGIN_UP      0x611
+#define GB_C_ADSL_LINEATTENUATION_DOWN      0x612
+#define GB_C_ADSL_LINEATTENUATION_UP      0x613
+#define GB_C_ADSL_DATERATE_DOWN      0x614
+#define GB_C_ADSL_DATERATE_UP      0x615
+#define GB_C_DEVICEINFO_DHCPSERVER    0x616
+#define GB_C_DEVICEINFO_SHOW_PPP_TIME     0x617  /*shnwind add 2008.4.17*/
+#define GB_C_DEVICEINFO_CONNECTION_TIME       0x618
+#define GB_C_DEVICEINFO_RENEW_IP       0x619
+#define GB_C_DEVICEINFO_RELEASE_IP       0x61a
+#define GB_C_DEVICEINFO_RENEW_BUTTON       0x61b  /*shnwind add end*/
+
+#define GB_C_DEVICEINFO_END  0x700
+
+//Wireless:0x701~0x740 wkw 07.2.28
+#define GB_C_WIRELESS_BEGIN 		 						0x701
+#define GB_C_WIRELESS_ACCESS					 			0x702
+#define GB_C_WIRELESS_ACCESS_ACTIVATED 			0x703
+#define GB_C_WIRELESS_ACCESS_DEACTIVATED		0x704
+#define GB_C_WIRELESS_CHANNEL  							0x705
+#define GB_C_WIRELESS_CHANNELNUM 						0x706
+#define GB_C_WIRELESS_CURRENTCHANNEL 				0x707
+#define GB_C_WIRELESS_INTERVAL  			 			0x708
+#define GB_C_WIRELESS_RTSCTS  				 			0x709
+#define GB_C_WIRELESS_FRAGMENTATION   			0x70a
+#define GB_C_WIRELESS_DTIM    	 						0x70b
+#define GB_C_WIRELESS_80211BG    						0x70c
+#define GB_C_WIRELESS_SSIDINDEX  						0x70d
+#define GB_C_WIRELESS_SSID   		 						0x70e
+#define GB_C_WIRELESS_BROADCAST		  				0x70f
+#define GB_C_WIRELESS_BROADCAST_YES  				0x710
+#define GB_C_WIRELESS_BROADCAST_NO  				0x711
+#define GB_C_WIRELESS_AUTHENTICATION    		0x712
+#define GB_C_WIRELESS_ACTIVE					     	0x713
+#define GB_C_WIRELESS_ACTIVE_ACTIVATED     	0x714
+#define GB_C_WIRELESS_ACTIVE_DEACTIVATED    0x715
+#define GB_C_WIRELESS_ACTION     						0x716
+#define GB_C_WIRELESS_MAC1       						0x717
+#define GB_C_WIRELESS_MAC2       						0x718
+#define GB_C_WIRELESS_MAC3       						0x719
+#define GB_C_WIRELESS_MAC4       						0x71a
+#define GB_C_WIRELESS_MAC5       						0x71b
+#define GB_C_WIRELESS_MAC6       						0x71c
+#define GB_C_WIRELESS_MAC7       						0x71d
+#define GB_C_WIRELESS_MAC8       						0x71e
+                                 						     
+#define GB_C_WIRELESS_KEYO       						0x720                                 						     
+#define GB_C_WIRELESS_KEYO1       					0x721
+#define GB_C_WIRELESS_KEYO2       					0x722
+#define GB_C_WIRELESS_KEYO3       					0x723
+#define GB_C_WIRELESS_KEYO4       					0x724
+#define GB_C_WIRELESS_KEYT1       					0x725
+#define GB_C_WIRELESS_KEYT2       					0x726
+#define GB_C_WIRELESS_KEYT3       					0x727
+#define GB_C_WIRELESS_KEYT4       					0x728
+                                 						     
+#define GB_C_WIRELESS_ENCRYPTION 						0x730
+#define GB_C_WIRELESS_PRESHARED  						0x731 
+ 
+#define GB_C_WIRELESS_CHECKPAGE	  					0x73e  
+#define GB_C_WIRELESS_SETTING	  						0x73f                                						       
+                                 						
+#define GB_C_WIRELESS_DEVICE_STATUS    			0x740               /*shnwind add 2008.4.17*/                   						
+#define GB_C_WIRELESS_END 			 				0x741
+
+//wireless end wkw 07.2.28   
+
+/* firewall begin 0x761~0x780 */                // wjx 2007.3.5
+#define GB_C_FW_FIREWALL       					0x761
+#define GB_C_FW_FIREWALL_ENABLE       				0x762
+#define GB_C_FW_FIREWALL_DISABLE       				0x763
+#define GB_C_FW_SPI       					0x764
+#define GB_C_FW_SPI_ENABLE       				0x765
+#define GB_C_FW_SPI_DISABLE       				0x766
+#define GB_C_FW_SAVE       					0x767
+#define GB_C_FW_END       					0x780
+
+/* firewall end */   
+// wtw add begin
+//filter extend wkw 07.3.6 0x781~0x800
+#define GB_C_IPFILTER_EXTEND 			 						0x781
+
+#define GB_C_IPFILTER_IPMAC										0x782
+#define GB_C_IPFILTER_APP 										0x783
+#define GB_C_IPFILTER_URL 										0x784
+
+#define GB_C_IPFILTER_RULE_TYPE 							0x785
+#define GB_C_IPFILTER_MAC 										0x786
+#define GB_C_IPFILTER_CHECKPAGE 							0x787
+
+
+#define GB_C_IPFILTER_APPLICATION  						0x7a1      //wjx 2007.3.7
+#define GB_C_APPFILTER_STATUS 								0x7a2
+#define GB_C_APPFILTER_STATUS_ACTIVATED  			0x7a3
+#define GB_C_APPFILTER_STATUS_DEACTIVATED			0x7a4
+#define GB_C_APPFILTER_ICQ_ALLOWANCE 					0x7a5
+#define GB_C_APPFILTER_ICQ_ALLOW  						0x7a6
+#define GB_C_APPFILTER_ICQ_DENY								0x7a7
+#define GB_C_APPFILTER_MSN_ALLOWANCE 					0x7a8
+#define GB_C_APPFILTER_MSN_ALLOW  						0x7a9
+#define GB_C_APPFILTER_MSN_DENY								0x7aa
+#define GB_C_APPFILTER_YMSG_ALLOWANCE  				0x7ab
+#define GB_C_APPFILTER_YMSG_ALLOW  						0x7ac
+#define GB_C_APPFILTER_YMSG_DENY  						0x7ad
+#define GB_C_APPFILTER_RA_ALLOWANCE 					0x7ae
+#define GB_C_APPFILTER_RA_ALLOW  							0x7af
+#define GB_C_APPFILTER_RA_DENY 								0x7b0
+#define GB_C_APPFILTER_SAVE  									0x7b1
+
+
+#define GB_C_URLFILTER_RULEINDEX_ACTIVE				0x7c2
+#define GB_C_URLFILTER_RULEINDEX_ACTIVATED		0x7c3
+#define GB_C_URLFILTER_RULEINDEX_DEACTIVATED	0x7c4
+#define GB_C_URLFILTER_INDEX									0x7c5
+#define GB_C_URLFILTER_URL										0x7c6
+#define GB_C_URLFILTER_LIST										0x7c7
+#define GB_C_URLFILTER_SAVE										0x7c8
+#define GB_C_URLFILTER_DELETE									0x7c9
+	
+
+
+#define GB_C_IPFILTER_EXTEND_END	 						0x800
+
+// wtw add end
+#endif /* GB_CONSTANTS_H */
+
+

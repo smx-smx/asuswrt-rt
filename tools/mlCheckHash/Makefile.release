@@ -1,0 +1,15 @@
+
+CC=gcc
+CFLAGS += -DTRENDCHIP
+OBJS=mlCheckHash.o
+EXECS=mlCheckHash
+all: mlCheckHash
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
+
+$(EXECS): $(OBJS) $(MIPSLIBS)
+	$(CC) $(OBJS) -o $@
+
+clean:
+	@echo "do nothing for cleaning $(EXECS)"

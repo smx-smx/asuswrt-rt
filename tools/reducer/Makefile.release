@@ -1,0 +1,15 @@
+
+CC=gcc
+CFLAGS += -DTRENDCHIP
+OBJS=Reducer.o
+EXECS=Reducer
+all: Reducer
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
+
+Reducer: $(OBJS) $(MIPSLIBS)
+	$(CC) $(OBJS) -o $@
+
+clean:
+	@echo "do nothing for cleaning $(EXECS)"

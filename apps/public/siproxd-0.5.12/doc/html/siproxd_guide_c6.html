@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Sample Configurations</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="Siproxd Users Guide"
+HREF="siproxd_guide.html"><LINK
+REL="PREVIOUS"
+TITLE="Siproxd crashes"
+HREF="siproxd_guide_c5s3.html"><LINK
+REL="NEXT"
+TITLE="GS BT-100 behind NAT Router running Siproxd"
+HREF="siproxd_guide_c6s2.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Siproxd Users Guide</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="siproxd_guide_c5s3.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="siproxd_guide_c6s2.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="SAMPLE-CONFIGURATIONS"
+></A
+>Sample Configurations</H1
+><P
+>Check also the FAQ in the siproxd package.</P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="AEN287"
+>6.1. The "Standard Scenario"</A
+></H1
+><P
+>Scenario:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>private IP address range             :          Internet
+10.0.0.x                             :          (public IP address range)
+                                     :
+                                     :         foo.bar.org
++-------------+               +--------------+
+!             !.10         .1 ! masquerading ! publicIP
+! IntHost     !---------------! Firewall     !------------&#62;&#62;  
+!             !               !              !   
++-------------+               +--------------+
+                          eth0       :        ppp0</PRE
+></TD
+></TR
+></TABLE
+><P
+>The Firewall does IP masquerading and is running
+        siproxd. IntHost is running an SIP softphone (like linphone,
+        kphone). The SIP address used by the softphone is
+        <TT
+CLASS="LITERAL"
+>sip:johndoe@foo.bar.org</TT
+>. The softphone is
+        configured to register itself at siproxd running on the
+        firewall host (10.0.0.1) as <TT
+CLASS="LITERAL"
+>sip:johndoe@foo.bar.org</TT
+>.
+        <TT
+CLASS="LITERAL"
+>Foo.bar.org</TT
+> is the domain name corresponding
+        to the public IP address of the firewall (e.g. use some dynamic
+        DNS service like DynDNS).</P
+><P
+>Firewall configuration (iptables):</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+># allow incoming SIP and RTP traffic
+iptables -A INPUT -m udp -p udp -i ppp0 --dport 5060      -j ACCEPT
+iptables -A INPUT -m udp -p udp -i ppp0 --dport 7070:7089 -j ACCEPT</PRE
+></TD
+></TR
+></TABLE
+><P
+>Firewall configuration (ipchains):</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+># allow incoming SIP and RTP traffic
+ipchains -A input --proto udp --dport 5060      -j ACCEPT
+ipchains -A input --proto udp --dport 7070:7089 -j ACCEPT</PRE
+></TD
+></TR
+></TABLE
+><P
+>The first line will allow incoming SIP traffic. The
+        second line will allow incoming RTP traffic on the ports
+        7070 - 7089 (the default port range used by siproxd for
+        incoming RTP traffic).</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="siproxd_guide_c5s3.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="siproxd_guide.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="siproxd_guide_c6s2.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Siproxd crashes</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>GS BT-100 behind NAT Router running Siproxd</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,2 @@
+#! /bin/sh
+[ -f $KERNEL_DIR/include/linux-2.6.36/netfilter_ipv4/ipt_weburl.h ] && echo weburl

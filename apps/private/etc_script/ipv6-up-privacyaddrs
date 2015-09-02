@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# This script is called with the following parameters:
+# interface tty speed local-address prefix-length remote-address ipparam
+#
+
+#WAN_IF=$1
+WAN_IF=$3
+
+#IF_CONFFILE=/var/run/$WAN_IF/interface.conf
+IF_CONFFILE=/etc/isp$WAN_IF.conf
+if [ -f $IF_CONFFILE ] ; then
+	chmod 777 $IF_CONFFILE
+	. $IF_CONFFILE
+fi
+
+#Enable SLAAC mode
+if [ "$PPPv6Mode" = "0" ]; then
+	echo $IPv6Extension > /proc/sys/net/ipv6/conf/$1/use_tempaddr
+	echo 1 > /proc/sys/net/ipv6/conf/$1/autoconf	
+fi
+

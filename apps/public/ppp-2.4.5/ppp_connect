@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# This is part 2 of the ppp-on script. It will perform the connection
+# protocol for the desired connection.
+#
+exec /userfs/bin/chat \
+ABORT 'NO CARRIER' \
+''                'AT'                \
+'OK'					'AT+CPIN=0000'	\
+''                'AT+CFUN=1'        \
+'OK'              'AT+CGDCONT=1,"IP","internet",,0,0' \
+'OK'	'AT'	\
+'OK'      'AT&FE0V1X1&D2&C1S0=0'    \
+'OK'    'AT'    \
+'OK'      'ATS0=0'    \
+'OK'    'AT'    \
+'OK'                'ATDT*99#'        \
+'CONNECT'

@@ -1,0 +1,962 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node name="Device" rw="false" type="node">
+	<node acl="" getc="0" name="DeviceSummary" noc="0" nocc="" rw="false" type="string"></node>
+	<node name="Capabilities" rw="false" type="node">
+		<node name="PerformanceDiagnostic" rw="false" type="node">
+			<node acl="" getc="0" name="DownloadTransports" noc="0" nocc="" rw="false" type="string"></node>
+			<node acl="" getc="0" name="UploadTransports" noc="0" nocc="" rw="false" type="string"></node>
+		</node>
+	</node>
+	<node name="DeviceInfo" rw="false" type="node">
+		<node acl="" getc="0" name="Manufacturer" noc="0" nocc="" rw="false" type="string">wks</node>
+		<node acl="" getc="0" name="ManufacturerOUI" noc="0" nocc="" rw="false" type="string">wksoui</node>
+		<node acl="" getc="0" name="ModelName" noc="0" nocc="" rw="false" type="string">Modelname</node>
+		<node acl="" getc="0" name="Description" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="ProductClass" noc="0" nocc="" rw="false" type="string">product</node>
+		<node acl="" getc="0" name="SerialNumber" noc="0" nocc="" rw="false" type="string">000000008888</node>
+		<node acl="" getc="0" name="HardwareVersion" noc="0" nocc="" rw="false" type="string">1.0</node>
+		<node acl="" getc="0" name="SoftwareVersion" noc="0" nocc="" rw="false" type="string">1.0</node>
+		<node acl="" getc="0" name="EnabledOptions" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="AdditionalHardwareVersion" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="AdditionalSoftwareVersion" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="ProvisioningCode" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="X_WKS_Key" noc="0" nocc="" rw="false" type="string">wkss</node>
+		<node acl="" getc="0" name="DeviceStatus" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="UpTime" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+		<node acl="" getc="0" name="FirstUseDate" noc="0" nocc="" rw="false" type="dateTime"></node>
+		<node acl="" getc="0" name="DeviceLog" noc="0" nocc="" rw="false" type="string"></node>
+	</node>
+	<node name="ManagementServer" rw="false" type="node">
+		<node acl="" getc="0" name="URL" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="Username" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="Password" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="PeriodicInformEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+		<node acl="" getc="0" name="PeriodicInformInterval" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+		<node acl="" getc="0" name="PeriodicInformTime" noc="0" nocc="" rw="true" type="dateTime"></node>
+		<node acl="" getc="0" name="ParameterKey" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="ConnectionRequestURL" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="ConnectionRequestUsername" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="1" name="ConnectionRequestPassword" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="UpgradesManaged" noc="0" nocc="" rw="true" type="boolean"></node>
+		<node acl="" getc="0" name="KickURL" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="DownloadProgressURL" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="UDPConnectionRequestAddress" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="UDPConnectionRequestAddressNotificationLimit" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+		<node acl="" getc="0" name="STUNEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+		<node acl="" getc="0" name="STUNServerAddress" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="STUNServerPort" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+		<node acl="" getc="0" name="STUNUsername" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="STUNPassword" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="STUNMaximumKeepAlivePeriod" noc="0" nocc="" rw="true" type="int"></node>
+		<node acl="" getc="0" name="STUNMinimumKeepAlivePeriod" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+		<node acl="" getc="0" name="NATDetected" noc="0" nocc="" rw="false" type="boolean"></node>
+	</node>
+	<node name="GatewayInfo" rw="false" type="node">
+		<node acl="" getc="0" name="ManufacturerOUI" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="ProductClass" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="SerialNumber" noc="0" nocc="" rw="false" type="string"></node>
+	</node>
+	<node name="Config" rw="false" type="node">
+		<node acl="" getc="0" name="PersistentData" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="ConfigFile" noc="0" nocc="" rw="true" type="string"></node>
+	</node>
+	<node name="Time" rw="false" type="node">
+		<node acl="" getc="0" name="NTPServer1" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="NTPServer2" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="NTPServer3" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="NTPServer4" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="NTPServer5" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="CurrentLocalTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+		<node acl="" getc="0" name="LocalTimeZone" noc="0" nocc="" rw="true" type="string"></node>
+	</node>
+	<node name="UserInterface" rw="false" type="node">
+		<node acl="" getc="0" name="PasswordRequired" noc="0" nocc="" rw="true" type="boolean"></node>
+		<node acl="" getc="0" name="PasswordUserSelectable" noc="0" nocc="" rw="true" type="boolean"></node>
+		<node acl="" getc="0" name="UpgradeAvailable" noc="0" nocc="" rw="true" type="boolean"></node>
+		<node acl="" getc="0" name="WarrantyDate" noc="0" nocc="" rw="true" type="dateTime"></node>
+		<node acl="" getc="0" name="ISPName" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="ISPHelpDesk" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="ISPHomePage" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="ISPHelpPage" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="ISPLogo" noc="0" nocc="" rw="true" type="base64"></node>
+		<node acl="" getc="0" name="ISPLogoSize" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+		<node acl="" getc="0" name="ISPMailServer" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="ISPNewsServer" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="TextColor" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="BackgroundColor" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="ButtonColor" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="ButtonTextColor" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="AutoUpdateServer" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="UserUpdateServer" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="AvailableLanguages" noc="0" nocc="" rw="false" type="string"></node>
+		<node acl="" getc="0" name="CurrentLanguage" noc="0" nocc="" rw="true" type="string"></node>
+	</node>
+	<node name="LAN" rw="false" type="node">
+		<node acl="" getc="0" name="AddressingType" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="IPAddress" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="SubnetMask" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="DefaultGateway" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="DNSServers" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="MACAddress" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="MACAddressOverride" noc="0" nocc="" rw="true" type="boolean"></node>
+		<node acl="" getc="0" name="DHCPOptionNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+		<node il="9" name="DHCPOption" nin="1" rw="true" type="node">
+			<node name="template" rw="true" type="node">
+				<node acl="" getc="0" name="Request" noc="0" nocc="" rw="true" type="boolean"></node>
+				<node acl="" getc="0" name="Tag" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+				<node acl="" getc="0" name="Value" noc="0" nocc="" rw="true" type="base64"></node>
+			</node>
+		</node>
+		<node name="Stats" rw="false" type="node">
+			<node acl="" getc="0" name="ConnectionUpTime" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="TotalBytesSent" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="TotalBytesReceived" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="TotalPacketsSent" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="TotalPacketsReceived" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="CurrentDayInterval" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="CurrentDayBytesSent" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="CurrentDayBytesReceived" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="CurrentDayPacketsSent" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="CurrentDayPacketsReceived" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="QuarterHourInterval" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="QuarterHourBytesSent" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="QuarterHourBytesReceived" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="QuarterHourPacketsSent" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="QuarterHourPacketsReceived" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+		</node>
+		<node name="IPPingDiagnostics" rw="false" type="node">
+			<node acl="" getc="0" name="DiagnosticsState" noc="0" nocc="" rw="true" type="string"></node>
+			<node acl="" getc="0" name="Host" noc="0" nocc="" rw="true" type="string"></node>
+			<node acl="" getc="0" name="NumberOfRepetitions" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+			<node acl="" getc="0" name="Timeout" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+			<node acl="" getc="0" name="DataBlockSize" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+			<node acl="" getc="0" name="DSCP" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+			<node acl="" getc="0" name="SuccessCount" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="FailureCount" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="AverageResponseTime" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="MinimumResponseTime" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="MaximumResponseTime" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+		</node>
+		<node name="TraceRouteDiagnostics" rw="false" type="node">
+			<node acl="" getc="0" name="DiagnosticsState" noc="0" nocc="" rw="true" type="string"></node>
+			<node acl="" getc="0" name="Host" noc="0" nocc="" rw="true" type="string"></node>
+			<node acl="" getc="0" name="Timeout" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+			<node acl="" getc="0" name="DataBlockSize" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+			<node acl="" getc="0" name="MaxHopCount" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+			<node acl="" getc="0" name="DSCP" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+			<node acl="" getc="0" name="ResponseTime" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node acl="" getc="0" name="NumberOfRouteHops" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			<node name="RouteHops" rw="false" type="node">
+				<node name="1" rw="false" type="node">
+					<node acl="" getc="0" name="HopHost" noc="0" nocc="" rw="false" type="string"></node>
+				</node>
+			</node>
+		</node>
+	</node>
+	<node name="DownloadDiagnostics" rw="false" type="node">
+		<node acl="" getc="0" name="DiagnosticsState" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="Interface" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="DownloadURL" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="DSCP" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+		<node acl="" getc="0" name="EthernetPriority" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+		<node acl="" getc="0" name="ROMTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+		<node acl="" getc="0" name="BOMTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+		<node acl="" getc="0" name="EOMTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+		<node acl="" getc="0" name="TestBytesReceived" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+		<node acl="" getc="0" name="TotalBytesReceived" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+		<node acl="" getc="0" name="TCPOpenRequestTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+		<node acl="" getc="0" name="TCPOpenResponseTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+	</node>
+	<node name="UploadDiagnostics" rw="false" type="node">
+		<node acl="" getc="0" name="DiagnosticsState" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="Interface" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="UploadURL" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="DSCP" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+		<node acl="" getc="0" name="EthernetPriority" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+		<node acl="" getc="0" name="TestFileLength" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+		<node acl="" getc="0" name="ROMTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+		<node acl="" getc="0" name="BOMTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+		<node acl="" getc="0" name="EOMTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+		<node acl="" getc="0" name="TotalBytesSent" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+		<node acl="" getc="0" name="TCPOpenRequestTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+		<node acl="" getc="0" name="TCPOpenResponseTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+	</node>
+	<node name="UDPEchoConfig" rw="false" type="node">
+		<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean"></node>
+		<node acl="" getc="0" name="Interface" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="SourceIPAddress" noc="0" nocc="" rw="true" type="string"></node>
+		<node acl="" getc="0" name="UDPPort" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+		<node acl="" getc="0" name="EchoPlusEnabled" noc="0" nocc="" rw="true" type="boolean"></node>
+		<node acl="" getc="0" name="EchoPlusSupported" noc="0" nocc="" rw="false" type="boolean"></node>
+		<node acl="" getc="0" name="PacketsReceived" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+		<node acl="" getc="0" name="PacketsResponded" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+		<node acl="" getc="0" name="BytesReceived" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+		<node acl="" getc="0" name="BytesResponded" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+		<node acl="" getc="0" name="TimeFirstPacketReceived" noc="0" nocc="" rw="false" type="dateTime"></node>
+		<node acl="" getc="0" name="TimeLastPacketReceived" noc="0" nocc="" rw="false" type="dateTime"></node>
+	</node>
+	<node acl="" getc="0" name="FAPServiceNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+	<node name="FAPService" rw="false" type="node">
+		<node name="1" rw="false" type="node">
+			<node acl="" getc="0" name="DeviceType" noc="0" nocc="" rw="false" type="string"></node>
+			<node acl="" getc="0" name="DNPrefix" noc="0" nocc="" rw="true" type="string"></node>
+			<node name="Capabilities" rw="false" type="node">
+				<node acl="" getc="0" name="GPSEquipped" noc="0" nocc="" rw="false" type="boolean"></node>
+				<node acl="" getc="0" name="MaxTxPower" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				<node acl="" getc="0" name="SupportedSystems" noc="0" nocc="" rw="false" type="string"></node>
+				<node acl="" getc="0" name="MaxChildSAPerIKE" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				<node acl="" getc="0" name="MaxIKESessions" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				<node name="UMTS" rw="false" type="node">
+					<node acl="" getc="0" name="DuplexMode" noc="0" nocc="" rw="false" type="string"></node>
+					<node acl="" getc="0" name="GSMRxSupported" noc="0" nocc="" rw="false" type="boolean"></node>
+					<node acl="" getc="0" name="HSDPASupported" noc="0" nocc="" rw="false" type="boolean"></node>
+					<node acl="" getc="0" name="MaxHSDPADataRateSupported" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="HSUPASupported" noc="0" nocc="" rw="false" type="boolean"></node>
+					<node acl="" getc="0" name="MaxHSUPADataRateSupported" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="MaxHSPDSCHsSupported" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="MaxHSSCCHsSupported" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="FDDBandsSupported" noc="0" nocc="" rw="false" type="string"></node>
+					<node acl="" getc="0" name="GSMRxBandsSupported" noc="0" nocc="" rw="false" type="string"></node>
+					<node name="SelfConfig" rw="false" type="node">
+						<node acl="" getc="0" name="UARFCNConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+						<node acl="" getc="0" name="PrimaryScramblingCodeConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+						<node acl="" getc="0" name="MaxFAPTxPowerConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+						<node acl="" getc="0" name="PCPICHPowerConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+						<node acl="" getc="0" name="MaxULTxPowerConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+						<node acl="" getc="0" name="LACRACURAConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+						<node acl="" getc="0" name="NeighborListConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+						<node acl="" getc="0" name="CellReSelectionConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+						<node acl="" getc="0" name="IntraFreqMeasConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+						<node acl="" getc="0" name="InterFreqMeasConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+						<node acl="" getc="0" name="InterRATMeasConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+						<node acl="" getc="0" name="UEInternalMeasConfig" noc="0" nocc="" rw="false" type="boolean"></node>
+					</node>
+				</node>
+			</node>
+			<node name="FAPControl" rw="false" type="node">
+				<node acl="" getc="0" name="OpState" noc="0" nocc="" rw="false" type="boolean"></node>
+				<node acl="" getc="0" name="AdminState" noc="0" nocc="" rw="true" type="boolean"></node>
+				<node acl="" getc="0" name="RFTxStatus" noc="0" nocc="" rw="false" type="boolean"></node>
+				<node acl="" getc="0" name="SelfConfigEvents" noc="0" nocc="" rw="true" type="string"></node>
+				<node acl="" getc="0" name="EnclosureTamperingDetected" noc="0" nocc="" rw="true" type="boolean"></node>
+				<node name="UMTS" rw="false" type="node">
+					<node name="SelfConfig" rw="false" type="node">
+						<node acl="" getc="0" name="UARFCNSelfConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						<node acl="" getc="0" name="PrimaryScramblingCodeSelfConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						<node acl="" getc="0" name="MaxFAPTxPowerSelfConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						<node acl="" getc="0" name="PCPICHPowerSelfConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						<node acl="" getc="0" name="MaxULTxPowerSelfConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						<node acl="" getc="0" name="LACRACURASelfConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						<node acl="" getc="0" name="NeighborListSelfConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						<node acl="" getc="0" name="CellReSelectionSelfConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						<node acl="" getc="0" name="IntraFreqMeasSelfConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						<node acl="" getc="0" name="InterFreqMeasSelfConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						<node acl="" getc="0" name="InterRATMeasSelfConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						<node acl="" getc="0" name="UEInternalMeasConfigEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+					</node>
+					<node name="Gateway" rw="false" type="node">
+						<node acl="" getc="0" name="SecGWServer1" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="SecGWServer2" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="SecGWServer3" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="FAPGWServer1" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="FAPGWServer2" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="FAPGWServer3" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="FAPGWPort" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					</node>
+				</node>
+			</node>
+			<node name="AccessMgmt" rw="false" type="node">
+				<node acl="" getc="0" name="AccessMode" noc="0" nocc="" rw="true" type="string"></node>
+				<node acl="" getc="0" name="NonCSGUEAccessDecision" noc="0" nocc="" rw="true" type="string"></node>
+				<node acl="" getc="0" name="CSGMembershipDeterminedLocally" noc="0" nocc="" rw="true" type="boolean"></node>
+				<node acl="" getc="0" name="HNBIdentifier" noc="0" nocc="" rw="true" type="string"></node>
+				<node acl="" getc="0" name="HomeZoneName" noc="0" nocc="" rw="true" type="string"></node>
+				<node acl="" getc="0" name="MaxConcurrentCSGUsers" noc="0" nocc="" rw="true" type="int"></node>
+				<node acl="" getc="0" name="CSGID" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+				<node acl="" getc="0" name="AccessControlList(1024)" noc="0" nocc="" rw="true" type="string"></node>
+				<node acl="" getc="0" name="MaxMemberDetailEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				<node acl="" getc="0" name="MemberDetailNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				<node il="9" name="MemberDetail" nin="1" rw="true" type="node">
+					<node name="template" rw="true" type="node">
+						<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean">false</node>
+						<node acl="" getc="0" name="IMSI" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="MSISDN" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="MembershipExpires" noc="0" nocc="" rw="true" type="dateTime"></node>
+					</node>
+				</node>
+				<node name="LocalIPAccess" rw="false" type="node">
+					<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean"></node>
+					<node acl="" getc="0" name="MaxRulesEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="RulesNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node il="9" name="Rules" nin="1" rw="true" type="node">
+						<node name="template" rw="true" type="node">
+							<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean">false</node>
+							<node acl="" getc="0" name="DestIPAddress" noc="0" nocc="" rw="true" type="string"></node>
+							<node acl="" getc="0" name="DestSubnetMask" noc="0" nocc="" rw="true" type="string"></node>
+							<node acl="" getc="0" name="Protocol" noc="0" nocc="" rw="true" type="int">-1</node>
+							<node acl="" getc="0" name="Action" noc="0" nocc="" rw="true" type="string">"Tunnel</node>
+							<node acl="" getc="0" name="Interface" noc="0" nocc="" rw="true" type="string"></node>
+						</node>
+					</node>
+				</node>
+			</node>
+			<node name="CellConfig" rw="false" type="node">
+				<node name="UMTS" rw="false" type="node">
+					<node name="CN" rw="false" type="node">
+						<node acl="" getc="0" name="PLMNType" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="PLMNID" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="EquivPLMNID" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="SAC" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+						<node acl="" getc="0" name="LACRAC" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="LACInUse" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RACInUse" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node name="CSDomain" rw="false" type="node">
+							<node acl="" getc="0" name="T3212" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							<node acl="" getc="0" name="IMSIAttachDetachEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+						</node>
+						<node name="PSDomain" rw="false" type="node">
+							<node acl="" getc="0" name="NetworkModeOperationCombined" noc="0" nocc="" rw="true" type="boolean"></node>
+						</node>
+					</node>
+					<node name="RAN" rw="false" type="node">
+						<node acl="" getc="0" name="URAList" noc="0" nocc="" rw="true" type="string"></node>
+						<node acl="" getc="0" name="URAInUse" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RNCID" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+						<node acl="" getc="0" name="CellID" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+						<node acl="" getc="0" name="TRatC" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+						<node acl="" getc="0" name="TRafC" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+						<node acl="" getc="0" name="NRafC" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+						<node acl="" getc="0" name="TigOR" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+						<node acl="" getc="0" name="TinTR" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+						<node acl="" getc="0" name="TDataFwd" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+						<node acl="" getc="0" name="TRelocPrep" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+						<node acl="" getc="0" name="TRelocOverall" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+						<node name="CSG" rw="false" type="node">
+							<node acl="" getc="0" name="CSGIndicator" noc="0" nocc="" rw="false" type="boolean"></node>
+							<node acl="" getc="0" name="UARFCNDLList" noc="0" nocc="" rw="true" type="string"></node>
+							<node name="CSGPSCSplitInfo" rw="false" type="node">
+								<node acl="" getc="0" name="StartPSCRange1Coefficient" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="NumberOfPSCs" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="PSCRange2Offset" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							</node>
+						</node>
+						<node name="FDDFAP" rw="false" type="node">
+							<node acl="" getc="0" name="HSFlag" noc="0" nocc="" rw="true" type="boolean"></node>
+							<node acl="" getc="0" name="HSEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+							<node acl="" getc="0" name="NumOfHSPDSCHs" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							<node acl="" getc="0" name="NumOfHSSCCHs" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							<node name="CellSelection" rw="false" type="node">
+								<node acl="" getc="0" name="QualityMeasureCPICH" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="QqualMin" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="QqualMinOffset" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="QRxLevMin" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="DeltaQRxLevMin" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="QRxLevMinOffset" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="QHyst1s" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="QHyst2s" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TReselections" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="SIntrasearch" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="SIntersearch" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="SSearchHCS" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="SSearchRAT" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="SHCSRAT" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="SLimitSearchRAT" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="NonHCSTCRMax" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="NonHCSNCR" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="NonHCSTCRMaxHyst" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="QHCS" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="UseOfHCS" noc="0" nocc="" rw="true" type="boolean"></node>
+								<node acl="" getc="0" name="HCSPrio" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TCRMax" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="NCR" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TCRMaxHyst" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="UETxPwrMaxRACH" noc="0" nocc="" rw="true" type="int"></node>
+							</node>
+							<node name="RRCTimers" rw="false" type="node">
+								<node acl="" getc="0" name="T300" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T301" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T302" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T304" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T305" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="T307" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T308" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T309" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T310" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T311" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T312" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T313" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T314" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T315" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="T316" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="T317" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="N300" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="N301" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="N302" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="N304" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="N310" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="N312" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="N313" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="N315" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="WaitTime" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							</node>
+							<node name="DRX" rw="false" type="node">
+								<node acl="" getc="0" name="DRXCycleLengthCoefficientCS" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="DRXCycleLengthCoefficientPS" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="UTRANDRXCycleLengthCoefficient" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							</node>
+							<node name="PowerControl" rw="false" type="node">
+								<node acl="" getc="0" name="ConstantValue" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="PowerRampSetup" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="PreambleRetransMax" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="PersistenceScaleFactor" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="MMax" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="NB01Min" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="NB01Max" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							</node>
+							<node name="CellRestriction" rw="false" type="node">
+								<node acl="" getc="0" name="CellBarred" noc="0" nocc="" rw="true" type="boolean"></node>
+								<node acl="" getc="0" name="IntraFreqCellReselectionIndicator" noc="0" nocc="" rw="true" type="boolean"></node>
+								<node acl="" getc="0" name="TBarred" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="AccessClassBarredListCS" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="AccessClassBarredListPS" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="CellReservedForOperatorUse" noc="0" nocc="" rw="true" type="boolean"></node>
+							</node>
+							<node name="IntraFreqMeas" rw="false" type="node">
+								<node acl="" getc="0" name="MeasurementQuantity" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="FilterCoefficient" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="IntraFrequencyEventIdentity" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="TriggeringCondition2Event1a" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="TriggeringCondition1Event1b" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="TriggeringCondition2Event1e" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="TriggeringCondition1Event1f" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="ReportingRangeEvent1a" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="ReportingRangeEvent1b" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="WeightingFactorEvent1a" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="WeightingFactorEvent1b" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="ReportDeactivationThresholdEvent1a" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="ReportingAmountEvent1a" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="ReportingAmountEvent1c" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="ReportingIntervalEvent1a" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="ReportingIntervalEvent1c" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="HysteresisEvent1a" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="HysteresisEvent1b" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="HysteresisEvent1c" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="HysteresisEvent1e" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="HysteresisEvent1f" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TimeToTriggerEvent1a" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TimeToTriggerEvent1b" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TimeToTriggerEvent1c" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TimeToTriggerEvent1e" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TimeToTriggerEvent1f" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="ThresholdUsedFrequencyEvent1e" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="ThresholdUsedFrequencyEvent1f" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="ReplacementActivationThresholdEvent1c" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							</node>
+							<node name="InterFreqMeas" rw="false" type="node">
+								<node acl="" getc="0" name="MeasurementQuantity" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="FilterCoefficient" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="InterFrequencyEventIdentity" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="WeightingFactorEvent2a" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="WeightingFactorEvent2b" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="WeightingFactorEvent2d" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="WeightingFactorEvent2f" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="HysteresisEvent2a" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="HysteresisEvent2b" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="HysteresisEvent2d" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="HysteresisEvent2f" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TimeToTriggerEvent2a" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TimeToTriggerEvent2b" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TimeToTriggerEvent2d" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TimeToTriggerEvent2f" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="ThresholdUsedFrequencyEvent2b" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="ThresholdUsedFrequencyEvent2d" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="ThresholdUsedFrequencyEvent2f" noc="0" nocc="" rw="true" type="int"></node>
+							</node>
+							<node name="InterRATMeas" rw="false" type="node">
+								<node acl="" getc="0" name="GSMFilterCoefficient" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="BSICVerificationRequired" noc="0" nocc="" rw="true" type="boolean"></node>
+								<node acl="" getc="0" name="WeightingFactor" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="Hysteresis" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="TimeToTrigger" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="ThresholdOwnSystem" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="ThresholdOtherSystem" noc="0" nocc="" rw="true" type="int"></node>
+							</node>
+							<node name="UEInternalMeas" rw="false" type="node">
+								<node acl="" getc="0" name="FilterCoefficient" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="UETxPwrThresholdEvent6a" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="TimeToTriggerEvent6a" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="UETxPwrThresholdEvent6b" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="TimeToTriggerEvent6b" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							</node>
+							<node name="RF" rw="false" type="node">
+								<node acl="" getc="0" name="UARFCNDL" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="UARFCNDLInUse" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="UARFCNULInUse" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="UARFCNDLToProtect" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="PrimaryScramblingCode" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="PrimaryScramblingCodeInUse" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="MaxFAPTxPower" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="MaxFAPTxPowerInUse" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="MaxULTxPower" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="MaxULTxPowerInUse" noc="0" nocc="" rw="false" type="int"></node>
+								<node acl="" getc="0" name="PCPICHPower" noc="0" nocc="" rw="true" type="string"></node>
+								<node acl="" getc="0" name="PCPICHPowerInUse" noc="0" nocc="" rw="false" type="int"></node>
+								<node acl="" getc="0" name="PowerOffsetPilotDPDCH" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="FAPCoverageTarget" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="PSCHPower" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="SSCHPower" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="PICHPower" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="PCHPower" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="FACHPower" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="BCHPower" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="AICHPower" noc="0" nocc="" rw="true" type="int"></node>
+								<node acl="" getc="0" name="CTCHAllocationPeriod" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="CBSFrameOffset" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+								<node acl="" getc="0" name="MaxTTI" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							</node>
+							<node name="NeighborList" rw="false" type="node">
+								<node acl="" getc="0" name="MaxIntraFreqCellEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="MaxInterFreqCellEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="IntraFreqCellNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="InterFreqCellNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node il="9" name="IntraFreqCell" nin="1" rw="true" type="node">
+									<node name="template" rw="true" type="node">
+										<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean">false</node>
+										<node acl="" getc="0" name="MustInclude" noc="0" nocc="" rw="true" type="boolean">false</node>
+										<node acl="" getc="0" name="PLMNID" noc="0" nocc="" rw="true" type="string"></node>
+										<node acl="" getc="0" name="RNCID" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+										<node acl="" getc="0" name="CID" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+										<node acl="" getc="0" name="LAC" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+										<node acl="" getc="0" name="RAC" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+										<node acl="" getc="0" name="URA" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+										<node acl="" getc="0" name="PCPICHScramblingCode" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+										<node acl="" getc="0" name="PCPICHTxPower" noc="0" nocc="" rw="true" type="int">0</node>
+									</node>
+								</node>
+								<node il="9" name="InterFreqCell" nin="1" rw="true" type="node">
+									<node name="template" rw="true" type="node">
+										<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean">false</node>
+										<node acl="" getc="0" name="MustInclude" noc="0" nocc="" rw="true" type="boolean">false</node>
+										<node acl="" getc="0" name="PLMNID" noc="0" nocc="" rw="true" type="string"></node>
+										<node acl="" getc="0" name="RNCID" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+										<node acl="" getc="0" name="CID" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+										<node acl="" getc="0" name="LAC" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+										<node acl="" getc="0" name="RAC" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+										<node acl="" getc="0" name="URA" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+										<node acl="" getc="0" name="UARFCNUL" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+										<node acl="" getc="0" name="UARFCNDL" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+										<node acl="" getc="0" name="PCPICHScramblingCode" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+										<node acl="" getc="0" name="PCPICHTxPower" noc="0" nocc="" rw="true" type="int">0</node>
+									</node>
+								</node>
+								<node name="InterRATCell" rw="false" type="node">
+									<node acl="" getc="0" name="MaxGSMEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+									<node acl="" getc="0" name="GSMNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+									<node il="9" name="GSM" nin="1" rw="true" type="node">
+										<node name="template" rw="true" type="node">
+											<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean">false</node>
+											<node acl="" getc="0" name="MustInclude" noc="0" nocc="" rw="true" type="boolean">false</node>
+											<node acl="" getc="0" name="PLMNID" noc="0" nocc="" rw="true" type="string"></node>
+											<node acl="" getc="0" name="LAC" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+											<node acl="" getc="0" name="BSIC" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+											<node acl="" getc="0" name="CI" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+											<node acl="" getc="0" name="BandIndicator" noc="0" nocc="" rw="true" type="string"></node>
+											<node acl="" getc="0" name="BCCHARFCN" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+										</node>
+									</node>
+								</node>
+							</node>
+							<node name="NeighborListInUse" rw="false" type="node">
+								<node acl="" getc="0" name="MaxIntraFreqCellEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="MaxInterFreqCellEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="IntraFreqCellNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="InterFreqCellNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node name="IntraFreqCell" rw="false" type="node">
+									<node name="1" rw="false" type="node">
+										<node acl="" getc="0" name="PLMNID" noc="0" nocc="" rw="false" type="string"></node>
+										<node acl="" getc="0" name="RNCID" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="CID" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="LAC" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="RAC" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="URA" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="PCPICHScramblingCode" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+									</node>
+								</node>
+								<node name="InterFreqCell" rw="false" type="node">
+									<node name="1" rw="false" type="node">
+										<node acl="" getc="0" name="PLMNID" noc="0" nocc="" rw="false" type="string"></node>
+										<node acl="" getc="0" name="RNCID" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="CID" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="LAC" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="RAC" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="URA" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="UARFCNUL" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="UARFCNDL" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										<node acl="" getc="0" name="PCPICHScramblingCode" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+									</node>
+								</node>
+								<node name="InterRATCell" rw="false" type="node">
+									<node acl="" getc="0" name="MaxGSMEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+									<node acl="" getc="0" name="GSMNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+									<node name="GSM" rw="false" type="node">
+										<node name="1" rw="false" type="node">
+											<node acl="" getc="0" name="PLMNID" noc="0" nocc="" rw="false" type="string"></node>
+											<node acl="" getc="0" name="LAC" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+											<node acl="" getc="0" name="BSIC" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+											<node acl="" getc="0" name="CI" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+											<node acl="" getc="0" name="BandIndicator" noc="0" nocc="" rw="false" type="string"></node>
+											<node acl="" getc="0" name="BCCHARFCN" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+										</node>
+									</node>
+								</node>
+							</node>
+						</node>
+					</node>
+					<node name="RAB" rw="false" type="node">
+						<node acl="" getc="0" name="RABSuccEstabCS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABFailEstabCS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABSuccEstabPS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABFailEstabPS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABSuccModCS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABFailModCS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABSuccModPS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABFailModPS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABSuccRelCS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABFailRelCS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABSuccRelPS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABFailRelPS" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABCSSetupTimeMean" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABCSSetupTimeMax" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABPSSetupTimeMean" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="RABPSSetupTimeMax" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="FailHO" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="SuccHO" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					</node>
+				</node>
+			</node>
+			<node name="Transport" rw="false" type="node">
+				<node name="SCTP" rw="false" type="node">
+					<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean"></node>
+					<node acl="" getc="0" name="HBInterval" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="MaxAssociationRetransmits" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="MaxInitRetransmits" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="MaxPathRetransmits" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="RTOInitial" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="RTOMax" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="RTOMin" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="ValCookieLife" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="OutOfBlues" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="ChecksumErrors" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="OutCtrlChunks" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="OutOrderChunks" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="OutUnorderChunks" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="InCtrlChunks" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="InOrderChunks" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="InUnorderChunks" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="FragUsrMsgs" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="ReasmUsrMsgs" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="OutSCTPPacks" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="InSCTPPacks" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="Discontinuity" noc="0" nocc="" rw="false" type="dateTime"></node>
+					<node acl="" getc="0" name="AssocNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node name="Assoc" rw="false" type="node">
+						<node name="1" rw="false" type="node">
+							<node acl="" getc="0" name="Status" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="PrimaryPeerAddress" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="LocalPort" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="InStreams" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="OutStreams" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="StartTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+							<node acl="" getc="0" name="Discontinuity" noc="0" nocc="" rw="false" type="dateTime"></node>
+						</node>
+					</node>
+				</node>
+				<node name="RealTime" rw="false" type="node">
+					<node acl="" getc="0" name="RTCPEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+					<node acl="" getc="0" name="SentPackets" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="RcvPackets" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="BytesSent" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="BytesReceived" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node name="Perf" rw="false" type="node">
+						<node acl="" getc="0" name="LostRcvPackets" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="LostFarEndPackets" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="Overruns" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="Underruns" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="MeanRTT" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="MaxRTT" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="MeanReceiveJitter" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="MaxReceiveJitter" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="MeanFarEndJitter" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						<node acl="" getc="0" name="MaxFarEndJitter" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					</node>
+				</node>
+				<node name="Packet" rw="false" type="node">
+					<node acl="" getc="0" name="EchoInterval" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="SentPackets" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="RcvPackets" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				</node>
+				<node name="Tunnel" rw="false" type="node">
+					<node acl="" getc="0" name="IKESANumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="ChildSANumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="MaxVirtualInterfaces" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="VirtualInterfaceNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node name="IKESA" rw="false" type="node">
+						<node name="1" rw="false" type="node">
+							<node acl="" getc="0" name="Status" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="PeerAddress" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="CreationTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+							<node acl="" getc="0" name="IPAddress" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="SubnetMask" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="DNSServers" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="DHCPServers" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="IntegrityErrors" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="OtherErrors" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="AuthErrors" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						</node>
+					</node>
+					<node name="ChildSA" rw="false" type="node">
+						<node name="1" rw="false" type="node">
+							<node acl="" getc="0" name="ParentID" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="SPI" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="DirectionOutbound" noc="0" nocc="" rw="false" type="boolean"></node>
+							<node acl="" getc="0" name="CreationTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+							<node acl="" getc="0" name="Traffic" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="IntegrityErrors" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="ReplayErrors" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+						</node>
+					</node>
+					<node il="9" name="VirtualInterface" nin="1" rw="true" type="node">
+						<node name="template" rw="true" type="node">
+							<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean">false</node>
+							<node acl="" getc="0" name="CryptoProfile" noc="0" nocc="" rw="true" type="string"></node>
+							<node acl="" getc="0" name="DSCPMarkPolicy" noc="0" nocc="" rw="true" type="int">-1</node>
+						</node>
+					</node>
+				</node>
+				<node name="Security" rw="false" type="node">
+					<node acl="" getc="0" name="SecretNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="PkeyNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="CryptoProfileNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node name="Secret" rw="false" type="node">
+						<node name="1" rw="false" type="node">
+							<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean"></node>
+							<node acl="" getc="0" name="Type" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="Status" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="UICCCardID" noc="0" nocc="" rw="false" type="string"></node>
+						</node>
+					</node>
+					<node name="Pkey" rw="false" type="node">
+						<node name="1" rw="false" type="node">
+							<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean"></node>
+							<node acl="" getc="0" name="LastModif" noc="0" nocc="" rw="false" type="dateTime"></node>
+							<node acl="" getc="0" name="SerialNumber" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="Issuer" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="NotBefore" noc="0" nocc="" rw="false" type="dateTime"></node>
+							<node acl="" getc="0" name="NotAfter" noc="0" nocc="" rw="false" type="dateTime"></node>
+							<node acl="" getc="0" name="Subject" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="SubjectAlt" noc="0" nocc="" rw="false" type="string"></node>
+						</node>
+					</node>
+					<node il="9" name="CryptoProfile" nin="1" rw="true" type="node">
+						<node name="template" rw="true" type="node">
+							<node acl="" getc="0" name="Enable" noc="0" nocc="" rw="true" type="boolean">false</node>
+							<node acl="" getc="0" name="AuthMethod" noc="0" nocc="" rw="true" type="string"></node>
+							<node acl="" getc="0" name="MaxChildSA" noc="0" nocc="" rw="true" type="unsignedInt">2</node>
+							<node acl="" getc="0" name="IKEEncrypt" noc="0" nocc="" rw="true" type="string"></node>
+							<node acl="" getc="0" name="IKEPRF" noc="0" nocc="" rw="true" type="string">"HMAC</node>
+							<node acl="" getc="0" name="IKEIntegrity" noc="0" nocc="" rw="true" type="string">"HMAC</node>
+							<node acl="" getc="0" name="IKEDH" noc="0" nocc="" rw="true" type="string">"2048"</node>
+							<node acl="" getc="0" name="ESPEncrypt" noc="0" nocc="" rw="true" type="string"></node>
+							<node acl="" getc="0" name="ESPIntegrity" noc="0" nocc="" rw="true" type="string">"HMAC</node>
+							<node acl="" getc="0" name="IPsecWindowSize" noc="0" nocc="" rw="true" type="unsignedInt">0</node>
+							<node acl="" getc="0" name="IKERekeyLifetime" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							<node acl="" getc="0" name="IPsecRekeyLifetimeByte" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							<node acl="" getc="0" name="IPsecRekeyLifetimeTime" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+							<node acl="" getc="0" name="DPDTimer" noc="0" nocc="" rw="true" type="unsignedInt">300</node>
+							<node acl="" getc="0" name="NATTKeepaliveTimer" noc="0" nocc="" rw="true" type="unsignedInt">180</node>
+						</node>
+					</node>
+				</node>
+			</node>
+			<node name="REM" rw="false" type="node">
+				<node name="WCDMAFDD" rw="false" type="node">
+					<node acl="" getc="0" name="InServiceHandling" noc="0" nocc="" rw="true" type="string"></node>
+					<node acl="" getc="0" name="ScanOnBoot" noc="0" nocc="" rw="true" type="boolean"></node>
+					<node acl="" getc="0" name="ScanPeriodically" noc="0" nocc="" rw="true" type="boolean"></node>
+					<node acl="" getc="0" name="PeriodicInterval" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="PeriodicTime" noc="0" nocc="" rw="true" type="dateTime"></node>
+					<node acl="" getc="0" name="REMPLMNList" noc="0" nocc="" rw="true" type="string"></node>
+					<node acl="" getc="0" name="REMBandList" noc="0" nocc="" rw="true" type="string"></node>
+					<node acl="" getc="0" name="UARFCNDLList" noc="0" nocc="" rw="true" type="string"></node>
+					<node acl="" getc="0" name="ScanTimeout" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="ScanStatus" noc="0" nocc="" rw="false" type="string"></node>
+					<node acl="" getc="0" name="ErrorDetails" noc="0" nocc="" rw="false" type="string"></node>
+					<node acl="" getc="0" name="LastScanTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+					<node acl="" getc="0" name="MaxCellEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="CellNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node name="Cell" rw="false" type="node">
+						<node name="1" rw="false" type="node">
+							<node name="RF" rw="false" type="node">
+								<node acl="" getc="0" name="UARFCNDL" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="CPICHRSCP" noc="0" nocc="" rw="false" type="int"></node>
+								<node acl="" getc="0" name="CPICHEcNo" noc="0" nocc="" rw="false" type="int"></node>
+								<node acl="" getc="0" name="RSSI" noc="0" nocc="" rw="false" type="int"></node>
+								<node acl="" getc="0" name="PrimaryScramblingCode" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							</node>
+							<node name="BCCH" rw="false" type="node">
+								<node acl="" getc="0" name="PLMNType" noc="0" nocc="" rw="false" type="string"></node>
+								<node acl="" getc="0" name="PLMNID" noc="0" nocc="" rw="false" type="string"></node>
+								<node acl="" getc="0" name="LAC" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="RAC" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="CellID" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="PCPICHTxPower" noc="0" nocc="" rw="false" type="int"></node>
+								<node acl="" getc="0" name="CSGIndicator" noc="0" nocc="" rw="false" type="boolean"></node>
+								<node acl="" getc="0" name="CSGID" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								<node acl="" getc="0" name="UARFCNDLList" noc="0" nocc="" rw="false" type="string"></node>
+								<node name="CSGPSCSplitInfo" rw="false" type="node">
+									<node acl="" getc="0" name="StartPSCRange1Coefficient" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+									<node acl="" getc="0" name="NumberOfPSCs" noc="0" nocc="" rw="false" type="string"></node>
+									<node acl="" getc="0" name="PSCRange2Offset" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								</node>
+								<node name="ReferencePosition" rw="false" type="node">
+									<node acl="" getc="0" name="Latitude" noc="0" nocc="" rw="false" type="int"></node>
+									<node acl="" getc="0" name="Longitude" noc="0" nocc="" rw="false" type="int"></node>
+									<node acl="" getc="0" name="UncertaintySemiMajor" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+									<node acl="" getc="0" name="UncertaintySemiMinor" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+									<node acl="" getc="0" name="OrientationOfMajorAxis" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+									<node acl="" getc="0" name="Confidence" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+								</node>
+							</node>
+						</node>
+					</node>
+				</node>
+				<node name="GSM" rw="false" type="node">
+					<node acl="" getc="0" name="InServiceHandling" noc="0" nocc="" rw="true" type="string"></node>
+					<node acl="" getc="0" name="ScanOnBoot" noc="0" nocc="" rw="true" type="boolean"></node>
+					<node acl="" getc="0" name="ScanPeriodically" noc="0" nocc="" rw="true" type="boolean"></node>
+					<node acl="" getc="0" name="PeriodicInterval" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="PeriodicTime" noc="0" nocc="" rw="true" type="dateTime"></node>
+					<node acl="" getc="0" name="REMPLMNList" noc="0" nocc="" rw="true" type="string"></node>
+					<node acl="" getc="0" name="REMBandList" noc="0" nocc="" rw="true" type="string"></node>
+					<node acl="" getc="0" name="ARFCNList" noc="0" nocc="" rw="true" type="string"></node>
+					<node acl="" getc="0" name="ScanTimeout" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="ScanStatus" noc="0" nocc="" rw="false" type="string"></node>
+					<node acl="" getc="0" name="ErrorDetails" noc="0" nocc="" rw="false" type="string"></node>
+					<node acl="" getc="0" name="LastScanTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+					<node acl="" getc="0" name="MaxCellEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node acl="" getc="0" name="CellNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+					<node name="Cell" rw="false" type="node">
+						<node name="1" rw="false" type="node">
+							<node acl="" getc="0" name="BandIndicator" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="ARFCN" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="BSIC" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="PLMNID" noc="0" nocc="" rw="false" type="string"></node>
+							<node acl="" getc="0" name="LAC" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="RAC" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="CI" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+							<node acl="" getc="0" name="RSSI" noc="0" nocc="" rw="false" type="int"></node>
+						</node>
+					</node>
+				</node>
+			</node>
+			<node name="GPS" rw="false" type="node">
+				<node acl="" getc="0" name="ScanOnBoot" noc="0" nocc="" rw="true" type="boolean"></node>
+				<node acl="" getc="0" name="ScanPeriodically" noc="0" nocc="" rw="true" type="boolean"></node>
+				<node acl="" getc="0" name="PeriodicInterval" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+				<node acl="" getc="0" name="PeriodicTime" noc="0" nocc="" rw="true" type="dateTime"></node>
+				<node acl="" getc="0" name="ContinuousGPS" noc="0" nocc="" rw="true" type="boolean"></node>
+				<node acl="" getc="0" name="ScanTimeout" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+				<node acl="" getc="0" name="ScanStatus" noc="0" nocc="" rw="false" type="string"></node>
+				<node acl="" getc="0" name="ErrorDetails" noc="0" nocc="" rw="false" type="string"></node>
+				<node acl="" getc="0" name="LastScanTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+				<node acl="" getc="0" name="LastSuccessfulScanTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+				<node acl="" getc="0" name="LockedLatitude" noc="0" nocc="" rw="false" type="int"></node>
+				<node acl="" getc="0" name="LockedLongitude" noc="0" nocc="" rw="false" type="int"></node>
+				<node acl="" getc="0" name="NumberOfSatellites" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+			</node>
+			<node name="FaultMgmt" rw="false" type="node">
+				<node acl="" getc="0" name="SupportedAlarmNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				<node acl="" getc="0" name="MaxCurrentAlarmEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				<node acl="" getc="0" name="CurrentAlarmNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				<node acl="" getc="0" name="HistoryEventNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				<node acl="" getc="0" name="ExpeditedEventNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				<node acl="" getc="0" name="QueuedEventNumberOfEntries" noc="0" nocc="" rw="false" type="unsignedInt"></node>
+				<node name="SupportedAlarm" rw="false" type="node">
+					<node name="1" rw="false" type="node">
+						<node acl="" getc="0" name="EventType" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="ProbableCause" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="SpecificProblem" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="PerceivedSeverity" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="ReportingMechanism" noc="0" nocc="" rw="true" type="string"></node>
+					</node>
+				</node>
+				<node name="CurrentAlarm" rw="false" type="node">
+					<node name="1" rw="false" type="node">
+						<node acl="" getc="0" name="AlarmIdentifier" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="AlarmRaisedTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+						<node acl="" getc="0" name="AlarmChangedTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+						<node acl="" getc="0" name="ManagedObjectInstance" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="EventType" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="ProbableCause" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="SpecificProblem" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="PerceivedSeverity" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="AdditionalText" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="AdditionalInformation" noc="0" nocc="" rw="false" type="string"></node>
+					</node>
+				</node>
+				<node name="HistoryEvent" rw="false" type="node">
+					<node name="1" rw="false" type="node">
+						<node acl="" getc="0" name="EventTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+						<node acl="" getc="0" name="AlarmIdentifier" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="NotificationType" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="ManagedObjectInstance" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="EventType" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="ProbableCause" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="SpecificProblem" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="PerceivedSeverity" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="AdditionalText" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="AdditionalInformation" noc="0" nocc="" rw="false" type="string"></node>
+					</node>
+				</node>
+				<node name="ExpeditedEvent" rw="false" type="node">
+					<node name="1" rw="false" type="node">
+						<node acl="" getc="0" name="EventTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+						<node acl="" getc="0" name="AlarmIdentifier" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="NotificationType" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="ManagedObjectInstance" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="EventType" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="ProbableCause" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="SpecificProblem" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="PerceivedSeverity" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="AdditionalText" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="AdditionalInformation" noc="0" nocc="" rw="false" type="string"></node>
+					</node>
+				</node>
+				<node name="QueuedEvent" rw="false" type="node">
+					<node name="1" rw="false" type="node">
+						<node acl="" getc="0" name="EventTime" noc="0" nocc="" rw="false" type="dateTime"></node>
+						<node acl="" getc="0" name="AlarmIdentifier" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="NotificationType" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="ManagedObjectInstance" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="EventType" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="ProbableCause" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="SpecificProblem" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="PerceivedSeverity" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="AdditionalText" noc="0" nocc="" rw="false" type="string"></node>
+						<node acl="" getc="0" name="AdditionalInformation" noc="0" nocc="" rw="false" type="string"></node>
+					</node>
+				</node>
+			</node>
+			<node name="PerfMgmt" rw="false" type="node">
+				<node name="FileMgmt" rw="false" type="node">
+					<node acl="" getc="0" name="PeriodicUploadEnable" noc="0" nocc="" rw="true" type="boolean"></node>
+					<node acl="" getc="0" name="URL" noc="0" nocc="" rw="true" type="string"></node>
+					<node acl="" getc="0" name="Username" noc="0" nocc="" rw="true" type="string"></node>
+					<node acl="" getc="0" name="Password" noc="0" nocc="" rw="true" type="string"></node>
+					<node acl="" getc="0" name="PeriodicUploadInterval" noc="0" nocc="" rw="true" type="unsignedInt"></node>
+					<node acl="" getc="0" name="PeriodicUploadTime" noc="0" nocc="" rw="true" type="dateTime"></node>
+				</node>
+			</node>
+		</node>
+	</node>
+</node>

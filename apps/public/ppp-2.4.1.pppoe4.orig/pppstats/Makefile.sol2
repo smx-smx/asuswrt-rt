@@ -1,0 +1,20 @@
+#
+# pppstats Makefile for SVR4 systems
+# $Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/apps/public/ppp-2.4.1.pppoe4.orig/pppstats/Makefile.sol2#1 $
+#
+
+include ../solaris/Makedefs
+
+CFLAGS = -DSTREAMS -I../include $(COPTS)
+
+all: pppstats
+
+pppstats: pppstats.c
+	$(CC) $(CFLAGS) -o pppstats pppstats.c
+
+install: pppstats
+	$(INSTALL) -f $(BINDIR) pppstats
+	$(INSTALL) -m 444 -f $(MANDIR)/man8 pppstats.8
+
+clean:
+	rm -f pppstats *~ core

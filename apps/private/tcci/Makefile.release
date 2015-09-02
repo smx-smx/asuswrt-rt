@@ -1,0 +1,44 @@
+#CROSS=mips-linux-gnu-
+
+#CC=$(CROSS)gcc
+AR=$(CROSS)ar
+LD=$(CROSS)ld
+STRIP=$(CROSS)strip
+RANLIB=$(CROSS)ranlib
+SIZE=$(CROSS)size
+
+KERNEL_DIR=../../../linux
+
+INCLUDE = -I$(KERNEL_DIR)/include 
+
+#CFLAGS= -mips1 -msoft-float 
+#CFLAGS= -mips1 -msoft-float 
+#CFLAGS= -mips32r2 -msoft-float -DTRENDCHIP -muclibc
+ifeq ($(TC2031_SUPPORT),1)
+CFLAGS += -DTC2031_DEBUG
+endif
+
+ifneq ($(strip $(TCSUPPORT_CODE_SHRINK)),)
+CFLAGS += -Os
+endif
+
+ifneq ($(TC_CFLAGS), )
+CFLAGS += $(TC_CFLAGS)
+endif
+
+EXECS = tcci
+
+LDFLAGS += -L ../lib -ltcapi
+
+OBJS=tcci.o
+
+all: $(EXECS)
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
+
+$(EXECS): $(OBJS) 
+	$(CC) $(CFLAGS) $(OBJS) -o $@ $(LDFLAGS)
+	$(STRIP) $@
+clean:
+	rm -f $(EXECS)

@@ -1,0 +1,231 @@
+<HTML>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Created on December, 12  2005 by texi2html 1.64 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HEAD>
+<TITLE>The Boa HTTP Daemon: Limits and Design Philosophy</TITLE>
+
+<META NAME="description" CONTENT="The Boa HTTP Daemon: Limits and Design Philosophy">
+<META NAME="keywords" CONTENT="The Boa HTTP Daemon: Limits and Design Philosophy">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.64">
+
+</HEAD>
+
+<BODY LANG="" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC8"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC7"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC9"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC2"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 3. Limits and Design Philosophy </H1>
+<!--docid::SEC8::-->
+<P>
+
+There are many issues that become more difficult to resolve in a single 
+tasking web server than in the normal forking model.  Here is a partial 
+list -- there are probably others that haven't been encountered yet.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_3.html#SEC9">3.1 Limits</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_3.html#SEC10">3.2 Differences between Boa and other web servers</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_3.html#SEC11">3.3 Unexpected Behavior</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<A NAME="Limits"></A>
+<HR SIZE="6">
+<A NAME="SEC9"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC10"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC2"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 3.1 Limits </H2>
+<!--docid::SEC9::-->
+<P>
+
+<UL>
+<LI>Slow file systems
+ 
+ The file systems being served should be much faster than the
+ network connection to the HTTP requests, or performance will suffer.
+ For instance, if a document is served from a CD-ROM, the whole server
+ (including all other currently incomplete data transfers) will stall
+ while the CD-ROM spins up.  This is a consequence of the fact that Boa
+ mmap()'s each file being served, and lets the kernel read and cache
+ pages as best it knows how.  When the files come from a local disk
+ (the faster the better), this is no problem, and in fact delivers
+ nearly ideal performance under heavy load.  Avoid serving documents
+ from NFS and CD-ROM unless you have even slower inbound net
+ connections (e.g., POTS SLIP).
+ 
+<LI>DNS lookups
+ 
+ Writing a nonblocking gethostbyaddr is a difficult and not very
+ enjoyable task.  Paul Phillips experimented with several methods, 
+ including a separate logging process, before removing hostname 
+ lookups entirely. There is a companion program with Boa 
+ <TT>`util/resolver.pl'</TT> that will postprocess the logfiles and 
+ replace IP addresses with hostnames, which is much faster no matter 
+ what sort of server you run.
+ 
+<LI>Identd lookups
+ 
+ Same difficulties as hostname lookups; not included.
+ Boa provides a REMOTE_PORT environment variable, in addition
+ to REMOTE_ADDR, so that a CGI program can do its own ident.
+ See the end of <TT>examples/cgi-test.cgi</TT>.
+<P>
+
+<LI>Password file lookups via NIS
+ 
+ If users are allowed to serve HTML from their home directories,
+ password file lookups can potentially block the process.  To lessen
+ the impact, each user's home directory is cached by Boa so it need
+ only be looked up once.
+ 
+<LI>Running out of file descriptors
+ 
+ Since a file descriptor is needed for every ongoing connection
+ (two for non-nph CGIs, directories, and automatic gunzipping of files),
+ it is possible though highly improbable to run out of file
+ descriptors.  The symptoms of this conditions may vary with
+ your particular unix variant, but you will probably see log
+ entries giving an error message for <TT>accept</TT>.
+ Try to build your kernel to give an adequate number for
+ your usage - GNU/Linux provides 256 out of the box, more than
+ enough for most people.
+</UL>
+<P>
+
+<A NAME="Differences between Boa and other web servers"></A>
+<HR SIZE="6">
+<A NAME="SEC10"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC9"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC11"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC2"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 3.2 Differences between Boa and other web servers </H2>
+<!--docid::SEC10::-->
+<P>
+
+In the pursuit of speed and simplicity, some aspects of Boa differ
+from the popular web servers.  In no particular order:
+</P><P>
+
+<UL>
+<LI><VAR>REMOTE_HOST</VAR> environment variable not set for CGI programs
+ 
+  The <VAR>REMOTE_HOST</VAR> environment variable is not set for CGI programs,
+  for reasons already described.  This is easily worked around because the
+  IP address is provided in the <VAR>REMOTE_HOST</VAR> variable, so (if the CGI
+  program actually cares) gethostbyaddr or a variant can be used.
+  
+<LI>There are no server side includes (<FONT SIZE="-1">SSI</FONT>) in Boa
+ 
+  We don't like them, and they are too slow to parse.  We will consider
+  more efficient alternatives.
+  
+<LI>There are no access control features
+ 
+  Boa will follow symbolic links, and serve any file that it can
+  read.  The expectation is that you will configure Boa to run as user
+  "nobody", and only files configured world readable will come
+  out.
+  
+<LI>No chroot option
+ 
+  There is no option to run chrooted.  If anybody wants this, and is
+  willing to try out experimental code, contact the maintainers.
+</UL>
+<P>
+
+<A NAME="Unexpected Behavior"></A>
+<HR SIZE="6">
+<A NAME="SEC11"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC10"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC2"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 3.3 Unexpected Behavior </H2>
+<!--docid::SEC11::-->
+<P>
+
+<UL>
+<LI>SIGHUP handling
+ 
+ Like any good server, Boa traps SIGHUP and rereads <TT>`boa.conf'</TT>.
+ However, under normal circumstances, it has already given away
+ permissions, so many items listed in <TT>`boa.conf'</TT> can not take effect.
+ No attempt is made to change uid, gid, log files, or server port.
+ All other configuration changes should take place smoothly.
+ 
+<LI>Relative URL handling
+ 
+ Not all browsers handle relative URLs correctly.  Boa will not
+ cover up for this browser bug, and will typically report 404 Not Found
+ for URL's containing odd combinations of "../" 's.
+ 
+ Note: As of version 0.95.0 (unreleased) the URL parser has been 
+ rewritten and *does* correctly handle relative URLs. 
+</UL>
+<P>
+
+<A NAME="Appendix"></A>
+<HR SIZE="6">
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC2"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+by <I>root</I> on <I>December, 12  2005</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+
+</BODY>
+</HTML>

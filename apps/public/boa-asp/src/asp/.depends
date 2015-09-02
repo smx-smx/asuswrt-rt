@@ -1,0 +1,7 @@
+grammar.o: grammar.c mini-asp.h grammar.h
+gb-lex.o: gb-lex.c mini-asp.h grammar.h
+asp.o: asp.c mini-asp.h grammar.h
+asp_handler.o: asp_handler.c mini-asp.h grammar.h http-get-utils.h \
+  ../trendchip/trendchip_main.h ../boa.h ../compat.h ../config.h \
+  ../defines.h ../globals.h ../escape.h
+http-get-utils.o: http-get-utils.c http-get-utils.h

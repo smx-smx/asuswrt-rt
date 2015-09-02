@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Overview</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="Siproxd Users Guide"
+HREF="siproxd_guide.html"><LINK
+REL="PREVIOUS"
+TITLE="Siproxd Users Guide"
+HREF="siproxd_guide.html"><LINK
+REL="NEXT"
+TITLE="Building and Installation"
+HREF="siproxd_guide_c2.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Siproxd Users Guide</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="siproxd_guide.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="siproxd_guide_c2.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="OVERVIEW"
+></A
+>Overview</H1
+><P
+>Siproxd is an proxy/masquerading daemon for the SIP protocol.
+      It handles registrations of SIP clients on a private IP network
+      and performs rewriting of the SIP message bodies to make SIP
+      connections possible via an masquerading firewall. It allows SIP
+      clients (like kphone, linphone) to work behind an IP masquerading
+      firewall or router.</P
+><P
+>SIP (Session Initiation Protocol, RFC3261) is used by Softphones
+      and Hardphones (Voice over IP) to initiate communication. By itself,
+      SIP does not work via masquerading firewalls as the transfered data
+      contains IP addresses and port numbers.</P
+><P
+>There exist so called STUN servers that allow a SIP client to
+      figure out its public visible IP address and use this one instead.
+      As a drawback, usually on the masquerading firewall a very wide port
+      range must be opened up for the incoming  RTP traffic. The SIP client
+      must support STUN (which most of them do).</P
+><P
+>Siproxd uses another approach (application layer proxy) and places
+      itself as outbound proxy in between the local SIP client and the
+      remote client or registrar. It does rewrite the SIP traffic on the
+      fly and also includes a RTP proxy for incoming and outgoing RTP
+      traffic (the actual audio data). The port range to be used for
+      receiving RTP data is configurable, so the firewall only must
+      allow incoming traffic for a small port range.</P
+><P
+>A standard scenario would look like:
+<TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>private IP address range             :          Internet
+10.0.0.x                             :          (public IP address range)
+                                     :
+                                     :         foo.bar.org
++-------------+               +--------------+
+!             !.10         .1 ! masquerading ! publicIP
+! IntHost     !---------------! Firewall     !------------&#62;&#62;  
+!             !               !              !   
++-------------+               +--------------+
+                          eth0       :        ppp0</PRE
+></TD
+></TR
+></TABLE
+>
+
+      <P
+></P
+><UL
+><LI
+STYLE="list-style-type: disc"
+><P
+>The Firewall does IP masquerading and is running
+          siproxd</P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>IntHost is running an SIP softphone (like linphone,
+          kphone)</P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>The SIP address used by the softphone is
+          sip:johndoe@foo.bar.org</P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>The softphone is configured to register itself at
+          siproxd running on the firewall host (10.0.0.1) as
+          sip:johndoe@foo.bar.org</P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>foo.bar.org is the domain name corresponding to the
+          public IP address of the firewall (e.g. use some dynamic DNS
+          service [1])</P
+></LI
+></UL
+>
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="siproxd_guide.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="siproxd_guide.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="siproxd_guide_c2.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Siproxd Users Guide</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Building and Installation</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

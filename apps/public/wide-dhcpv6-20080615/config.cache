@@ -1,0 +1,85 @@
+# This file is a shell script that caches the results of configure
+# tests run on this system so they can be shared between configure
+# scripts and configure runs, see configure's option --config-cache.
+# It is not useful on other systems.  If it contains results you don't
+# want to keep, you may remove or edit it.
+#
+# config.status only pays attention to the cache file if you give it
+# the --recheck option to rerun configure.
+#
+# `ac_cv_env_foo' variables (set or unset) will be overridden when
+# loading this file, other *unset* `ac_cv_foo' will be assigned the
+# following values.
+
+ac_cv_c_compiler_gnu=${ac_cv_c_compiler_gnu=yes}
+ac_cv_c_const=${ac_cv_c_const=yes}
+ac_cv_env_CC_set=
+ac_cv_env_CC_value=
+ac_cv_env_CFLAGS_set=
+ac_cv_env_CFLAGS_value=
+ac_cv_env_CPPFLAGS_set=
+ac_cv_env_CPPFLAGS_value=
+ac_cv_env_CPP_set=
+ac_cv_env_CPP_value=
+ac_cv_env_LDFLAGS_set=
+ac_cv_env_LDFLAGS_value=
+ac_cv_env_build_alias_set=
+ac_cv_env_build_alias_value=
+ac_cv_env_host_alias_set=set
+ac_cv_env_host_alias_value=mips-linux
+ac_cv_env_target_alias_set=
+ac_cv_env_target_alias_value=
+ac_cv_exeext=${ac_cv_exeext=}
+ac_cv_func_arc4random=${ac_cv_func_arc4random=no}
+ac_cv_func_clock_gettime=${ac_cv_func_clock_gettime=yes}
+ac_cv_func_daemon=${ac_cv_func_daemon=yes}
+ac_cv_func_getaddrinfo=${ac_cv_func_getaddrinfo=yes}
+ac_cv_func_getifaddrs=${ac_cv_func_getifaddrs=no}
+ac_cv_func_getnameinfo=${ac_cv_func_getnameinfo=yes}
+ac_cv_func_getpgrp_void=${ac_cv_func_getpgrp_void=yes}
+ac_cv_func_if_nametoindex=${ac_cv_func_if_nametoindex=yes}
+ac_cv_func_mktime=${ac_cv_func_mktime=yes}
+ac_cv_func_select=${ac_cv_func_select=yes}
+ac_cv_func_setpgrp_void=${ac_cv_func_setpgrp_void=yes}
+ac_cv_func_socket=${ac_cv_func_socket=yes}
+ac_cv_func_strlcat=${ac_cv_func_strlcat=yes}
+ac_cv_func_strlcpy=${ac_cv_func_strlcpy=yes}
+ac_cv_func_warnx=${ac_cv_func_warnx=yes}
+ac_cv_header_fcntl_h=${ac_cv_header_fcntl_h=yes}
+ac_cv_header_ifaddrs_h=${ac_cv_header_ifaddrs_h=no}
+ac_cv_header_inttypes_h=${ac_cv_header_inttypes_h=yes}
+ac_cv_header_memory_h=${ac_cv_header_memory_h=yes}
+ac_cv_header_stdarg_h=${ac_cv_header_stdarg_h=yes}
+ac_cv_header_stdc=${ac_cv_header_stdc=yes}
+ac_cv_header_stdint_h=${ac_cv_header_stdint_h=yes}
+ac_cv_header_stdlib_h=${ac_cv_header_stdlib_h=yes}
+ac_cv_header_string_h=${ac_cv_header_string_h=yes}
+ac_cv_header_strings_h=${ac_cv_header_strings_h=yes}
+ac_cv_header_sys_ioctl_h=${ac_cv_header_sys_ioctl_h=yes}
+ac_cv_header_sys_stat_h=${ac_cv_header_sys_stat_h=yes}
+ac_cv_header_sys_time_h=${ac_cv_header_sys_time_h=yes}
+ac_cv_header_sys_types_h=${ac_cv_header_sys_types_h=yes}
+ac_cv_header_syslog_h=${ac_cv_header_syslog_h=yes}
+ac_cv_header_time=${ac_cv_header_time=yes}
+ac_cv_header_unistd_h=${ac_cv_header_unistd_h=yes}
+ac_cv_lib_fl_yywrap=${ac_cv_lib_fl_yywrap=no}
+ac_cv_lib_l_yywrap=${ac_cv_lib_l_yywrap=no}
+ac_cv_member_struct_tm_tm_zone=${ac_cv_member_struct_tm_tm_zone=yes}
+ac_cv_objext=${ac_cv_objext=o}
+ac_cv_path_install=${ac_cv_path_install='/usr/bin/install -c'}
+ac_cv_prog_CC=${ac_cv_prog_CC=mips-linux-gcc}
+ac_cv_prog_CPP=${ac_cv_prog_CPP='mips-linux-gcc -E'}
+ac_cv_prog_LEX=${ac_cv_prog_LEX=flex}
+ac_cv_prog_YACC=${ac_cv_prog_YACC='bison -y'}
+ac_cv_prog_cc_g=${ac_cv_prog_cc_g=yes}
+ac_cv_prog_cc_stdc=${ac_cv_prog_cc_stdc=}
+ac_cv_prog_egrep=${ac_cv_prog_egrep='grep -E'}
+ac_cv_prog_gcc_traditional=${ac_cv_prog_gcc_traditional=no}
+ac_cv_prog_lex_root=${ac_cv_prog_lex_root=lex.yy}
+ac_cv_prog_lex_yytext_pointer=${ac_cv_prog_lex_yytext_pointer=no}
+ac_cv_prog_make_make_set=${ac_cv_prog_make_make_set=yes}
+ac_cv_struct_tm=${ac_cv_struct_tm=time.h}
+ac_cv_type_sig_atomic_t=${ac_cv_type_sig_atomic_t=yes}
+ac_cv_type_signal=${ac_cv_type_signal=void}
+ac_cv_type_size_t=${ac_cv_type_size_t=yes}
+ts_cv_sa_len=${ts_cv_sa_len=no}

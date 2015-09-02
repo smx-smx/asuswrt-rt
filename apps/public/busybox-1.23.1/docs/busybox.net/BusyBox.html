@@ -1,0 +1,375 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>BusyBox - The Swiss Army Knife of Embedded Linux</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body style="background-color: white">
+
+
+<!-- INDEX BEGIN -->
+<div name="index">
+<p><a name="__index__"></a></p>
+<!--
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#syntax">SYNTAX</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#usage">USAGE</a></li>
+	<li><a href="#common_options">COMMON OPTIONS</a></li>
+	<li><a href="#commands">COMMANDS</a></li>
+	<li><a href="#command_descriptions">COMMAND DESCRIPTIONS</a></li>
+	<li><a href="#libc_nss">LIBC NSS</a></li>
+	<li><a href="#maintainer">MAINTAINER</a></li>
+	<li><a href="#authors">AUTHORS</a></li>
+</ul>
+
+-->
+
+
+</div>
+<!-- INDEX END -->
+
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>BusyBox - The Swiss Army Knife of Embedded Linux</p>
+<p>
+</p>
+<hr />
+<h1><a name="syntax">SYNTAX</a></h1>
+<pre>
+ busybox &lt;applet&gt; [arguments...]  # or</pre>
+<pre>
+ &lt;applet&gt; [arguments...]          # if symlinked</pre>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p>BusyBox combines tiny versions of many common UNIX utilities into a single
+small executable. It provides minimalist replacements for most of the utilities
+you usually find in GNU coreutils, util-linux, etc. The utilities in BusyBox
+generally have fewer options than their full-featured GNU cousins; however, the
+options that are included provide the expected functionality and behave very
+much like their GNU counterparts.</p>
+<p>BusyBox has been written with size-optimization and limited resources in mind.
+It is also extremely modular so you can easily include or exclude commands (or
+features) at compile time. This makes it easy to customize your embedded
+systems. To create a working system, just add /dev, /etc, and a Linux kernel.
+BusyBox provides a fairly complete POSIX environment for any small or embedded
+system.</p>
+<p>BusyBox is extremely configurable.  This allows you to include only the
+components you need, thereby reducing binary size. Run 'make config' or 'make
+menuconfig' to select the functionality that you wish to enable.  Then run
+'make' to compile BusyBox using your configuration.</p>
+<p>After the compile has finished, you should use 'make install' to install
+BusyBox. This will install the 'bin/busybox' binary, in the target directory
+specified by CONFIG_PREFIX. CONFIG_PREFIX can be set when configuring BusyBox,
+or you can specify an alternative location at install time (i.e., with a
+command line like 'make CONFIG_PREFIX=/tmp/foo install'). If you enabled
+any applet installation scheme (either as symlinks or hardlinks), these will
+also be installed in the location pointed to by CONFIG_PREFIX.</p>
+<p>
+</p>
+<hr />
+<h1><a name="usage">USAGE</a></h1>
+<p>BusyBox is a multi-call binary.  A multi-call binary is an executable program
+that performs the same job as more than one utility program.  That means there
+is just a single BusyBox binary, but that single binary acts like a large
+number of utilities.  This allows BusyBox to be smaller since all the built-in
+utility programs (we call them applets) can share code for many common
+operations.</p>
+<p>You can also invoke BusyBox by issuing a command as an argument on the
+command line.  For example, entering</p>
+<pre>
+        /bin/busybox ls</pre>
+<p>will also cause BusyBox to behave as 'ls'.</p>
+<p>Of course, adding '/bin/busybox' into every command would be painful.  So most
+people will invoke BusyBox using links to the BusyBox binary.</p>
+<p>For example, entering</p>
+<pre>
+        ln -s /bin/busybox ls
+        ./ls</pre>
+<p>will cause BusyBox to behave as 'ls' (if the 'ls' command has been compiled
+into BusyBox).  Generally speaking, you should never need to make all these
+links yourself, as the BusyBox build system will do this for you when you run
+the 'make install' command.</p>
+<p>If you invoke BusyBox with no arguments, it will provide you with a list of the
+applets that have been compiled into your BusyBox binary.</p>
+<p>
+</p>
+<hr />
+<h1><a name="common_options">COMMON OPTIONS</a></h1>
+<p>Most BusyBox applets support the <strong>--help</strong> argument to provide a terse runtime
+description of their behavior.  If the CONFIG_FEATURE_VERBOSE_USAGE option has
+been enabled, more detailed usage information will also be available.</p>
+<p>
+</p>
+<hr />
+<h1><a name="commands">COMMANDS</a></h1>
+<p>Currently available applets include:</p>
+<pre>
+        ether-wake, fatattr, flock, nice, shuf, unlink, wget</pre>
+<p>
+</p>
+<hr />
+<h1><a name="command_descriptions">COMMAND DESCRIPTIONS</a></h1>
+<dl>
+<dt><strong><a name="ether_wake" class="item"><strong>ether-wake</strong></a></strong></dt>
+
+<dd>
+<p>ether-wake [-b] [-i IFACE] [-p aa:bb:cc:dd[:ee:ff]/a.b.c.d] MAC</p>
+<p>Send a magic packet to wake up sleeping machines.
+MAC must be a station address (00:11:22:33:44:55) or
+a hostname with a known 'ethers' entry.</p>
+<pre>
+        -b              Broadcast the packet
+        -i IFACE        Interface to use (default eth0)
+        -p PASSWORD     Append four or six byte PASSWORD to the packet</pre>
+</dd>
+<dt><strong><a name="fatattr" class="item"><strong>fatattr</strong></a></strong></dt>
+
+<dd>
+<p>fatattr [-+rhsvda] FILE...</p>
+<p>Change file attributes on FAT filesystem</p>
+<pre>
+        -       Clear attributes
+        +       Set attributes
+        r       Read only
+        h       Hidden
+        s       System
+        v       Volume label
+        d       Directory
+        a       Archive</pre>
+</dd>
+<dt><strong><a name="flock" class="item"><strong>flock</strong></a></strong></dt>
+
+<dd>
+<p>flock [-sxun] FD|{FILE [-c] PROG ARGS}</p>
+<p>[Un]lock file descriptor, or lock FILE, run PROG</p>
+<pre>
+        -s      Shared lock
+        -x      Exclusive lock (default)
+        -u      Unlock FD
+        -n      Fail rather than wait</pre>
+</dd>
+<dt><strong><a name="nice" class="item"><strong>nice</strong></a></strong></dt>
+
+<dd>
+<p>nice [-n ADJUST] [PROG ARGS]</p>
+<p>Change scheduling priority, run PROG</p>
+<pre>
+        -n ADJUST       Adjust priority by ADJUST</pre>
+</dd>
+<dt><strong><a name="shuf" class="item"><strong>shuf</strong></a></strong></dt>
+
+<dd>
+<p>shuf [-e|-i L-H] [-n NUM] [-o FILE] [-z] [FILE|ARG...]</p>
+<p>Randomly permute lines</p>
+<pre>
+        -e      Treat ARGs as lines
+        -i L-H  Treat numbers L-H as lines
+        -n NUM  Output at most NUM lines
+        -o FILE Write to FILE, not standard output
+        -z      End lines with zero byte, not newline</pre>
+</dd>
+<dt><strong><a name="unlink" class="item"><strong>unlink</strong></a></strong></dt>
+
+<dd>
+<p>unlink FILE</p>
+<p>Delete FILE by calling <a href="#unlink"><code>unlink()</code></a></p>
+</dd>
+<dt><strong><a name="wget" class="item"><strong>wget</strong></a></strong></dt>
+
+<dd>
+<p><table cellspacing="0" cellpadding="0"><tr><td>wget [-c|--continue] [-s|--spider] [-q|--quiet] [-O|--output-document FILE]
+<tr><td><td>[--header 'header: value'] [-Y|--proxy on/off] [-P DIR]
+<tr><td><td>[--no-check-certificate] [--no-cache]<td>[-U|--user-agent AGENT] [-T SEC] URL...</table></p>
+<p>Retrieve files via HTTP or FTP</p>
+<pre>
+        -s      Spider mode - only check file existence
+        -c      Continue retrieval of aborted transfer
+        -q      Quiet
+        -P DIR  Save to DIR (default .)
+        -T SEC  Network read timeout is SEC seconds
+        -O FILE Save to FILE ('-' for stdout)
+        -U STR  Use STR for User-Agent header
+        -Y      Use proxy ('on' or 'off')</pre>
+</dd>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="libc_nss">LIBC NSS</a></h1>
+<p>GNU Libc (glibc) uses the Name Service Switch (NSS) to configure the behavior
+of the C library for the local environment, and to configure how it reads
+system data, such as passwords and group information.  This is implemented
+using an /etc/nsswitch.conf configuration file, and using one or more of the
+/lib/libnss_* libraries.  BusyBox tries to avoid using any libc calls that make
+use of NSS.  Some applets however, such as login and su, will use libc functions
+that require NSS.</p>
+<p>If you enable CONFIG_USE_BB_PWD_GRP, BusyBox will use internal functions to
+directly access the /etc/passwd, /etc/group, and /etc/shadow files without
+using NSS.  This may allow you to run your system without the need for
+installing any of the NSS configuration files and libraries.</p>
+<p>When used with glibc, the BusyBox 'networking' applets will similarly require
+that you install at least some of the glibc NSS stuff (in particular,
+/etc/nsswitch.conf, /lib/libnss_dns*, /lib/libnss_files*, and /lib/libresolv*).</p>
+<p>Shameless Plug: As an alternative, one could use a C library such as uClibc.  In
+addition to making your system significantly smaller, uClibc does not require the
+use of any NSS support files or libraries.</p>
+<p>
+</p>
+<hr />
+<h1><a name="maintainer">MAINTAINER</a></h1>
+<p>Denis Vlasenko &lt;<a href="mailto:vda.linux@googlemail.com">vda.linux@googlemail.com</a>&gt;</p>
+<p>
+</p>
+<hr />
+<h1><a name="authors">AUTHORS</a></h1>
+<p>The following people have contributed code to BusyBox whether they know it or
+not.  If you have written code included in BusyBox, you should probably be
+listed here so you can obtain your bit of eternal glory.  If you should be
+listed here, or the description of what you have done needs more detail, or is
+incorrect, please send in an update.</p>
+<br><p>Emanuele Aina &lt;<a href="mailto:emanuele.aina@tiscali.it">emanuele.aina@tiscali.it</a>&gt;
+    run-parts</p>
+<br><p>Erik Andersen &lt;<a href="mailto:andersen@codepoet.org">andersen@codepoet.org</a>&gt;</p>
+<pre>
+    Tons of new stuff, major rewrite of most of the
+    core apps, tons of new apps as noted in header files.
+    Lots of tedious effort writing these boring docs that
+    nobody is going to actually read.</pre>
+<br><p>Laurence Anderson &lt;<a href="mailto:l.d.anderson@warwick.ac.uk">l.d.anderson@warwick.ac.uk</a>&gt;</p>
+<pre>
+    rpm2cpio, unzip, get_header_cpio, read_gz interface, rpm</pre>
+<br><p>Jeff Angielski &lt;<a href="mailto:jeff@theptrgroup.com">jeff@theptrgroup.com</a>&gt;</p>
+<pre>
+    ftpput, ftpget</pre>
+<br><p>Edward Betts &lt;<a href="mailto:edward@debian.org">edward@debian.org</a>&gt;</p>
+<pre>
+    expr, hostid, logname, whoami</pre>
+<br><p>John Beppu &lt;<a href="mailto:beppu@codepoet.org">beppu@codepoet.org</a>&gt;</p>
+<pre>
+    du, nslookup, sort</pre>
+<br><p>Brian Candler &lt;<a href="mailto:B.Candler@pobox.com">B.Candler@pobox.com</a>&gt;</p>
+<pre>
+    tiny-ls(ls)</pre>
+<br><p>Randolph Chung &lt;<a href="mailto:tausq@debian.org">tausq@debian.org</a>&gt;</p>
+<pre>
+    fbset, ping, hostname</pre>
+<br><p>Dave Cinege &lt;<a href="mailto:dcinege@psychosis.com">dcinege@psychosis.com</a>&gt;</p>
+<pre>
+    more(v2), makedevs, dutmp, modularization, auto links file,
+    various fixes, Linux Router Project maintenance</pre>
+<br><p>Jordan Crouse &lt;<a href="mailto:jordan@cosmicpenguin.net">jordan@cosmicpenguin.net</a>&gt;</p>
+<pre>
+    ipcalc</pre>
+<br><p>Magnus Damm &lt;<a href="mailto:damm@opensource.se">damm@opensource.se</a>&gt;</p>
+<pre>
+    tftp client insmod powerpc support</pre>
+<br><p>Larry Doolittle &lt;<a href="mailto:ldoolitt@recycle.lbl.gov">ldoolitt@recycle.lbl.gov</a>&gt;</p>
+<pre>
+    pristine source directory compilation, lots of patches and fixes.</pre>
+<br><p>Glenn Engel &lt;<a href="mailto:glenne@engel.org">glenne@engel.org</a>&gt;</p>
+<pre>
+    httpd</pre>
+<br><p>Gennady Feldman &lt;<a href="mailto:gfeldman@gena01.com">gfeldman@gena01.com</a>&gt;</p>
+<pre>
+    Sysklogd (single threaded syslogd, IPC Circular buffer support,
+    logread), various fixes.</pre>
+<br><p>Karl M. Hegbloom &lt;<a href="mailto:karlheg@debian.org">karlheg@debian.org</a>&gt;</p>
+<pre>
+    cp_mv.c, the test suite, various fixes to utility.c, &amp;c.</pre>
+<br><p>Daniel Jacobowitz &lt;<a href="mailto:dan@debian.org">dan@debian.org</a>&gt;</p>
+<pre>
+    mktemp.c</pre>
+<br><p>Matt Kraai &lt;<a href="mailto:kraai@alumni.cmu.edu">kraai@alumni.cmu.edu</a>&gt;</p>
+<pre>
+    documentation, bugfixes, test suite</pre>
+<br><p>Stephan Linz &lt;<a href="mailto:linz@li-pro.net">linz@li-pro.net</a>&gt;</p>
+<pre>
+    ipcalc, Red Hat equivalence</pre>
+<br><p>John Lombardo &lt;<a href="mailto:john@deltanet.com">john@deltanet.com</a>&gt;</p>
+<pre>
+    tr</pre>
+<br><p>Glenn McGrath &lt;<a href="mailto:bug1@iinet.net.au">bug1@iinet.net.au</a>&gt;</p>
+<pre>
+    Common unarchiving code and unarchiving applets, ifupdown, ftpgetput,
+    nameif, sed, patch, fold, install, uudecode.
+    Various bugfixes, review and apply numerous patches.</pre>
+<br><p>Manuel Novoa III &lt;<a href="mailto:mjn3@codepoet.org">mjn3@codepoet.org</a>&gt;</p>
+<pre>
+    cat, head, mkfifo, mknod, rmdir, sleep, tee, tty, uniq, usleep, wc, yes,
+    mesg, vconfig, make_directory, parse_mode, dirname, mode_string,
+    get_last_path_component, simplify_path, and a number trivial libbb routines</pre>
+<pre>
+    also bug fixes, partial rewrites, and size optimizations in
+    ash, basename, cal, cmp, cp, df, du, echo, env, ln, logname, md5sum, mkdir,
+    mv, realpath, rm, sort, tail, touch, uname, watch, arith, human_readable,
+    interface, dutmp, ifconfig, route</pre>
+<br><p>Vladimir Oleynik &lt;<a href="mailto:dzo@simtreas.ru">dzo@simtreas.ru</a>&gt;</p>
+<pre>
+    cmdedit; xargs(current), httpd(current);
+    ports: ash, crond, fdisk, inetd, stty, traceroute, top;
+    locale, various fixes
+    and irreconcilable critic of everything not perfect.</pre>
+<br><p>Bruce Perens &lt;<a href="mailto:bruce@pixar.com">bruce@pixar.com</a>&gt;</p>
+<pre>
+    Original author of BusyBox in 1995, 1996. Some of his code can
+    still be found hiding here and there...</pre>
+<br><p>Tim Riker &lt;<a href="mailto:Tim@Rikers.org">Tim@Rikers.org</a>&gt;</p>
+<pre>
+    bug fixes, member of fan club</pre>
+<br><p>Kent Robotti &lt;<a href="mailto:robotti@metconnect.com">robotti@metconnect.com</a>&gt;</p>
+<pre>
+    reset, tons and tons of bug reports and patches.</pre>
+<br><p>Chip Rosenthal &lt;<a href="mailto:chip@unicom.com">chip@unicom.com</a>&gt;, &lt;<a href="mailto:crosenth@covad.com">crosenth@covad.com</a>&gt;</p>
+<pre>
+    wget - Contributed by permission of Covad Communications</pre>
+<br><p>Pavel Roskin &lt;<a href="mailto:proski@gnu.org">proski@gnu.org</a>&gt;</p>
+<pre>
+    Lots of bugs fixes and patches.</pre>
+<br><p>Gyepi Sam &lt;<a href="mailto:gyepi@praxis-sw.com">gyepi@praxis-sw.com</a>&gt;</p>
+<pre>
+    Remote logging feature for syslogd</pre>
+<br><p>Linus Torvalds &lt;<a href="mailto:torvalds@transmeta.com">torvalds@transmeta.com</a>&gt;</p>
+<pre>
+    mkswap, fsck.minix, mkfs.minix</pre>
+<br><p>Mark Whitley &lt;<a href="mailto:markw@codepoet.org">markw@codepoet.org</a>&gt;</p>
+<pre>
+    grep, sed, cut, xargs(previous),
+    style-guide, new-applet-HOWTO, bug fixes, etc.</pre>
+<br><p>Charles P. Wright &lt;<a href="mailto:cpwright@villagenet.com">cpwright@villagenet.com</a>&gt;</p>
+<pre>
+    gzip, mini-netcat(nc)</pre>
+<br><p>Enrique Zanardi &lt;<a href="mailto:ezanardi@ull.es">ezanardi@ull.es</a>&gt;</p>
+<pre>
+    tarcat (since removed), loadkmap, various fixes, Debian maintenance</pre>
+<br><p>Tito Ragusa &lt;<a href="mailto:farmatito@tiscali.it">farmatito@tiscali.it</a>&gt;</p>
+<pre>
+    devfsd and size optimizations in strings, openvt and deallocvt.</pre>
+<br><p>Paul Fox &lt;<a href="mailto:pgf@foxharp.boston.ma.us">pgf@foxharp.boston.ma.us</a>&gt;</p>
+<pre>
+    vi editing mode for ash, various other patches/fixes</pre>
+<br><p>Roberto A. Foglietta &lt;<a href="mailto:me@roberto.foglietta.name">me@roberto.foglietta.name</a>&gt;</p>
+<pre>
+    port: dnsd</pre>
+<br><p>Bernhard Reutner-Fischer &lt;<a href="mailto:rep.dot.nop@gmail.com">rep.dot.nop@gmail.com</a>&gt;</p>
+<pre>
+    misc</pre>
+<br><p>Mike Frysinger &lt;<a href="mailto:vapier@gentoo.org">vapier@gentoo.org</a>&gt;</p>
+<pre>
+    initial e2fsprogs, printenv, setarch, sum, misc</pre>
+<br><p>Jie Zhang &lt;<a href="mailto:jie.zhang@analog.com">jie.zhang@analog.com</a>&gt;</p>
+<pre>
+    fixed two bugs in msh and hush (exitcode of killed processes)</pre>
+
+</body>
+
+</html>

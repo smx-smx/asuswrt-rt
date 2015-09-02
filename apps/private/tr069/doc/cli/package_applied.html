@@ -1,0 +1,41 @@
+<html>
+    <head>
+        <title>TRAgent Transfer Complete Complete</title>
+    </head>
+    <body>
+        <form action="/package/applied" method="POST" id="ae">
+            <table>
+                <tr>
+                    <td colspan="2"><h2>Notify agent the downloaded package applied</h2></td>
+                </tr>
+                <tr>
+                    <td>Command Key:</td>
+                    <td><input type="text" name="cmdkey" value=""/></td>
+                </tr>
+                <tr>
+                    <td>Fault Code:</td>
+                    <td>
+                        <select name="fault_code" style="width:265px">
+                            <option selected="true">0</option>
+                            <option>9018</option>
+                            <option>9020</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Need reboot:</td>
+                    <td>
+                        <select name="fault_code" style="width:265px">
+                            <option selected="true">yes</option>
+                            <option>no</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="submit" value="OK"/></td>
+                </tr>
+            </table>
+        </form>
+    </body>
+</html>

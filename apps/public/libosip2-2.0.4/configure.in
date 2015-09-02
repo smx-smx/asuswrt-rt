@@ -1,0 +1,212 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(include/osip2/osip.h)
+
+
+
+dnl *********************************************************************
+dnl Source packaging numbers
+OSIP_MAJOR_VERSION=2
+OSIP_MINOR_VERSION=0
+OSIP_MICRO_VERSION=4
+
+OSIP_VERSION=$OSIP_MAJOR_VERSION.$OSIP_MINOR_VERSION.$OSIP_MICRO_VERSION
+
+LIBOSIP_SO_VERSION=`expr $OSIP_MINOR_VERSION + $OSIP_MAJOR_VERSION`:$OSIP_MICRO_VERSION:$OSIP_MINOR_VERSION
+
+AC_SUBST(LIBOSIP_SO_VERSION, $LIBOSIP_SO_VERSION)
+
+AC_SUBST(OSIP_VERSION)
+
+VERSION=$OSIP_VERSION
+PACKAGE=libosip2
+
+AC_MSG_RESULT([Configuring ${PACKAGE} ${VERSION}])
+
+dnl *********************************************************************
+dnl Initialize automake stuff
+AC_CONFIG_AUX_DIR(scripts)
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AM_ACLOCAL_INCLUDE(scripts)
+
+AC_CANONICAL_HOST                                                               
+
+dnl Checks for programs.
+
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_INSTALL
+
+
+dnl Initialize libtool
+LT_AC_PROG_SED
+AC_PROG_LIBTOOL
+
+dnl declare --enable-* args and collect ac_help strings
+
+AC_ARG_ENABLE(debug,
+[  --disable-debug         turn off debugging.],
+disable_debug=$enableval,disable_debug="yes")
+
+AC_ARG_ENABLE(trace,
+[  --disable-trace         turn off trace.],
+disable_trace=$enableval,disable_trace="yes")
+
+AC_ARG_ENABLE(mpatrol,
+[  --enable-mpatrol        turn on memory leak detection with patrol.],
+enable_mpatrol=$enableval,enable_mpatrol="no")
+
+dnl build with multithreaded support (need semaphore).
+AC_ARG_ENABLE(mt,
+[  --disable-mt            compile oSIP without multi-thread support.],
+enable_mt=$enableval,enable_mt="yes")
+
+dnl md5 support.
+AC_ARG_ENABLE(md5,
+[  --disable-md5           compile oSIP without MD5 support.],
+enable_md5=$enableval,enable_md5="yes")
+
+dnl buffer save mode support.
+AC_ARG_ENABLE(buffermode,
+[  --disable-buffermode    compile oSIP without buffer save mode support.],
+enable_buffermode=$enableval,enable_buffermode="yes")
+
+dnl support for linux-thread or posix thread (pthread.h)
+AC_ARG_ENABLE(pthread,
+[  --enable-pthread        enable support for POSIX threads. (default=autodetect)],
+enable_pthread=$enableval,enable_pthread="no")
+
+dnl support for semaphore.h (linux/sun...)
+AC_ARG_ENABLE(semaphore,
+[  --enable-semaphore      enable support for semaphore (semaphore.h)],
+enable_semaphore=$enableval,enable_semaphore="no")
+
+dnl support for sysV semaphore in sys/sem.h (BSD/linux...)
+AC_ARG_ENABLE(sysv,
+[  --enable-sysv           enable support for sysV semaphore (sys/sem.h).],
+enable_sysv=$enableval,enable_sysv="no")
+
+dnl support for gperf.
+AC_ARG_ENABLE(gperf,
+[  --enable-gperf          enable support for gperf (improve the parser speed).],
+enable_gperf=$enableval,enable_gperf="no")
+
+dnl compile with mt support
+if test "x$enable_mt" = "xyes"; then
+  if test "x$enable_pthread" = "xyes"; then
+    SIP_FSM_FLAGS="-DOSIP_MT -DHAVE_PTHREAD"
+    FSM_LIB="-lpthread"
+  else
+    SIP_FSM_FLAGS="-DOSIP_MT"
+    ACX_PTHREAD()
+  fi
+fi
+
+if test "x$enable_gperf" = "xyes"; then
+  SIP_PARSER_FLAGS="$SIP_FSM_FLAGS -DUSE_GPERF"
+fi
+
+if test "x$enable_semaphore" = "xyes"; then
+  SIP_FSM_FLAGS="$SIP_FSM_FLAGS -DHAVE_SEMAPHORE_H"
+  AC_CHECK_HEADERS(semaphore.h)
+elif test "x$enable_sysv" = "xyes"; then
+  SIP_FSM_FLAGS="$SIP_FSM_FLAGS -DHAVE_SYS_SEM_H"
+  AC_CHECK_HEADERS(sys/sem.h)
+else
+  AC_CHECK_HEADERS(semaphore.h)
+  AC_CHECK_HEADERS(sys/sem.h)
+fi
+
+if test "$host_os" = "hpux11.00" -o "$host_os" = "hpux11.11" ;then              
+        echo "We are on HPUX"                                                   
+elif test "$host_os" = "osf4.0g" ;then
+        echo "We are on OSF"
+else
+        echo "We are on $host_os"
+        SIP_EXTRA_FLAGS="$SIP_EXTRA_FLAGS -Wall -pedantic"
+fi                                                                              
+
+if test "x$enable_md5" = "xno"; then
+  SIP_EXTRA_FLAGS="$SIP_EXTRA_FLAGS -DNO_MD5_SUPPORT"
+fi
+
+if test "x$enable_buffermode" = "xyes"; then
+  SIP_EXTRA_FLAGS="$SIP_EXTRA_FLAGS -DUSE_TMP_BUFFER"
+fi
+
+if test "x$disable_debug" = "xyes"; then
+  SIP_EXTRA_FLAGS="$SIP_EXTRA_FLAGS -DENABLE_DEBUG -g"
+fi
+
+if test "x$disable_trace" = "xyes"; then
+  SIP_EXTRA_FLAGS="$SIP_EXTRA_FLAGS -DENABLE_TRACE"
+fi
+
+if test "x$enable_mpatrol" = "xyes"; then
+  SIP_EXTRA_FLAGS="$SIP_EXTRA_FLAGS -DENABLE_MPATROL"
+  EXTRA_LIB="$EXTRA_LIB -lmpatrolmt -lelf -lpthread"
+fi
+
+dnl Checks for libraries. (those one are needed for sun)
+AC_CHECK_LIB(posix4,sem_open,[FSM_LIB="$FSM_LIB -lposix4 -mt"])
+AC_CHECK_LIB(nsl,nis_add,[FSM_LIB="$FSM_LIB -lnsl"])
+AC_CHECK_LIB(socket,sendto,[FSM_LIB="$FSM_LIB -lsocket"])
+
+SIP_CFLAGS="$SIP_CFLAGS $CFLAGS"
+
+AC_SUBST(SIP_CFLAGS)
+
+AC_SUBST(SIP_EXTRA_FLAGS)
+AC_SUBST(SIP_PARSER_FLAGS)
+AC_SUBST(SIP_FSM_FLAGS)
+
+AC_SUBST(EXTRA_LIB)
+AC_SUBST(PARSER_LIB)
+AC_SUBST(FSM_LIB)
+
+dnl Checks for header files.
+
+dnl This is to be removed for autoconf2.50
+AC_HEADER_STDC
+AC_CHECK_HEADERS(string.h)
+AC_CHECK_HEADERS(strings.h)
+AC_CHECK_HEADERS(stdlib.h)
+AC_CHECK_HEADERS(unistd.h)
+AC_CHECK_HEADERS(sys/types.h)
+dnl !This is to be removed for autoconf2.50
+
+AC_CHECK_HEADERS(sys/unistd.h)
+AC_CHECK_HEADERS(syslog.h)
+AC_CHECK_HEADERS(ctype.h)
+AC_CHECK_HEADERS(stdio.h)
+AC_CHECK_HEADERS(stdarg.h)
+AC_CHECK_HEADERS(varargs.h)
+AC_CHECK_HEADERS(fcntl.h)
+AC_CHECK_HEADERS(time.h)
+AC_CHECK_HEADERS(sys/time.h)
+AC_CHECK_HEADERS(sys/select.h)
+AC_CHECK_HEADERS(assert.h)
+AC_CHECK_HEADERS(signal.h)
+AC_CHECK_HEADERS(sys/signal.h)
+AC_CHECK_HEADERS(malloc.h)
+
+AC_OUTPUT(
+Makefile
+scripts/Makefile
+src/Makefile
+src/osipparser2/Makefile
+src/osip2/Makefile
+src/test/Makefile
+src/test/res/Makefile
+include/Makefile
+include/osip2/Makefile
+include/osipparser2/Makefile
+include/osipparser2/headers/Makefile
+help/Makefile
+help/man/Makefile
+help/doxygen/Makefile
+platform/Makefile
+platform/rpm/Makefile
+debian/Makefile
+platform/windows/Makefile)
+

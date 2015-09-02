@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node name='InternetGatewayDevice' rw='0' type='node'>
+    <node name='LANConfigSecurity' rw='0' type='node'>
+        <node name='ConfigPassword' rw='1' getc='0' noc='0' nocc='2' acl='' type='string' get='get_LAN_ConfigPassword' set='set_LAN_ConfigPassword'>dfsf</node>
+    </node>
+    <node name='WANDeviceNumberOfEntries' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_wandev_num'>1</node>
+    <node name='LANDeviceNumberOfEntries' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_landev_num'>1</node>
+    <node name='Layer3Forwarding' rw='0' type='node'>
+        <node name='ForwardNumberOfEntries' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_Layer3_ForwardNumberOfEntries'>1</node>
+        <node name='DefaultConnectionService' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Layer3_DefaultConnectionService' set='set_Layer3_DefaultConnectionService'>abc</node>
+        <node name='Forwarding' rw='1' nin='3' il='9' type='node' add='add_obj_forward' del='del_obj_forward'>
+            <node name='template' rw='0' type='node'>
+                <node name='MTU' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_Forwarding_MTU' set='set_Forwarding_MTU'>1</node>
+                <node name='ForwardingMetric' rw='1' getc='0' noc='0' nocc='0' acl='' type='int' get='get_Forwarding_ForwardingMetric' set='set_Forwarding_ForwardingMetric'>1</node>
+                <node name='Interface' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Forwarding_Interface' set='set_Forwarding_Interface'>1</node>
+                <node name='GatewayIPAddress' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Forwarding_GatewayIPAddress' set='set_Forwarding_GatewayIPAddress'>1</node>
+                <node name='SourceSubnetMask' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Forwarding_SourceSubnetMask' set='set_Forwarding_SourceSubnetMask'>1</node>
+                <node name='SourceIPAddress' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Forwarding_SourceIPAddress' set='set_Forwarding_SourceIPAddress'>1</node>
+                <node name='DestSubnetMask' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Forwarding_DestSubnetMask' set='set_Forwarding_DestSubnetMask'>1</node>
+                <node name='DestIPAddress' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Forwarding_DestIPAddress' set='set_Forwarding_DestIPAddress'>1</node>
+                <node name='Type' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Forwarding_Type' set='set_Forwarding_Type'>1</node>
+                <node name='Status' rw='0' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Forwarding_Status'>1</node>
+                <node name='Enable' rw='1' getc='0' noc='0' nocc='0' acl='' type='boolean' get='get_Forwarding_Enable' set='set_Forwarding_Enable'>true</node>
+            </node>
+        </node>
+    </node>
+    <node name='WANDevice' rw='0' type='node'>
+        <node name='1' rw='0' type='node'>
+            <node name='WANConnectionDevice' rw='0' type='node'>
+                <node name='1' rw='0' type='node'>
+                    <node name='WANPPPConnection' rw='0' type='node'>
+                        <node name='1' rw='0' type='node'>
+                            <node name='ExternalIPAddress' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>http://10.10.4.4</node>
+                        </node>
+                    </node>
+                    <node name='WANATMF5LoopbackDiagnostics' rw='0' type='node'>
+                        <node name='DiagnosticsState' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>None</node>
+                        <node name='NumberOfRepetitions' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>5</node>
+                        <node name='Timeout' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>30</node>
+                        <node name='SuccessCount' rw='0' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>0</node>
+                        <node name='FailureCount' rw='0' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>0</node>
+                        <node name='AverageResponseTime' rw='0' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>0</node>
+                        <node name='MinimumResponseTime' rw='0' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>0</node>
+                        <node name='MaximumResponseTime' rw='0' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>0</node>
+                    </node>
+                </node>
+            </node>
+        </node>
+    </node>
+    <node name='UserInterface' rw='0' type='node'>
+        <node name='BackgroundColor' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_UI_BackgroundColor' set='set_UI_BackgroundColor'>c</node>
+        <node name='TextColor' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_UI_TextColor' set='set_UI_TextColor'>c</node>
+        <node name='ISPNewsServer' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_UI_ISPNewsServer' set='set_UI_ISPNewsServer'>b</node>
+        <node name='ISPMailServer' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_UI_ISPMailServer' set='set_UI_ISPMailServer'>a</node>
+        <node name='ISPLogoSize' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_UI_ISPLogoSize' set='set_UI_ISPLogoSize'>1</node>
+        <node name='ISPLogo' rw='1' getc='0' noc='0' nocc='0' acl='' type='base64' get='get_UI_ISPLogo' set='set_UI_ISPLogo'>MTExMQ==</node>
+        <node name='ISPHelpPage' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_UI_ISPHelpPage' set='set_UI_ISPHelpPage'>aa</node>
+        <node name='ISPHomePage' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_UI_ISPHomePage' set='set_UI_ISPHomePage'>aa</node>
+        <node name='ISPHelpDesk' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_UI_ISPHelpDesk' set='set_UI_ISPHelpDesk'>vv</node>
+        <node name='ISPName' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_UI_ISPName' set='set_UI_ISPName'>bb</node>
+        <node name='WarrantyDate' rw='1' getc='0' noc='0' nocc='0' acl='' type='dateTime' get='get_UI_WarrantyDate' set='set_UI_WarrantyDate'>1990-08-08</node>
+        <node name='UpgradeAvailable' rw='1' getc='0' noc='0' nocc='0' acl='' type='boolean' get='get_UI_UpgradeAvailable' set='set_UI_UpgradeAvailable'>false</node>
+        <node name='PasswordUserSelectable' rw='1' getc='0' noc='0' nocc='0' acl='' type='boolean' get='get_UI_PasswordUserSelectable' set='set_UI_PasswordUserSelectable'>true</node>
+        <node name='PasswordRequired' rw='1' getc='0' noc='0' nocc='0' acl='' type='boolean' get='get_UI_PasswordRequired' set='set_UI_PasswordRequired'>true</node>
+    </node>
+    <node name='Time' rw='0' type='node'>
+        <node name='DaylightSavingsEnd' rw='1' getc='0' noc='0' nocc='0' acl='' type='dateTime' get='get_Time_DaylightSavingEnd' set='set_Time_DaylightSavingEnd'>1990-09-09</node>
+        <node name='DaylightSavingsStart' rw='1' getc='0' noc='0' nocc='0' acl='' type='dateTime' get='get_Time_DaylightSavingStart' set='set_Time_DaylightSavingStart'>1990-07-07</node>
+        <node name='DaylightSavingsUsed' rw='1' getc='0' noc='0' nocc='0' acl='' type='boolean' get='get_Time_DaylightSavingUsed' set='set_Time_DaylightSavingUsed'>true</node>
+        <node name='LocalTimeZoneName' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Time_LocalTimeZoneName' set='set_Time_LocalTimeZoneName'>ww</node>
+        <node name='LocalTimeZone' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Time_LocalTimeZone' set='set_Time_LocalTimeZone'>rr</node>
+        <node name='CurrentLocalTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime' get='get_Time_CurrentLocalTime'>1111</node>
+        <node name='NTPServer5' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Time_NTPServer5' set='set_Time_NTPServer5'>err</node>
+        <node name='NTPServer4' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Time_NTPServer4' set='set_Time_NTPServer4'>fsdfs</node>
+        <node name='NTPServer3' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Time_NTPServer3' set='set_Time_NTPServer3'>rewr</node>
+        <node name='NTPServer2' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Time_NTPServer2' set='set_Time_NTPServer2'>ewe</node>
+        <node name='NTPServer1' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Time_NTPServer1' set='set_Time_NTPServer1'>rerer</node>
+    </node>
+    <node name='ManagementServer' rw='0' type='node'>
+        <node name='Username' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_ManageServer_Username' set='set_ManageServer_Username'>digest</node>
+        <node name='URL' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string' get='get_ManageServer_URL' set='set_ManageServer_URL'>http://172.31.0.129/comserver/node1/tr069</node>
+        <node name='UDPConnectionRequestAddressNotificationLimit' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_stun_UDPConnectionNotficationLimit' set='set_stun_UDPConnectionNotficationLimit'>30</node>
+        <node name='UDPConnectionRequestAddress' rw='0' getc='1' noc='2' nocc='2' acl='' type='string' get='get_stun_UDPConnectionAddress' set='set_stun_UDPConnectionAddress'>0.0.0.0:7547</node>
+        <node name='STUNUsername' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_stun_STUNUsername' set='set_stun_STUNUsername'>test</node>
+        <node name='STUNServerPort' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_stun_STUNServerPort' set='set_stun_STUNServerPort'>3478</node>
+        <node name='STUNServerAddress' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_stun_STUNServerAddress' set='set_stun_STUNServerAddress'>221.122.107.207</node>
+        <node name='STUNPassword' rw='1' getc='1' noc='0' nocc='0' acl='' type='string' get='get_stun_STUNPassword' set='set_stun_STUNPassword'>f5d74b9277dc7f03587630ee535bf017e0fb75c7</node>
+        <node name='STUNMinimumKeepAlivePeriod' rw='1' getc='0' noc='1' nocc='0' acl='' type='unsignedInt' get='get_stun_STUNMinimumKeepAlivePeriod' set='set_stun_STUNMinimumKeepAlivePeriod'>3000</node>
+        <node name='STUNMaximumKeepAlivePeriod' rw='1' getc='0' noc='1' nocc='0' acl='' type='unsignedInt' get='get_stun_STUNMaximumKeepAlivePeriod' set='set_stun_STUNMaximumKeepAlivePeriod'>30</node>
+        <node name='STUNEnable' rw='1' getc='0' noc='1' nocc='' acl='' type='boolean' get='get_stun_STUNEnable' set='set_stun_STUNEnable'>0</node>
+        <node name='PeriodicInformTime' rw='1' getc='0' noc='2' nocc='2' acl='' type='dateTime' get='get_ManageServer_PeriodicInformTime' set='set_ManageServer_PeriodicInformTime'>value</node>
+        <node name='PeriodicInformInterval' rw='1' getc='0' noc='2' nocc='2' acl='' type='unsignedInt' get='get_ManageServer_PeriodicInformInterval' set='set_ManageServer_PeriodicInformInterval'>30</node>
+        <node name='PeriodicInformEnable' rw='1' getc='0' noc='2' nocc='2' acl='' type='boolean' get='get_ManageServer_PeriodicInformEnable' set='set_ManageServer_PeriodicInformEnable'>1</node>
+        <node name='Password' rw='1' getc='1' noc='2' nocc='2' acl='' type='string' get='get_ManageServer_Password' set='set_ManageServer_Password'>digest</node>
+        <node name='ParameterKey' rw='0' getc='0' noc='2' nocc='2' acl='' type='string' get='get_ManageServer_ParameterKey'></node>
+        <node name='NATDetected' rw='0' getc='0' noc='2' nocc='2' acl='' type='boolean' get='get_stun_NATDetected' set='set_stun_NATDetected'>0</node>
+        <node name='ConnectionRequestUsername' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_ManageServer_ConnectionRequestUsername' set='set_ManageServer_ConnectionRequestUsername'>admin</node>
+        <node name='ConnectionRequestURL' rw='0' getc='0' noc='2' nocc='2' acl='' type='string' get='get_ManageServer_ConnectionRequestURL'>http://172.31.0.135:7547</node>
+        <node name='ConnectionRequestPassword' rw='1' getc='1' noc='0' nocc='0' acl='' type='string' get='get_ManageServer_ConnectionRequestPassword' set='set_ManageServer_ConnectionRequestPassword'>admin</node>
+    </node>
+    <node name='DeviceInfo' rw='0' type='node'>
+        <node name='SpecVersion' rw='0' getc='0' noc='2' nocc='2' acl='' type='string' get='get_SpecVersion'>1.1</node>
+        <node name='SoftwareVersion' rw='0' getc='0' noc='2' nocc='2' acl='' type='string' get='get_SoftwareVersion'>1.0</node>
+        <node name='SerialNumber' rw='0' getc='0' noc='0' nocc='0' acl='' type='string' get='get_SerialNumber'>123456789ABC</node>
+        <node name='ProvisioningCode' rw='0' getc='0' noc='2' nocc='2' acl='' type='string' get='get_ProvisioningCode'>123</node>
+        <node name='ProductClass' rw='0' getc='0' noc='0' nocc='0' acl='' type='string' get='get_ProductClass'>TRAgent</node>
+        <node name='ManufacturerOUI' rw='0' getc='0' noc='0' nocc='0' acl='' type='string' get='get_ManufacturerOUI'>TRAgent</node>
+        <node name='Manufacturer' rw='0' getc='0' noc='0' nocc='0' acl='' type='string' get='get_Manufacturer'>TRAgent</node>
+        <node name='HardwareVersion' rw='0' getc='0' noc='0' nocc='0' acl='' type='string' get='get_HardwareVersion'>1.0</node>
+    </node>
+    <node name='IPPingDiagnostics' rw='0' type='node'>
+        <node name='DiagnosticsState' rw='1' getc='0' noc='0' nocc='0' acl='' type='string' get='get_IPPing_DiagnosticsState' set='set_IPPing_DiagnosticsState'>Complete</node>
+        <node name='Interface' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string' get='get_IPPing_Interface' set='set_IPPing_Interface'>InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANIPConnection.1</node>
+        <node name='Host' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string' get='get_IPPing_Host' set='set_IPPing_Host'>10.10.7.65</node>
+        <node name='NumberOfRepetitions' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_IPPing_NumberOfRepetitions' set='set_IPPing_NumberOfRepetitions'>2</node>
+        <node name='Timeout' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_IPPing_Timeout' set='set_IPPing_Timeout'>5000</node>
+        <node name='DataBlockSize' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_IPPing_DataBlockSize' set='set_IPPing_DataBlockSize'>32</node>
+        <node name='DSCP' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_IPPing_DSCP' set='set_IPPing_DSCP'>0</node>
+        <node name='SuccessCount' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_IPPing_SuccessCount'></node>
+        <node name='FailureCount' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_IPPing_FailureCount'></node>
+        <node name='AverageResponseTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_IPPing_AverageResponseTime'></node>
+        <node name='MinimumResponseTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_IPPing_MinimumResponseTime'></node>
+        <node name='MaximumResponseTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt' get='get_IPPing_MaximumResponseTime'></node>
+    </node>
+    <node name='DownloadDiagnostics' rw='0' type='node'>
+        <node name='DiagnosticsState' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>0</node>
+        <node name='Interface' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>10.10.7.65</node>
+        <node name='DownloadURL' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>http://10.10.2.14/acs_filestore/download/romStore/test.xml</node>
+        <node name='DSCP' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>0</node>
+        <node name='EthernetPriority' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>0</node>
+        <node name='ROMTime' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+        <node name='BOMTime' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+        <node name='EOMTime' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+        <node name='TestBytesReceived' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+        <node name='TotalBytesReceived' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+        <node name='TCPOpenRequestTime' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+        <node name='TCPOpenResponseTime' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+    </node>
+    <node name='UploadDiagnostics' rw='0' type='node'>
+        <node name='DiagnosticsState' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>0</node>
+        <node name='Interface' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>10.10.7.65</node>
+        <node name='UploadURL' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>http://10.10.2.14/acs_filestore/upload/romStore/test</node>
+        <node name='DSCP' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>0</node>
+        <node name='EthernetPriority' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>1</node>
+        <node name='TestFileLength' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'></node>
+        <node name='ROMTime' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+        <node name='BOMTime' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+        <node name='EOMTime' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+        <node name='TotalBytesSent' rw='0' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'></node>
+        <node name='TCPOpenRequestTime' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+        <node name='TCPOpenResponseTime' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+    </node>
+    <node name='UDPEchoConfig' rw='0' type='node'>
+        <node name='Enable' rw='1' getc='0' noc='0' nocc='' acl='' type='boolean' get='(null)'>0</node>
+        <node name='Interface' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>10.10.7.65</node>
+        <node name='SourceIPAddress' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>10.10.2.14</node>
+        <node name='UDPPort' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>3478</node>
+        <node name='EchoPlusEnabled' rw='1' getc='0' noc='0' nocc='' acl='' type='boolean' get='(null)'>0</node>
+        <node name='EchoPlusSupported' rw='0' getc='0' noc='0' nocc='' acl='' type='boolean' get='(null)'></node>
+        <node name='PacketsReceived' rw='0' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'></node>
+        <node name='PacketsResponded' rw='0' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'></node>
+        <node name='BytesReceived' rw='0' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'></node>
+        <node name='BytesResponded' rw='0' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'></node>
+        <node name='TimeFirstPacketReceived' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+        <node name='TimeLastPacketReceived' rw='0' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'></node>
+    </node>
+    <node name='FAPService' rw='0' type='node'>
+        <node name='1' rw='0' type='node'>
+            <node name='PerfMgmt' rw='0' type='node'>
+                <node name='FileMgmt' rw='0' type='node'>
+                    <node name='PeriodicUploadEnable' rw='1' getc='0' noc='0' nocc='' acl='' type='boolean' get='(null)'>0</node>
+                    <node name='URL' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>http://10.10.2.14/acs_filestore/upload/romStore/pm.xml</node>
+                    <node name='Username' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>upload</node>
+                    <node name='Password' rw='1' getc='0' noc='0' nocc='' acl='' type='string' get='(null)'>upload</node>
+                    <node name='PeriodicUploadInterval' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt' get='(null)'>10</node>
+                    <node name='PeriodicUploadTime' rw='1' getc='0' noc='0' nocc='' acl='' type='dateTime' get='(null)'>2010-03-26T11:42:00</node>
+                </node>
+            </node>
+        </node>
+    </node>
+</node>

@@ -1,0 +1,23 @@
+STRIP=$(CROSS)strip
+
+EXTRACFLAGS := -DBCMWPA2 -fno-delete-null-pointer-checks -mips32 -mtune=mips32
+
+KERNEL_DIR=../../../linux
+SHARED_DIR=../../public/shared
+CFLAGS	= -I$(KERNEL_DIR)/include -I$(SHARED_DIR) $(EXTRACFLAGS) -Wall -Os
+CFLAGS	+= -L../../public/shared -lshared -L../tcapi_lib -ltcapi 
+
+OBJS= auto_det.o
+EXECS= auto_det
+
+all: auto_det
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
+
+auto_det: $(OBJS)
+	$(CC) $(OBJS) -o $@ $(CFLAGS)
+	$(STRIP) --strip-unneeded $(EXECS)
+
+clean:
+	rm -f $(EXECS)

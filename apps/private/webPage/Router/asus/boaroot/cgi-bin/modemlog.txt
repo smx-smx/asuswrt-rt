@@ -1,0 +1,6 @@
+#!/bin/sh
+echo -e "Content-Type: text/plain\r"
+echo -e "Content-Dispostion: attachment\r"
+echo -e "filename=modemlog.txt\r"
+echo -e "\r"
+/usr/script/3ginfo.sh

@@ -1,0 +1,37 @@
+PWD := $(shell pwd)
+#/*20100822 serena_modify*/
+#CROSS = mips-linux-gnu-
+#CC = $(CROSS)gcc
+#/*20100822 end_serena_modify*/	
+AR=$(CROSS)ar
+LD=$(CROSS)ld
+#/*20100822 serena_modify*/
+#STRIP=$(CROSS)strip
+TOP_DIR := $(PWD)
+VOIP_API_CLIENT_DIR := $(PWD)/voip_api_client
+VOIP_API_SERVER_DIR := $(PWD)/voip_api_server
+INCLUDE = -I$(TOP_DIR)/include
+CFLAGS= -O2 -Wall  -mips32r2 -msoft-float -muclibc $(INCLUDE) -DOSAL_PTHREADS
+TCAPILIB= -L$(PWD)/../tcapi_lib/ -ltcapi
+export
+#VOIP_API_OBJS =  $(SRCS:%=$(VOIP_API_CLIENT_DIR)/%.o)
+#API_SERVER_OBJ = $(SRCS:%=$(VOIP_API_SERVER_DIR)/%.o)
+
+.PHONY: all clean $(VOIP_API_CLIENT_DIR) $(VOIP_API_SERVER_DIR)
+
+all: $(VOIP_API_CLIENT_DIR) $(VOIP_API_SERVER_DIR) 
+
+$(VOIP_API_CLIENT_DIR):
+	$(MAKE) --directory=$@
+	cp bin/libVoIPAPI.a ../RV_MTF/appl/mtf/TC_MTF/lib/.
+$(VOIP_API_SERVER_DIR):
+	$(MAKE) --directory=$@
+#	cp bin/tcVoIPApiServer ~/stuff/ACdemo/filesystem/userfs/bin/.
+#	cp voip_api_server/DSP_API/AC/kernel_soft_dsp/ac49x_dsp/acTC_dsp.ko ~/stuff/ACdemo/filesystem/lib/modules/.
+#	cp voip_api_server/DSP_API/AC/kernel_soft_dsp/rtp_handling/tcrtp.ko ~/stuff/ACdemo/filesystem/lib/modules/.
+
+clean:
+	rm -rf $(VOIP_API_CLIENT_DIR)/*.ko $(VOIP_API_CLIENT_DIR)/*.mod.c
+	rm -rf $(VOIP_API_SERVER_DIR)/*.ko $(VOIP_API_SERVER_DIR)/*.mod.c
+#$(API_SERVER_DIR):
+#	$(MAKE) --directory=$@

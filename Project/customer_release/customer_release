@@ -1,0 +1,119 @@
+include Project/dir.mak 
+ifneq ($(strip $(TCSUPPORT_WLAN_RT5392)),)
+WIFI_DIR=$(RT5392AP_DIR)
+endif
+ifneq ($(strip $(TCSUPPORT_WLAN_RT5390)),)
+WIFI_DIR=$(RT5392AP_DIR)
+endif
+ifneq ($(strip $(TCSUPPORT_WLAN_RT5390HL)),)
+WIFI_DIR=$(RT5392AP_DIR)
+endif
+ifneq ($(strip $(TCSUPPORT_WLAN_RT3390)),)
+WIFI_DIR=$(RT3390AP_DIR)
+endif
+ifneq ($(strip $(TCSUPPORT_WLAN_RT3090)),)
+WIFI_DIR=$(RT3390AP_DIR)
+endif
+
+customer_release_end:c_release_bootrom c_release_drivers c_release_apps
+
+	
+c_release_chk:
+	if test -d $(BOOTROM_DIR)/bootram; \
+	then echo "Origin Src Code"; \
+	else echo "Release Src Code, you can not do customer release second time!"; exit 1;\
+	fi
+
+c_release_bootrom: 
+	mkdir -p $(TRUNK_DIR)/bootrom/$(TCPLATFORM)
+
+	#Make 16M Support Bootbase
+	$(MAKE) -C $(BOOTROM_DIR) clean
+	rm -f $(BOOTROM_DIR)/tcboot.bin
+ifneq ($(strip $(TCSUPPORT_BOOT_LZMA)),)
+	$(MAKE) -C $(BOOTROM_DIR) bootlzma 16M=1
+else
+	$(MAKE) -C $(BOOTROM_DIR) bootload 16M=1
+endif
+	if test -e $(BOOTROM_DIR)/tcboot.bin; \
+	then echo "Compile bootbase success"; \
+	else echo "Compile bootbase error!"; exit 1; \
+	fi	
+	cp $(BOOTROM_DIR)/boot.bin $(BOOTROM_DIR)/$(TCPLATFORM)/boot_16M.bin
+
+	#Make 32M Support Bootbase
+	$(MAKE) -C $(BOOTROM_DIR) clean
+	rm -f $(BOOTROM_DIR)/tcboot.bin
+ifneq ($(strip $(TCSUPPORT_BOOT_LZMA)),)
+	$(MAKE) -C $(BOOTROM_DIR) bootlzma 32M=1
+else
+	$(MAKE) -C $(BOOTROM_DIR) bootload 32M=1
+endif
+	if test -e $(BOOTROM_DIR)/tcboot.bin; \
+	then echo "Compile bootbase success"; \
+	else echo "Compile bootbase error!"; exit 1; \
+	fi	
+	cp $(BOOTROM_DIR)/boot.bin $(BOOTROM_DIR)/$(TCPLATFORM)/boot_32M.bin
+
+	#Make 64M Support Bootbase
+	$(MAKE) -C $(BOOTROM_DIR) clean
+	rm -f $(BOOTROM_DIR)/tcboot.bin
+ifneq ($(strip $(TCSUPPORT_BOOT_LZMA)),)
+	$(MAKE) -C $(BOOTROM_DIR) bootlzma 64M=1
+else
+	$(MAKE) -C $(BOOTROM_DIR) bootload 64M=1
+endif
+	if test -e $(BOOTROM_DIR)/tcboot.bin; \
+	then echo "Compile bootbase success"; \
+	else echo "Compile bootbase error!"; exit 1; \
+	fi	
+	cp $(BOOTROM_DIR)/boot.bin $(BOOTROM_DIR)/$(TCPLATFORM)/boot_64M.bin
+
+
+	cp $(BOOTROM_DIR)/byteswap $(BOOTROM_DIR)/$(TCPLATFORM)
+	cp $(BOOTROM_DIR)/mic $(BOOTROM_DIR)/$(TCPLATFORM)
+
+
+c_release_drivers:
+#Release wifi
+ifneq ($(strip $(TCSUPPORT_WLAN_SUPPORT)),)
+	mkdir -p $(MODULES_PRIV_SRC_DIR)/wifi/$(TCPLATFORM)
+ifneq ($(strip $(TCSUPPORT_WLAN_QATOOL)),)
+	cp $(WIFI_DIR)/ATED/ated $(MODULES_PRIV_SRC_DIR)/wifi/$(TCPLATFORM)
+endif
+ifneq ($(strip $(TCSUPPORT_WLAN_WPS)),)
+	cp $(WIFI_DIR)/WSC_UPNP/wscd $(MODULES_PRIV_SRC_DIR)/wifi/$(TCPLATFORM)
+endif
+	cp -rf 	$(WIFI_DIR)/*.bin $(MODULES_PRIV_SRC_DIR)/wifi/$(TCPLATFORM)
+	cp $(WIFI_DIR)/*.dat $(MODULES_PRIV_SRC_DIR)/wifi/$(TCPLATFORM)
+endif
+	
+c_release_apps:
+	echo "do customer release apps"
+
+#release cfg_manager
+	mkdir -p $(APP_CFG_MANAGER_DIR)/$(TCPLATFORM)
+	$(MAKE) -C $(APP_CFG_MANAGER_DIR) -f $(APP_CFG_MANAGER_DIR)/Makefile_C.release clean
+	cp -rf $(APP_CFG_MANAGER_DIR)/*.o $(APP_CFG_MANAGER_DIR)/$(TCPLATFORM)
+
+	mkdir -p $(APP_BINARY_DIR)/$(TCPLATFORM)/
+#release TR069
+ifneq ($(strip $(TCSUPPORT_CWMP)),)
+	cp $(APP_CWMP_DIR)/tr69  $(APP_BINARY_DIR)/$(TCPLATFORM)/
+endif
+
+#Release tcci
+	cp $(APP_TCCI_DIR)/tcci  $(APP_BINARY_DIR)/$(TCPLATFORM)/
+
+ifneq ($(strip $(TCSUPPORT_TC2031)),)
+	cp $(APP_SENDICMP_DIR)/sendicmp  $(APP_BINARY_DIR)/$(TCPLATFORM)/			
+endif
+
+#release cmd_ci
+	cp $(APP_ETHCMD_DIR)/ethcmd  $(APP_BINARY_DIR)/$(TCPLATFORM)/
+	cp $(APP_CMDCI_DIR)/atmcmd $(APP_BINARY_DIR)/$(TCPLATFORM)/
+	cp $(APP_CMDCI_DIR)/adslcmd $(APP_BINARY_DIR)/$(TCPLATFORM)/
+	cp $(APP_CMDCI_DIR)/wlancmd  $(APP_BINARY_DIR)/$(TCPLATFORM)/
+
+
+

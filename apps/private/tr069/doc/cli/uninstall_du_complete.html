@@ -1,0 +1,38 @@
+<html>
+    <head>
+        <title>TRAgent Uninstall Deployment Unit Complete</title>
+    </head>
+    <body>
+        <form action="/uninstall/du/complete" method="POST" id="ae">
+            <table>
+                <tr>
+                    <td colspan="2"><h2>Notify the deployment unit uninstallation completed</h2></td>
+                </tr>
+                <tr>
+                    <td>Command Key:</td>
+                    <td><input type="text" name="cmdkey" value=""/></td>
+                </tr>
+                <tr>
+                    <td>Operation Number:</td>
+                    <td><input type="text" name="operation_number" value=""/></td>
+                </tr>
+                <tr>
+                    <td>Fault Code:</td>
+                    <td>
+                        <select name="fault_code" style="width:265px">
+                            <option selected="true">0</option>
+                            <option>9022</option>
+                            <option>9024</option>
+                            <option>9028</option>
+                            <option>9029</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="submit" value="OK"/></td>
+                </tr>
+            </table>
+        </form>
+    </body>
+</html>

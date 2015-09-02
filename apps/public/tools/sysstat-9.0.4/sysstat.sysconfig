@@ -1,0 +1,10 @@
+# sysstat-9.0.4 configuration file.
+
+# How long to keep log files (in days).
+# If value is greater than 28, then log files are kept in
+# multiple directories, one for each month.
+HISTORY=7
+
+# Compress (using gzip or bzip2) sa and sar files older than (in days):
+COMPRESSAFTER=10
+

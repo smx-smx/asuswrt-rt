@@ -1,0 +1,15 @@
+
+CC=gcc
+CFLAGS += -DTRENDCHIP
+OBJS= cplopts_formcheck.o cplopts_remove.o
+EXECS= cplopts_formckeck cplopts_remove
+all:  cplopts_formcheck cplopts_remove
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
+
+cc: $(OBJS) $(MIPSLIBS)
+	$(CC) -o $@ $(OBJS)
+
+clean:
+	@echo "do nothing for cleaning cplopts_checktool"

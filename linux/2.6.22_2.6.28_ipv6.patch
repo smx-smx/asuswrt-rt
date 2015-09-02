@@ -1,0 +1,305 @@
+diff -uNr linuxOld/include/linux/ipv6.h linuxNew/include/linux/ipv6.h
+--- linuxOld/include/linux/ipv6.h	2009-12-28 09:17:16.000000000 +0800
++++ linuxNew/include/linux/ipv6.h	2009-10-20 14:33:05.000000000 +0800
+@@ -181,6 +181,11 @@
+ #ifdef CONFIG_IPV6_OPTIMISTIC_DAD
+ 	__s32		optimistic_dad;
+ #endif
++#ifdef CONFIG_IPV6_MROUTE
++	__s32		mc_forwarding;
++#endif
++	__s32		disable_ipv6;
++	__s32		accept_dad;
+ 	void		*sysctl;
+ };
+ 
+@@ -211,6 +216,9 @@
+ 	DEVCONF_PROXY_NDP,
+ 	DEVCONF_OPTIMISTIC_DAD,
+ 	DEVCONF_ACCEPT_SOURCE_ROUTE,
++	DEVCONF_MC_FORWARDING,
++	DEVCONF_DISABLE_IPV6,
++	DEVCONF_ACCEPT_DAD,
+ 	DEVCONF_MAX
+ };
+ 
+diff -uNr linuxOld/include/net/ipv6.h linuxNew/include/net/ipv6.h
+--- linuxOld/include/net/ipv6.h	2009-12-28 09:17:16.000000000 +0800
++++ linuxNew/include/net/ipv6.h	2009-10-20 10:38:26.000000000 +0800
+@@ -376,6 +376,12 @@
+ 		 a->s6_addr32[2] | a->s6_addr32[3] ) == 0); 
+ }
+ 
++static inline int ipv6_addr_loopback(const struct in6_addr *a)
++{
++	return ((a->s6_addr32[0] | a->s6_addr32[1] |
++		 a->s6_addr32[2] | (a->s6_addr32[3] ^ htonl(1))) == 0);
++}
++
+ /*
+  * find the first different bit between two addresses
+  * length of address must be a multiple of 32bits
+diff -uNr linuxOld/net/ipv6/addrconf.c linuxNew/net/ipv6/addrconf.c
+--- linuxOld/net/ipv6/addrconf.c	2009-12-28 09:17:16.000000000 +0800
++++ linuxNew/net/ipv6/addrconf.c	2009-12-29 09:57:52.000000000 +0800
+@@ -111,7 +111,7 @@
+ 
+ static int desync_factor = MAX_DESYNC_FACTOR * HZ;
+ #endif
+-
++static int ipv6_generate_eui64(u8 *eui, struct net_device *dev);
+ static int ipv6_count_addresses(struct inet6_dev *idev);
+ 
+ /*
+@@ -175,6 +175,8 @@
+ #endif
+ 	.proxy_ndp		= 0,
+ 	.accept_source_route	= 0,	/* we do not accept RH0 by default. */
++	.disable_ipv6		= 0,
++	.accept_dad		= 2,
+ };
+ 
+ static struct ipv6_devconf ipv6_devconf_dflt __read_mostly = {
+@@ -207,6 +209,8 @@
+ #endif
+ 	.proxy_ndp		= 0,
+ 	.accept_source_route	= 0,	/* we do not accept RH0 by default. */
++	.disable_ipv6		= 0,
++	.accept_dad		= 2,
+ };
+ 
+ /* IPv6 Wildcard Address and Loopback Address defined by RFC2553 */
+@@ -363,6 +367,9 @@
+ 	 */
+ 	in6_dev_hold(ndev);
+ 
++	if (dev->flags & (IFF_NOARP | IFF_LOOPBACK))
++		ndev->cnf.accept_dad = -1;
++
+ #ifdef CONFIG_IPV6_PRIVACY
+ 	init_timer(&ndev->regen_timer);
+ 	ndev->regen_timer.function = ipv6_regen_rndid;
+@@ -1325,6 +1332,20 @@
+ 
+ void addrconf_dad_failure(struct inet6_ifaddr *ifp)
+ {
++	struct inet6_dev *idev = ifp->idev;
++	if (idev->cnf.accept_dad > 1 && !idev->cnf.disable_ipv6) {
++		struct in6_addr addr;
++
++		addr.s6_addr32[0] = htonl(0xfe800000);
++		addr.s6_addr32[1] = 0;
++		if (!ipv6_generate_eui64(addr.s6_addr + 8, idev->dev) &&
++		    ipv6_addr_equal(&ifp->addr, &addr)) {
++			/* DAD failed for link-local based on MAC address */
++			idev->cnf.disable_ipv6 = 1;
++			//printk("dad_failure:duplicate detected,disable.\n");
++		}
++	}
++	
+ 	if (net_ratelimit())
+ 		printk(KERN_INFO "%s: duplicate address detected!\n", ifp->idev->dev->name);
+ 	addrconf_dad_stop(ifp);
+@@ -1790,7 +1811,6 @@
+ 					update_lft = 1;
+ 				}
+ 			}
+-
+ 			if (update_lft) {
+ 				ifp->valid_lft = valid_lft;
+ 				ifp->prefered_lft = prefered_lft;
+@@ -2595,6 +2615,7 @@
+ 	spin_lock_bh(&ifp->lock);
+ 
+ 	if (dev->flags&(IFF_NOARP|IFF_LOOPBACK) ||
++	    idev->cnf.accept_dad < 1 ||
+ 	    !(ifp->flags&IFA_F_TENTATIVE) ||
+ 	    ifp->flags & IFA_F_NODAD) {
+ 		ifp->flags &= ~(IFA_F_TENTATIVE|IFA_F_OPTIMISTIC);
+@@ -2643,6 +2664,11 @@
+ 		read_unlock_bh(&idev->lock);
+ 		goto out;
+ 	}
++	if (idev->cnf.accept_dad > 1 && idev->cnf.disable_ipv6) {
++		read_unlock_bh(&idev->lock);
++		addrconf_dad_failure(ifp);
++		return;
++	}
+ 	spin_lock_bh(&ifp->lock);
+ 	if (ifp->probes == 0) {
+ 		/*
+@@ -3472,6 +3498,8 @@
+ #ifdef CONFIG_IPV6_OPTIMISTIC_DAD
+ 	array[DEVCONF_OPTIMISTIC_DAD] = cnf->optimistic_dad;
+ #endif
++	array[DEVCONF_DISABLE_IPV6] = cnf->disable_ipv6;
++	array[DEVCONF_ACCEPT_DAD] = cnf->accept_dad;
+ }
+ 
+ static inline size_t inet6_if_nlmsg_size(void)
+@@ -4052,6 +4080,22 @@
+ 		},
+ #endif
+ 		{
++			.ctl_name	=	CTL_UNNUMBERED,
++			.procname	=	"disable_ipv6",
++			.data		=	&ipv6_devconf.disable_ipv6,
++			.maxlen		=	sizeof(int),
++			.mode		=	0644,
++			.proc_handler	=	&proc_dointvec,
++		},
++		{
++			.ctl_name	=	CTL_UNNUMBERED,
++			.procname	=	"accept_dad",
++			.data		=	&ipv6_devconf.accept_dad,
++			.maxlen		=	sizeof(int),
++			.mode		=	0644,
++			.proc_handler	=	&proc_dointvec,
++		},
++		{
+ 			.ctl_name	=	0,	/* sentinel */
+ 		}
+ 	},
+diff -uNr linuxOld/net/ipv6/exthdrs.c linuxNew/net/ipv6/exthdrs.c
+--- linuxOld/net/ipv6/exthdrs.c	2009-12-28 09:17:16.000000000 +0800
++++ linuxNew/net/ipv6/exthdrs.c	2009-12-18 14:14:19.000000000 +0800
+@@ -397,7 +397,7 @@
+ 	}
+ 
+ 	hdr = (struct ipv6_rt_hdr *)skb_transport_header(skb);
+-
++#if 0
+ 	switch (hdr->type) {
+ #ifdef CONFIG_IPV6_MIP6
+ 	case IPV6_SRCRT_TYPE_2:
+@@ -415,7 +415,7 @@
+ 				  (&hdr->type) - skb_network_header(skb));
+ 		return -1;
+ 	}
+-
++#endif
+ 	if (ipv6_addr_is_multicast(&ipv6_hdr(skb)->daddr) ||
+ 	    skb->pkt_type != PACKET_HOST) {
+ 		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
+@@ -453,6 +453,7 @@
+ 	}
+ 
+ 	switch (hdr->type) {
++#if 0
+ 	case IPV6_SRCRT_TYPE_0:
+ 		if (hdr->hdrlen & 0x01) {
+ 			IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
+@@ -463,6 +464,7 @@
+ 			return -1;
+ 		}
+ 		break;
++#endif
+ #ifdef CONFIG_IPV6_MIP6
+ 	case IPV6_SRCRT_TYPE_2:
+ 		/* Silently discard invalid RTH type 2 */
+@@ -474,6 +476,9 @@
+ 		}
+ 		break;
+ #endif
++	default:
++		printk("router header,unknown_rh.\n");
++		goto unknown_rh;
+ 	}
+ 
+ 	/*
+@@ -577,6 +582,12 @@
+ 	skb_push(skb, skb->data - skb_network_header(skb));
+ 	dst_input(skb);
+ 	return -1;
++unknown_rh:
++	IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
++				 IPSTATS_MIB_INHDRERRORS);
++	icmpv6_param_prob(skb, ICMPV6_HDR_FIELD,
++				  (&hdr->type) - skb_network_header(skb));
++	return -1;
+ }
+ 
+ static struct inet6_protocol rthdr_protocol = {
+diff -uNr linuxOld/net/ipv6/ip6_input.c linuxNew/net/ipv6/ip6_input.c
+--- linuxOld/net/ipv6/ip6_input.c	2009-12-28 09:17:16.000000000 +0800
++++ linuxNew/net/ipv6/ip6_input.c	2009-12-18 14:16:37.000000000 +0800
+@@ -72,10 +72,14 @@
+ 
+ 	IP6_INC_STATS_BH(idev, IPSTATS_MIB_INRECEIVES);
+ 
+-	if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL) {
++	if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL ||
++	    !idev || unlikely(idev->cnf.disable_ipv6)) {
+ 		IP6_INC_STATS_BH(idev, IPSTATS_MIB_INDISCARDS);
++		#if 0
+ 		rcu_read_unlock();
+ 		goto out;
++		#endif
++		goto drop;
+ 	}
+ 
+ 	memset(IP6CB(skb), 0, sizeof(struct inet6_skb_parm));
+@@ -101,6 +105,16 @@
+ 	if (hdr->version != 6)
+ 		goto err;
+ 
++	/*
++	 * RFC4291 2.5.3
++	 * A packet received on an interface with a destination address
++	 * of loopback must be dropped.
++	*liujilin_20091020
++	 */
++	if (!(dev->flags & IFF_LOOPBACK) &&
++	    ipv6_addr_loopback(&hdr->daddr))
++		goto err;
++
+ 	skb->transport_header = skb->network_header + sizeof(*hdr);
+ 	IP6CB(skb)->nhoff = offsetof(struct ipv6hdr, nexthdr);
+ 
+@@ -135,7 +149,9 @@
+ drop:
+ 	rcu_read_unlock();
+ 	kfree_skb(skb);
++#if 0
+ out:
++#endif
+ 	return 0;
+ }
+ 
+diff -uNr linuxOld/net/ipv6/ip6_output.c linuxNew/net/ipv6/ip6_output.c
+--- linuxOld/net/ipv6/ip6_output.c	2009-12-28 09:17:16.000000000 +0800
++++ linuxNew/net/ipv6/ip6_output.c	2009-12-18 14:17:57.000000000 +0800
+@@ -75,7 +75,7 @@
+ 	struct dst_entry *dst = skb->dst;
+ 
+ 	if (dst->hh)
+-		return neigh_hh_output(dst->hh, skb);
++		return neigh_hh_output(dst->hh, skb);	
+ 	else if (dst->neighbour)
+ 		return dst->neighbour->output(skb);
+ 
+@@ -147,6 +147,14 @@
+ 
+ int ip6_output(struct sk_buff *skb)
+ {
++	struct inet6_dev *idev = ip6_dst_idev(skb->dst);
++	if (unlikely(idev->cnf.disable_ipv6)) {
++		IP6_INC_STATS(idev,
++			      IPSTATS_MIB_OUTDISCARDS);
++		kfree_skb(skb);
++		return 0;
++	}
++
+ 	if ((skb->len > ip6_skb_dst_mtu(skb) && !skb_is_gso(skb)) ||
+ 				dst_allfrag(skb->dst))
+ 		return ip6_fragment(skb, ip6_output2);
+@@ -467,7 +475,8 @@
+ 		int addrtype = ipv6_addr_type(&hdr->saddr);
+ 
+ 		/* This check is security critical. */
+-		if (addrtype & (IPV6_ADDR_MULTICAST|IPV6_ADDR_LOOPBACK))
++		if (addrtype == IPV6_ADDR_ANY ||
++		addrtype & (IPV6_ADDR_MULTICAST|IPV6_ADDR_LOOPBACK))
+ 			goto error;
+ 		if (addrtype & IPV6_ADDR_LINKLOCAL) {
+ 			icmpv6_send(skb, ICMPV6_DEST_UNREACH,

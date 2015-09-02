@@ -1,0 +1,254 @@
+file.o file.o: file.c defs.h config.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sgidefs.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/features.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_config.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_arch_features.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sys/cdefs.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sys/types.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/types.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/wordsize.h \
+  /opt/trendchip/mips-linux26/lib/gcc-lib/mips-linux/3.3.2/include/stddef.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/kernel_types.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/typesizes.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/pthreadtypes.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/sched.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/time.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/endian.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/endian.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sys/select.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/select.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/sigset.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/time.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sys/sysmacros.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/unistd.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/posix_opt.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/environments.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/confname.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/getopt.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/stdlib.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/waitflags.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/waitstatus.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/alloca.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/stdio.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_stdio.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/wchar.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/wchar.h \
+  /opt/trendchip/mips-linux26/lib/gcc-lib/mips-linux/3.3.2/include/stdarg.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/stdio_lim.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/ctype.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_touplow.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/string.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_clk_tck.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sys/time.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/errno.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/errno.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/errno_values.h \
+  /opt/trendchip/mips-linux26/lib/gcc-lib/mips-linux/3.3.2/include/stdbool.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/signal.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/signum.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/siginfo.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/sigaction.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/sigcontext.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/asm/sigcontext.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/asm/sgidefs.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/sigstack.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/ucontext.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sys/ucontext.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/sigthread.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sys/ptrace.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sys/syscall.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/asm/unistd.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/sysnum.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/dirent.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/dirent.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/posix1_lim.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/local_lim.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/linux/limits.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_local_lim.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/asm/stat.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/linux/types.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/linux/posix_types.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/linux/stddef.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/linux/compiler.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/asm/posix_types.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/asm/types.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sys/stat.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/stat.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/fcntl.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/fcntl.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/uio.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sys/vfs.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/sys/statfs.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/bits/statfs.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/inttypes.h \
+  /opt/trendchip/mips-linux26/mips-linux/include/stdint.h
+
+defs.h:
+
+config.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sgidefs.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/features.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_config.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_arch_features.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sys/cdefs.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sys/types.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/types.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/wordsize.h:
+
+/opt/trendchip/mips-linux26/lib/gcc-lib/mips-linux/3.3.2/include/stddef.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/kernel_types.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/typesizes.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/pthreadtypes.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/sched.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/time.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/endian.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/endian.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sys/select.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/select.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/sigset.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/time.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sys/sysmacros.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/unistd.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/posix_opt.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/environments.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/confname.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/getopt.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/stdlib.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/waitflags.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/waitstatus.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/alloca.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/stdio.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_stdio.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/wchar.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/wchar.h:
+
+/opt/trendchip/mips-linux26/lib/gcc-lib/mips-linux/3.3.2/include/stdarg.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/stdio_lim.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/ctype.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_touplow.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/string.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_clk_tck.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sys/time.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/errno.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/errno.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/errno_values.h:
+
+/opt/trendchip/mips-linux26/lib/gcc-lib/mips-linux/3.3.2/include/stdbool.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/signal.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/signum.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/siginfo.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/sigaction.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/sigcontext.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/asm/sigcontext.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/asm/sgidefs.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/sigstack.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/ucontext.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sys/ucontext.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/sigthread.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sys/ptrace.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sys/syscall.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/asm/unistd.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/sysnum.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/dirent.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/dirent.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/posix1_lim.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/local_lim.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/linux/limits.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/uClibc_local_lim.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/asm/stat.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/linux/types.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/linux/posix_types.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/linux/stddef.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/linux/compiler.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/asm/posix_types.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/asm/types.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sys/stat.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/stat.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/fcntl.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/fcntl.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/uio.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sys/vfs.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/sys/statfs.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/bits/statfs.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/inttypes.h:
+
+/opt/trendchip/mips-linux26/mips-linux/include/stdint.h:

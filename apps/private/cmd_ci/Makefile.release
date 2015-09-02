@@ -1,0 +1,58 @@
+#CROSS=mips-linux-gnu-
+
+#CC=$(CROSS)gcc
+AR=$(CROSS)ar
+LD=$(CROSS)ld
+STRIP=$(CROSS)strip
+RANLIB=$(CROSS)ranlib
+SIZE=$(CROSS)size
+
+KERNEL_DIR=../../../linux
+
+INCLUDE = -I$(KERNEL_DIR)/include
+
+KERNEL_INCLUDES:=../../../linux/include/
+
+#CFLAGS= -mips1 -msoft-float 
+#CFLAGS= -mips1 -msoft-float 
+#CFLAGS= -mips32r2 -msoft-float -DTRENDCHIP -muclibc
+ifeq ($(TC2031_SUPPORT),1)
+CFLAGS += -DTC2031_DEBUG
+endif
+
+ifneq ($(strip $(TC_CFLAGS)),)
+CFLAGS += $(TC_CFLAGS)
+endif
+
+LDFLAGS += -L ../lib -ltcapi
+
+ATMOBJS=atmcmd.o
+ADSLOBJS=adslcmd.o
+WLANOBJS=wlancmd.o
+ATEOBJS=ate.o
+
+all: atmcmd adslcmd wlancmd ate
+
+.c.o:
+	cp $(BOOTROM_DIR)/bootram/banner/mk_time mk_time.h
+	$(CC) -c $(CFLAGS) $< -I$(KERNEL_INCLUDES)
+
+atmcmd: $(ATMOBJS) 
+	$(CC) $(ATMOBJS) -o $@
+	$(STRIP) --strip-unneeded atmcmd
+
+adslcmd: $(ADSLOBJS) 
+	$(CC) $(ADSLOBJS) -o $@
+	$(STRIP) --strip-unneeded adslcmd
+	
+wlancmd: $(WLANOBJS) 
+	$(CC) $(WLANOBJS) -o $@
+	$(STRIP) --strip-unneeded wlancmd
+
+ate: $(ATEOBJS)
+	$(CC) $(ATEOBJS) -o $@ $(LDFLAGS)
+	$(STRIP) --strip-unneeded ate
+
+
+clean:
+	rm -f atmcmd adslcmd wlancmd ate

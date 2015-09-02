@@ -1,0 +1,21 @@
+#
+# pppstats makefile
+# $Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/apps/public/ppp-2.4.1.pppoe4.orig/pppdump/Makefile.sunos4#1 $
+#
+
+include ../sunos4/Makedefs
+
+OBJS = pppdump.o bsd-comp.o deflate.o zlib.o
+CFLAGS = $(COPTS) -I../include/net
+
+all:	pppdump
+
+pppdump: $(OBJS)
+	$(CC) -o pppdump $(OBJS)
+
+clean:
+	rm -f pppdump $(OBJS) *~
+
+install: pppdump
+	$(INSTALL) -c pppdump $(BINDIR)/pppdump
+	$(INSTALL) -c -m 444 pppdump.8 $(MANDIR)/man8/pppdump.8

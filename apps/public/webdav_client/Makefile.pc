@@ -1,0 +1,11 @@
+CC = gcc
+CFLAGS = -I/usr/local/include -I/usr/local/include/neon -g -rdynamic
+LDFLAGS = -L/usr/local/lib -lneon -lpthread -lxml2
+LIBS = -lneon
+
+all : webdav
+webdav : webdav.o base.o list.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@ $^
+.PHONY : clean
+clean:
+	rm -rf *.o webdav

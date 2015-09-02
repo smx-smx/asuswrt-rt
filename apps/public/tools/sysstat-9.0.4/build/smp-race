@@ -1,0 +1,10 @@
+
+Answering y here disables option -y for the sar command.
+We found that 2.2.x kernels (with x <= 15) have an SMP race condition, that
+the sar command may trigger when it reads the /proc/tty/driver/serial file.
+Consequences are a machine that freezes after several minutes (or several days)
+uptime.
+This kernel bug concerns only SMP machines with older 2.2.x kernels. The bug
+has been fixed with kernel 2.2.16 and later.
+Answer y here if you have an SMP machine with a 2.2.x kernel (x <= 15).
+

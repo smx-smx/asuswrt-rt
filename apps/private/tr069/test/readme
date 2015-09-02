@@ -1,0 +1,13 @@
+1. common command (local ipv6)
+#./sendtocli http://[::1]:1234/add/event/ "code=8 DIAGNOSTICS COMPLETE"
+
+2. test AutonomousDUStateChangeComplete: 
+#./cdus.sh
+AutonOpResultStruct could be multi.
+
+3. for build/Makefile
+udp.c[STUN] don't need in IPV6
+Sine Agent5.0 has __DEVICE_IPV6__, so use it for ipv6
+
+
+

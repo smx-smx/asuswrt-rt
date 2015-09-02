@@ -1,0 +1,50 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:537: checking for gunzip
+configure:577: checking for flex
+configure:611: checking for yywrap in -lfl
+configure:657: checking for bison
+configure:690: checking for gcc
+configure:803: checking whether the C compiler (gcc  ) works
+configure:819: gcc -o conftest    conftest.c  1>&5
+configure:845: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:850: checking whether we are using GNU C
+configure:878: checking whether gcc accepts -g
+configure:910: checking how to run the C preprocessor
+configure:990: checking whether make sets ${MAKE}
+configure:1025: checking for dirent.h that defines DIR
+configure:1063: checking for opendir in -ldir
+configure:1146: checking for ANSI C header files
+configure:1250: checking for sys/wait.h that is POSIX.1 compatible
+configure:1295: checking for fcntl.h
+configure:1295: checking for sys/fcntl.h
+configure:1295: checking for limits.h
+configure:1295: checking for sys/time.h
+configure:1295: checking for sys/select.h
+configure:1335: checking for getopt.h
+configure:1373: checking for working const
+configure:1448: checking for uid_t in sys/types.h
+configure:1482: checking for pid_t
+configure:1515: checking whether time.h and sys/time.h may both be included
+configure:1551: checking whether setvbuf arguments are reversed
+configure:1600: checking for unistd.h
+configure:1639: checking for getpagesize
+configure:1692: checking for working mmap
+configure:1865: checking for getcwd
+configure:1865: checking for strdup
+configure:1865: checking for strstr
+configure:1920: checking for gethostname
+configure:1920: checking for gethostbyname
+configure:1920: checking for select
+configure:1920: checking for socket
+configure:1920: checking for inet_aton
+configure:1975: checking for scandir
+configure:1975: checking for alphasort
+configure:2035: checking for tm.tm_gmtoff
+configure:2110: checking for tm.tm_zone
+configure:2186: checking for sockaddr_in.sin_len
+configure:2441: checking compile and link profiling code
+configure:2463: checking whether to compile and link debugging code
+configure:2486: checking whether to link with the Dmalloc memory debugger/profiler
+configure:2552: checking whether to link with the Electric Fence memory debugger

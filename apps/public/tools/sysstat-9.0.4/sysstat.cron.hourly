@@ -1,0 +1,3 @@
+#!/bin/sh
+# Run system activity accounting tool every 10 minutes
+/usr/lib/sa/sa1 -S DISK 600 6 &

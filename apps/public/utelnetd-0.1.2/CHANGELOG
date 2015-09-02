@@ -1,0 +1,17 @@
+2002-05-14      Robert Schwebel <r.schwebel@pengutronix.de>
+
+                - Revision 0.1.1 released (initial revision)
+                - port of Joerg Schmitz-Linneweber's telnetd
+                  for busybox
+                - getpty() adapted to devfs
+                - -d switch added (daemonize)
+                - help message added
+
+
+25/05/2002	Robert Schwebel <r.schwebel@pengutronix.de>
+
+		- Revision 0.1.2 released
+		- typo fixed
+		- Makefile fixed: DEBUG=1 works now 
+		  (thanks to Rich Wilson <rich_wilson@agilent.com>)
+

@@ -1,0 +1,23 @@
+utelnetd 0.1.2
+==============
+
+This is a small telnet daemon for standalone use, mostly on embedded
+systems. 
+
+Compile it by running 
+  
+  make
+
+If you want to have more debug output during runtime, run 
+
+  make DEBUG=1
+
+Any feedback is welcome!
+
+You find the original source on 
+
+  http://www.pengutronix.de/software/utelnetd_en.html
+
+For copyright notice and the authors see the source file. 
+
+Robert Schwebel <r.schwebel@pengutronix.de>

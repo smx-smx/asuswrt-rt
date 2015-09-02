@@ -1,0 +1,29 @@
+<html>
+<title>IGD Configuration</title>
+<head>
+<link rel="stylesheet" type="text/css" href="/styles/default.css">
+</head>
+<h1>IGD Configure</h1>
+<hr noshade size="3" width="100%">
+<body>
+<script language="JavaScript">
+var igd_booted="Disabled";
+</script>
+<script language="JavaScript" src="/cgi-bin/sendigdconfigpage"></script>
+<h2>State:</h2>
+<TABLE vspace=4 hspace=20 CELLPADDING=4 cellspacing=4>
+<script language=JavaScript>
+  	document.write("<TR><TD align=right>IGD Booted:</TD><TD>")
+	document.write(igd_booted);
+	document.write("</TD></TR>");
+</script>
+</table>
+<FORM action="/cgi-bin/igdconfig" method=post>
+<TABLE vspace=4 hspace=20 CELLPADDING=4 cellspacing=4>
+<hr noshade size="3" width="100%">
+<h2>Configure:</h2>
+<tr><td align='right'>IGD Booted:</td><td align='left'>
+<select name=opt><option value="1" selected>Enabled</option><option value="0">Disabled</option></select></td></tr>
+<tr><td align=right><input type=submit value="Submit"></td><td align=left><input type=reset value="Reset "></td></tr><p></table></form>
+<hr noshade size="3" width="100%"></body></html>
+

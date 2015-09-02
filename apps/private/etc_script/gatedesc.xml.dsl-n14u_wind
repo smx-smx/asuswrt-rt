@@ -1,0 +1,76 @@
+	<device>
+		<deviceType>urn:schemas-upnp-org:device:InternetGatewayDevice:1</deviceType>
+		<friendlyName>ASUS DSL-N14U</friendlyName>
+		<manufacturer>ASUSTeK Computer Inc.</manufacturer>
+		<manufacturerURL>http://www.asus.com/</manufacturerURL>
+		<modelDescription>ASUS DSL-N14U Wireless-N300 ADSL2/2+ Modem Router</modelDescription>
+		<modelName>Wireless-N300 ADSL2/2+ Modem Router</modelName>
+		<modelNumber>DSL-N14U</modelNumber>
+		<serialNumber>00000001</serialNumber>
+		<UDN>uuid:11111111-0000-c0a8-0102-00aabb071106</UDN>
+		<iconList>
+			<icon>
+				<mimetype>image/gif</mimetype>
+				<width>118</width>
+				<height>119</height>
+				<depth>8</depth>
+				<url>/hitsuji.GIF</url>
+			</icon>
+		</iconList>
+		<serviceList>
+			<service>
+				<serviceType>urn:schemas-microsoft-com:service:OSInfo:1</serviceType>
+				<serviceId>urn:microsoft-com:serviceId:OSInfo1</serviceId>
+				<controlURL>/upnp/control/OSInfo1</controlURL>
+				<eventSubURL>/upnp/event/OSInfo1</eventSubURL>
+				<SCPDURL>/gateinfoSCPD.xml</SCPDURL>
+			</service>
+		</serviceList>
+		<deviceList>
+			<device>
+				<deviceType>urn:schemas-upnp-org:device:WANDevice:1</deviceType>
+				<friendlyName>ASUS DSL-N14U</friendlyName>
+				<manufacturer>ASUSTeK Computer Inc.</manufacturer>
+				<manufacturerURL>http://www.asus.com/</manufacturerURL>
+				<modelDescription>ASUS DSL-N14U Wireless-N300 ADSL2/2+ Modem Router</modelDescription>
+				<modelName>Wireless-N300 ADSL2/2+ Modem Router</modelName>
+				<modelNumber>DSL-N14U</modelNumber>
+				<modelURL>http://www.asus.com/</modelURL>
+				<serialNumber>00000001</serialNumber>
+				<UDN>uuid:11111111-0000-c0a8-0102-00aabb071106</UDN>
+				<UPC>000000000001</UPC>
+				<serviceList>
+					<service>
+						<serviceType>urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1</serviceType>
+						<serviceId>urn:upnp-org:serviceId:WANCommonIFC1</serviceId>
+						<controlURL>/upnp/control/WANCommonIFC1</controlURL>
+						<eventSubURL>/upnp/event/WANCommonIFC1</eventSubURL>
+						<SCPDURL>/gateicfgSCPD.xml</SCPDURL>
+					</service>
+				</serviceList>
+				<deviceList>
+					<device>
+						<deviceType>urn:schemas-upnp-org:device:WANConnectionDevice:1</deviceType>
+						<friendlyName>ASUS DSL-N14U</friendlyName>
+						<manufacturer>ASUSTeK Computer Inc.</manufacturer>
+						<manufacturerURL>http://www.asus.com/</manufacturerURL>
+						<modelDescription>Wireless-N300 ADSL2/2+ Modem Router</modelDescription>
+						<modelName>Wireless-N300 ADSL2/2+ Modem Router</modelName>
+						<modelNumber>DSL-N14U</modelNumber>
+						<modelURL>http://www.asus.com/</modelURL>
+						<serialNumber>00000001</serialNumber>
+						<UDN>uuid:11111111-0000-c0a8-0102-00aabb071106</UDN>
+						<UPC>000000000001</UPC>
+						<serviceList>
+							<service>
+								<serviceType>urn:schemas-upnp-org:service:WANIPConnection:1</serviceType>
+								<serviceId>urn:upnp-org:serviceId:WANIPConn1</serviceId>
+								<controlURL>/upnp/control/WANIPConn1</controlURL>
+								<eventSubURL>/upnp/event/WANIPConn1</eventSubURL>
+								<SCPDURL>/gateconnSCPD.xml</SCPDURL>
+							</service>
+						</serviceList>
+					</device>
+				</deviceList>
+			</device>
+		</deviceList>

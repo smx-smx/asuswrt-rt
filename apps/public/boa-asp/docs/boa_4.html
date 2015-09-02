@@ -1,0 +1,407 @@
+<HTML>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Created on December, 12  2005 by texi2html 1.64 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HEAD>
+<TITLE>The Boa HTTP Daemon: Appendix</TITLE>
+
+<META NAME="description" CONTENT="The Boa HTTP Daemon: Appendix">
+<META NAME="keywords" CONTENT="The Boa HTTP Daemon: Appendix">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.64">
+
+</HEAD>
+
+<BODY LANG="" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC12"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC11"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC13"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> A. Appendix </H1>
+<!--docid::SEC12::-->
+<P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_4.html#SEC13">A.1 License</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_4.html#SEC14">A.2 Acknowledgments</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_4.html#SEC15">A.3 Reference Documents</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_4.html#SEC16">A.4 Other HTTP Servers</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_4.html#SEC17">A.5 Benchmarks</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_4.html#SEC18">A.6 Tools</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_4.html#SEC19">A.7 Authors</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<A NAME="License"></A>
+<HR SIZE="6">
+<A NAME="SEC13"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC14"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> A.1 License </H2>
+<!--docid::SEC13::-->
+<P>
+
+This program is distributed under the
+ <A HREF="http://www.gnu.org/copyleft/gpl.html">GNU General Public License</A>.
+as noted in each source file:
+<BR>
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td class=smallexample><FONT SIZE=-1><pre>/*
+ *  Boa, an http server
+ *  Copyright (C) 1995 Paul Phillips &#60;psp@well.com&#62;
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 1, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ */
+ 
+</FONT></pre></td></tr></table></P><P>
+
+<A NAME="Acknowledgments"></A>
+<HR SIZE="6">
+<A NAME="SEC14"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC13"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC15"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> A.2 Acknowledgments </H2>
+<!--docid::SEC14::-->
+<P>
+
+Paul Phillips wrote the first versions of Boa, up to and including
+version 0.91.  Version 0.92 of Boa was officially released December 1996
+by Larry Doolittle.  Version 0.93 was the development version of 0.94,
+which was released in February 2000.
+</P><P>
+
+The Boa Webserver is currently (Feb 2000) maintained and enhanced by 
+Larry Doolittle (<A HREF="mailto:ldoolitt@boa.org">ldoolitt@boa.org</A>) 
+and Jon Nelson (<A HREF="mailto:jnelson@boa.org">jnelson@boa.org</A>).
+</P><P>
+
+We would like to thank Russ Nelson (<A HREF="mailto:nelson@crynwr.com">nelson@crynwr.com</A>)
+for hosting the <A HREF="http://www.boa.org">web site</A>.
+</P><P>
+
+We would also like to thank Paul Philips for writing code that is
+worth maintaining and supporting.
+</P><P>
+
+Many people have contributed to Boa, including (but not
+limited to) Charles F. Randall (<A HREF="mailto:randall@goldsys.com">randall@goldsys.com</A>)
+Christoph Lameter (<A HREF="mailto:&#60;chris@waterf.org&#62;">&#60;chris@waterf.org&#62;</A>), 
+Russ Nelson (<A HREF="mailto:&#60;nelson@crynwr.com&#62;">&#60;nelson@crynwr.com&#62;</A>), Alain Magloire
+(<A HREF="mailto:&#60;alain.magloire@rcsm.ee.mcgill.ca&#62;">&#60;alain.magloire@rcsm.ee.mcgill.ca&#62;</A>),
+and more recently, M. Drew Streib (<A HREF="mailto:&#60;dtype@linux.com&#62;">&#60;dtype@linux.com&#62;</A>).
+</P><P>
+
+Paul Phillips records his acknowledgments as follows: 
+<BLOCKQUOTE>
+Thanks to everyone in the WWW community, in general a great bunch of people.
+Special thanks to Clem Taylor (<A HREF="mailto:&#60;ctaylor@eecis.udel.edu&#62;">&#60;ctaylor@eecis.udel.edu&#62;</A>), who
+provided invaluable feedback on many of my ideas, and offered good
+ones of his own.  Also thanks to John Franks, author of wn, for
+writing what I believe is the best webserver out there.
+</BLOCKQUOTE>
+<P>
+
+<A NAME="Reference Documents"></A>
+<HR SIZE="6">
+<A NAME="SEC15"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC14"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC16"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> A.3 Reference Documents </H2>
+<!--docid::SEC15::-->
+<P>
+
+Links to documents relevant to 
+<A HREF="http://www.boa.org/">Boa</A>
+development and usage.  Incomplete, we're still working on this.
+NCSA has a decent 
+<A HREF="http://hoohoo.ncsa.uiuc.edu/docs/Library.html">page</A> along
+these lines, too.
+</P><P>
+
+Also see Yahoo's List
+<BR> <A HREF="http://www.yahoo.com/Computers_and_Internet/Software/Internet/World_Wide_Web/Servers/">http://www.yahoo.com/Computers_and_Internet/Software/Internet/World_Wide_Web/Servers/</A>
+</P><P>
+
+<UL>
+<LI>W3O HTTP page
+ <BR> <A HREF="http://www.w3.org/pub/WWW/Protocols/">http://www.w3.org/pub/WWW/Protocols/</A>
+ 
+<LI>RFC 1945 HTTP-1.0 (informational)
+ <BR> <A HREF="http://ds.internic.net/rfc/rfc1945.txt">http://ds.internic.net/rfc/rfc1945.txt</A>
+<P>
+
+<LI>IETF Working Group Draft 07 of HTTP-1.1
+ <BR> <A HREF="http://www.w3.org/pub/WWW/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-07.txt">http://www.w3.org/pub/WWW/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-07.txt</A>
+<P>
+
+<LI>HTTP: A protocol for networked information
+ <BR> <A HREF="http://www.w3.org/pub/WWW/Protocols/HTTP/HTTP2.html">http://www.w3.org/pub/WWW/Protocols/HTTP/HTTP2.html</A>
+<P>
+
+<LI>The Common Gateway Interface (CGI)
+ <BR> <A HREF="http://hoohoo.ncsa.uiuc.edu/cgi/overview.html">http://hoohoo.ncsa.uiuc.edu/cgi/overview.html</A>
+<P>
+
+<LI>RFC 1738 URL syntax and semantics
+ <BR> <A HREF="http://ds.internic.net/rfc/rfc1738.txt">http://ds.internic.net/rfc/rfc1738.txt</A>
+<P>
+
+<LI>RFC 1808 Relative URL syntax and semantics
+ <BR> <A HREF="http://ds.internic.net/rfc/rfc1808.txt">http://ds.internic.net/rfc/rfc1808.txt</A>
+</UL>
+<P>
+
+<A NAME="Other HTTP Servers"></A>
+<HR SIZE="6">
+<A NAME="SEC16"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC15"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC17"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> A.4 Other HTTP Servers </H2>
+<!--docid::SEC16::-->
+<P>
+
+For unix-alike platforms, with published source code.
+</P><P>
+
+<UL>
+<LI>tiny/turbo/throttling httpd very similar to Boa, with a throttling
+ feature
+ <BR> <A HREF="http://www.acme.com/software/thttpd/">http://www.acme.com/software/thttpd/</A>
+<P>
+
+<LI>Roxen: based on ulpc interpreter, non-forking (interpreter implements
+ threading), GPL'd
+ <BR> <A HREF="http://www.roxen.com/">http://www.roxen.com/</A>
+<P>
+
+<LI>WN: featureful, GPL'd
+ <BR> <A HREF="http://hopf.math.nwu.edu/">http://hopf.math.nwu.edu/</A>
+<P>
+
+<LI>Apache: fast, PD
+ <BR> <A HREF="http://www.apache.org/">http://www.apache.org/</A>
+<P>
+
+<LI>NCSA: standard, legal status?
+ <BR> <A HREF="http://hoohoo.ncsa.uiuc.edu/">http://hoohoo.ncsa.uiuc.edu/</A>
+<P>
+
+<LI>CERN: standard, PD, supports proxy
+ <BR> <A HREF="http://www.w3.org/pub/WWW/Daemon/Status.html">http://www.w3.org/pub/WWW/Daemon/Status.html</A>
+<P>
+
+<LI>xs-httpd 2.0: small, fast, pseudo-GPL'd
+ <BR> <A HREF="http://www.stack.nl/~sven/xs-httpd/">http://www.stack.nl/~sven/xs-httpd/</A>
+<P>
+
+<LI>bozohttpd.tar.gz sources, in perl
+ <BR> <A HREF="ftp://ftp.eterna.com.au/bozo/bsf/attware/bozohttpd.tar.gz">ftp://ftp.eterna.com.au/bozo/bsf/attware/bozohttpd.tar.gz</A>
+<P>
+
+<LI>Squid is actually an "Internet Object Cache"
+ <BR> <A HREF="http://squid.nlanr.net/Squid/">http://squid.nlanr.net/Squid/</A>
+</UL>
+<P>
+
+Also worth mentioning is Zeus.
+It is commercial, with a free demo, so it doesn't belong on the list above.
+Zeus seems to be based on technology similar to Boa and thttpd,
+but with more bells and whistles.
+<BR> <A HREF="http://www.zeus.co.uk/products/server/">http://www.zeus.co.uk/products/server/</A> 
+</P><P>
+
+<A NAME="Benchmarks"></A>
+<HR SIZE="6">
+<A NAME="SEC17"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC16"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC18"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> A.5 Benchmarks </H2>
+<!--docid::SEC17::-->
+<P>
+
+<UL>
+<LI>ZeusBench (broken link)
+<BR> <A HREF="http://www.zeus.co.uk/products/server/intro/bench2/zeusbench.shtml">http://www.zeus.co.uk/products/server/intro/bench2/zeusbench.shtml</A>
+<P>
+
+<LI>WebBench (binary-ware)
+<BR> <A HREF="http://web1.zdnet.com/zdbop/webbench/webbench.html">http://web1.zdnet.com/zdbop/webbench/webbench.html</A>
+<P>
+
+<LI>WebStone
+<BR> <A HREF="http://www.mindcraft.com/benchmarks/webstone/">http://www.mindcraft.com/benchmarks/webstone/</A>
+<P>
+
+<LI>SpecWeb96
+<BR> <A HREF="http://www.specbench.org/osg/web96/">http://www.specbench.org/osg/web96/</A>
+</UL>
+<P>
+
+<A NAME="Tools"></A>
+<HR SIZE="6">
+<A NAME="SEC18"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC17"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC19"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> A.6 Tools </H2>
+<!--docid::SEC18::-->
+<P>
+
+<UL>
+<LI>Analog logfile analyzer
+<BR> <A HREF="http://www.statslab.cam.ac.uk/&stilde;ret1/analog/">http://www.statslab.cam.ac.uk/&stilde;ret1/analog/</A>
+<P>
+
+<LI>wwwstat logfile analyzer
+<BR> <A HREF="http://www.ics.uci.edu/pub/websoft/wwwstat/">http://www.ics.uci.edu/pub/websoft/wwwstat/</A>
+<P>
+
+<LI>gwstat wwwstat postprocessor
+<BR> <A HREF="http://dis.cs.umass.edu/stats/gwstat.html">http://dis.cs.umass.edu/stats/gwstat.html</A> 
+<P>
+
+<LI>The Webalizer logfile analyzer
+<BR> <A HREF="http://www.usagl.net/webalizer/">http://www.usagl.net/webalizer/</A>
+<P>
+
+<LI>cgiwrap
+<BR> <A HREF="http://www.umr.edu/&ctilde;giwrap/">http://www.umr.edu/&ctilde;giwrap/</A>
+<P>
+
+<LI>suEXEC (Boa would need to be ..umm.. "adjusted" to support this)
+<BR> <A HREF="http://www.apache.org/docs/suexec.html">http://www.apache.org/docs/suexec.html</A>
+</UL>
+<P>
+
+Note: References last checked: 06 October 1997
+</P><P>
+
+<A NAME="Authors"></A>
+<HR SIZE="6">
+<A NAME="SEC19"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC18"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_4.html#SEC12"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> A.7 Authors </H2>
+<!--docid::SEC19::-->
+<P>
+
+<UL>
+<LI>Conversion from linuxdoc SGML to texinfo by Jon Nelson
+<LI>Conversion to linuxdoc SGML by Jon Nelson
+<LI>Original HTML documentation by Larry Doolittle
+<LI>Copyright (C) 1996-2001 Jon Nelson and Larry Doolittle
+</UL>
+<P>
+
+<HR SIZE="6">
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+by <I>root</I> on <I>December, 12  2005</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+
+</BODY>
+</HTML>

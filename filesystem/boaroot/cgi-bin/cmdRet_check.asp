@@ -1,0 +1,1 @@
+<% nvram_dump("nettool.log",""); %>

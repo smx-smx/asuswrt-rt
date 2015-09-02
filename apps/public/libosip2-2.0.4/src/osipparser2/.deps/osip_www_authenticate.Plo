@@ -1,0 +1,213 @@
+osip_www_authenticate.lo: osip_www_authenticate.c \
+  /opt/trendchip/mips-linux-uclibc/usr/include/stdlib.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/features.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_config.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_arch_features.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/sys/cdefs.h \
+  /home/user/socsw/svn/toolchain/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/include/stddef.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/sys/types.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/types.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/wordsize.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/kernel_types.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/typesizes.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/pthreadtypes.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/sched.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/time.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/endian.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/endian.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/sys/select.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/select.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/sigset.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/time.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/sys/sysmacros.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/alloca.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/stdio.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_stdio.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/wchar.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/wchar.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_mutex.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/pthread.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/sched.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_clk_tck.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/signal.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/initspin.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/sigthread.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_pthread.h \
+  /home/user/socsw/svn/toolchain/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/include/stdarg.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/bits/stdio_lim.h \
+  ../../include/osipparser2/osip_port.h ../../config.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/string.h \
+  /opt/trendchip/mips-linux-uclibc/usr/include/sys/time.h \
+  ../../include/osipparser2/osip_const.h \
+  ../../include/osipparser2/osip_list.h \
+  ../../include/osipparser2/osip_message.h \
+  ../../include/osipparser2/osip_headers.h \
+  ../../include/osipparser2/osip_uri.h \
+  ../../include/osipparser2/headers/osip_header.h \
+  ../../include/osipparser2/headers/osip_accept.h \
+  ../../include/osipparser2/headers/osip_content_type.h \
+  ../../include/osipparser2/headers/osip_accept_encoding.h \
+  ../../include/osipparser2/headers/osip_accept_language.h \
+  ../../include/osipparser2/headers/osip_alert_info.h \
+  ../../include/osipparser2/headers/osip_call_info.h \
+  ../../include/osipparser2/headers/osip_allow.h \
+  ../../include/osipparser2/headers/osip_content_length.h \
+  ../../include/osipparser2/headers/osip_authorization.h \
+  ../../include/osipparser2/headers/osip_call_id.h \
+  ../../include/osipparser2/headers/osip_contact.h \
+  ../../include/osipparser2/headers/osip_from.h \
+  ../../include/osipparser2/headers/osip_content_disposition.h \
+  ../../include/osipparser2/headers/osip_content_encoding.h \
+  ../../include/osipparser2/headers/osip_cseq.h \
+  ../../include/osipparser2/headers/osip_error_info.h \
+  ../../include/osipparser2/headers/osip_mime_version.h \
+  ../../include/osipparser2/headers/osip_proxy_authenticate.h \
+  ../../include/osipparser2/headers/osip_www_authenticate.h \
+  ../../include/osipparser2/headers/osip_proxy_authorization.h \
+  ../../include/osipparser2/headers/osip_record_route.h \
+  ../../include/osipparser2/headers/osip_route.h \
+  ../../include/osipparser2/headers/osip_to.h \
+  ../../include/osipparser2/headers/osip_via.h \
+  ../../include/osipparser2/osip_body.h
+
+/opt/trendchip/mips-linux-uclibc/usr/include/stdlib.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/features.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_config.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_arch_features.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/sys/cdefs.h:
+
+/home/user/socsw/svn/toolchain/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/include/stddef.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/sys/types.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/types.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/wordsize.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/kernel_types.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/typesizes.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/pthreadtypes.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/sched.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/time.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/endian.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/endian.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/sys/select.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/select.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/sigset.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/time.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/sys/sysmacros.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/alloca.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/stdio.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_stdio.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/wchar.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/wchar.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_mutex.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/pthread.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/sched.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_clk_tck.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/signal.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/initspin.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/sigthread.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/uClibc_pthread.h:
+
+/home/user/socsw/svn/toolchain/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/include/stdarg.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/bits/stdio_lim.h:
+
+../../include/osipparser2/osip_port.h:
+
+../../config.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/string.h:
+
+/opt/trendchip/mips-linux-uclibc/usr/include/sys/time.h:
+
+../../include/osipparser2/osip_const.h:
+
+../../include/osipparser2/osip_list.h:
+
+../../include/osipparser2/osip_message.h:
+
+../../include/osipparser2/osip_headers.h:
+
+../../include/osipparser2/osip_uri.h:
+
+../../include/osipparser2/headers/osip_header.h:
+
+../../include/osipparser2/headers/osip_accept.h:
+
+../../include/osipparser2/headers/osip_content_type.h:
+
+../../include/osipparser2/headers/osip_accept_encoding.h:
+
+../../include/osipparser2/headers/osip_accept_language.h:
+
+../../include/osipparser2/headers/osip_alert_info.h:
+
+../../include/osipparser2/headers/osip_call_info.h:
+
+../../include/osipparser2/headers/osip_allow.h:
+
+../../include/osipparser2/headers/osip_content_length.h:
+
+../../include/osipparser2/headers/osip_authorization.h:
+
+../../include/osipparser2/headers/osip_call_id.h:
+
+../../include/osipparser2/headers/osip_contact.h:
+
+../../include/osipparser2/headers/osip_from.h:
+
+../../include/osipparser2/headers/osip_content_disposition.h:
+
+../../include/osipparser2/headers/osip_content_encoding.h:
+
+../../include/osipparser2/headers/osip_cseq.h:
+
+../../include/osipparser2/headers/osip_error_info.h:
+
+../../include/osipparser2/headers/osip_mime_version.h:
+
+../../include/osipparser2/headers/osip_proxy_authenticate.h:
+
+../../include/osipparser2/headers/osip_www_authenticate.h:
+
+../../include/osipparser2/headers/osip_proxy_authorization.h:
+
+../../include/osipparser2/headers/osip_record_route.h:
+
+../../include/osipparser2/headers/osip_route.h:
+
+../../include/osipparser2/headers/osip_to.h:
+
+../../include/osipparser2/headers/osip_via.h:
+
+../../include/osipparser2/osip_body.h:

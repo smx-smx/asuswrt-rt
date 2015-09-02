@@ -1,0 +1,835 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Configuration</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="Siproxd Users Guide"
+HREF="siproxd_guide.html"><LINK
+REL="PREVIOUS"
+TITLE="Compiling and Installing"
+HREF="siproxd_guide_c2s2.html"><LINK
+REL="NEXT"
+TITLE="Command Line Options"
+HREF="siproxd_guide_c3s2.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Siproxd Users Guide</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="siproxd_guide_c2s2.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="siproxd_guide_c3s2.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CONFIGURATION"
+></A
+>Configuration</H1
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="AEN80"
+>3.1. The configuration file 'siproxd.conf'</A
+></H1
+><P
+>Siproxd by default searches for its configuration
+        file in the following locations:
+        <P
+></P
+><UL
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="FILENAME"
+>$HOME/.siproxdrc
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="FILENAME"
+>&#60;buildingprefix&#62;/etc/siproxd.conf
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="FILENAME"
+>/etc/siproxd.conf
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="FILENAME"
+>/usr/etc/siproxd.conf
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="FILENAME"
+>/usr/local/etc/siproxd.conf
+            </TT
+></P
+></LI
+></UL
+>
+      </P
+><P
+>The following is a list of directives that do exist.
+        Note that string values MUST NOT contain spaces or tabs.
+        Also read the explanations included in the supplied example
+        configuration file fro more explanation. Items with a # in
+        front are normally disabled / not defined.</P
+><P
+>To start with siproxd in the first run, just adapt the
+        interface definition for the inbound and outbound network
+        interfaces (<TT
+CLASS="PARAMETER"
+><I
+>if_inbound</I
+></TT
+> and 
+        <TT
+CLASS="PARAMETER"
+><I
+>if_outbound</I
+></TT
+>).</P
+><P
+>Definition of network interfaces for the inbound network
+        (local network where your SIP client is connected, this
+        network normally uses IP addresses from on of the private
+        IP ranges like 10.x.x.x, 192.168.x.x) and outbound network
+        (your connection to the Internet, normally this interface
+        has a public IP assigned by your provider).</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>if_inbound  = eth0
+if_outbound = ppp0</PRE
+></TD
+></TR
+></TABLE
+><P
+>Usually only the <TT
+CLASS="PARAMETER"
+><I
+>if_inbound</I
+></TT
+> and
+        <TT
+CLASS="PARAMETER"
+><I
+>if_outbound</I
+></TT
+> directives will be used.
+        The <TT
+CLASS="PARAMETER"
+><I
+>host_outbound</I
+></TT
+> directive comes into
+        play when running siproxd "in front of" a NAT router. Please
+        check the configuration examples in this document for more
+        details.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+># host_outbound = &#60;my_public_ip_address&#62;</PRE
+></TD
+></TR
+></TABLE
+><P
+>Access control lists for incoming SIP registrations and
+        SIP traffic in general. These are comma separated lists of
+        the form &#60;IP&#62;/&#60;mask&#62;, note that no spaces are
+        allowed within the list (the configuration file parser
+        cannot yet handle spaces).</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+># hosts_allow_reg = 192.168.1.0/24,192.168.2.0/24
+# hosts_allow_sip = 123.45.0.0/16,123.46.0.0/16
+# hosts_deny_sip  = 10.0.0.0/8,11.0.0.0/8</PRE
+></TD
+></TR
+></TABLE
+><P
+>Port to listen for incoming SIP messages. 5060 is
+        usually the correct choice, don't change this unless you
+        have a reason to.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>sip_listen_port = 5060</PRE
+></TD
+></TR
+></TABLE
+><P
+>Shall siproxd run as daemon? Usually 1 is the correct
+        choice. If you want siproxd not to daemonize and keep
+        running in foreground and writing its output to the terminal
+        set this to 0.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>daemonize = 1</PRE
+></TD
+></TR
+></TABLE
+><P
+>Siproxd does log using the syslog() facility when
+        running a daemon. This setting controls how much logging
+        is done:
+        <P
+></P
+><UL
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>0 - DEBUGs, INFOs, WARNINGs and ERRORs
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>1 - INFOs, WARNINGs and ERRORs
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>2 - WARNINGs and ERRORs
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>3 - only ERRORs
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>4 - absolutely nothing
+            </TT
+></P
+></LI
+></UL
+>
+        </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>silence_log = 0</PRE
+></TD
+></TR
+></TABLE
+><P
+>Siproxd can log call establishment to syslog.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>log_calls = 1</PRE
+></TD
+></TR
+></TABLE
+><P
+>If siproxd is started as root, it can drop the root
+        privileges and change its user ID at startup. It also can
+        put itself into a chroot() jail (see 4.2 for details)</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>user = nobody
+# chrootjail = /var/lib/siproxd/</PRE
+></TD
+></TR
+></TABLE
+><P
+>Where to store the current registrations. This allows
+        siproxd to remember registration across a restart. An empty
+        value means we do not save registrations. The specified
+        directory path must exist.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>registration_file = /var/lib/siproxd/siproxd_registrations</PRE
+></TD
+></TR
+></TABLE
+><P
+>Where to create the PID file.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>pid_file = /var/run/siproxd/siproxd.pid</PRE
+></TD
+></TR
+></TABLE
+><P
+>Enable/disable the RTP proxy. This must always be
+        enabled. In some future release this directive may
+        become obsolete.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>rtp_proxy_enable = 1</PRE
+></TD
+></TR
+></TABLE
+><P
+>Port range (UDP) that siproxd will use for incoming
+        and outgoing RTP traffic. A firewall must be configured
+        to allow traffic from and to these ports (UDP only). By
+        default the range 7070 up to (and including) 7089 is used.
+        This allows up to 10 simultaneous calls (2 ports per call).
+        If you need more simultaneous calls, increase the range.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>rtp_port_low  = 7070
+rtp_port_high = 7089</PRE
+></TD
+></TR
+></TABLE
+><P
+>Timeout for an RTP stream. If for the specified number
+        of seconds no data is relayed on an active stream, it is
+        considered dead and will be killed.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>rtp_timeout = 300</PRE
+></TD
+></TR
+></TABLE
+><P
+>If a REGISTER request does not contain an
+        <TT
+CLASS="LITERAL"
+>Expires</TT
+> header or <TT
+CLASS="LITERAL"
+>expires=</TT
+>
+        parameter in the <TT
+CLASS="LITERAL"
+>Contact</TT
+> header, this
+        number of seconds will be used and reported back to the UA
+        in the answer.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>default_expires = 600</PRE
+></TD
+></TR
+></TABLE
+><P
+>If siproxd is used as registration server and
+        authentication is wanted, define the following directive.
+        If <TT
+CLASS="PARAMETER"
+><I
+>proxy_auth_realm</I
+></TT
+> is defined
+        (a string), clients will be forced to authenticate themselfs
+        to the proxy (for registration only). To disable Authentication,
+        simply comment out this line. Default is disabled.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+># proxy_auth_realm = Authentication_Realm</PRE
+></TD
+></TR
+></TABLE
+><P
+>The password to be used for authentication may be a global
+        one</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+># proxy_auth_passwd = some_password</PRE
+></TD
+></TR
+></TABLE
+><P
+>or on a per user base, stored in its own file.
+        <TT
+CLASS="PARAMETER"
+><I
+>proxy_auth_pwfile</I
+></TT
+> takes precedence over
+        <TT
+CLASS="PARAMETER"
+><I
+>proxy_auth_passwd</I
+></TT
+></P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+># proxy_auth_pwfile = /etc/mysiproxd_passwd.cfg</PRE
+></TD
+></TR
+></TABLE
+><P
+>To enable additional debug output of siproxd.
+        This is a bit pattern representing the following items.
+        Default is 0x0 - disabled. See below in this document
+        for information on how to create a debug log file.
+        <P
+></P
+><UL
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_BABBLE  0x00000001 // babble (like entering/leaving fnc)
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_NET     0x00000002 // network
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_SIP     0x00000004 // SIP manipulations
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_REG     0x00000008 // Client registration
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_NOSPEC  0x00000010 // non specified class
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_PROXY   0x00000020 // proxy
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_DNS     0x00000040 // DNS stuff
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_NETTRAF 0x00000080 // network traffic
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_CONFIG  0x00000100 // configuration
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_RTP     0x00000200 // RTP proxy
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_ACCESS  0x00000400 // Access list evaluation
+            </TT
+></P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+><TT
+CLASS="LITERAL"
+>DBCLASS_AUTH    0x00000800 // Authentication
+            </TT
+></P
+></LI
+></UL
+>
+        </P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>debug_level = 0x00000000</PRE
+></TD
+></TR
+></TABLE
+><P
+>You may connect to this port from a remote machine and
+        receive the debug output. This allows bettwer creation of
+        debug output on embedded systems that do not have enough
+        memory for large disk files. Port number 0 means this feature
+        is disabled.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>debug_port = 0</PRE
+></TD
+></TR
+></TABLE
+><P
+>Some UAs (SIP clients) will always use the host/ip they
+        register TO as host part in the registration record (which
+        will be the inbound ip address/hostname of the proxy) and
+        can not be told to register a different host (public IP
+        address). This Mask feature allows to force such a UA to be
+        masqueraded to a different host. Siemens SIP Phones seem to
+        need this feature. Normally disabled.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+># mask_host=local.ip.of.sipphone
+# masked_host=public.domaind.org</PRE
+></TD
+></TR
+></TABLE
+><P
+>Siproxd itself can be told to send all traffic to another
+        outbound proxy. You can use this feature to 'chain' multiple
+        siproxd proxies if you have several masquerading firewalls
+        to cross. Normally disabled.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+># outbound_proxy_host = my.outboundproxy.org
+# outbound_proxy_port = 5060</PRE
+></TD
+></TR
+></TABLE
+><P
+>Outbound proxies can be specified on a per-domain base.
+        This allows to use an outbound proxy needed for ProviderA
+        and none (or another) for ProviderB. Multiple domain specific
+        proxies may be specified, each one with one set of the following
+        directives. Note: These directives must always be specified as a
+        triple, skipping one of them will affect later definitions.</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>#outbound_domain_name = freenet.de
+#outbound_domain_host = proxy.for.domain.freende.de
+#outbound_domain_port = 5060</PRE
+></TD
+></TR
+></TABLE
+><P
+>Quick-Dial "Plug-in": 
+        ability to define quick dial numbers that can be accessed by
+        dialing "*nn" from a local phone. 'nn' corresponds to the entry number
+        pi_shortdial_entry) below. The '*' character can be chosen freely
+        (pi_shortdial_akey).
+        Note: To call a real number like "*1234" you would have to dial
+        "**1234"</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>pi_shortdial_enable = 1
+pi_shortdial_akey = *
+#
+# *01 sipphone echo test
+pi_shortdial_entry = 17474743246
+# *02 sipphone welcome message
+pi_shortdial_entry = 17474745000</PRE
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="siproxd_guide_c2s2.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="siproxd_guide.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="siproxd_guide_c3s2.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Compiling and Installing</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Command Line Options</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

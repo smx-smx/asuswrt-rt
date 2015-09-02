@@ -1,0 +1,27 @@
+#
+# Makefile for plugins on Solaris 2
+#
+# $Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/apps/public/ppp-2.4.1.pppoe4.orig/pppd/plugins/Makefile.sol2#1 $
+#
+
+include ../../svr4/Makedefs
+
+CFLAGS	= -c -O -I.. -I../../include $(COPTS)
+LDFLAGS	= -G 
+
+all:	minconn.so
+
+minconn.so: minconn.o
+	ld -o $@ $(LDFLAGS) -h $@ minconn.o
+
+minconn.o: minconn.c
+	$(CC) $(CFLAGS) -c $? 
+
+passprompt.so: passprompt.o
+	ld -o $@ $(LDFLAGS) -h $@ passprompt.o
+
+passprompt.o: passprompt.c
+	$(CC) $(CFLAGS) -c $?
+
+clean:
+	rm -f *.o *.so

@@ -1,0 +1,1 @@
+share_link_result = '<% tcWebApi_get("AiCloud_Entry", "share_link_result", "s") %>';

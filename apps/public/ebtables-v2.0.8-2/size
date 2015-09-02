@@ -1,0 +1,2 @@
+ebtables.spec:71:%doc ChangeLog COPYING INSTALL THANKS
+ebtables.spec:81:%changelog

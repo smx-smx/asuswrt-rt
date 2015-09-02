@@ -1,0 +1,215 @@
+#!/usr/bin/perl
+
+# call2sym -  convert linux kernel oops call trace listings to System.map
+#             symbolic names.
+#
+# Written by Phil Hollenback
+# Copyright (C) 2000 Phil Hollenback <phollenback@pobox.com>
+#
+# This software may be used and distributed according to the terms
+# of the GNU General Public License, incorporated herein by reference.
+# All other rights reserved.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# See the perlpod documentation at the end of this file for
+# instructions.
+#
+# $Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/tools/call2sym#1 $
+
+#
+# Configuration Options
+#
+
+# This will be viewable thru the "-v" switch at a later date.
+$version = "0.0.1";
+
+#
+# End Configuration Options
+#
+
+# Check that we got passed a System.map file on the command line.
+(scalar(@ARGV) == 1) or $mapfile = "System.map";
+(scalar(@ARGV) == 1) and $mapfile = $ARGV[0];
+
+( -r $mapfile ) or die "Can't read file $mapfile\n";
+
+print "Ready for call trace list.  <ctrl-d> on a blank line when done.\n\n";
+
+while (<STDIN>)
+  {
+    # remove newlines in case this was a cut-n-paste.
+    chop;
+    $trace_line .= $_;
+  }
+
+print "\nProcessing...\n";
+
+# Now munge call trace entries into an array.
+@trace_addrs = ();
+
+# Split into an array of addresses, on whitespace.
+@trace_addrs = split / /,$trace_line;
+
+# I think I'm clever, so use a map to remove cruft from each array
+# entry.
+@trace_addrs = map { m|\[<(.*)>\]| } @trace_addrs;
+
+# I now have an in-order array of the call trace addresses.
+
+# Suck the whole mapfile into a hash keyed on address.  Convert keys to
+# decimal for easier compares later on.
+open MAPFILE, $mapfile or die "Can't open mapfile $mapfile\n";
+while (<MAPFILE>)
+  {
+	  #if ( /^00000000(.*) . (.*)/ )
+    if ( /^(.*) . (.*)/ )
+      {
+	# convert to decimal and pad to 10 digits.
+	# that way everything lines up and conversions should be easy.
+	$decaddr = sprintf "%010lu", hex($1);
+	$funcs{$decaddr} = $2;
+      }
+  }
+
+# print a header
+print "\nAddress\t\tFunction\n\n";
+
+# We've got all the addresses in the hash as string versions of
+# decimal numbers. Should now be able to iterate thru the
+# list until we find the one closest to each $addr.
+foreach $addr (@trace_addrs)
+  {
+    # convert addr to decimal.
+    $decaddr = hex($addr);
+
+    # loop through keys until we find the one just 1 greater.
+    foreach $func (sort keys %funcs)
+      {
+	# now print out the one just 1 less.
+	if ($func > $decaddr ) {
+	  print  "$addr\t$funcs{$lastfunc}\n";
+	  last;
+	}
+	$lastfunc = $func;
+      }
+  }
+
+
+
+__END__
+
+=head1 NAME
+
+call2sym - convert Linux Kernel oops call trace listings to System.map
+symbolic names.
+
+=head1 SYNOPSIS
+
+  call2sym System.map < stacklist
+
+=head1 DESCRIPTION
+
+I<call2sym> is a tools for debugging kernel development.  When the kernel
+panics and an oops message is generated, the system function call trace is
+printed as hex addresses.
+
+I<call2sym> cross-references this list of addresses against a F<System.map>
+file and prints out the symbolic names of the functions.  This gives you the
+list of all the functions on the stack when the system panick'ed.
+
+=head1 OPTIONS AND ARGUMENTS
+
+I<call2sym> takes one argument: the F<System.map> file to be analyzed.
+In addition, it expects the call stack on STDIN.  This should be
+cut-n-pasted directly from the kernel oops (it is assumed that you are
+debugging remotely and can simply take this from an xterm or similar).
+The call stack should be in the standard oops format, something like:
+
+[<80045f7c>] [<800e31a0>] [<800285d8>] [<80152030>] [<8015b068>] [<8015ac70>]
+[<80028134>] [<80028134>] [<80155664>] [<80028134>] [<80028134>] [
+<80028144>] [<8002a180>] [<8002a170>]
+
+Note that it's ok for this listing to be broken into multiple lines.
+
+=head1 EXAMPLES
+
+Here's a typical scenario:
+
+=over 4
+
+=item *
+
+The test system panics and prints an oops message.
+
+=item *
+
+You invoke I<call2sym> like this:
+
+  # call2sym System.map
+
+and it waits for the call stack on STDIN.
+
+=item *
+
+You cut and paste the call stack from the oops message into
+I<call2sym>.  After you are finished, press ctrl-d on a blank line.
+
+=back
+
+After a few moments, the results will be printed something like this:
+
+  Address         Function
+
+  80045f7c        do_softirq
+  800e31a0        pcnet32_start_xmit
+  800285d8        handle_softirq
+  80152030        twist_table.574
+  8015b068        timer_bug_msg
+  8015ac70        timer_bug_msg
+  80028134        init
+  80028134        init
+  80155664        rx_copybreak
+  80028134        init
+  80028134        init
+  8002a180        kernel_thread
+  8002a170        kernel_thread
+
+=head1 FILES
+
+I<call2sym> uses no temporary files - all work is done in memory.  The only
+file required is the F<System.map> which matches the kernel you are debugging.
+
+=head1 BUGS
+
+Rigorous error checking is not performed.  I<call2sym> will gladly give
+you a completely wrong function list if you supply the wrong F<System.map>.
+
+Corrupted call stacks will give spurious results.
+
+Performance should be optimized in some way - use of hash to store function
+names and addresses consumes too much memory and time.
+
+Correct answer of 42 is not always obtained.
+
+Report all other bugs (features) to phollenback@pobox.com.
+
+=head1 COPYRIGHT
+
+I<call2sym> is released as free, open-source software, under the terms
+of the GNU General Public Licence (GNU GPL).  This license can be
+viewed at http://www.gnu.org.  It is important to realize that this
+means that there is ABSOLUTELY NO WARRANTY for this software.
+
+=head1 AUTHORS
+
+Original inspiration from Mike McDonald, <mikemac@mikemac.com>.
+
+Design and implementation by Phil Hollenback, <phollenback@pobox.com>.
+
+=head1 SEE ALSO
+
+L<ddate(1)>

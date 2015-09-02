@@ -1,0 +1,13 @@
+CC = /home/alan/oleg/optware/toolchain/mipsel-linux-uclibc/gcc-4.1.1-uclibc-0.9.28/bin/mipsel-linux-uclibc-gcc
+#LD = /oleg/optware/toolchain/mipsel-linux-uclibc/gcc-4.1.1-uclibc-0.9.28/mipsel-linux-uclibc/bin/ld
+CFLAGS = -I/opt/include/ -I/opt/include/neon -I/home/alan/oleg/optware/staging/opt/include -D_FILE_OFFSET_BITS=64
+#LDFLAGS = -L.  -L/oleg/optware/staging/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,/oleg/optware/staging/opt/lib, -L/opt/lib  -lneon -lpthread 
+LDFLAGS = -L/home/alan/oleg/optware/staging/opt/lib -Wl,-rpath,/opt/lib -Wl,-rpath-link,/home/alan/oleg/optware/staging/opt/lib -L/opt/lib  -lneon -lpthread -lxml2 -lssl
+#LIBS = -lneon -lpthread
+
+all : webdav_client
+webdav_client : webdav.o base.o list.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -g -o $@ $^
+.PHONY : clean
+clean:
+	rm -rf *.o webdav_client

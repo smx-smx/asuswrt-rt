@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# chkconfig: 12345 01 99
+# /etc/rc.d/init.d/sysstat
+# (C) 2000-2009 Sebastien Godard (sysstat <at> orange.fr)
+#
+# Description: Reset the system activity logs
+#@(#) sysstat-9.0.4 startup script:
+#@(#)	 Insert a dummy record in current daily data file.
+#@(#)	 This indicates that the counters have restarted from 0.
+#
+
+RETVAL=0
+SYSCONFIG_DIR=/etc/sysconfig
+SADC_OPTIONS="-S DISK"
+
+# See how we were called.
+case "$1" in
+  start)
+	exitCodeIndicator="$(mktemp /tmp/sysstat-XXXXXX)" || exit 1
+	echo -n "Calling the system activity data collector (sadc): "
+	  /usr/lib/sa/sa1 --boot ${SADC_OPTIONS} || rm -f ${exitCodeIndicator} 
+
+	# Try to guess if sadc was successfully launched. The difficulty
+	# here is that the exit code is lost when the above command is
+	# run via "su foo -c ..."
+	if [ -f "${exitCodeIndicator}" ]; then
+		rm -f ${exitCodeIndicator}
+	else
+		RETVAL=1
+	fi
+	echo
+	;;
+  stop|status|restart|reload)
+	;;
+  *)
+	echo "Usage: sysstat {start|stop|status|restart|reload}"
+	exit 1
+esac
+exit ${RETVAL}
+

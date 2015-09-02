@@ -1,0 +1,48 @@
+README.osX
+$Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/apps/public/net-snmp-5.3.1/README.osX#1 $
+
+This is what I had to do to get it to work for me. Your mileage may vary.
+If this doesn't work for you, or you have fixes for any problems listed,
+please post to <net-snmp-coders@lists.sourceforge.net>. Thanks!
+
+  - ALL
+
+    - Test 44 (Perl AgentX Subagent) fails.
+
+      - There are 2 issues here. One is the perl can't find the
+        net-snmp shared libraries, because they aren't installed yet.
+        Setting DYLD_LIBRARY_PATH helps here, but one link error
+        remains:
+
+           /usr/bin/perl Undefined symbols: _boot_DynaLoader
+
+        Unless you need a perl based AgentX subagent, you can ignore
+        this error.
+
+     - nlist doesn't support icmpstat
+
+       - disable the icmp module during configure by specifying
+         "--with-out-mib-modules=mibII/icmp", or at startup by adding
+         "-I -icmp" to the snmpd command line.
+
+
+  - 10.3.x and earlier
+
+     - Some older versions of Apple's cpp doesn't like configure. 
+
+        - run 'gcc_select' to see what version you are using, and
+          'gcc_select -l' to list available versions. I've had success with
+          3.3, selected by running (as root) 'gcc_select 3.3'. (Note: this was
+          on Panther, 10.3.2)
+
+     - Some older versions of net-snmp as installed by Apple contains
+       bad flags in net-snmp-config.
+
+       - build your own version, and install over Apple's version. The
+         configure flags you need for the same configuration:
+
+         configure --prefix=/usr --mandir=/usr/share/man
+                   --infodir=/usr/share/info --with-libwrap --with-defaults
+                   --prefix=/usr --with-persistent-directory=/var/db/ucd-snmp
+                   --with-mib-modules=host
+

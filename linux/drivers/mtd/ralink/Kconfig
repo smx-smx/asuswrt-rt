@@ -1,0 +1,11 @@
+menu "Ralink Non-volatile Device Drivers"
+	depends on MTD!=n
+
+config MTD_NAND_RALINK
+	tristate "NAND Flash Support"
+	depends on MIPS_RT63365
+	select MTD_PARTITIONS
+	help
+	  support Ralink 3052 nand flash controller.
+
+endmenu

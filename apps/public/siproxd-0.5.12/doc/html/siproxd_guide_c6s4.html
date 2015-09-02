@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>Transparent SIP Proxy</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.7"><LINK
+REL="HOME"
+TITLE="Siproxd Users Guide"
+HREF="siproxd_guide.html"><LINK
+REL="UP"
+TITLE="Sample Configurations"
+HREF="siproxd_guide_c6.html"><LINK
+REL="PREVIOUS"
+TITLE='GS BT-100 with Siproxd running "in front of" a NAT router'
+HREF="siproxd_guide_c6s3.html"><LINK
+REL="NEXT"
+TITLE="Masquerading an Asterisk box"
+HREF="siproxd_guide_c6s5.html"></HEAD
+><BODY
+CLASS="SECT1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Siproxd Users Guide</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="siproxd_guide_c6s3.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 6. Sample Configurations</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="siproxd_guide_c6s5.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="AEN323"
+>6.4. Transparent SIP Proxy</A
+></H1
+><P
+>Scenario:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>private IP address range             :          Internet
+10.0.0.x                             :          (public IP address range)
+                                     :
+                                     :         foo.bar.org
++-------------+               +--------------+
+!             !.10         .1 ! masquerading ! publicIP
+! SIP UA      !---------------! Firewall     !------------&#62;&#62;  
+!             !               ! siproxd      !
++-------------+               +--------------+
+                          eth0       :        ppp0</PRE
+></TD
+></TR
+></TABLE
+><P
+>You may have a SIP UA (Phone) that does not allow the
+        specification of an outbound proxy. If siproxd is running
+        on the masquerading router, the following configuration will
+        do so called transparent proxying. The firewall will redirect
+        outgoing SIP messages to siproxd, however the local Client
+        is not aware of it.</P
+><P
+>siproxd.conf:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+>if_inbound  = eth0
+if_outbound = ppp0
+hosts_allow_reg = 10.0.0.0/24
+sip_listen_port = 5060
+daemonize = 1
+silence_log = 1
+log_calls = 1
+user = siproxd
+registration_file = /var/lib/siproxd_registrations
+pid_file = /var/run/siproxd/siproxd.pid
+rtp_proxy_enable = 1
+rtp_port_low  = 7010
+rtp_port_high = 7019
+rtp_timeout = 300
+default_expires = 600
+debug_level = 0
+debug_port = 0</PRE
+></TD
+></TR
+></TABLE
+><P
+>Firewall configuration (iptables):</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SCREEN"
+># redirect outgoing SIP traffic to siproxd (myself)
+iptables -t nat -A PREROUTING -m udp -p udp -i eth0 \
+                              --destination-port 5060     -j REDIRECT
+# allow incoming SIP and RTP traffic
+iptables -A INPUT -m udp -p udp -i ppp0 --dport 5060      -j ACCEPT
+iptables -A INPUT -m udp -p udp -i ppp0 --dport 7070:7089 -j ACCEPT</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="siproxd_guide_c6s3.html"
+ACCESSKEY="P"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="siproxd_guide.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="siproxd_guide_c6s5.html"
+ACCESSKEY="N"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>GS BT-100 with Siproxd running "in front of" a NAT router</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="siproxd_guide_c6.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Masquerading an Asterisk box</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

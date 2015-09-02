@@ -1,0 +1,17 @@
+include ../../TI_Build.make
+
+export PATH := $(TI_uclibc_path):$(shell echo -n $(PATH))
+
+all: build install
+
+build:
+	$(MAKE) TI_FILESYSTEM=$(TARGET_HOME)/filesystem ti_linux_dproxy
+	mips_fp_le-strip -s dproxy
+
+install: 
+	install -m 0755 dproxy $(TARGET_HOME)/$(TI_rsbindir)/dproxy
+	cd $(TARGET_HOME)/$(TI_etcdir); ln -sf ./resolv.conf dproxy.conf
+
+
+clean:
+	$(MAKE) clean

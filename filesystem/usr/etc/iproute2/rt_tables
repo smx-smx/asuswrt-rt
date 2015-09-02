@@ -1,0 +1,26 @@
+#
+# reserved values
+#
+255	local
+254	main
+253	default
+0	unspec
+#
+# local
+#
+#1	inr.ruhep
+200	eth0
+201	eth1
+202 eth2
+203	eth3
+204	eth0.1
+205	eth0.2
+206	eth0.3
+207 eth0.4
+208	ra0
+209	ra1
+210	ra2
+211	ra3
+212	usb0
+# routepolicy table
+220 	routep

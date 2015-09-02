@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node name='Device' rw='0' type='node'>
+    <node name='WANDevice' rw='0' type='node'>
+        <node name='1' rw='0' type='node'>
+            <node name='WANConnectionDevice' rw='0' type='node'>
+                <node name='1' rw='0' type='node'>
+                    <node name='WANPPPConnection' rw='0' type='node'>
+                        <node name='1' rw='0' type='node'>
+                            <node name='ExternalIPAddress' rw='1' getc='0' noc='2' nocc='0' acl='' type='string'>1.2.3.4</node>
+                        </node>
+                    </node>
+                </node>
+            </node>
+        </node>
+    </node>
+    <node name='SoftwareModules' rw='0' type='node'>
+        <node name='DeploymentUnit' rw='1' nin='2' il='64' type='node'>
+            <node name='template' rw='1' nin='0' il='0' type='node'>
+                <node name='UUID' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>76183ed7-6a38-3890-66ef-a6488efb6690</node>
+                <node name='DUID' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>76183ed7-6a38-3890-66ef-a6488efb6690</node>
+                <node name='Alias' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Alias</node>
+                <node name='Name' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>DU</node>
+                <node name='Status' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Installed</node>
+                <node name='Resolved' rw='0' getc='0' noc='0' nocc='0' acl='' type='boolean'>1</node>
+                <node name='URL' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='Description' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='Vendor' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Vendor</node>
+                <node name='Version' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>1.0</node>
+                <node name='VendorLogList' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>vendor.log</node>
+                <node name='VendorConfigList' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>vendor.conf</node>
+                <node name='ExecutionUnitList' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Device.SoftwareModules.ExecutionUnit.1.</node>
+                <node name='ExecutionEnvRef' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Device.SoftwareModules.ExecEnv.1.</node>
+            </node>
+            <node name='1' rw='1' nin='0' il='0' type='node'>
+                <node name='UUID' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>76183ed7-6a38-3890-66ef-a6488efb6690</node>
+                <node name='DUID' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>76183ed7-6a38-3890-66ef-a6488efb6690</node>
+                <node name='Alias' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Alias</node>
+                <node name='Name' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>DU</node>
+                <node name='Status' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Installed</node>
+                <node name='Resolved' rw='0' getc='0' noc='0' nocc='0' acl='' type='boolean'>1</node>
+                <node name='URL' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='Description' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='Vendor' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Vendor</node>
+                <node name='Version' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>1.0</node>
+                <node name='VendorLogList' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>vendor.log</node>
+                <node name='VendorConfigList' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>vendor.conf</node>
+                <node name='ExecutionUnitList' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Device.SoftwareModules.ExecutionUnit.1.</node>
+                <node name='ExecutionEnvRef' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Device.SoftwareModules.ExecEnv.1.</node>
+            </node>
+        </node>
+        <node name='ExecEnv' rw='1' nin='2' il='64' type='node'>
+            <node name='template' rw='1' nin='0' il='0' type='node'>
+                <node name='Enable' rw='0' getc='0' noc='0' nocc='0' acl='' type='boolean'>1</node>
+                <node name='Status' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Up</node>
+                <node name='Reset' rw='0' getc='0' noc='0' nocc='0' acl='' type='boolean'>0</node>
+                <node name='Alias' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Alias</node>
+                <node name='Name' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>ExecEnvName</node>
+                <node name='Type' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>ExecEnvType</node>
+                <node name='InitialRunLevel' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>1</node>
+                <node name='RequestedRunLevel' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>1</node>
+                <node name='CurrentRunLevel' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>1</node>
+                <node name='Vendor' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Workssys</node>
+                <node name='Version' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>1.0</node>
+                <node name='ParentExecEnv' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='AllocatedDiskSpace' rw='1' getc='0' noc='0' nocc='0' acl='' type='int'>-1</node>
+                <node name='AvailableDiskSpace' rw='1' getc='0' noc='0' nocc='0' acl='' type='int'>-1</node>
+                <node name='AllocatedMemory' rw='1' getc='0' noc='0' nocc='0' acl='' type='int'>-1</node>
+                <node name='AvailableMemory' rw='1' getc='0' noc='0' nocc='0' acl='' type='int'>-1</node>
+                <node name='ActiveExecutionUnits' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='ProcessorRefList' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+            </node>
+            <node name='1' rw='1' nin='0' il='0' type='node'>
+                <node name='Enable' rw='0' getc='0' noc='0' nocc='0' acl='' type='boolean'>1</node>
+                <node name='Status' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Up</node>
+                <node name='Reset' rw='0' getc='0' noc='0' nocc='0' acl='' type='boolean'>0</node>
+                <node name='Alias' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Alias</node>
+                <node name='Name' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>ExecEnvName</node>
+                <node name='Type' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>ExecEnvType</node>
+                <node name='InitialRunLevel' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>1</node>
+                <node name='RequestedRunLevel' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>1</node>
+                <node name='CurrentRunLevel' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>1</node>
+                <node name='Vendor' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Workssys</node>
+                <node name='Version' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>1.0</node>
+                <node name='ParentExecEnv' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='AllocatedDiskSpace' rw='1' getc='0' noc='0' nocc='0' acl='' type='int'>-1</node>
+                <node name='AvailableDiskSpace' rw='1' getc='0' noc='0' nocc='0' acl='' type='int'>-1</node>
+                <node name='AllocatedMemory' rw='1' getc='0' noc='0' nocc='0' acl='' type='int'>-1</node>
+                <node name='AvailableMemory' rw='1' getc='0' noc='0' nocc='0' acl='' type='int'>-1</node>
+                <node name='ActiveExecutionUnits' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='ProcessorRefList' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+            </node>
+        </node>
+        <node name='ExecutionUnit' rw='1' nin='1' il='64' type='node'>
+            <node name='template' rw='1' nin='0' il='0' type='node'>
+                <node name='EUID' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Euid</node>
+                <node name='Alias' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Alias</node>
+                <node name='Name' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>EU</node>
+                <node name='ExecEnvLabel' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>EELabel</node>
+                <node name='Status' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Installed</node>
+                <node name='RequestedState' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='ExecutionFaultCode' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='ExecutionFaultMessage' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='AutoStart' rw='1' getc='0' noc='0' nocc='0' acl='' type='boolean'>1</node>
+                <node name='RunLevel' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>-1</node>
+                <node name='Vendor' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Vendor</node>
+                <node name='Version' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>1.0</node>
+                <node name='Description' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='DiskSpaceInUse' rw='0' getc='0' noc='0' nocc='0' acl='' type='int'>-1</node>
+                <node name='MemoryInUse' rw='0' getc='0' noc='0' nocc='0' acl='' type='int'>-1</node>
+                <node name='References' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='AssociatedProcessList' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='VendorLogList' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>vendor.log</node>
+                <node name='VendorConfigList' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>vendor.conf</node>
+                <node name='SupportedDataModelList' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='ExecutionEnvRef' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>Device.SoftwareModules.ExecEnv.1.</node>
+            </node>
+        </node>
+    </node>
+    <node name='MultiInstanceSample' rw='1' nin='1' il='3' type='node'>
+        <node name='template' rw='0' type='node'>
+            <node name='users3' rw='0' type='node'>
+                <node name='Username2' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username2_bak</node>
+                <node name='Username1' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username1</node>
+            </node>
+            <node name='users2' rw='0' type='node'>
+                <node name='users2-1' rw='0' type='node'>
+                    <node name='Username2' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username2</node>
+                    <node name='Username1' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username1</node>
+                    <node name='users3-1' rw='0' type='node'>
+                        <node name='Username2' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username2</node>
+                        <node name='Username1' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username1</node>
+                        <node name='users4-1' rw='0' type='node'>
+                            <node name='Username2' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username2</node>
+                            <node name='Username1' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username1</node>
+                        </node>
+                    </node>
+                </node>
+                <node name='Username2' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username2</node>
+                <node name='Username1' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username1</node>
+            </node>
+            <node name='users1' rw='0' type='node'>
+                <node name='Username2' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username2</node>
+                <node name='Username1' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>username1</node>
+            </node>
+        </node>
+    </node>
+    <node name='ManagementServer' rw='0' type='node'>
+        <node name='Username' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>digest</node>
+        <node name='URL' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string'>http://tw.iop.workssys.com/comserver/node1/tr069</node>
+        <node name='UDPConnectionRequestAddress' rw='0' getc='0' noc='2' nocc='2' acl='' type='string'>0.0.0.0:7547</node>
+        <node name='STUNUsername' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>test</node>
+        <node name='STUNServerPort' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>3478</node>
+        <node name='STUNServerAddress' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>116.213.94.142</node>
+        <node name='STUNPassword' rw='1' getc='1' noc='0' nocc='0' acl='' type='string'>f5d74b9277dc7f03587630ee535bf017e0fb75c7</node>
+        <node name='STUNMinimumKeepAlivePeriod' rw='1' getc='0' noc='1' nocc='' acl='' type='unsignedInt'>3000</node>
+        <node name='STUNMaximumKeepAlivePeriod' rw='1' getc='0' noc='1' nocc='' acl='' type='unsignedInt'>30</node>
+        <node name='STUNEnable' rw='1' getc='0' noc='1' nocc='' acl='' type='boolean'>0</node>
+        <node name='PeriodicInformTime' rw='1' getc='0' noc='2' nocc='2' acl='' type='dateTime'>0001-01-01T00:00:00Z</node>
+        <node name='PeriodicInformInterval' rw='1' getc='0' noc='2' nocc='2' acl='' type='unsignedInt'>30</node>
+        <node name='PeriodicInformEnable' rw='1' getc='0' noc='2' nocc='2' acl='' type='boolean'>1</node>
+        <node name='Password' rw='1' getc='1' noc='2' nocc='2' acl='' type='string'>digest</node>
+        <node name='ParameterKey' rw='1' getc='0' noc='2' nocc='2' acl='' type='string'></node>
+        <node name='NATDetected' rw='0' getc='0' noc='2' nocc='2' acl='' type='boolean'>true</node>
+        <node name='ConnectionRequestUsername' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>username</node>
+        <node name='ConnectionRequestURL' rw='0' getc='0' noc='2' nocc='2' acl='' type='string'>http://172.31.0.164:7547</node>
+        <node name='ConnectionRequestPassword' rw='0' getc='1' noc='0' nocc='0' acl='' type='string'>password</node>
+        <node name='CWMPRetryMinimumWaitInterval' rw='1' getc='1' noc='0' nocc='0' acl='' type='string'>5</node>
+        <node name='CWMPRetryIntervalMultiplier' rw='1' getc='1' noc='0' nocc='0' acl='' type='string'>2000</node>
+        <node name='DUStateChangeComplPolicy' rw='0' type='node'>
+            <node name='Enable' rw='1' getc='0' noc='0' nocc='' acl='' type='boolean'>0</node>
+            <node name='ResultTypeFilter' rw='1' getc='0' noc='0' nocc='' acl='' type='string'>Both</node>
+            <node name='FaultCodeFilter' rw='1' getc='0' noc='0' nocc='' acl='' type='string'>9001,9003,9012,9013,9015,9016,9017,9018,9022,9023,9024,9025</node>
+        </node>
+    </node>
+    <node name='Layer3Forwarding' rw='0' type='node'>
+        <node name='ForwardNumberOfEntries' rw='0' getc='0' noc='0' nocc='' acl='' type='string'>value</node>
+        <node name='DefaultConnectionService' rw='1' getc='0' noc='2' nocc='1' acl='' type='string'>1</node>
+    </node>
+    <node name='DeviceInfo' rw='0' type='node'>
+        <node name='SpecVersion' rw='0' getc='0' noc='2' nocc='2' acl='' type='string'>1.1</node>
+        <node name='SoftwareVersion' rw='0' getc='0' noc='2' nocc='2' acl='' type='string'>1.0</node>
+        <node name='SerialNumber' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>157A</node>
+        <node name='ProvisioningCode' rw='0' getc='0' noc='2' nocc='2' acl='' type='string'>123</node>
+        <node name='ProductClass' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>TRAgent</node>
+        <node name='ManufacturerOUI' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>157A</node>
+        <node name='Manufacturer' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>TRAgent</node>
+        <node name='HardwareVersion' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>1.0</node>
+        <node name='X_WKS_Key' rw='0' getc='0' noc='0' nocc='0' acl='' type='string'>wkss</node>
+    </node>
+    <node name='UploadDiagnostics' rw='0' type='node'>
+        <node name='DiagnosticsState' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Completed</node>
+        <node name='Interface' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string'></node>
+        <node name='UploadURL' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>http://10.10.1.48/acs_filestore/upload/romStore/data.txt</node>
+        <node name='DSCP' rw='1' getc='0' noc='2' nocc='2' acl='' type='unsignedInt'>0</node>
+        <node name='TestFileLength' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>10000</node>
+        <node name='ROMTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:14:52.421599</node>
+        <node name='BOMTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:14:52.428843</node>
+        <node name='EOMTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:14:52.749615</node>
+        <node name='TotalBytesSent' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>30000</node>
+        <node name='TCPOpenRequestTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:14:52.354459</node>
+        <node name='TCPOpenResponseTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:14:52.371839</node>
+        <node name='EthernetPriority' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>0</node>
+    </node>
+    <node name='DownloadDiagnostics' rw='0' type='node'>
+        <node name='DiagnosticsState' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Error_InitConnectionFailed</node>
+        <node name='Interface' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string'></node>
+        <node name='DownloadURL' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>http://10.10.1.48/acs_filestore/download/data.txt</node>
+        <node name='DSCP' rw='1' getc='0' noc='2' nocc='2' acl='' type='unsignedInt'>0</node>
+        <node name='EthernetPriority' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>0</node>
+        <node name='ROMTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:23:29.111696</node>
+        <node name='BOMTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:23:29.138323</node>
+        <node name='EOMTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:23:29.269335</node>
+        <node name='TestBytesReceived' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>453630</node>
+        <node name='TotalBytesReceived' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>30000</node>
+        <node name='TCPOpenRequestTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:23:29.103696</node>
+        <node name='TCPOpenResponseTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:23:29.110099</node>
+    </node>
+    <node name='IPPingDiagnostics' rw='0' type='node'>
+        <node name='DiagnosticsState' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Complete</node>
+        <node name='Interface' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string'>InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1</node>
+        <node name='Host' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string'>192.168.1.1</node>
+        <node name='NumberOfRepetitions' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>2</node>
+        <node name='Timeout' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>17000</node>
+        <node name='DataBlockSize' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>42</node>
+        <node name='DSCP' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>0</node>
+        <node name='SuccessCount' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>4</node>
+        <node name='FailureCount' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>4</node>
+        <node name='AverageResponseTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>4</node>
+        <node name='MinimumResponseTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>4</node>
+        <node name='MaximumResponseTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>4</node>
+    </node>
+    <node name='TraceRouteDiagnostics' rw='0' type='node'>
+        <node name='DiagnosticsState' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Complete</node>
+        <node name='Interface' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string'></node>
+        <node name='Host' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string'></node>
+        <node name='NumberOfTries' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>4</node>
+        <node name='Timeout' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>3000</node>
+        <node name='DataBlockSize' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>64</node>
+        <node name='DSCP' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>0</node>
+        <node name='MaxHopCount' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>4</node>
+        <node name='ResponseTime' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>4</node>
+        <node name='RouteHopsNumberOfEntries' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>4</node>
+    </node>
+    <node name='Capabilities' rw='0' type='node'>
+        <node name='PerformanceDiagnostic' rw='0' type='node'>
+            <node name='DownloadTransports' rw='0' getc='0' noc='0' nocc='2' acl='2' type='string'>HTTP</node>
+            <node name='UploadTransports' rw='0' getc='0' noc='0' nocc='2' acl='2' type='string'>HTTP</node>
+        </node>
+    </node>
+    <node name='UDPEchoConfig' rw='0' type='node'>
+        <node name='Enable' rw='1' getc='0' noc='0' nocc='0' acl='' type='boolean'>1</node>
+        <node name='Interface' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string'></node>
+        <node name='SourceIPAddress' rw='1' getc='0' noc='0' nocc='2' acl='2' type='string'></node>
+        <node name='UDPPort' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>1235</node>
+        <node name='EchoPlusEnabled' rw='1' getc='0' noc='0' nocc='0' acl='' type='boolean'>0</node>
+        <node name='EchoPlusSupported' rw='1' getc='0' noc='0' nocc='0' acl='' type='boolean'>0</node>
+        <node name='PacketsReceived' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>3001</node>
+        <node name='PacketsResponded' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>64</node>
+        <node name='BytesReceived' rw='1' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>41</node>
+        <node name='BytesResponded' rw='0' getc='0' noc='0' nocc='0' acl='' type='unsignedInt'>4</node>
+        <node name='TimeFirstPacketReceived' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:23:29.103696</node>
+        <node name='TimeLastPacketReceived' rw='0' getc='0' noc='0' nocc='0' acl='' type='dateTime'>2009-09-25T00:43:25.289011</node>
+    </node>
+    <node name='SelfTestDiagnostics' rw='0' type='node'>
+        <node name='DiagnosticsState' rw='1' getc='0' noc='0' nocc='' acl='' type='string'></node>
+        <node name='Results' rw='0' getc='0' noc='0' nocc='' acl='' type='string'></node>
+    </node>
+    <node name='NSLookupDiagnostics' rw='0' type='node'>
+        <node name='DiagnosticsState' rw='1' getc='0' noc='0' nocc='' acl='' type='string'></node>
+        <node name='Interface' rw='1' getc='0' noc='0' nocc='' acl='' type='string'></node>
+        <node name='HostName' rw='1' getc='0' noc='0' nocc='' acl='' type='string'></node>
+        <node name='DNSServer' rw='1' getc='0' noc='0' nocc='' acl='' type='string'></node>
+        <node name='Timeout' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt'>5000</node>
+        <node name='NumberOfRepetitions' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt'>1</node>
+        <node name='SuccessCount' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt'>1</node>
+        <node name='ResultNumberOfEntries' rw='1' getc='0' noc='0' nocc='' acl='' type='unsignedInt'>1</node>
+        <node name='Result' rw='0' type='node'>
+            <node name='1' rw='0' type='node'>
+                <node name='Status' rw='0' getc='0' noc='0' nocc='' acl='' type='string'></node>
+                <node name='AnswerType' rw='0' getc='0' noc='0' nocc='' acl='' type='string'></node>
+                <node name='HostNameReturned' rw='0' getc='0' noc='0' nocc='' acl='' type='string'></node>
+                <node name='IPAddresses' rw='0' getc='0' noc='0' nocc='' acl='' type='string'></node>
+                <node name='DNSServerIP' rw='0' getc='0' noc='0' nocc='' acl='' type='string'></node>
+                <node name='ResponseTime' rw='0' getc='0' noc='0' nocc='' acl='' type='unsignedInt'></node>
+            </node>
+        </node>
+    </node>
+	<node name='BulkData' rw='0' type='node'>
+        <node name='Profile' rw='1' nin='2' il='10' type='node'>
+            <node name='1' rw='1' nin='0' il='0' type='node'>
+                <node name='Alias' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>IPDRSample</node>
+                <node name='Parameter' rw='1' nin='4' il='10' type='node'>
+                    <node name='3' rw='0' type='node'>
+                        <node name='Reference' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Device.DeviceInfo.ProvisioningCode</node>
+                    </node>
+                    <node name='2' rw='0' type='node'>
+                        <node name='Reference' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Device.DeviceInfo.HardwareVersion</node>
+                    </node>
+                    <node name='1' rw='0' type='node'>
+                        <node name='Reference' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'>Device.DeviceInfo.SoftwareVersion</node>
+                    </node>
+                    <node name='template' rw='1' nin='0' il='0' type='node'>
+                        <node name='Reference' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                    </node>
+                </node>
+            </node>
+            <node name='template' rw='1' nin='0' il='0' type='node'>
+                <node name='Alias' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                <node name='Parameter' rw='1' nin='1' il='10' type='node'>
+                    <node name='template' rw='1' nin='0' il='0' type='node'>
+                        <node name='Reference' rw='1' getc='0' noc='0' nocc='0' acl='' type='string'></node>
+                    </node>
+                </node>
+            </node>
+        </node>
+    </node>
+</node>

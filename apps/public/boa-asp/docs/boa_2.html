@@ -1,0 +1,433 @@
+<HTML>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Created on December, 12  2005 by texi2html 1.64 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HEAD>
+<TITLE>The Boa HTTP Daemon: Installation and Usage</TITLE>
+
+<META NAME="description" CONTENT="The Boa HTTP Daemon: Installation and Usage">
+<META NAME="keywords" CONTENT="The Boa HTTP Daemon: Installation and Usage">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.64">
+
+</HEAD>
+
+<BODY LANG="" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC2"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_1.html#SEC1"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC3"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 2. Installation and Usage </H1>
+<!--docid::SEC2::-->
+<P>
+
+Boa is currently being developed and tested on GNU/Linux/i386.
+The code is straightforward (more so than most other servers),
+so it should run easily on most modern Unix-alike platforms.  Recent
+versions of Boa worked fine on FreeBSD, SunOS 4.1.4, GNU/Linux-SPARC,
+and HP-UX 9.0.  Pre-1.2.0 GNU/Linux kernels may not work because of
+deficient mmap() implementations.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_2.html#SEC3">2.1 Installation</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_2.html#SEC4">2.2 Files Used by Boa</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_2.html#SEC5">2.3 Compile-Time and Command-Line Options</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="boa_2.html#SEC7">2.5 Security</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<A NAME="Installation"></A>
+<HR SIZE="6">
+<A NAME="SEC3"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC2"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC4"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_1.html#SEC1"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC2"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 2.1 Installation </H2>
+<!--docid::SEC3::-->
+<P>
+
+<OL>
+<LI>Unpack
+<OL>
+<LI>Choose, and cd into, a convenient directory for the package.
+<LI><KBD>tar -xvzf boa-0.94.tar.gz</KBD>, or for those of you with an archaic
+(non-GNU) tar; <KBD>gzip -cd &#38;lt; boa-0.94.tar.gz | tar -xvf -</KBD>
+<LI>Read the documentation.  Really.
+</OL>
+<LI>Build
+<OL>
+<LI>cd into the <TT>src</TT> directory.
+<LI>(optional) Change the default SERVER_ROOT by setting the #define
+    at the top of src/defines.h
+<LI>Type <KBD>./configure; make</KBD>
+<LI>Report any errors to the maintainers for resolution, or strike
+    out on your own.
+</OL>
+<LI>Configure
+<OL>
+<LI>Choose a user and server port under which Boa can run.  The
+    traditional port is 80, and user <TT>nobody</TT> (create if
+    you need to) is often a good selection for security purposes.
+    If you don't have (or choose not to use) root privileges, you
+    can not use port numbers less than 1024, nor can you switch user id.
+<LI>Choose a server root.  The <TT>conf</TT> directory within the
+    server root must hold your copy of the configuration file
+   <EM>boa.conf</EM>
+<LI>Choose locations for log files, CGI programs (if any), and
+    the base of your URL tree.
+<LI>Set the location of the <TT>mime.types</TT> file.
+<LI>Edit <EM>conf/boa.conf</EM> according to your
+    choices above (this file documents itself).  Read through this file
+    to see what other features you can configure.
+</OL>
+<LI>Start
+<UL>
+<LI>Start Boa.  If you didn't build the right SERVER_ROOT into the
+    binary, you can specify it on the command line with the -c option
+    (command line takes precedence).
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>    Example: ./boa -c /usr/local/boa
+</pre></td></tr></table></UL>
+  
+<LI>Test
+<UL>
+<LI>At this point the server should run and serve documents.
+    If not, check the error_log file for clues.
+</UL>
+  
+<LI>Install
+<UL>
+<LI>Copy the binary to a safe place, and put the invocation into
+    your system startup scripts.  Use the same -c option you used
+    in your initial tests.
+</UL>
+</OL>
+<P>
+
+<A NAME="Files Used by Boa"></A>
+<HR SIZE="6">
+<A NAME="SEC4"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC3"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC5"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_1.html#SEC1"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC2"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 2.2 Files Used by Boa </H2>
+<!--docid::SEC4::-->
+<P>
+
+<DL COMPACT>
+<A NAME="IDX1"></A>
+<DT><TT>`boa.conf'</TT>
+<DD><A NAME="IDX2"></A>
+  This file is the sole configuration file for Boa. The directives in this 
+  file are defined in the DIRECTIVES section. 
+<A NAME="IDX3"></A>
+<DT><TT>`mime.types'</TT>
+<DD><A NAME="IDX4"></A>
+  The MimeTypes &#60;filename&#62; defines what Content-Type Boa will 
+  send in an HTTP/1.0 or better transaction. 
+  Set to /dev/null if you do not want to load a mime types file.
+  Do *not* comment out (better use AddType!)
+</DL>
+<P>
+
+<A NAME="Compile-Time and Command-Line Options"></A>
+<HR SIZE="6">
+<A NAME="SEC5"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC4"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC6"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_1.html#SEC1"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC2"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 2.3 Compile-Time and Command-Line Options </H2>
+<!--docid::SEC5::-->
+<P>
+
+<DL COMPACT>
+<DT><VAR>SERVER_ROOT</VAR>
+<DD><DT><VAR>-c</VAR>
+<DD> The default server root as #defined by <VAR>SERVER_ROOT</VAR> in 
+ <TT>`defines.h'</TT> can be overridden on the commandline using the 
+ <SAMP>`-c'</SAMP> option.  The server root must hold your local copy of the 
+ configuration file <TT>`boa.conf'</TT>.
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>  Example: /usr/sbin/boa -c /etc/boa
+</pre></td></tr></table><P>
+
+</DL>
+<P>
+
+<A NAME="boa.conf Directives"></A>
+<HR SIZE="6">
+<A NAME="SEC6"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC5"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC7"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[ &gt;&gt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 2.4 boa.conf Directives </H2>
+<!--docid::SEC6::-->
+<P>
+
+The Boa configuration file is parsed with a lex/yacc or flex/bison 
+generated parser. If it reports an error, the line number will be 
+provided; it should be easy to spot. The syntax of each of these rules 
+is very simple, and they can occur in any order. Where possible, these 
+directives mimic those of NCSA httpd 1.3; I (Paul Phillips) saw no reason 
+to introduce gratuitous differences. 
+</P><P>
+
+Note: the "ServerRoot" is not in this configuration file. It can be 
+compiled into the server (see <TT>`defines.h'</TT>) or specified on the command
+line with the <CODE>-c</CODE> option. 
+</P><P>
+
+The following directives are contained in the <TT>`boa.conf'</TT> file, and most, 
+but not all, are required. 
+</P><P>
+
+<DL COMPACT>
+<DT><SAMP>`Port &#60;Integer&#62;'</SAMP>
+<DD>  This is the port that Boa runs on. The default port for http servers is 80.
+  If it is less than 1024, the server must be started as root.
+ 
+<DT><SAMP>`Listen &#60;IP&#62;'</SAMP>
+<DD>  The Internet address to bind(2) to, in quadded-octet form (numbers).  
+  If you leave it out, it binds to all addresses (INADDR_ANY).
+  
+  The name you provide gets run through inet_aton(3), so you have to
+  use dotted  quad notation.  This configuration is too important to trust some DNS.   
+  
+  You only get one "Listen" directive,  if you want service on multiple
+  IP addresses, you have three choices:
+  
+<OL>
+<LI>Run boa without a "Listen" directive:
+<UL>
+<LI>All addresses are treated the same; makes sense if the addresses
+     are localhost, ppp, and eth0.
+<LI>Use the VirtualHost directive below to point requests to different files.
+     Should be good for a very large number of addresses (web hosting clients).
+</UL>
+<LI>Run one copy of boa per IP address:
+<UL>
+<LI>Each instance has its own configuration with its own
+     "Listen" directive.  No big deal up to a few tens of addresses. Nice separation
+     between clients.
+</UL>
+</OL>
+ 
+<DT><SAMP>`User &#60;username or UID&#62;'</SAMP>
+<DD> The name or UID the server should run as. For Boa to attempt this, the
+ server must be started as root. 
+ 
+<DT><SAMP>`Group &#60;groupname or GID&#62;'</SAMP>
+<DD> The group name or GID the server should run as. For Boa to attempt this,
+ the server must be started as root. 
+ 
+<DT><SAMP>`ServerAdmin &#60;email address&#62;'</SAMP>
+<DD> The email address where server problems should be sent. Note: this is not
+ currently used.
+ 
+<DT><SAMP>`ErrorLog &#60;filename&#62;'</SAMP>
+<DD> The location of the error log file. If this does not start with /, it is
+ considered relative to the server root. Set to /dev/null if you don't want
+ errors logged. 
+ 
+<DT><SAMP>`AccessLog &#60;filename&#62;'</SAMP>
+<DD> The location of the access log file. If this does not start with /, it is
+ considered relative to the server root. Comment out or set to /dev/null
+ (less effective) to disable access logging. 
+ 
+<DT><SAMP>`VerboseCGILogs'</SAMP>
+<DD> This is a logical switch and does not take any parameters. Comment out to
+ disable. All it does is switch on or off logging of when CGIs are launched and when
+ the children return.
+ 
+<DT><SAMP>`CgiLog &#60;filename&#62;'</SAMP>
+<DD> The location of the CGI error log file.  If
+ specified, this is the file that the stderr of CGIs is tied to.  Otherwise, writes
+ to stderr meet the bit bucket.
+ 
+<DT><SAMP>`ServerName &#60;server_name&#62;'</SAMP>
+<DD> The name of this server that should be sent back to clients if different
+ than that returned by gethostname.
+ 
+<DT><SAMP>`VirtualHost'</SAMP>
+<DD> This is a logical switch and does not take any parameters.
+ Comment out to disable. Given  DocumentRoot /var/www, requests on interface `A' or
+ IP `IP-A' become /var/www/IP-A. Example: http://localhost/ becomes 
+ /var/www/127.0.0.1 
+ 
+<DT><SAMP>`DocumentRoot &#60;directory&#62;'</SAMP>
+<DD> The root directory of the HTML documents. If this does not start with /, 
+ it is considered relative to the server root. 
+ 
+<DT><SAMP>`UserDir &#60;directory&#62;'</SAMP>
+<DD> The name of the directory which is appended onto a user's home directory 
+ if a ~user request is received. 
+ 
+<DT><SAMP>`DirectoryIndex &#60;filename&#62;'</SAMP>
+<DD> Name of the file to use as a pre-written HTML directory index. Please 
+ make and use these files. On the fly creation of directory indexes
+ can be slow. 
+ 
+<DT><SAMP>`DirectoryMaker &#60;full pathname to program&#62;'</SAMP>
+<DD> Name of the program used
+ to generate on-the-fly directory listings.  The program must take one or two
+ command-line arguments, the first being the directory to index (absolute), and the
+ second, which is  optional, should be the "title" of the document be. Comment out if
+ you don't  want on the fly directory listings. If this  does not start with /, it is
+ considered relative to the server root. 
+ 
+<DT><SAMP>`DirectoryCache &#60;directory&#62;'</SAMP>
+<DD> DirectoryCache: If DirectoryIndex doesn't exist, and DirectoryMaker has been
+ commented out, the the on-the-fly indexing of Boa can be used  to generate indexes
+ of directories. Be warned that the output is extremely minimal and can cause
+ delays when slow disks are used.  Note: The DirectoryCache must be writable by the
+ same user/group that Boa runs as.
+ 
+<DT><SAMP>`KeepAliveMax &#60;integer&#62;'</SAMP>
+<DD> Number of KeepAlive requests to allow per connection. Comment out, or set 
+ to 0 to disable keepalive processing. 
+ 
+<DT><SAMP>`KeepAliveTimeout &#60;integer&#62;'</SAMP>
+<DD> Number of seconds to wait before keepalive connections time out. 
+ 
+<DT><SAMP>`MimeTypes &#60;file&#62;'</SAMP>
+<DD> The location of the mime.types file. If this does not start with /, it is 
+ considered relative to the server root.
+ Comment out to avoid loading mime.types (better use AddType!)
+ 
+<DT><SAMP>`DefaultType &#60;mime type&#62;'</SAMP>
+<DD> MIME type used if the file extension is unknown, or there is no file 
+ extension. 
+ 
+<DT><SAMP>`AddType &#60;mime type&#62; &#60;extension&#62; extension...'</SAMP>
+<DD> Associates a MIME type 
+ with an extension or extensions. 
+ 
+<DT><SAMP>`Redirect, Alias, and ScriptAlias'</SAMP>
+<DD> Redirect, Alias, and ScriptAlias all have the same semantics -- 
+ they match the beginning of a request and take appropriate action. 
+ Use Redirect for other servers, Alias for the same server, and 
+ ScriptAlias to enable directories for script execution.
+ 
+<DT><SAMP>`Redirect &#60;path1&#62; &#60;path2&#62;'</SAMP>
+<DD>  allows you to tell clients about documents which used to exist 
+  in your server's namespace, but do not anymore. This allows you
+  tell the clients where to look for the relocated document. 
+  
+<DT><SAMP>`Alias &#60;path1&#62; &#60;path2&#62;'</SAMP>
+<DD>  aliases one path to another. Of course, symbolic links in the 
+  file system work fine too. 
+  
+<DT><SAMP>`ScriptAlias &#60;path1&#62; &#60;path2&#62;'</SAMP>
+<DD>  maps a virtual path to a directory for serving scripts. 
+</DL>
+<P>
+
+<A NAME="Security"></A>
+<HR SIZE="6">
+<A NAME="SEC7"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC6"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_1.html#SEC1"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_2.html#SEC2"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 2.5 Security </H2>
+<!--docid::SEC7::-->
+<P>
+
+Boa has been designed to use the existing file system security.   In
+<TT>`boa.conf'</TT>, the directives <EM>user</EM> and 
+<EM>group</EM> determine who Boa will run as, if launched by root.
+By default, the user/group is nobody/nogroup.  This allows quite a bit
+of flexibility.  For example, if you want to disallow access to otherwise
+accessible directories or files, simply make them inaccessible to 
+nobody/nogroup. If the user that Boa runs as is "boa" and the groups that 
+"boa" belongs to include "web-stuff" then files/directories accessible 
+by users with group "web-stuff" will also be accessible to Boa.
+</P><P>
+
+The February 2000 hoo-rah from 
+<A HREF="http://www.cert.org/advisories/CA-2000-02.html">CERT advisory CA-2000-02</A>
+has little to do with Boa.  As of version 0.94.4, Boa's escaping rules have 
+been cleaned up a little, but they weren't that bad before.  The example CGI
+programs have been updated to show what effort is needed there.  If you
+write, maintain, or use CGI programs under Boa (or any other server) it's
+worth your while to read and understand this advisory.  The real problem,
+however, boils down to browser and web page designers emphasizing frills
+over content and security.  The market leading browsers assume (incorrectly)
+that all web pages are trustworthy.
+</P><P>
+
+<A NAME="Limits and Design Philosophy"></A>
+<HR SIZE="6">
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_1.html#SEC1"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_3.html#SEC8"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="boa_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+by <I>root</I> on <I>December, 12  2005</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+
+</BODY>
+</HTML>

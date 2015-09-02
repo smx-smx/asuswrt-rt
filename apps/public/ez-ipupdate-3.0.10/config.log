@@ -1,0 +1,140 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:568: checking for a BSD compatible install
+configure:621: checking whether build environment is sane
+configure:678: checking whether make sets ${MAKE}
+configure:724: checking for working aclocal
+configure:737: checking for working autoconf
+configure:750: checking for working automake
+configure:763: checking for working autoheader
+configure:776: checking for working makeinfo
+configure:814: checking for gcc
+configure:927: checking whether the C compiler (mips-linux-gcc -O2 -Wall -Wl,-elf2flt) works
+configure:943: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:940: warning: return type defaults to `int'
+configure:969: checking whether the C compiler (mips-linux-gcc -O2 -Wall -Wl,-elf2flt) is a cross-compiler
+configure:974: checking whether we are using GNU C
+configure:983: mips-linux-gcc -E conftest.c
+configure:1002: checking whether mips-linux-gcc accepts -g
+configure:1034: checking how to run the C preprocessor
+configure:1055: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1125: checking for a BSD compatible install
+configure:1179: checking return type of signal handlers
+configure:1201: mips-linux-gcc -c -O2 -Wall  conftest.c 1>&5
+configure: In function `main':
+configure:1197: warning: unused variable `i'
+configure:1222: checking for gethostbyname
+configure:1250: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1319: checking for connect
+configure:1347: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for socket
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for strdup
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for getopt_long
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for gethostbyaddr
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for getservbyname
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for inet_addr
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for inet_ntoa
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for snprintf
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1451: warning: conflicting types for built-in function `snprintf'
+configure:1439: checking for vfprintf
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for stat
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for vsprintf
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1451: warning: conflicting types for built-in function `vsprintf'
+configure:1439: checking for vsnprintf
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1451: warning: conflicting types for built-in function `vsnprintf'
+configure:1439: checking for strerror
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for strftime
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for wait
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for waitpid
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for getpid
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for fork
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for vfork
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for inet_aton
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1439: checking for herror
+configure:1467: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1509: checking for arpa/inet.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for sys/types.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for sys/time.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for sys/stat.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for fcntl.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for signal.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for syslog.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for pwd.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for stdarg.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for grp.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for errno.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for sys/sockio.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1515:24: sys/sockio.h: No such file or directory
+configure: failed program was:
+#line 1514 "configure"
+#include "confdefs.h"
+#include <sys/sockio.h>
+configure:1509: checking for sys/wait.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1509: checking for getopt.h
+configure:1519: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1553: checking for unistd.h
+configure:1563: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1553: checking for netinet/in.h
+configure:1563: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1553: checking for netdb.h
+configure:1563: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1553: checking for sys/socket.h
+configure:1563: mips-linux-gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1592: checking for sys_errlist in -lc
+configure:1611: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c -lc   1>&5
+conftest.elf2flt(.text+0x21c): In function `main':
+: undefined reference to `sys_errlist'
+collect2: ld returned 1 exit status
+configure: failed program was:
+#line 1600 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char sys_errlist();
+
+int main() {
+sys_errlist()
+; return 0; }
+configure:1638: checking for getopt
+configure:1666: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1695: checking for getpass
+configure:1723: mips-linux-gcc -o conftest -O2 -Wall  -Wl,-elf2flt conftest.c  1>&5
+configure:1755: checking host system type
+configure:1781: checking for user supplied default service
+configure:1867: checking whether user wants debugging support
+configure:1882: checking whether user wants to dissable MD5 support

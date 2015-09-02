@@ -1,0 +1,32 @@
+#
+# pppstats makefile
+# $Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/apps/public/ppp-2.4.1.pppoe4.orig/pppstats/Makefile.linux#1 $
+#
+
+PPPSTATSRCS = pppstats.c
+PPPSTATOBJS = pppstats.o
+
+#CC = gcc
+COPTS = -Os
+COMPILE_FLAGS = -D_linux_ -I../include
+LIBS =
+
+INSTALL= install -o beaulieu
+
+CFLAGS = $(COPTS) $(COMPILE_FLAGS)
+
+all: pppstats
+
+install: pppstats
+	$(INSTALL) -s -c pppstats $(BINDIR)/pppstats
+	$(INSTALL) -c -m 444 pppstats.8 $(MANDIR)/man8/pppstats.8
+
+pppstats: $(PPPSTATSRCS)
+	$(CC) $(CFLAGS) -o pppstats pppstats.c $(LIBS)
+
+clean:
+	rm -f pppstats *~ #* core
+
+depend:
+	cpp -M $(CFLAGS) $(PPPSTATSRCS) >.depend
+#	makedepend $(CFLAGS) $(PPPSTATSRCS)

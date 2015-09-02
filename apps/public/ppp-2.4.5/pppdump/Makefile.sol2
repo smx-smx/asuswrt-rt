@@ -1,0 +1,21 @@
+#
+# pppdump Makefile for SVR4 systems
+# $Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/apps/public/ppp-2.4.5/pppdump/Makefile.sol2#1 $
+#
+
+include ../Makedefs.com
+
+CFLAGS= $(COPTS) -I../include/net
+OBJS = pppdump.o bsd-comp.o deflate.o zlib.o
+
+all:	pppdump
+
+pppdump: $(OBJS)
+	$(CC) -o pppdump $(OBJS)
+
+clean:
+	rm -f $(OBJS) pppdump *~
+
+install:
+	$(INSTALL) -f $(BINDIR) pppdump
+	$(INSTALL) -m 444 -f $(MANDIR)/man8 pppdump.8

@@ -1,0 +1,44 @@
+<html>
+    <head>
+        <title>TRAgent New Event</title>
+    </head>
+    <body>
+        <form action="/add/event" method="POST" id="ae">
+            <table>
+                <tr>
+                    <td colspan="2"><h2>Send an event to agent</h2></td>
+                </tr>
+                <tr>
+                    <td>Event Code :</td>
+                    <td>
+                        <select name="code" style="width:265px">
+                            <option selected="true">0 BOOTSTRAP</option>
+                            <option>1 BOOT</option>
+                            <option>2 PERIODIC</option>
+                            <option>3 SCHEDULED</option>
+                            <option>4 VALUE CHANGE</option>
+                            <option>5 KICKED</option>
+                            <option>6 CONNECTION REQUEST</option>
+                            <option>7 TRANSFER COMPLETE</option>
+                            <option>8 DIAGNOSTICS COMPLETE</option>
+                            <option>9 REQUEST DOWNLOAD</option>
+                            <option>10 AUTONOMOUS TRANSFER COMPLETE</option>
+                            <option>M Reboot</option>
+                            <option>M ScheduleInform</option>
+                            <option>M Download</option>
+                            <option>M Upload</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Command Key:</td>
+                    <td><input type="text" name="cmdkey" value=""/></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="submit" value="OK"/></td>
+                </tr>
+            </table>
+        </form>
+    </body>
+</html>

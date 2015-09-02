@@ -1,0 +1,26 @@
+AR=$(CROSS)ar
+LD=$(CROSS)ld
+STRIP=$(CROSS)strip
+RANLIB=$(CROSS)ranlib
+SIZE=$(CROSS)size
+LIBDIR=$(CROSS_PATH)/lib
+
+KERNEL_DIR=../../linux
+
+CFLAGS	= -I$(KERNEL_DIR)/include -I$(APP_TCAPILIB_DIR)
+LDFLAGS = -L$(APP_TCAPILIB_DIR) -ltcapi
+
+OBJS= rtkethcmd.o
+EXECS= rtkethcmd
+
+all: rtkethcmd
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
+
+rtkethcmd: $(OBJS) 
+	$(CC) $(OBJS) -o $@ $(LDFLAGS)
+	$(STRIP) --strip-unneeded $(EXECS)
+
+clean:
+	rm -f $(EXECS)

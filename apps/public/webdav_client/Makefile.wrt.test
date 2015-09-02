@@ -1,0 +1,30 @@
+#***********************************************************************
+#
+# Makefile
+#
+#***********************************************************************
+
+#C = $(CC)
+#TOP = $(TOP)
+CC = mipsel-linux-gcc
+CFLAGS = -I/home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/neon/src -I/home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/libxml2/include -I/home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/openssl/include
+CFLAGS += -I/home/alan/asuswrt_aicloud/asuswrt/release/src-rt -I/home/alan/asuswrt_aicloud/asuswrt/release/src-rt/include -I. -I/home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/shared -D_FILE_OFFSET_BITS=64
+
+LDFLAGS = -L/home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/neon/src/.libs -L/home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/libxml2/.libs -L/home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/nvram -L/home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/shared -L/home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/zlib -L/home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/openssl
+
+LIBS = -lpthread -lnvram -lneon -lxml2 -lshared -lz -lcrypto -lssl
+
+ifeq ($(wildcard /home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/webdav_client/*.c),)
+all:
+	-cp -f /home/alan/asuswrt_aicloud/asuswrt/release/src-rt/router/webdav_client/prebuilt/webdav_client webdav_client
+else
+all: webdav_client
+endif
+
+webdav_client: webdav.o base.o list.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS)  $^ -o $@ 
+
+.PHONY: clean
+clean:
+	-rm -rf *.o webdav_client
+

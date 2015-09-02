@@ -1,0 +1,285 @@
+﻿/* CSS Document */
+body {
+}
+.top-title {text-align:Left;color:#ffffff;font-weight:bold;}
+.top-messgae {font-family :Verdana;font-size : 11px;text-align:left;color:#000000;font-weight:normal;text-align:left;background-color:#7aa3bd}
+.top-messgae1 {font-family :Verdana;font-size : 11px;text-align:left;color:#23344d;font-weight:normal;}
+.top-messgae2 {font-family :Verdana;font-size : 11px;text-align:left;color:#23344d;font-weight:bold;}
+.top-messgae3 {font-family :Verdana;font-size : 11px;text-align:center;color:#000000;background-color:#6692b0;font-weight:bold}
+.input{color:#3b5f71;border:1px solid #7398ac;background-color:#cae9f3;font-family :Verdana;font-size : 11px;padding-left:5px;}
+.button{color:#cae9f3 ;font-family :Verdana;font-size : 11px;border:1px solid #ffffff; background-color: #5588a4}
+.status{font-family :Verdana;font-size : 11px;border:1px solid #7c7c7c;background-color:#acc1ca;}
+.statustext{font-family :Verdana;font-size : 11px;color:##0066CC;}
+.line{border-bottom : 1px dotted #959595; }
+.text{font-family :Verdana;font-size : 11px;text-align:center;color:#23344d;font-weight:bold;}
+.tbg{font-family :Verdana;font-size : 11px;text-align:center;color:#23344d;font-weight:bold;background-color:#759bae}
+.tbg1{font-family :Verdana;font-size : 11px;text-align:left;color:#23344d;font-weight:normal;background-color:#9fccdd}
+.tbg2{font-family :Verdana;font-size : 11px;text-align:left;color:#197b30;font-weight:normal;background-color:#9fccdd}
+.tbg3{font-family :Verdana;font-size : 11px;text-align:left;color:#ee1c24;font-weight:normal;background-color:#9fccdd}
+.table1px{border: 1px solid #6699cc;border-collapse: collapse;}
+
+.title1 {font-family :Verdana;font-size : 11px;font-weight:bold;color:#000000;text-align:center;background-image : url(../images/title-bg.gif); }
+
+.top-messgaea {font-family :Verdana;font-size : 10px;text-align:left;color:#000000;font-weight:normal;text-align:left;background-color:#7aa3bd}
+.tbg2a{font-family :Verdana;font-size : 10px;text-align:center;color:#197b30;font-weight:normal;background-color:#9fccdd;}
+.tbg1a{font-family :Verdana;font-size : 10px;text-align:center;color:#23344d;font-weight:normal;background-color:#9fccdd}
+.clientIcon{
+	width:80px;
+	height:60px;
+	background-image:url('/images/New_ui/networkmap/client-list.png');
+	background-repeat:no-repeat;
+	background-position:50% 61.10%;
+	cursor:pointer;
+}
+.clientIcon:hover{
+	background-image:url('/images/New_ui/networkmap/client-listover.png') !important;
+}
+.clientIcon_no_hover{
+	width:80px;
+	height:60px;
+	background-image:url('/images/New_ui/networkmap/client-list.png');
+	background-repeat:no-repeat;
+	background-position:50% 61.10%;
+	cursor:pointer;
+}
+
+/*
+Unknown			0 
+Windows			1
+Router			2
+AP				3
+NAS				4
+IPCam			5
+Unknown			6
+PlayStation		7
+XBox			8
+Android			9
+iOS				10
+AppleTV			11
+Setup Box		12
+NB				13
+Macintosh		14
+ROG				15
+PlayStation4	16
+XBoxOne			17
+Printer			18
+*/
+.type0{
+	background-image:url('/images/New_ui/networkmap/client.png') !important;
+	background-position:52% -3.5% !important;
+}
+.type1{
+	background-position:52% 58.15% !important;
+}
+.type2{
+	background-position:52% -0.15% !important;
+}
+.type3{
+	/* Same as type 2 */
+	background-position:52% -0.15% !important;
+}
+.type4{
+	background-position:52% 6.35% !important;
+}
+.type5{
+	background-position:52% 12.85% !important;
+}
+.type6{
+	background-image:url('/images/New_ui/networkmap/client.png') !important;
+	background-position:52% -1.5% !important;
+}
+.type7{
+	background-position:52% 71.1% !important;
+}
+.type8{
+	background-position:52% 90.55% !important;
+}
+.type9{
+	background-position:52% 19.3% !important;
+}
+.type10{
+	background-position:52% 25.75% !important;
+}
+.type11{
+	background-position:52% 32.25% !important;
+}
+.type12{
+	background-position:52% 38.7% !important;
+}
+.type13{
+	background-position:52% 45.2% !important;
+}
+.type14{
+	background-position:52% 51.7% !important;
+}
+.type15{
+	background-position:52% 64.65% !important;
+}
+.type16{
+	background-position:52% 77.6% !important;
+}
+.type17{
+	background-position:52% 84.05% !important;
+}
+.type18{
+	background-position:52% 97.05% !important;
+}
+
+.type0:hover{
+	background-image:url('/images/New_ui/networkmap/client.png') !important;
+	background-position:52% 68% !important;
+}
+.type6:hover{
+	background-image:url('/images/New_ui/networkmap/client.png') !important;
+	background-position:52% 68% !important;
+}
+
+.type0.clicked{
+	background-image:url('/images/New_ui/networkmap/client.png') !important;
+	background-position:52% 68% !important;
+}
+.type6.clicked{
+	background-image:url('/images/New_ui/networkmap/client.png') !important;
+	background-position:52% 68% !important;
+}
+
+.type0_viewMode{
+	background-image:url('/images/New_ui/networkmap/client.png') !important;
+	background-position:52% -3% !important;
+}
+
+.clientBg{
+	font-family:Courier New, Courier, mono;
+	width:293px;
+	height:85px;
+	background-image:url('/images/New_ui/networkmap/bg.png');
+	background-repeat:no-repeat;
+}
+.radioIcon{
+	background-image:url('/images/survey/radio_status.png');
+	background-repeat: no-repeat;
+	height: 21px;
+	width: 28px;	
+	position: relative;
+	margin-top: -10px;
+	margin-left: -2px;	
+}
+.radio_1{
+  background-position: 0% 2px;
+}	
+.radio_2{
+  background-position: 0% -20px;
+}	
+.radio_3{
+  background-position: 0% -42px;
+}	
+.radio_4{
+  background-position: 0% -64px;
+}
+.band_chrome{
+	font-size: 9px;
+	transform:scale(0.75);
+	font-family: Arial;
+	background-color: #06CCDE;
+	color: #000000;
+	font-weight: bolder;
+	text-align: center;
+	line-height: 16px;
+	letter-spacing: 1px;
+	margin-left: -5px;
+	margin-bottom: -20px;
+	margin-top: -12px;
+	height: 15px;
+	width: 38px;
+}
+.band{
+	font-size: 9px;
+	font-family: Arial;
+	background-color: #06CCDE;
+	color: #000000;
+	font-weight: bolder;
+	text-align: center;
+	line-height: 12px;
+	letter-spacing: 1px;
+	margin-left: 0px;
+	margin-top:-10px;
+	/*margin-bottom: -18px;*/
+	height: 11px;
+	width: 28px;
+}
+.radio_wired{
+	height: 28px;
+	margin-bottom: -20px;
+	background-image:url('/images/New_ui/networkmap/wiredIcon.png') !important;
+}
+.clientlist_viewlist {
+	position: absolute;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	z-index: 200;
+	background-color:#444f53;
+	margin-left: 140px;
+	margin-top: -920px;
+	width:950px;
+	height:850px;
+	box-shadow: 3px 3px 10px #000;
+	display:block;
+	overflow: auto;
+}
+.imgUserIcon_viewlist {
+	width: 39px;
+	height: 39px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	position: relative;
+	margin-top: 4px;
+}
+.clientlist_expander {
+	cursor: pointer;
+	display: inline-block;
+	text-decoration: none;
+	float: right;
+}
+.clientlist_expander:hover {
+	text-decoration: underline;
+	float: right;
+}
+.clientlist_All{
+	width:100px;
+	height:30px;
+	border-top-left-radius:8px;
+	border-bottom-left-radius:8px;
+}
+.clientlist_ByInterface{
+	width:100px;
+	height:30px;
+	margin:-32px 0px 0px 99px;
+	border-top-right-radius:8px;
+	border-bottom-right-radius:8px;
+}
+.ipMethodTag{
+	background-color: #222;
+	font-size: 10px;
+	font-family: monospace;
+	padding: 2px 3px;
+	border-radius: 3px;
+}
+.clientlist_circle {
+	position: relative;
+	width: 15px;
+	height: 15px;
+	border-radius: 50%;
+	background: #333;
+	margin-top: -3px;
+	margin-left: 35px;
+	margin-bottom: -15px;
+	z-index: 200;
+}
+.clientlist_circle div{
+	height: 15px;
+	text-align: center;
+	margin-top: 3px;
+	line-height: 16px;
+}

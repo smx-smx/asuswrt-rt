@@ -1,0 +1,41 @@
+<html>
+    <head>
+        <title>TRAgent Value Change</title>
+    </head>
+    <body>
+        <form action="/value/change" method="POST" id="vc">
+            <table>
+                <tr>
+                    <td colspan="2"><h2>Submit a value change event to agent</h2></td>
+                </tr>
+                <tr>
+                    <td>Parameter Name :</td>
+                    <td><input type="text" name="name" value=""/></td>
+                </tr>
+                <tr>
+                    <td>Parameter Type :</td>
+                    <td>
+                        <select name="type">
+                            <option selected="true">string</option>
+                            <option>int</option>
+                            <option>unsignedInt</option>
+                            <option>boolean</option>
+                            <option>dateTime</option>
+                            <option>base64</option>
+                            <option>URL</option>
+                            <option>encodedURL</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Parameter Value:</td>
+                    <td><input type="text" name="value" value=""/></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="submit" value="OK"/></td>
+                </tr>
+            </table>
+        </form>
+    </body>
+</html>
