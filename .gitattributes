@@ -1,0 +1,7 @@
+*.bin binary
+*.ko binary
+*.so binary
+*.a binary
+*.jpg binary
+*.png binary
+*.gif binary
