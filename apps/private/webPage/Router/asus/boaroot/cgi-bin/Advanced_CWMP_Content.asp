@@ -152,14 +152,14 @@ function cwmpSave()
 	</tr>
 
 	<tr>
-	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","PPPC_UserName_in","s")%></a></th>
+	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Username_in","s")%></a></th>
 	<td>
 		<input name="CWMP_ACSUserName" type="text" value="<%if tcWebApi_get("Cwmp_Entry", "acsUserName", "h") <> "N/A" then tcWebApi_get("Cwmp_Entry",  "acsUserName", "s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
 	</td>
 	</tr>
 
 	<tr>
-	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","PPPC_Password_in","s")%></a></th>
+	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Password_in","s")%></a></th>
 	<td>
 		<input name="CWMP_ACSPassword" type="text" value="<%if tcWebApi_get("Cwmp_Entry", "acsPassword", "h") <> "N/A" then tcWebApi_get("Cwmp_Entry", "acsPassword", "s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
 	</td>
@@ -180,14 +180,14 @@ function cwmpSave()
 	</tr>
 
 	<tr>
-	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","PPPC_UserName_in","s")%></a></th>
+	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Username_in","s")%></a></th>
 	<td>
 		<input name="CWMP_ConnectionRequestUserName" type="text" value="<%if tcWebApi_get("Cwmp_Entry", "conReqUserName", "h") <> "N/A" then tcWebApi_get("Cwmp_Entry", "conReqUserName", "s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
 	</td>
 	</tr>
 
 	<tr>
-	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","PPPC_Password_in","s")%></a></th>
+	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Password_in","s")%></a></th>
 	<td>
 		<input name="CWMP_ConnectionRequestPassword" type="text" value="<%if tcWebApi_get("Cwmp_Entry", "conReqPassword", "h") <> "N/A" then tcWebApi_get("Cwmp_Entry", "conReqPassword" ,"s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
 	</td>

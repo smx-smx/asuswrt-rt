@@ -1232,8 +1232,8 @@ function cal_panel_block(){
 											</thead>
 											<tr>
 												<th><%tcWebApi_Get("String_Entry","PPPC_x_WANLink_in","s")%></th>
-												<th><%tcWebApi_Get("String_Entry","PPPC_UserName_in","s")%></th>
-												<th><%tcWebApi_Get("String_Entry","PPPC_Password_in","s")%></th>
+												<th><%tcWebApi_Get("String_Entry","HSDPAC_Username_in","s")%></th>
+												<th><%tcWebApi_Get("String_Entry","HSDPAC_Password_in","s")%></th>
 												<th><%tcWebApi_Get("String_Entry","list_add_delete","s")%></th>
 											</tr>
 											<tr>
@@ -1497,7 +1497,7 @@ function cal_panel_block(){
 											</tr>
 											</thead>
 											<tr>
-												<th width="36%"><%tcWebApi_Get("String_Entry","PPPC_UserName_in","s")%></th>
+												<th width="36%"><%tcWebApi_Get("String_Entry","HSDPAC_Username_in","s")%></th>
 												<th width="20%"><%tcWebApi_Get("String_Entry","IPC_ExternalIPAddress_in","s")%></th>
 												<th width="20%"><%tcWebApi_Get("String_Entry","IPC_x_ExternalSubnetMask_in","s")%></th>
 												<th width="12%"><%tcWebApi_Get("String_Entry","Push","s")%></th>

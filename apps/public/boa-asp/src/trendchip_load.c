@@ -3157,8 +3157,9 @@ int check_nat_enable(int state){
     if(nat_on){
       system("iptables -t raw -F");
     }else{
-      system("iptables -t raw -A PREROUTING -j NOTRACK");
-      system("iptables -t raw -A OUTPUT -j NOTRACK");
+    	//Andy Chiu, 2015/08/03. modify for NAT disable issue.
+//      system("iptables -t raw -A PREROUTING -j NOTRACK");
+//      system("iptables -t raw -A OUTPUT -j NOTRACK");
     }
   }
   return nat_on;

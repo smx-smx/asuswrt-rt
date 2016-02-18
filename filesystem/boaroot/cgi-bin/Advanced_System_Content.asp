@@ -200,7 +200,7 @@ var timezones = [
 function load_timezones(){
 	free_options(document.form.uiViewdateToolsTZ);
 	for(var i = 0; i < timezones.length; i++){
-		if( (i==15 || i==17) && document.form.uiTimezoneSecond.value != 1){
+		if( (i==16 || i==18) && document.form.uiTimezoneSecond.value != 1){
 			add_option(document.form.uiViewdateToolsTZ,
 							timezones[i][1],
 							timezones[i][0],
@@ -395,7 +395,7 @@ function uiSave() {
                 document.form.uiViewSNTPServer.value = "0.0.0.0";
         }
 
-	if(document.form.uiViewdateToolsTZ[15].selected == true || document.form.uiViewdateToolsTZ[17].selected == true)
+	if(document.form.uiViewdateToolsTZ[16].selected == true || document.form.uiViewdateToolsTZ[18].selected == true)
 		document.form.uiTimezoneSecond.value = "1";
 	else
 		document.form.uiTimezoneSecond.value = "";
@@ -789,7 +789,7 @@ function clean_scorebar(obj){
 								<th width="40%"><% tcWebApi_Get("String_Entry", "Router_Login_Name", "s") %></th>
 								<td>
 									<input type="text" name="uiViewTools_username" maxlength="20" value="<% tcWebApi_Get("Account_Entry0","username","s") %>" onKeyPress="return is_string(this, event);"" class="input_15_table" autocapitalization="off" autocomplete="off">
-									<br/><span id="alert_msg1" style="color:#FFCC00;"></span>
+									<span id="alert_msg1" style="color:#FFCC00;"></span>
 								</td>
 							</tr>
 							<tr>
@@ -808,7 +808,7 @@ function clean_scorebar(obj){
 								<td>
 									<INPUT TYPE="PASSWORD" autocapitalization="off" autocomplete="off" NAME="uiViewTools_PasswordConfirm" MAXLENGTH="16" VALUE="" onKeyPress="return is_string(this, event);" onpaste="return false;" class="input_15_table">
 									<div style="margin:-25px 0px 5px 135px;"><input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.uiViewTools_Password);pass_checked(document.form.uiViewTools_PasswordConfirm);"><%tcWebApi_get("String_Entry","QIS_show_pass","s")%></div>
-									<br/><span id="alert_msg2" style="color:#FC0;margin-left:8px;"></span>
+									<span id="alert_msg2" style="color:#FC0;margin-left:8px;"></span>
 								</td>
 							</tr>
 						</table>

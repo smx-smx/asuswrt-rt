@@ -177,7 +177,7 @@ enum DONGLE_LIST_T {
 	SN_SU_8000U                             ,
 	SN_Cisco_AM10                           ,
 	SN_Huawei_EC122                         ,
-	SN_HUAWEI_EC306                         ,
+	SN_Huawei_EC306                         ,
 	SN_Sierra_U598                          ,
 	SN_NovatelU720                          ,
 	SN_Pantech_UM150                        ,
@@ -243,6 +243,10 @@ enum DONGLE_LIST_T {
 	SN_Nokia_CS_12				,
 	SN_Onda_WM301				,
 	SN_Onda_TM201_14_4			,
+	SN_Huawei_E3131				,
+	SN_Huawei_E3372				,
+	SN_Huawei_E303u				,
+	SN_Huawei_E3531s				,
 	SN_END
 };
 

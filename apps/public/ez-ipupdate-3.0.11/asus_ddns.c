@@ -17,7 +17,7 @@
 #else //2007.03.14 Yau add for WL500gp2
 // #include <bcmnvram.h>
 #include "libtcapi.h"
-#define	DDNS_INFO	"GUITemp_Entry2"
+#define	DDNS_INFO	"Vram_Entry"
 #endif
 #include <syslog.h>
 #include <shared.h>

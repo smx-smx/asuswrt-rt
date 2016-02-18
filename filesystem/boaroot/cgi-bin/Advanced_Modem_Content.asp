@@ -812,7 +812,7 @@ function redirect_DSL(){
 		</td>
 </tr>
 <tr>
-		<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,12);"><%tcWebApi_get("String_Entry","PPPC_Password_in","s")%></a></th>
+		<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,12);"><%tcWebApi_get("String_Entry","HSDPAC_Password_in","s")%></a></th>
 		<td>
 				<input id="modem_pass" name="modem_pass" class="input_20_table" maxlength="32" type="password" autocapitalization="off" autocomplete="off" value="<%if tcWebApi_get("USBModem_Entry","modem_pass","h") <> "" then tcWebApi_get("USBModem_Entry","modem_pass","s") else asp_Write("") end if%>"/>
 		</td>

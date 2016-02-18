@@ -261,19 +261,19 @@ int get_wanports_status(int wan_unit)
 #else
 int get_wanports_status(int wan_unit)
 {
-	char buf[64];
+	char buf[256];
 
 	if(wan_unit < WAN_UNIT_ETH) {	//xDSL
 		memset(buf, 0, sizeof(buf));
 		f_read_string("/proc/tc3162/adsl_stats", buf, sizeof(buf));
 		if(strstr(buf, "up")) {
 			if(wan_unit < WAN_UNIT_PTM0)	//ADSL
-				if(strstr(buf, "VDSL"))
+				if(strstr(buf, "PTM"))
 					return 0;
 				else
 					return 1;
 			else
-				if(strstr(buf, "VDSL"))
+				if(strstr(buf, "PTM"))
 					return 1;
 				else
 					return 0;
@@ -729,14 +729,14 @@ int is_running_as_second_wan(int unit)
 
 int get_pvcunit_by_dualwan(int wans_dualwan_if)
 {
-	char adsl_stats[64] = {0};
+	char adsl_stats[256] = {0};
 
 	switch(wans_dualwan_if) {
 		case WANS_DUALWAN_IF_DSL:
 			f_read_string("/proc/tc3162/adsl_stats", adsl_stats, sizeof(adsl_stats));
 			if(strstr(adsl_stats, "up"))
 			{
-				if(strstr(adsl_stats, "VDSL"))
+				if(strstr(adsl_stats, "PTM"))
 					return WAN_UNIT_PTM0;
 				else
 					return WAN_UNIT_ATM;

@@ -27,7 +27,12 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_manual_setting.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vci","dsltmp_cfg_vci")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_prctl","dsltmp_cfg_prctl")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_encap","dsltmp_cfg_encap")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vlanid","dsltmp_cfg_vlanid")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_mr","dsltmp_cfg_iptv_mr")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_rmvlan","dsltmp_cfg_iptv_rmvlan")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_num_pvc","dsltmp_cfg_iptv_num_pvc")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist","dsltmp_cfg_iptv_pvclist")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_enable","dsltmp_cfg_iptv_enable")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_ispname","dsltmp_cfg_ispname")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_country","dsltmp_cfg_country")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_transfer_mode","dsltmp_transfer_mode")
@@ -36,6 +41,11 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_manual_setting.asp" Then
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_PTM_manual_setting.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_prctl","dsltmp_cfg_prctl")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vlanid","dsltmp_cfg_vlanid")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_mr","dsltmp_cfg_iptv_mr")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_rmvlan","dsltmp_cfg_iptv_rmvlan")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_num_pvc","dsltmp_cfg_iptv_num_pvc")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist","dsltmp_cfg_iptv_pvclist")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_enable","dsltmp_cfg_iptv_enable")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_ispname","dsltmp_cfg_ispname")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_country","dsltmp_cfg_country")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_transfer_mode","dsltmp_transfer_mode")
@@ -46,10 +56,15 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ppp_cfg.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vci","dsltmp_cfg_vci")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_prctl","dsltmp_cfg_prctl")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_encap","dsltmp_cfg_encap")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vlanid","dsltmp_cfg_vlanid")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_rmvlan","dsltmp_cfg_iptv_rmvlan")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_mr","dsltmp_cfg_iptv_mr")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_num_pvc","dsltmp_cfg_iptv_num_pvc")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist","dsltmp_cfg_iptv_pvclist")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_enable","dsltmp_cfg_iptv_enable")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_transfer_mode","dsltmp_transfer_mode")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_pppoe_username","dsltmp_cfg_pppoe_username")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_pppoe_passwd","dsltmp_cfg_pppoe_passwd")
-	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vlanid","dsltmp_cfg_vlanid")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_wanTypeOption","dsltmp_wanTypeOption")
 	tcWebApi_set("GUITemp_Entry0","with_wan_setting","with_wan_setting")
 
@@ -63,6 +78,11 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_mer_cfg.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vci","dsltmp_cfg_vci")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_prctl","dsltmp_cfg_prctl")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_encap","dsltmp_cfg_encap")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_rmvlan","dsltmp_cfg_iptv_rmvlan")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_mr","dsltmp_cfg_iptv_mr")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_num_pvc","dsltmp_cfg_iptv_num_pvc")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist","dsltmp_cfg_iptv_pvclist")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_enable","dsltmp_cfg_iptv_enable")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_transfer_mode","dsltmp_transfer_mode")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_DHCPClient","dsltmp_cfg_DHCPClient")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_dnsenable","dsltmp_cfg_dnsenable")
@@ -326,6 +346,12 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_finish.asp" Then
 		TCWebApi_set("Upnpd_Entry","Active","Yes")
 		tcWebApi_commit("Wan_PVC")
 		tcWebApi_commit("Upnpd_Entry")
+		qis_do_dsl_iptv()
+
+		if Request_Form("detected_lang_type") <> "" Then
+			tcWebApi_set("LanguageSwitch_Entry","Type","detected_lang_type")
+			tcWebApi_commit("LanguageSwitch_Entry")
+		end if
 	end if
 	'End Set WAN
 

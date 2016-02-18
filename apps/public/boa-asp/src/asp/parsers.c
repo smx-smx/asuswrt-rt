@@ -255,6 +255,21 @@ int	initandparserfile(void)
 	if (strlen(str_type))
 		nIndex = atoi(str_type);
 
+	if(nIndex == 0)
+	{
+		for(i = 0; i < 5; ++i)
+		{
+			memset(str_type, 0, sizeof(str_type));
+			res = tcapi_get("WebCurSet_Entry", "detected_lang_type", str_type);
+			if(!res && strlen(str_type) > 0 )
+				break;
+			tcdbg_printf("[%s, %d]get lang failed!\n", __FUNCTION__, __LINE__);
+			sleep(1);
+		}
+		if (strlen(str_type))
+			nIndex = atoi(str_type);
+	}
+
 	init_flag = nIndex;
 	closefp();//close file pointer at first
 	
@@ -355,14 +370,23 @@ void	initParseStruct(void)
 int	islangChanged(void)
 {
 	char	str_type[4] = {0};
+	int	nIndex = 0;
+
 	tcapi_get("LanguageSwitch_Entry", "Type", str_type);
-	
-	//tcdbg_printf("\r\n*** islangChanged - atoi(str_type): [%d]\n", atoi(str_type));
-	if (atoi(str_type) != init_flag)
+	if (strlen(str_type))
+		nIndex = atoi(str_type);
+	if(nIndex == 0)
 	{
-		return 1;
+		memset(str_type, 0, sizeof(str_type));
+		tcapi_get("WebCurSet_Entry", "detected_lang_type", str_type);
+		if (strlen(str_type))
+			nIndex = atoi(str_type);
 	}
 
-	return 0;
+	//tcdbg_printf("\r\n*** islangChanged - atoi(str_type): [%d]\n", atoi(str_type));
+	if (nIndex != init_flag)
+		return 1;
+	else
+		return 0;
 }
 #endif

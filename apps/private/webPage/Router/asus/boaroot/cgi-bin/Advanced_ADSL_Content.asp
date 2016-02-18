@@ -29,6 +29,7 @@ tcWebApi_set("Adsl_Entry","dslx_ginp","dslx_ginp")
 tcWebApi_set("Adsl_Entry","dslx_vdsl_vectoring","dslx_vdsl_vectoring")
 tcWebApi_set("Adsl_Entry","dslx_vdsl_nonstd_vectoring","dslx_vdsl_nonstd_vectoring")
 tcWebApi_set("Adsl_Entry","dslx_dla_enable","dslx_dla_enable")
+set_dsl_apply_flag()
 tcWebApi_commit("Adsl_Entry")
 end if
 %>
@@ -78,6 +79,7 @@ function redirect(){
 
 function applyRule(){
 	document.form.saveFlag.value = 1;
+	document.form.isApplyDSLSetting.value = 1; //for set_dsl_apply_flag()
 	showLoading(8);
 	setTimeout("redirect();", 8000);
 	document.form.submit();
@@ -128,11 +130,13 @@ function change_dla(enable){
 		document.getElementById("dslx_snrm_offset_read").innerHTML = get_snrm_offset();
 		document.getElementById("dslx_snrm_offset_read").title = "Auto configured by Dynamic Line Adjustment (DLA)";
 
+		/* Renjie:remove Rx AGC Gain Adjustment(ADSL) auto config setting
 		document.form.adsl_rx_agc.style.display = "none";
 		document.form.adsl_rx_agc.disabled = true;
 		document.getElementById("adsl_rx_agc_read").style.display = "";
 		document.getElementById("adsl_rx_agc_read").innerHTML = "<%tcWebApi_get("Adsl_Entry","adsl_rx_agc","s")%>";
 		document.getElementById("adsl_rx_agc_read").title = "Auto configured by Dynamic Line Adjustment (DLA)";
+		*/
 
 	<%if tcWebApi_get("WebCustom_Entry","havePtm","h") = "Yes" then%>
 		document.form.vdsl_rx_agc.style.display = "none";
@@ -325,6 +329,7 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
 <form method="POST" action="/cgi-bin/Advanced_ADSL_Content.asp" name="form" target="hidden_frame">
 <input type="hidden" name="UniqueMac" value="<%tcWebApi_get("Wan_Common", "UniqueMac", "s")%>"/>
+<input type="hidden" name="isApplyDSLSetting" value="0"/>
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 <tr>
 <td width="17">&nbsp;</td>

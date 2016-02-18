@@ -75,7 +75,7 @@ function initial(){
 	show_menu();
 	load_body();
 	autoFocus('<% get_parameter("af"); %>');
-
+	genBWTable();
 	insertExtChannelOption();
 	wl_auth_mode_change(1);	
 	
@@ -105,7 +105,7 @@ function initial(){
 	}
 	else{	//5G uses the different Wireless Mode, added by Javier.
 		var algos;
-		algos = new Array("Auto", "N Only", "Legacy");
+		algos = new Array("<% tcWebApi_Get("String_Entry", "Auto", "s") %>", "N Only", "Legacy");
 		/* Reconstruct algorithm array from new crypto algorithms */
 		document.form.wl_nmode_x.length = algos.length;
 		for(i=0; i<algos.length; i++){
@@ -141,16 +141,8 @@ function initial(){
 		$("wl_unit_field").style.display = "none";
 		
 	limit_auth_method();	
-
-	if('<% tcWebApi_get("WLan_Common","wl_unit","s"); %>' == '1') {
-		insertExtChannelOption_5g();
-	}
-	else {
-		insertExtChannelOption_2g();
-	}
-
-	genBWTable();
 }
+
 function genBWTable() {
 	var bws = new Array();
 	var bwsDesc = new Array();

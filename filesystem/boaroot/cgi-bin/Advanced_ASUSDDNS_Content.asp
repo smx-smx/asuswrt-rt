@@ -63,8 +63,8 @@ function ddns_load_body(){
 	valid_wan_ip();
 
 	var hostname_x = '<% tcWebApi_get("Ddns_Entry","MYHOST","s"); %>';
-	var ddns_return_code = '<% nvram_get_ddns("GUITemp_Entry2","ddns_return_code"); %>';
-	var ddns_old_name = '<% tcWebApi_get("GUITemp_Entry2","ddns_old_name","s"); %>';
+	var ddns_return_code = '<% nvram_get_ddns("Vram_Entry","ddns_return_code"); %>';
+	var ddns_old_name = '<% tcWebApi_get("Vram_Entry","ddns_old_name","s"); %>';
 	var ddns_server_x = '<% tcWebApi_get("Ddns_Entry","SERVERNAME","s"); %>';
 	var ddns_enable_x = '<% tcWebApi_get("Ddns_Entry","Active","s"); %>';
 

@@ -31,6 +31,69 @@ var transfer_mode = "<% tcWebApi_get("GUITemp_Entry0","dsltmp_transfer_mode","s"
 var with_wan_setting = "<% tcWebApi_get("GUITemp_Entry0","with_wan_setting","s") %>";
 var model_name = "<%tcWebApi_get("String_Entry","Web_Title2","s")%>";
 
+var iptv_atm_pvc_str_title = "";
+var iptv_atm_pvc_str = "";
+var iptv_ptm_pvc_str_title = "";
+var iptv_ptm_pvc_str = "";
+var dsltmp_cfg_iptv_pvclist = decodeURIComponent('<%tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist", "s")%>');
+var iptv_num_pvc_val = "<% tcWebApi_get("GUITemp_Entry0","dsltmp_cfg_iptv_num_pvc","s") %>";
+
+
+//udpate iptv information
+if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
+	var dsltmp_cfg_iptv_pvclist_row;
+	var dsltmp_cfg_iptv_pvclist_col;
+	var i, j;
+
+	iptv_atm_pvc_str_title = iptv_num_pvc_val + " IPTV PVC(s)";
+	iptv_ptm_pvc_str_title = iptv_num_pvc_val + " IPTV service(s)";
+
+	//<vpi>vci>proto>encap>vlanid
+	if(dsltmp_cfg_iptv_pvclist.charAt(0) == "<")	//rempve the 1st "<"
+		dsltmp_cfg_iptv_pvclist = dsltmp_cfg_iptv_pvclist.substr(1,dsltmp_cfg_iptv_pvclist.length);
+	dsltmp_cfg_iptv_pvclist_row = dsltmp_cfg_iptv_pvclist.split('<');
+
+	for(i=0; i<dsltmp_cfg_iptv_pvclist_row.length; i++) {
+		if(i > 0) {
+			iptv_atm_pvc_str += " + ";
+			iptv_ptm_pvc_str += " + ";
+		}
+		dsltmp_cfg_iptv_pvclist_col = dsltmp_cfg_iptv_pvclist_row[i].split('>');
+		for(j=0; j<dsltmp_cfg_iptv_pvclist_col.length; j++){
+			switch(j) {
+				case 0:	//vpi
+					iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[j] + "/";
+					break;
+				case 1:	//vci
+					iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[j] + ",";
+					break;
+				case 2:	//proto
+					if(dsltmp_cfg_iptv_pvclist_col[j] == 3) {
+						iptv_atm_pvc_str += "Bridged, ";
+						iptv_ptm_pvc_str += "Bridged, ";
+					}
+					else {
+						iptv_atm_pvc_str += ", ";
+						iptv_ptm_pvc_str += ", ";
+					}
+					break;
+				case 3:	//encap
+					if(dsltmp_cfg_iptv_pvclist_col[j] == 1)
+						iptv_atm_pvc_str += "VC-Mux";
+					else
+						iptv_atm_pvc_str += "LLC";
+					break;
+				case 4:	//vlan id
+					if(dsltmp_cfg_iptv_pvclist_col[j] != "") {
+						iptv_atm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
+						iptv_ptm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
+					}
+					break;
+			}
+		}
+	}
+}
+
 function QKfinish_load_body(){
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_all_title","s")%>";
 	//parent.set_step("t3");
@@ -124,7 +187,8 @@ function QKfinish_load_body(){
 		else
 			$("#wanvpivci")[0].innerHTML = "<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_vpi","s") %> / <% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_vci","s") %>";
 
-		$("#wanencap_item")[0].innerHTML = "<% tcWebApi_Get("String_Entry", "prtcl_JS_encmode", "s") %>";
+		$("#wanencap_item")[0].innerHTML = "<% tcWebApi_Get("String_Entry", "prtcl_JS_encmode", "s") %>";		
+		
 		var encap_val = "<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_encap","s") %>";
 		if (encap_val == "1")
 			$("#wanencap")[0].innerHTML = "VC-Mux";
@@ -133,6 +197,12 @@ function QKfinish_load_body(){
 
 		if(with_wan_setting == "")
 			$("#wanencap")[0].innerHTML = "";
+						
+		if(iptv_num_pvc_val >0){	//iptv information
+			document.getElementById("iptv_service").style.display = "";
+			document.getElementById("iptv_pvc_item").innerHTML = iptv_atm_pvc_str_title;
+			document.getElementById("iptv_pvc").innerHTML = iptv_atm_pvc_str;
+		}
 	}
 	else //PTM
 	{
@@ -145,6 +215,12 @@ function QKfinish_load_body(){
 			else
 				$("#wanvpivci")[0].innerHTML = "<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_vlanid","s") %>";
 		}
+				
+		if(iptv_num_pvc_val >0){	//iptv information
+			document.getElementById("iptv_service").style.display = "";
+			document.getElementById("iptv_pvc_item").innerHTML = iptv_ptm_pvc_str_title;
+			document.getElementById("iptv_pvc").innerHTML = iptv_ptm_pvc_str;
+		}
 	}
 
 	$("#lanip_item")[0].innerHTML = "<% tcWebApi_Get("String_Entry", "LAN_IP", "s") %>";
@@ -156,17 +232,16 @@ function redirect(){
 }
 
 function goHome(){
-		if(model_name == "DSL-N66U")
-		{
-			parent.showLoading(35);
-			setTimeout("redirect();", 35000);
-		}
-		else //DSL-N16U ...
-		{
-			parent.showLoading(30);
-			setTimeout("redirect();", 30000);
-		}
-		document.redirectForm.submit();
+	var wait_time = 40;
+
+	if(document.redirectForm.dsltmp_cfg_iptv_enable.value == "1")
+		wait_time += 15;
+	if(model_name == "DSL-N66U")
+		wait_time += 5;
+
+	parent.showLoading(wait_time);
+	setTimeout("redirect();", wait_time*1000);
+	document.redirectForm.submit();
 }
 </script>
 </head>
@@ -225,6 +300,12 @@ else
 <input type="hidden" name="dsltmp_cfg_dns2" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_dns2","s") %>">
 <input type="hidden" name="dsltmp_dhcp_clientid" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_dhcp_clientid","s") %>">
 
+<input type="hidden" name="dsltmp_cfg_iptv_rmvlan" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_rmvlan","s") %>">
+<input type="hidden" name="dsltmp_cfg_iptv_mr" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_mr","s") %>">
+<input type="hidden" name="dsltmp_cfg_iptv_num_pvc" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_num_pvc","s") %>">
+<input type="hidden" name="dsltmp_cfg_iptv_pvclist" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist","s") %>">
+<input type="hidden" name="dsltmp_cfg_iptv_enable" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_enable","s") %>">
+
 <!-- default value -->
 <INPUT TYPE="hidden" NAME="value_empty" value="">
 <INPUT TYPE="hidden" NAME="value_yes" value="Yes">
@@ -261,6 +342,7 @@ else
 <INPUT TYPE="hidden" NAME="Bridged_Only_VC" value="1483 Bridged Only VC-Mux">
 <INPUT TYPE="hidden" NAME="Bridged_Only_LLC" value="1483 Bridged Only LLC">
 <input type="hidden" name="QIS_Flag" value="1">
+<input type="hidden" name="detected_lang_type" value="<% tcWebApi_staticGet("WebCurSet_Entry","detected_lang_type","s") %>">
 </form>
 <div class="QISmain">
 <div>
@@ -278,88 +360,94 @@ else
 <br/>
 <table id="tblsetting_1" class="QISform_finish" width="400" border=0 align="center" cellpadding="5" cellspacing="0" style="margin-top:-10px;">
 	<tr id="freqtitle2">
-	<td align="left" colspan="4" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;"><% tcWebApi_Get("String_Entry", "menu5_1", "s") %> <span style="color:#5AD;" id="desc2g">(2.4GHz)</span></td>
+		<td align="left" colspan="4" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;"><% tcWebApi_Get("String_Entry", "menu5_1", "s") %> <span style="color:#5AD;" id="desc2g">(2.4GHz)</span></td>
 	</tr>
-<tr id="ssid2_block">
-	<th width="180"><span id="ssid_2_item"></span></th>
-	<td class="QISformtd" width="300px">
-	<span id="ssid_2" style="white-space: pre;"></span>
-	</td>
-</tr>
-<tr id="key2_block">
-<th width="180"><span id="key2_item"></span></th>
-<td class="QISformtd">
-<span id="key2" style="white-space: pre;"></span>
-</td>
-</tr>
-<tr id="security2_block">
-<th width="180"><span id="security_item2"></span></th>
-<td class="QISformtd">
-<span id="security2"></span>
-</td>
-</tr>
-<tr id="freqtitle5">
-<td align="left" colspan="4" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;"><% tcWebApi_Get("String_Entry", "menu5_1", "s") %> <span style="color:#5AD;">(5GHz)</span></td>
-</tr>
-<tr id="ssid5_block">
-<th width="180"><span id="ssid_5_item"></span></th>
-<td class="QISformtd">
-<span id="ssid_5" style="white-space: pre;"></span>
-</td>
-</tr>
-<tr id="key5_block">
-<th width="180"><span id="key5_item"></span></th>
-<td class="QISformtd">
-<span id="key5" style="white-space: pre;"></span>
-</td>
-</tr>
-<tr id="security5_block">
-<th width="180"><span id="security_item5"></span></th>
-<td class="QISformtd">
-<span id="security5"></span>
-</td>
-</tr>
-<tr>
-<td align="left" colspan="4" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;">WAN <span style="color:#5AD;">(<% tcWebApi_get("GUITemp_Entry0","dsltmp_transfer_mode","s"); %>)</span>
-</td>
-</tr>
-<tr>
-<tr>
-<th width="180"><span id="wantype_item"></span></th>
-<td class="QISformtd">
-<span id="wantype"></span>
-</td>
-</tr>
-<tr>
-<th width="180"><span id="wanvpivci_item"></span></th>
-<td class="QISformtd">
-<span id="wanvpivci"></span>
-</td>
-</tr>
-<tr>
-<th width="180"><span id="wanencap_item"></span></th>
-<td class="QISformtd">
-<span id="wanencap"></span>
-</td>
-</tr>
-<tr>
-<td align="left" colspan="4" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;">LAN</td>
-</tr>
-<tr>
-<th width="180"><span id="lanip_item"></span></th>
-<td class="QISformtd">
-<span id="lanip"></span>
-</td>
-</tr>
-<tr>
-<th width="180"><span id="mac_item"></span></th>
-<td class="QISformtd">
-<span id="mac"></span>
-</td>
-</tr>
+	<tr id="ssid2_block">
+		<th width="180"><span id="ssid_2_item"></span></th>
+		<td class="QISformtd" width="300px">
+			<span id="ssid_2" style="white-space: pre;"></span>
+		</td>
+	</tr>
+	<tr id="key2_block">
+		<th width="180"><span id="key2_item"></span></th>
+		<td class="QISformtd">
+			<span id="key2" style="white-space: pre;"></span>
+		</td>
+	</tr>
+	<tr id="security2_block">
+		<th width="180"><span id="security_item2"></span></th>
+		<td class="QISformtd">
+			<span id="security2"></span>
+		</td>
+	</tr>
+	<tr id="freqtitle5">
+		<td align="left" colspan="4" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;"><% tcWebApi_Get("String_Entry", "menu5_1", "s") %> <span style="color:#5AD;">(5GHz)</span></td>
+	</tr>
+	<tr id="ssid5_block">
+		<th width="180"><span id="ssid_5_item"></span></th>
+		<td class="QISformtd">
+			<span id="ssid_5" style="white-space: pre;"></span>
+		</td>
+	</tr>
+	<tr id="key5_block">
+		<th width="180"><span id="key5_item"></span></th>
+		<td class="QISformtd">
+			<span id="key5" style="white-space: pre;"></span>
+		</td>
+	</tr>
+	<tr id="security5_block">
+		<th width="180"><span id="security_item5"></span></th>
+		<td class="QISformtd">
+			<span id="security5"></span>
+		</td>
+	</tr>
+	<tr>
+		<td align="left" colspan="4" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;">WAN <span style="color:#5AD;">(<% tcWebApi_get("GUITemp_Entry0","dsltmp_transfer_mode","s"); %>)</span>
+		</td>
+	</tr>
+	<tr>
+		<th width="180"><span id="wantype_item"></span></th>
+		<td class="QISformtd">
+			<span id="wantype"></span>
+		</td>
+	</tr>
+	<tr>
+		<th width="180"><span id="wanvpivci_item"></span></th>
+		<td class="QISformtd">
+			<span id="wanvpivci"></span>
+		</td>
+	</tr>
+	<tr>
+		<th width="180"><span id="wanencap_item"></span></th>
+		<td class="QISformtd">
+			<span id="wanencap"></span>
+		</td>
+	</tr>
+	<tr id="iptv_service" style="display:none;">
+		<th width="180"><span id="iptv_pvc_item"></span></th>
+		<td class="QISformtd">
+			<span id="iptv_pvc"></span>
+		</td>
+	</tr>
+	<tr>
+		<td align="left" colspan="4" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;">LAN</td>
+	</tr>
+	<tr>
+		<th width="180"><span id="lanip_item"></span></th>
+		<td class="QISformtd">
+			<span id="lanip"></span>
+		</td>
+	</tr>
+	<tr>
+		<th width="180"><span id="mac_item"></span></th>
+		<td class="QISformtd">
+			<span id="mac"></span>
+		</td>
+	</tr>
 </table>
 <div class="apply_gen" style="margin-top:5px">
-<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" onclick="goHome();" class="button_gen">
+	<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" onclick="goHome();" class="button_gen">
+</div>
 </div>
 </body>
 

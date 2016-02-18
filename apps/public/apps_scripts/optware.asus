@@ -41,14 +41,14 @@ URL: http://www.asusnetwork.net:8081/downloadmaster/index.asp
 
 
 Package: mediaserver
-Version: 1.0.0.35
-Depends: uclibc-opt, zlib, gdbm, sqlite, libjpeg, libexif, libogg, flac, libvorbis, asusffmpeg, asuslighttpd
+Version: 1.0.0.47
+Depends: uclibc-opt, zlib, gdbm, sqlite, libjpeg, libexif, libogg, flac, libvorbis, expat, asuslibdaemon, asusavahi, asusffmpeg, asuslighttpd
 OptionalUtility: 1.0.0.2
 Section: net
 Architecture: mipsbig
 Maintainer: ASUS
-Size: 2340892
-Filename: mediaserver_1.0.0.35_mipsbig.ipk
+Size: 2055892
+Filename: mediaserver_1.0.0.47_mipsbig.ipk
 Source: http://nw-dlcdnet.asus.com/asusware/mipsbig/stable
 Description: 
 URL: http://www.asusnetwork.net:8081/mediaserverui/mediaserver.asp
@@ -418,8 +418,6 @@ Source: http://nw-dlcdnet.asus.com/asusware/mipsbig/stable
 URL: http://www.asusnetwork.net/cloud_sync.asp
 Description: Cloud control script
 
-
-
 Package: bzip2
 Version: 1.0.6-1
 Depends: 
@@ -433,14 +431,38 @@ URL:
 Description: 
 
 Package: asusffmpeg
-Version: 1.0.0.2
+Version: 1.0.0.5
 Depends: 
 Section: tool
 Architecture: mipsbig
 Maintainer: ASUS
-Size: 500656
-Filename: asusffmpeg_1.0.0.2_mipsbig.ipk
-Source: http://nw-dlcdnet.asus.com/asusware/mipsbig/stable
+Size: 499887
+Filename: asusffmpeg_1.0.0.5_mipsbig.ipk
+Source: http://dlcdnet.asus.com/pub/ASUS/wireless/ASUSWRT
+URL: 
+Description: 
+
+Package: asusavahi
+Version: 0.6.31
+Depends: 
+Section: tool
+Architecture: mipsbig
+Maintainer: ASUS
+Size: 155870
+Filename: asusavahi_0.6.31_mipsbig.ipk
+Source: http://dlcdnet.asus.com/pub/ASUS/wireless/ASUSWRT
+URL: 
+Description: 
+
+Package: asuslibdaemon
+Version: 0.14
+Depends: 
+Section: tool
+Architecture: mipsbig
+Maintainer: ASUS
+Size: 10366
+Filename: asuslibdaemon_0.14_mipsbig.ipk
+Source: http://dlcdnet.asus.com/pub/ASUS/wireless/ASUSWRT
 URL: 
 Description: 
 

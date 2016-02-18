@@ -337,7 +337,7 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	<Entry RestoreLinos="1"
 	Vendor="ASUSTeK Computer Inc."
 	ProductName="DSL-N12U-C1"
-	InnerVersion="1.0.9.9"
+	InnerVersion="1.1.0.4"
 	ProductTitle="Wireless-N300 ADSL2/2+ Modem Router"
 	SWVer="V100R001B012" FWVer="3.10.0.24" PubDate="2013/06/06" BatchNum="STC20P0.012.310024" SerialNum="1234" Description="" HWVer=""
 	btn_ez_radiotoggle="0"

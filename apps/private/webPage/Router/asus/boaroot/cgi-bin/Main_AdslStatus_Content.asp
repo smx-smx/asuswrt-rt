@@ -99,7 +99,7 @@ function showadslbootTime(){
 	if(adsl_timestamp_update != "" && sync_status_update == "up")
 	{
 		if(adsl_boottime < 0)
-			dsl_boottime = boottime - adsl_timestamp_update;
+			adsl_boottime = boottime - adsl_timestamp_update;
 		Days = Math.floor(adsl_boottime / (60*60*24));
 		Hours = Math.floor((adsl_boottime / 3600) % 24);
 		Minutes = Math.floor(adsl_boottime % 3600 / 60);

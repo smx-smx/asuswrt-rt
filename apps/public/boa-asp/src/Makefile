@@ -20,8 +20,8 @@ GCC_FLAGS = -Wstrict-prototypes -Wpointer-arith -Wcast-align -Wcast-qual\
 srcdir = .
 VPATH = .:./../extras
 LDFLAGS =  -lcrypt
-LIBS =  -lcrypt -L ../../lib/ -lmxml -L../../shared -lshared
-CFLAGS = -pipe -Wall -I. -I./asp -I../../shared/
+LIBS =  -lcrypt -L ../../lib/ -lmxml -L../../shared -lshared -L../../utils -lutils
+CFLAGS = -pipe -Wall -I. -I./asp -I../../shared/ -I../../utils
 ifeq ($(RTCONFIG_USB),y)
 CFLAGS += -I../../libdisk/
 LIBS += -L../../libdisk -ldisk 

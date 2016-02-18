@@ -73,7 +73,9 @@ _check_log_message(){
 		target=`echo $got_log |awk '{print $2}'`
 	elif [ "$action" = "Downloading" ]; then
 		target=`echo $got_log |awk '{print $2}' |awk '{FS="/"; print $NF}' |awk '{FS="_"; print $1}'`
-	elif [ "$action" = "Successfully" ]; then
+	elif [ "$action" = "Upgrading" ]; then
+       		target="Upgrading"
+        elif [ "$action" = "Successfully" ]; then
 		target="terminated"
 	elif [ "$action" = "update-alternatives:" ]; then
 		target=""

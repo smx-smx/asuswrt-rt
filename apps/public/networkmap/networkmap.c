@@ -513,7 +513,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in router_addr, device_addr;
 	char router_ipaddr[17], router_mac[17], buffer[ARP_BUFFER_SIZE];
 	unsigned char scan_ipaddr[4]; // scan ip
-	FILE *fp_ip;
+	FILE *fp_ip, *fp;
 	fd_set rfds;
 	ARP_HEADER * arp_ptr;
 	struct timeval tv1, tv2, arp_timeout;
@@ -521,6 +521,7 @@ int main(int argc, char *argv[])
 	int ip_dup, mac_dup, real_num;
 	int lock;
 	int ret;
+	int pid, flag;	//Andy Chiu, 2015/06/16. Checking the networkmap exist.
 	unsigned short msg_type;
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_WIRELESSREPEATER)	
 	char *mac;
@@ -529,7 +530,27 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, nwmap_sig_term);	//Andy Chiu, 2015/06/12. Add for terminate signal handling
 	loop = 1;
 
-	FILE *fp = fopen("/var/run/networkmap.pid", "w");
+	//Andy Chiu, 2015/06/16. check otehr networkmap exist.
+	flag = 0;
+	fp = fopen("/var/run/networkmap.pid", "r");
+	if(fp)
+	{
+		if(fscanf(fp, "%d", &pid) > 0)
+		{
+			sprintf(buffer, "/proc/%d", pid);
+			if(!access(buffer, F_OK))
+				flag = 1;
+		}
+		fclose(fp);
+	}
+	
+	if(flag)
+	{
+		NMP_DEBUG("[%s, %d]networkmap is already running now.\n", __FUNCTION__, __LINE__);
+		return 0;
+	}
+	
+	fp = fopen("/var/run/networkmap.pid", "w");
 	if(fp != NULL){
 		fprintf(fp, "%d", getpid());
 		fclose(fp);

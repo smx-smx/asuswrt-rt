@@ -1,5 +1,7 @@
 #!/bin/sh
 # ASUS 3ginfo script to get dongle information
+# Note that if command is not located at /bin, you have to show its full path.
+# Ex: /userfs/bin/tcapi or /sbin/ifconfig
 
 echo ">"
 cat /proc/bus/usb/devices
@@ -12,70 +14,72 @@ cat /tmp/ppp/peers/3g
 echo ">"
 ls /dev/tty*
 echo ">"
-ifconfig
+/sbin/ifconfig
 echo ">"
-lsmod
+ps
 echo ">"
-tcapi get SysInfo_Entry ProductName
+/sbin/lsmod
 echo ">"
-tcapi get DeviceInfo FwVer
+/userfs/bin/tcapi get SysInfo_Entry ProductName
+echo ">"
+/userfs/bin/tcapi get DeviceInfo FwVer
 echo ">"
 echo "dualwan nvram:>"
-tcapi show Dualwan
+/userfs/bin/tcapi show Dualwan
 echo ">"
-tcapi get USBModem_Entry Dev3G
+/userfs/bin/tcapi get USBModem_Entry Dev3G
 echo ">"
-tcapi show USBModem_Entry |grep g3state
+/userfs/bin/tcapi show USBModem_Entry |grep g3state
 echo ">"
-tcapi show USBModem_Entry |grep g3err
+/userfs/bin/tcapi show USBModem_Entry |grep g3err
 echo ">"
 echo "modem nvram:>"
-nvram show|grep ^modem_ |grep -v "modem_pincode="
+/userfs/bin/tcapi get USBModem_Entry modem_pincode
 echo ">"
 echo "modem state:>"
-str=`tcapi get USBModem_Entry usb_modem_act_path`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_path`
 echo "usb_modem_act_path=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_type`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_type`
 echo "usb_modem_act_type=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_dev`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_dev`
 echo "usb_modem_act_dev=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_int`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_int`
 echo "usb_modem_act_int=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_bulk`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_bulk`
 echo "usb_modem_act_bulk=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_vid`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_vid`
 echo "usb_modem_act_vid=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_pid`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_pid`
 echo "usb_modem_act_pid=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_sim`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_sim`
 echo "usb_modem_act_sim=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_signal`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_signal`
 echo "usb_modem_act_signal=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_operation`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_operation`
 echo "usb_modem_act_operation=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_imsi |cut -c '1-6'`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_imsi |cut -c '1-6'`
 echo "usb_modem_act_imsi=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_tx`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_tx`
 echo "usb_modem_act_tx=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_rx`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_rx`
 echo "usb_modem_act_rx=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_hwver`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_hwver`
 echo "usb_modem_act_hwver=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_band`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_band`
 echo "usb_modem_act_band=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_scanning`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_scanning`
 echo "usb_modem_act_scanning=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_auth`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_auth`
 echo "usb_modem_act_auth=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_auth_pin`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_auth_pin`
 echo "usb_modem_act_auth_pin=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_auth_puk`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_auth_puk`
 echo "usb_modem_act_auth_puk=$str"
-str=`tcapi get USBModem_Entry usb_modem_act_startsec`
+str=`/userfs/bin/tcapi get USBModem_Entry usb_modem_act_startsec`
 echo "usb_modem_act_startsec=$str"
 echo ">"
 echo "modem autoapn:>"
-tcapi show USBModem_Entry |grep ^usb_modem_auto
+/userfs/bin/tcapi show USBModem_Entry |grep ^usb_modem_auto
 echo ">"
 echo "resolv.conf >"
 cat /etc/resolv.conf
@@ -88,17 +92,23 @@ cat /etc/udhcpd.conf
 echo ">"
 echo "show dns nvram >"
 echo ">>PVC0"
-tcapi get DeviceInfo_PVC0 DNSIP
+/userfs/bin/tcapi get DeviceInfo_PVC0 DNSIP
 echo ">>PVC8"
-tcapi get DeviceInfo_PVC8 DNSIP
+/userfs/bin/tcapi get DeviceInfo_PVC8 DNSIP
 echo ">>PVC10"
-tcapi get DeviceInfo_PVC10 DNSIP
+/userfs/bin/tcapi get DeviceInfo_PVC10 DNSIP
 echo ">>PVC11"
-tcapi get DeviceInfo_PVC11 DNSIP
+/userfs/bin/tcapi get DeviceInfo_PVC11 DNSIP
 echo ">"
 echo "syslog>"
 cat /var/log/currLogFile
 echo ">"
 echo "usblog>"
 cat /tmp/usb.log
+echo ">"
+echo "show USBModem node>"
+/userfs/bin/tcapi show USBModem
+echo ">"
+echo "show USB node>"
+/userfs/bin/tcapi show USB
 

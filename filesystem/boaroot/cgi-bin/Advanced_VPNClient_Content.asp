@@ -761,7 +761,7 @@ function show_vpnc_rulelist(){
 					else if(vpnc_state_t == 2) // Connected
 						code +='<td width="10%"><img src="/images/checked_parentctrl.png" style="width:25px;"></td>';
 					else if(vpnc_state_t == 4 && vpnc_sbstate_t == 2)
-						code +='<td width="10%"><img title="<%tcWebApi_Get("String_Entry","qis_fail_desc1","s")%>" src="/images/button-close2.png" style="width:25px;"></td>';
+						code +="<td width=\"10%\"><img title=\"<%tcWebApi_Get("String_Entry","qis_fail_desc1","s")%>\" src=\"/images/button-close2.png\" style=\"width:25px;\"></td>";
 					else // Stop connection
 						code +='<td width="10%"><img src="/images/button-close2.png" style="width:25px;"></td>';
 				}
@@ -1382,13 +1382,13 @@ function addOpenvpnProfile(){
 						</td>
 					</tr>
 					<tr>
-						<th><%tcWebApi_get("String_Entry","PPPC_UserName_in","s")%></th>
+						<th><%tcWebApi_get("String_Entry","HSDPAC_Username_in","s")%></th>
 						<td>
 							<input type="text" name="vpnc_account" id="vpnc_account_edit" value="" class="input_32_table" style="float:left;" autocapitalization="off" autocomplete="off"></input>
 						</td>
 					</tr>
 					<tr>
-						<th><%tcWebApi_get("String_Entry","PPPC_Password_in","s")%></th>
+						<th><%tcWebApi_get("String_Entry","HSDPAC_Password_in","s")%></th>
 						<td>
 							<input type="text" name="vpnc_pwd" id="vpnc_pwd_edit" value="" class="input_32_table" style="float:left;" autocapitalization="off" autocomplete="off"></input>
 						</td>
@@ -1534,13 +1534,13 @@ function addOpenvpnProfile(){
 							</td>
 						</tr>
 						<tr>
-							<th><%tcWebApi_get("String_Entry","PPPC_UserName_in","s")%> (option)</th>
+							<th><%tcWebApi_get("String_Entry","HSDPAC_Username_in","s")%> (option)</th>
 							<td>
 								<input type="text" name="vpnc_openvpn_username" id="vpnc_openvpn_username_edit" value="" class="input_32_table" style="float:left;"></input>
 							</td>
 						</tr>
 						<tr>
-							<th><%tcWebApi_get("String_Entry","PPPC_Password_in","s")%> (option)</th>
+							<th><%tcWebApi_get("String_Entry","HSDPAC_Password_in","s")%> (option)</th>
 							<td>
 								<input type="text" name="vpnc_openvpn_pwd" id="vpnc_openvpn_pwd_edit" value="" class="input_32_table" style="float:left;"></input>
 							</td>

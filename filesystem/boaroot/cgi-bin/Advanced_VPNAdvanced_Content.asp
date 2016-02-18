@@ -608,8 +608,8 @@ function switchPage(page){
 									  		</tr>
 									  	</thead>
 									  	<tr>
-								  			<th><% tcWebApi_get("String_Entry", "PPPC_UserName_in", "s") %></th>
-											<th><% tcWebApi_get("String_Entry", "PPPC_Password_in", "s") %></th>
+								  			<th><% tcWebApi_get("String_Entry", "HSDPAC_Username_in", "s") %></th>
+											<th><% tcWebApi_get("String_Entry", "HSDPAC_Password_in", "s") %></th>
 											<th><% tcWebApi_Get("String_Entry", "list_add_delete", "s") %></th>
 									  	</tr>
 									  	<tr>

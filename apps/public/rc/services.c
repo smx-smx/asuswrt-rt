@@ -22,7 +22,7 @@
 
 #define sin_addr(s) (((struct sockaddr_in *)(s))->sin_addr)
 
-#define DDNS_INFO	"GUITemp_Entry2"
+#define DDNS_INFO	"Vram_Entry"
 
 // Pop an alarm to recheck pids in 500 msec.
 static const struct itimerval pop_tv = { {0,0}, {0, 500 * 1000} };
@@ -196,6 +196,7 @@ ddns_updated_main(int argc, char *argv[])
 	tcapi_set(DDNS_INFO, "ddns_hostname_old", buf);
 	//~ nvram_set("ddns_updated", "1");
 	tcapi_set(DDNS_INFO, "ddns_updated", "1");
+	tcapi_set(DDNS_INFO, "ddns_check", "0");
 
 	logmessage("ddns", "ddns update ok");
 

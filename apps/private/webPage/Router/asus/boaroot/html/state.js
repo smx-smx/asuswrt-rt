@@ -1,4 +1,27 @@
-﻿String.prototype.toArray = function(){
+﻿/* Internet Explorer lacks this array method */
+if (!('indexOf' in Array.prototype)) {
+        Array.prototype.indexOf = function(find, i) {
+                if(i===undefined) i=0;
+                if(i<0) i+= this.length;
+                if(i<0) i=0;
+                for(var n=this.length; i<n; i++){
+                        if (i in this && this[i]===find)
+                                return i;
+                }
+                return -1;
+        };
+}
+
+/* add Array.prototype.forEach() in IE8 */
+if(typeof Array.prototype.forEach != 'function'){
+        Array.prototype.forEach = function(callback){
+                for(var i = 0; i < this.length; i++){
+                        callback.apply(this, [this[i], i, this]);
+                }
+        };
+}
+
+String.prototype.toArray = function(){
         var ret = eval(this.toString());
         if(Object.prototype.toString.apply(ret) === '[object Array]')
                 return ret;
@@ -120,20 +143,6 @@ var wan_line_state = "<% tcWebApi_staticGet("Info_Adsl", "lineState", "s") %>";
 var wlan0_radio_flag = "<% tcWebApi_staticGet("WLan_Entry", "wl0_radio_flag", "s") %>";
 var wlan1_radio_flag = "<% tcWebApi_staticGet("WLan_Entry", "wl1_radio_flag", "s") %>";
 
-function language_check(){
-	if("<% tcWebApi_staticGet("WebCurSet_Entry","lang_detected","s") %>" == "1")
-	{
-		with(document.titleForm){
-			action = "language_change_QIS.asp";
-			preferred_lang.value = "<%tcWebApi_get("LanguageSwitch_Entry","Type","s")%>";
-			flag.value = "set_language";
-			showLoading(3);
-			setTimeout("redirect('/cgi-bin/index.asp');", 3000);
-			submit();
-		}
-	}
-}
-
 function change_wl_unit_status(_unit){
 	document.change_wunit.wl_unit.value = _unit;
 	showLoading(2);
@@ -146,6 +155,7 @@ var active_wan_unit = '<% get_wan_unit() %>';
 var wans_dualwan_array = new Array();
 wans_dualwan_array = wans_dualwan_orig.split(" ");
 var usb_index = wans_dualwan_array.getIndexByValue("usb");
+var dualwan_enabled = (wans_dualwan_orig.search("none") == -1) ? 1:0;
 
 var realip_support = 0;
 
@@ -773,7 +783,6 @@ L3 = 1;
 	}	
 
 show_banner(L3);
-language_check();
 show_footer();
 browser_compatibility();
 show_selected_language();
@@ -1163,13 +1172,13 @@ function show_footer(){
 		real_model_name = "DSL-N55U_D1";
 	else	
 		real_model_name = model_name;
-		
+	
+	var tracing_path_Manual = "/HelpDesk_Manual/?utm_source=asus-product&utm_medium=referral&utm_campaign=router";
+	var tracing_path_Utility = "/HelpDesk_Download/?utm_source=asus-product&utm_medium=referral&utm_campaign=router";	
 	var model_name_supportsite = real_model_name.replace("-", "");
-
-	//footer_code += '<td width="200" id="bottom_help_link" align="left">&nbsp&nbsp<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com'+ href_lang +'/Networking/' + model_name_supportsite + '/HelpDesk_Manual/" target="_blank">Manual</a>&nbsp';
-	//footer_code += '|&nbsp<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com'+ href_lang +'/Networking/' + model_name_supportsite + '/HelpDesk_Download/" target="_blank">Utility</a>';	
-	footer_code += "<td width=\"300\" id=\"bottom_help_link\" align=\"left\">&nbsp&nbsp<a style=\"font-weight: bolder;text-decoration:underline;cursor:pointer;\" href=\"http://www.asus.com/Networking/" + model_name_supportsite + "/HelpDesk_Manual/\" target=\"_blank\"><%tcWebApi_get("String_Entry","Manual","s")%></a>&nbsp";
-	footer_code += '|&nbsp<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com/Networking/' + model_name_supportsite + '/HelpDesk_Download/" target="_blank"><%tcWebApi_get("String_Entry","Utility","s")%></a>';	
+	
+	footer_code += "<td width=\"300\" id=\"bottom_help_link\" align=\"left\">&nbsp&nbsp<a style=\"font-weight: bolder;text-decoration:underline;cursor:pointer;\" href=\"http://www.asus.com/Networking/" + model_name_supportsite + tracing_path_Manual + "\" target=\"_blank\"><%tcWebApi_get("String_Entry","Manual","s")%></a>&nbsp";
+	footer_code += '|&nbsp<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com/Networking/' + model_name_supportsite + tracing_path_Utility + '" target="_blank"><%tcWebApi_get("String_Entry","Utility","s")%></a>';	
 	if(feedback_support != -1)
 		footer_code += '&nbsp|&nbsp<a href="/Advanced_DSL_Feedback.asp" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_self">Feedback</a>';
 	footer_code += '</td>';
@@ -1177,7 +1186,6 @@ function show_footer(){
 	footer_code += '<td width="290" id="bottom_help_FAQ" align="right" style="font-family:Arial, Helvetica, sans-serif;">FAQ&nbsp&nbsp<input type="text" id="FAQ_input" name="FAQ_input" class="input_FAQ_table" maxlength="40"></td>';
 	footer_code += '<td width="30" align="left"><div id="bottom_help_FAQ_icon" class="bottom_help_FAQ_icon" style="cursor:pointer;margin-left:3px;" target="_blank" onClick="search_supportsite();"></div></td>';
 	footer_code += '</tr></table></div>\n';
-	//}
 
 	$("footer").innerHTML = footer_code;
 	flash_button();
@@ -1202,7 +1210,7 @@ function search_supportsite(obj){
 		//faq_href += faqLang.selectedLang;
 		faq_href = "http://www.asus.com";
 		faq_href += faqLang.selectedLang;
-		faq_href += "/support/Knowledge-searchV2/?";		
+		faq_href += "/support/Knowledge-searchV2/?utm_source=asus-product&utm_medium=referral&utm_campaign=router&";
 		faq_href += "keyword=";
 		for(var i=0; i<keywordArray.length; i++){
 			faq_href += keywordArray[i];
@@ -1946,30 +1954,13 @@ function updateStatus_AJAX()
 		
 	var ie = window.ActiveXObject;
 	if(ie)
-		makeRequest_status_ie('/cgi-bin/ajax_status.asp');
+		makeRequest_status_ie('/cgi-bin/ajax_status.asp'+ '?hash=' + Math.random().toString());
 	else
-		makeRequest_status('/cgi-bin/ajax_status.asp');
+		makeRequest_status('/cgi-bin/ajax_status.asp'+ '?hash=' + Math.random().toString());
 
 	//setTimeout("updateStatus_AJAX();", 3000);
 }
-function updateUSBStatus(){
-	if(current_url == "index2.asp" || current_url == "")
-		detectUSBStatusIndex();
-	else
-		detectUSBStatus();
-}
-function detectUSBStatus(){
-	$j.ajax({
-		url: '/cgi-bin/update_diskinfo.asp',
-		dataType: 'script',
-		error: function(xhr){
-			detectUSBStatus();
-		},
-		success: function(){
-			return true;
-		}
-	});
-}
+
 var link_status;
 var link_auxstatus;
 var link_sbstatus;
@@ -1982,8 +1973,8 @@ var usb_path2_removed;
 var wifi_hw_switch;
 var usb_path1_removed_tmp = "init";
 var usb_path2_removed_tmp = "init";
-var ddns_return_code = '<% tcWebApi_Get("GUITemp_Entry2", "ddns_return_code_chk", "s") %>';
-var ddns_updated = '<% tcWebApi_Get("GUITemp_Entry2", "ddns_updated", "s") %>';
+var ddns_return_code = '<% tcWebApi_Get("Vram_Entry", "ddns_return_code_chk", "s") %>';
+var ddns_updated = '<% tcWebApi_Get("Vram_Entry", "ddns_updated", "s") %>';
 var first_link_status = '';
 var first_link_sbstatus = '';
 var first_link_auxstatus = '';
@@ -1996,6 +1987,7 @@ var vpnc_sbstate_t = '';
 var vpnc_proto = '<% tcWebApi_Get("VPNC_Entry", "vpnc_proto", "s") %>';
 
 var modem_enable = '';
+var wanConnectStatus = true;
 
 if(usb_support != -1){
 	var tmp_mount_0 = foreign_disk_total_mounted_number()[0];		//Viz 2013.07
@@ -2059,115 +2051,132 @@ function refresh_info_status(xmldoc)
 		show_vpnc_rulelist();		
 	}	
 		
+	//internet	
 	if(sw_mode == 1){
 		//Viz add 2013.03 for adsl sync status
 		if(wan_line_state == "up"){
-			$("adsl_line_status").className = "linestatusup";
-			$("adsl_line_status").onclick = function(){openHint(24,6);}
+			document.getElementById("adsl_line_status").className = "linestatusup";
+			document.getElementById("adsl_line_status").onclick = function(){openHint(24,6);}
 		}else if(wan_line_state == "wait for init"){
-			$("adsl_line_status").className = "linestatuselse";
+			document.getElementById("adsl_line_status").className = "linestatuselse";
 		}else if(wan_line_state == "initializing"){
-			$("adsl_line_status").className = "linestatuselse";
+			document.getElementById("adsl_line_status").className = "linestatuselse";
 		}else{
-			$("adsl_line_status").className = "linestatusdown";
+			document.getElementById("adsl_line_status").className = "linestatusdown";
 		}
-		$("adsl_line_status").onmouseover = function(){overHint(9);}
-		$("adsl_line_status").onmouseout = function(){nd();}
+		document.getElementById("adsl_line_status").onmouseover = function(){overHint(9);}
+		document.getElementById("adsl_line_status").onmouseout = function(){nd();}
 
-		if((link_status == "2" && (link_auxstatus == "0" || link_auxstatus == "2")) || (secondary_link_status == "2" && (secondary_link_auxstatus == "0" || secondary_link_auxstatus == "2"))){
-			$("connect_status").className = "connectstatuson";
+		if((link_status == "2" && link_auxstatus == "0") || (link_status == "2" && link_auxstatus == "2")){
+			document.getElementById("connect_status").className = "connectstatuson";
 			if(location.pathname == "/cgi-bin/index2.asp"){
-				$("NM_connect_status").innerHTML = "<%tcWebApi_get("String_Entry","Connected","s")%>";
-				$('single_wan').className = "single_wan_connected";	
+				document.getElementById("NM_connect_status").innerHTML = "<%tcWebApi_get("String_Entry","Connected","s")%>";
+				document.getElementById('single_wan').className = "single_wan_connected";	
 			}
+			wanConnectStatus = true;
+		}
+		else if(dualwan_enabled &&
+				((first_link_status == "2" && first_link_auxstatus == "0") || (first_link_status == "2" && first_link_auxstatus == "2")) ||
+				((secondary_link_status == "2" && secondary_link_auxstatus == "0") || (secondary_link_status == "2" && secondary_link_auxstatus == "2"))){
+			document.getElementById("connect_status").className = "connectstatuson";
+			if(location.pathname == "/cgi-bin/index2.asp"){
+				document.getElementById("NM_connect_status").innerHTML = "<%tcWebApi_get("String_Entry","Connected","s")%>";
+				document.getElementById('single_wan').className = "single_wan_connected";
+			}
+			wanConnectStatus = true;
 		}
 		else{
-			$("connect_status").className = "connectstatusoff";
+			document.getElementById("connect_status").className = "connectstatusoff";
 			if(location.pathname == "/cgi-bin/index2.asp"){
-			  $("NM_connect_status").innerHTML = "<%tcWebApi_get("String_Entry","Disconnected","s")%>";
-			  $('single_wan').className = "single_wan_disconnected";
-			  $("wanIP_div").style.display = "none";
+			  document.getElementById("NM_connect_status").innerHTML = "<%tcWebApi_get("String_Entry","Disconnected","s")%>";
+			  document.getElementById('single_wan').className = "single_wan_disconnected";
+			  document.getElementById("wanIP_div").style.display = "none";
 			} 
+			wanConnectStatus = false;
 		}
 
 		<%If tcWebApi_staticGet("DeviceInfo_PVC","DispBtnType","h") <> "0" then%>
-			$("connect_status").onclick = function(){openHint(24,3);}
+			document.getElementById("connect_status").onclick = function(){openHint(24,3);}
 		<%elseif tcWebApi_get("Wan_PVC","CONNECTION","h") = "Connect_Manually" then%>
 			<% if tcWebApi_staticGet("WebCurSet_Entry","dev_pvc","h") = "0" then%>
 				<% if tcWebApi_staticGet("Wan_Common","TransMode","h") = "ATM" then%>
-					$("connect_status").onclick = function(){openHint(24,3);}
+					document.getElementById("connect_status").onclick = function(){openHint(24,3);}
 				<%End if%>
 			<%End if%>
 			<%if tcWebApi_get("WebCustom_Entry","havePtm","h") = "Yes" then%>
 				<% if tcWebApi_staticGet("WebCurSet_Entry","dev_pvc","h") = "8" then%>
 					<% if tcWebApi_staticGet("Wan_Common","TransMode","h") = "PTM" then%>
-						$("connect_status").onclick = function(){openHint(24,3);}
+						document.getElementById("connect_status").onclick = function(){openHint(24,3);}
 					<%End if%>
 				<%End if%>
 				<% if tcWebApi_staticGet("WebCurSet_Entry","dev_pvc","h") = "9" then%>
 					<% if tcWebApi_staticGet("Wan_Common","TransMode","h") = "PTM" then%>
-						$("connect_status").onclick = function(){openHint(24,3);}
+						document.getElementById("connect_status").onclick = function(){openHint(24,3);}
 					<%End if%>
 				<%End if%>
 			<%end if%>
 			<% if tcWebApi_staticGet("WebCurSet_Entry","dev_pvc","h") = "10" then%>
 				<% if tcWebApi_staticGet("Wan_Common","TransMode","h") = "Ethernet" then%>
-					$("connect_status").onclick = function(){openHint(24,3);}
+					document.getElementById("connect_status").onclick = function(){openHint(24,3);}
 				<%End if%>
 			<%End if%>
 			<% if tcWebApi_staticGet("WebCurSet_Entry","dev_pvc","h") = "11" then%>
 				<% if tcWebApi_staticGet("Wan_Common","TransMode","h") = "USB" then%>
-					$("connect_status").onclick = function(){openHint(24,3);}
+					document.getElementById("connect_status").onclick = function(){openHint(24,3);}
 				<%End if%>
 			<%End if%>
 		<%End if%>
 
-		$("connect_status").onmouseover = function(){overHint(3);}
-		$("connect_status").onmouseout = function(){nd();}
+		document.getElementById("connect_status").onmouseover = function(){overHint(3);}
+		document.getElementById("connect_status").onmouseout = function(){nd();}
 	}
 	else if(sw_mode == 2){
 		if(_wlc_state == "wlc_state=2"){
-			$("connect_status").className = "connectstatuson";
-			$("connect_status").onclick = function(){openHint(24,3);}
+			document.getElementById("connect_status").className = "connectstatuson";
+			document.getElementById("connect_status").onclick = function(){openHint(24,3);}
 			if(location.pathname == "/" || location.pathname == "/index.asp"){
-				$("NM_connect_status").innerHTML = "<%tcWebApi_get("String_Entry","APS_msg_connected","s")%>";
-				$('single_wan').className = "single_wan_connected";
+				document.getElementById("NM_connect_status").innerHTML = "<%tcWebApi_get("String_Entry","APS_msg_connected","s")%>";
+				document.getElementById('single_wan').className = "single_wan_connected";
 			}	
+			wanConnectStatus = true;
 		}
 		else{
-			$("connect_status").className = "connectstatusoff";
+			document.getElementById("connect_status").className = "connectstatusoff";
 			if(location.pathname == "/" || location.pathname == "/index.asp"){
-			  $("NM_connect_status").innerHTML = "<%tcWebApi_get("String_Entry","Disconnected","s")%>";
-			  $('single_wan').className = "single_wan_disconnected";
+			  document.getElementById("NM_connect_status").innerHTML = "<%tcWebApi_get("String_Entry","Disconnected","s")%>";
+			  document.getElementById('single_wan').className = "single_wan_disconnected";
 			}  
+			wanConnectStatus = false;
 		}
-		$("connect_status").onmouseover = function(){overHint(3);}
-		$("connect_status").onmouseout = function(){nd();}
+		document.getElementById("connect_status").onmouseover = function(){overHint(3);}
+		document.getElementById("connect_status").onmouseout = function(){nd();}
 	}
+	
+	//wifi
 	if(wifi_hw_sw_support != -1){
 		if(band5g_support != -1){
-				if(wlan0_radio_flag == "0" && wlan1_radio_flag == "0"){
-						$("wifi_hw_sw_status").className = "wifihwswstatusoff";
-						$("wifi_hw_sw_status").onclick = function(){}
-				}
-				else{
-						$("wifi_hw_sw_status").className = "wifihwswstatuson";
-						$("wifi_hw_sw_status").onclick = function(){}
-				}
+			if(wlan0_radio_flag == "0" && wlan1_radio_flag == "0"){
+				document.getElementById("wifi_hw_sw_status").className = "wifihwswstatusoff";
+				document.getElementById("wifi_hw_sw_status").onclick = function(){}
+			}
+			else{
+				document.getElementById("wifi_hw_sw_status").className = "wifihwswstatuson";
+				document.getElementById("wifi_hw_sw_status").onclick = function(){}
+			}
 		}
 		else{
-				if(wlan0_radio_flag == "0"){
-						$("wifi_hw_sw_status").className = "wifihwswstatusoff";
-						$("wifi_hw_sw_status").onclick = function(){}
-				}
-				else{
-						$("wifi_hw_sw_status").className = "wifihwswstatuson";
-						$("wifi_hw_sw_status").onclick = function(){}
-				}			
+			if(wlan0_radio_flag == "0"){
+				document.getElementById("wifi_hw_sw_status").className = "wifihwswstatusoff";
+				document.getElementById("wifi_hw_sw_status").onclick = function(){}
+			}
+			else{
+				document.getElementById("wifi_hw_sw_status").className = "wifihwswstatuson";
+				document.getElementById("wifi_hw_sw_status").onclick = function(){}
+			}			
 		}
 		
-		$("wifi_hw_sw_status").onmouseover = function(){overHint(8);}
-		$("wifi_hw_sw_status").onmouseout = function(){nd();}
+		document.getElementById("wifi_hw_sw_status").onmouseover = function(){overHint(8);}
+		document.getElementById("wifi_hw_sw_status").onmouseout = function(){nd();}
 	}
 	if(usb_support != -1){
 		if(current_url=="index2.asp"||current_url==""){
@@ -2198,50 +2207,45 @@ function refresh_info_status(xmldoc)
 			usb_path2 = "usb=";
 
 		if(usb_path1 == "usb=" && usb_path2 == "usb="){
-			$("usb_status").className = "usbstatusoff";
-			$("usb_status").onclick = function(){overHint(2);}
+			document.getElementById("usb_status").className = "usbstatusoff";
+			document.getElementById("usb_status").onclick = function(){overHint(2);}
 			if(printer_support != -1){
-				$("printer_status").className = "printstatusoff";
-				$("printer_status").onclick = function(){overHint(5);}
-				$("printer_status").onmouseover = function(){overHint(5);}
-				$("printer_status").onmouseout = function(){nd();}
+				document.getElementById("printer_status").className = "printstatusoff";
+				document.getElementById("printer_status").parentNode.style.display = "none";
+				document.getElementById("printer_status").onclick = function(){overHint(5);}
+				document.getElementById("printer_status").onmouseover = function(){overHint(5);}
+				document.getElementById("printer_status").onmouseout = function(){nd();}
 			}
 		}
 		else{
 			if(usb_path1 == "usb=printer" || usb_path2 == "usb=printer"){ // printer
-				if((current_url == "index2.asp" || current_url == "") && $("printerName0") == null && $("printerName1") == null)
-					updateUSBStatus();
 				if(printer_support != -1){
-					$("printer_status").className = "printstatuson";
-					$("printer_status").onmouseover = function(){overHint(6);}
-					$("printer_status").onmouseout = function(){nd();}
-					$("printer_status").onclick = function(){openHint(24,1);}
+					document.getElementById("printer_status").className = "printstatuson";
+					document.getElementById("printer_status").onmouseover = function(){overHint(6);}
+					document.getElementById("printer_status").onmouseout = function(){nd();}
+					document.getElementById("printer_status").onclick = function(){openHint(24,1);}
 				}
 				if((usb_path1 == "usb=" || usb_path1 == "usb=N/A") && (usb_path2 == "usb=" || usb_path2 == "usb=N/A"))
-					$("usb_status").className = "usbstatusoff";
+					document.getElementById("usb_status").className = "usbstatusoff";
 				else
-					$("usb_status").className = "usbstatuson";
+					document.getElementById("usb_status").className = "usbstatuson";
 			}
 			else{ // !printer
 				if((current_url == "index2.asp" || current_url == "") && ($("printerName0") != null || $("printerName1") != null))
 					location.href = "/cgi-bin/index2.asp";
 					
 				if(printer_support != -1){
-					$("printer_status").className = "printstatusoff";
-					$("printer_status").onmouseover = function(){overHint(5);}
-					$("printer_status").onmouseout = function(){nd();}
+					document.getElementById("printer_status").className = "printstatusoff";
+					document.getElementById("printer_status").parentNode.style.display = "none";
+					document.getElementById("printer_status").onmouseover = function(){overHint(5);}
+					document.getElementById("printer_status").onmouseout = function(){nd();}
 				}
-				$("usb_status").className = "usbstatuson";
-				//alert(tmp_mount_0+" , "+foreign_disk_total_mounted_number()[0]+" ; "+tmp_mount_1+" , "+foreign_disk_total_mounted_number()[1]);
-				if((tmp_mount_0 == 0 && usb_path1_removed =="umount=") || (tmp_mount_1 == 0 && usb_path2_removed =="umount=")){
-					updateUSBStatus();	//Viz 2013.07
-				}
-												
+				document.getElementById("usb_status").className = "usbstatuson";
 			}
-			$("usb_status").onclick = function(){openHint(24,2);}
+			document.getElementById("usb_status").onclick = function(){openHint(24,2);}
 		}
-		$("usb_status").onmouseover = function(){overHint(2);}
-		$("usb_status").onmouseout = function(){nd();}
+		document.getElementById("usb_status").onmouseover = function(){overHint(2);}
+		document.getElementById("usb_status").onmouseout = function(){nd();}
 		usb_path1_tmp = usb_path1;
 		usb_path2_tmp = usb_path2;
 		usb_path1_removed_tmp = usb_path1_removed;
@@ -2250,43 +2254,43 @@ function refresh_info_status(xmldoc)
 	if(multissid_support != -1 && band5g_support != -1){
 		for(var i=0; i<gn_array_2g.length; i++){
 			if(gn_array_2g[i][0] == 1 || gn_array_5g[i][0] == 1){
-				$("guestnetwork_status").className = "guestnetworkstatuson";
-				$("guestnetwork_status").onclick = function(){openHint(24,4);}
+				document.getElementById("guestnetwork_status").className = "guestnetworkstatuson";
+				document.getElementById("guestnetwork_status").onclick = function(){openHint(24,4);}
 				break;
 			}
 			else{
-				$("guestnetwork_status").className = "guestnetworkstatusoff";
-				$("guestnetwork_status").onclick = function(){overHint(4);}
+				document.getElementById("guestnetwork_status").className = "guestnetworkstatusoff";
+				document.getElementById("guestnetwork_status").onclick = function(){overHint(4);}
 			}
 		}
-		$("guestnetwork_status").onmouseover = function(){overHint(4);}
-		$("guestnetwork_status").onmouseout = function(){nd();}
+		document.getElementById("guestnetwork_status").onmouseover = function(){overHint(4);}
+		document.getElementById("guestnetwork_status").onmouseout = function(){nd();}
 	}
 	else if(multissid_support != -1 && band5g_support == -1){
 		for(var i=0; i<gn_array_2g.length; i++){
 			if(gn_array_2g[i][0] == 1){
-				$("guestnetwork_status").className = "guestnetworkstatuson";
-				$("guestnetwork_status").onclick = function(){openHint(24,4);}
+				document.getElementById("guestnetwork_status").className = "guestnetworkstatuson";
+				document.getElementById("guestnetwork_status").onclick = function(){openHint(24,4);}
 				break;
 			}
 			else{
-				$("guestnetwork_status").className = "guestnetworkstatusoff";
+				document.getElementById("guestnetwork_status").className = "guestnetworkstatusoff";
 			}
 		}
-		$("guestnetwork_status").onmouseover = function(){overHint(4);}
-		$("guestnetwork_status").onmouseout = function(){nd();}
+		document.getElementById("guestnetwork_status").onmouseover = function(){overHint(4);}
+		document.getElementById("guestnetwork_status").onmouseout = function(){nd();}
 	}
 	if(cooler_support != -1){
 		if(cooler == "cooler=2"){
-			$("cooler_status").className = "coolerstatusoff";
-			$("cooler_status").onclick = function(){}
+			document.getElementById("cooler_status").className = "coolerstatusoff";
+			document.getElementById("cooler_status").onclick = function(){}
 		}
 		else{
-			$("cooler_status").className = "coolerstatuson";
-			$("cooler_status").onclick = function(){openHint(24,5);}
+			document.getElementById("cooler_status").className = "coolerstatuson";
+			document.getElementById("cooler_status").onclick = function(){openHint(24,5);}
 		}
-		$("cooler_status").onmouseover = function(){overHint(7);}
-		$("cooler_status").onmouseout = function(){nd();}
+		document.getElementById("cooler_status").onmouseover = function(){overHint(7);}
+		document.getElementById("cooler_status").onmouseout = function(){nd();}
 	}
 	if(window.frames["statusframe"] && window.frames["statusframe"].stopFlag == 1 || stopFlag == 1) return;
 	setTimeout("updateStatus_AJAX();", 3000);
@@ -2573,8 +2577,22 @@ function isPortConflict(_val){
 		return false;
 }
 
+function get_preferred_lang_type(){
+var lang_type1 = "<%tcWebApi_get("LanguageSwitch_Entry","Type","s")%>";
+var lang_type2 = "<%tcWebApi_get("WebCurSet_Entry","detected_lang_type","s")%>";
+
+	if(lang_type1 == '0')
+	{
+		return lang_type2;
+	}
+	else
+	{
+		return lang_type1;
+	}
+}
+
 function show_selected_language(){
-var lang_flag = "<%tcWebApi_get("LanguageSwitch_Entry","Type","s")%>";
+var lang_flag = get_preferred_lang_type();
 	switch(lang_flag){
 		case '1':{
 			$('selected_lang').innerHTML = "English";
@@ -2675,7 +2693,7 @@ var lang_flag = "<%tcWebApi_get("LanguageSwitch_Entry","Type","s")%>";
 }
 
 function get_selected_language(){
-var lang_flag = "<%tcWebApi_get("LanguageSwitch_Entry","Type","s")%>";
+var lang_flag = get_preferred_lang_type();
 	switch(lang_flag){
 		case '1':{	//EN
 			return "/us";

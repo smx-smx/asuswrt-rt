@@ -65,8 +65,8 @@ extern int chap_mdtype_all;
 
 /* Return the digest alg. ID for the most preferred digest type. */
 #define CHAP_DIGEST(mdtype) \
-    ((mdtype) & MDTYPE_MD5)? CHAP_MD5: \
     ((mdtype) & MDTYPE_MICROSOFT_V2)? CHAP_MICROSOFT_V2: \
+    ((mdtype) & MDTYPE_MD5)? CHAP_MD5: \
     ((mdtype) & MDTYPE_MICROSOFT)? CHAP_MICROSOFT: \
     0
 

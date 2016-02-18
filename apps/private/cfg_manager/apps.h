@@ -3,6 +3,8 @@
 
 #include "cfg_manager.h"
 
+int 
+vram_init(void);
 int
 usb_init(void);
 int

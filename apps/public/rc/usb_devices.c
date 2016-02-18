@@ -1266,7 +1266,7 @@ int write_3g_conf(FILE *fp, int dno, int aut, const unsigned int vid, const unsi
 			fprintf(fp, "CheckSuccess=%d\n",	20);
 			fprintf(fp, "MessageContent=%s\n",	"55534243123456780000000000000011062000000100000000000000000000");
 			break;
-		case SN_HUAWEI_EC306:
+		case SN_Huawei_EC306:
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
 			fprintf(fp, "DefaultProduct=0x%04x\n",	0x1505);
 			fprintf(fp, "TargetVendor=0x%04x\n",	0x12d1);
@@ -1608,6 +1608,30 @@ int write_3g_conf(FILE *fp, int dno, int aut, const unsigned int vid, const unsi
 			fprintf(fp, "TargetProductList=%s\n",	"156b,156c");
 			fprintf(fp, "MessageContent=%s\n",	"55534243123456780000000000000011062000000100000000000000000000");
 			break;
+		case SN_Huawei_E3131:
+			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
+			fprintf(fp, "DefaultProduct=0x%04x\n",	0x155b);
+			fprintf(fp, "TargetVendor=0x%04x\n",	0x12d1);
+			fprintf(fp, "TargetProduct=0x%04x\n",	0x1506);
+			fprintf(fp, "MessageContent=%s\n",	"55534243000000000000000000000011060000000100000000000000000000");
+			break;
+		case SN_Huawei_E3372:
+			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
+			fprintf(fp, "DefaultProduct=0x%04x\n",	0x157d);
+			fprintf(fp, "TargetVendor=0x%04x\n",	0x12d1);
+			fprintf(fp, "TargetProductList=%s\n",	"14db,14dc");
+			fprintf(fp, "HuaweiNewMode=1\n");
+			break;
+		case SN_Huawei_E303u:
+			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
+			fprintf(fp, "DefaultProduct=0x%04x\n",	0x15ca);
+			fprintf(fp, "HuaweiNewMode=1\n");
+			break;
+		case SN_Huawei_E3531s:
+			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
+			fprintf(fp, "DefaultProduct=0x%04x\n",	0x15cd);
+			fprintf(fp, "HuaweiNewMode=1\n");
+			break;
 		case SN_Teracom_LW272:
 			fprintf(fp, "DefaultVendor=0x%04x\n",	0x230d);
 			fprintf(fp, "DefaultProduct=0x%04x\n",	0x0103);
@@ -1790,9 +1814,9 @@ usb_dbg("3G: Auto setting.\n");
 
 		if(vid == 0x0408 && (pid == 0xea02 || pid == 0x1000))
 			write_3g_conf(fp, SN_MU_Q101, 1, vid, pid);
-		if(vid == 0x0408 && pid == 0xea43)
+		else if(vid == 0x0408 && pid == 0xea43)
 			write_3g_conf(fp, SN_Quanta_MobileGenie_4G_lte, 1, vid, pid);
-		if(vid == 0x0408 && pid == 0xea25)
+		else if(vid == 0x0408 && pid == 0xea25)
 			write_3g_conf(fp, SN_Quanta_1K3_LTE, 1, vid, pid);
 		else if(vid == 0x05c6 && pid == 0x1000) // also Option-GlobeSurfer-Icon72(may have new fw setting, bug not included here), Option-GlobeTrotter-GT-MAX36.....Option-Globexx series, AnyDATA-ADU-500A, Samsung-SGH-Z810, Vertex Wireless 100 Series
 			write_3g_conf(fp, SN_Option_GlobeSurfer_Icon, 1, vid, pid);
@@ -2165,6 +2189,14 @@ usb_dbg("3G: Auto setting.\n");
 			write_3g_conf(fp, SN_BlackBerry_Q10, 1, vid, pid);
 		else if(vid == 0x2357 && pid == 0xf000)
 			write_3g_conf(fp, SN_TP_Link_MA260, 1, vid, pid);
+		else if(vid == 0x12d1 && pid == 0x155b)
+			write_3g_conf(fp, SN_Huawei_E3131, 1, vid, pid);
+		else if(vid == 0x12d1 && pid == 0x157d)
+			write_3g_conf(fp, SN_Huawei_E3372, 1, vid, pid);
+		else if(vid == 0x12d1 && pid == 0x15ca)
+			write_3g_conf(fp, SN_Huawei_E303u, 1, vid, pid);
+		else if(vid == 0x12d1 && pid == 0x15cd)
+			write_3g_conf(fp, SN_Huawei_E3531s, 1, vid, pid);
 		else if(vid == 0x12d1)
 			write_3g_conf(fp, UNKNOWNDEV, 1, vid, pid);
 		else{

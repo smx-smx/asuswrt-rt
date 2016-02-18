@@ -347,14 +347,14 @@ function split_cert_key(){
 	</tr>
 
 	<tr>
-	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","PPPC_UserName_in","s")%></a></th>
+	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Username_in","s")%></a></th>
 	<td>
 		<input name="TR_ACSUserName" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_username", "h") <> "N/A" then tcWebApi_get("TR069_Entry",  "tr_username", "s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
 	</td>
 	</tr>
 
 	<tr>
-	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","PPPC_Password_in","s")%></a></th>
+	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Password_in","s")%></a></th>
 	<td>
 		<input name="TR_ACSPassword" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_passwd", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_passwd", "s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
 	</td>
@@ -368,14 +368,14 @@ function split_cert_key(){
 </tr>
 </thead>
 	<tr>
-	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","PPPC_UserName_in","s")%></a></th>
+	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Username_in","s")%></a></th>
 	<td>
 		<input name="TR_ConnectionRequestUserName" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_conn_username", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_conn_username", "s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
 	</td>
 	</tr>
 
 	<tr>
-	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","PPPC_Password_in","s")%></a></th>
+	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Password_in","s")%></a></th>
 	<td>
 		<input name="TR_ConnectionRequestPassword" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_conn_passwd", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_conn_passwd" ,"s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
 	</td>

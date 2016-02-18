@@ -120,7 +120,7 @@ function validForm(){
 			</td>
 		</tr>
 		<tr>
-			<th><%tcWebApi_get("String_Entry","PPPC_Password_in","s")%>: </th>
+			<th><%tcWebApi_get("String_Entry","HSDPAC_Password_in","s")%>: </th>
 			<td><input class="input_15_table" name="password" id="password" type="password" maxlength="17"></td>
 		</tr>
 		<tr>

@@ -326,6 +326,7 @@ End If
 
 If Request_Form("wanSaveFlag")="1" Then
 	If should_dsl_do_commit()="1" Then
+		set_dsl_apply_flag()
 		tcWebApi_commit("Adsl_Entry")
 	End If
 End If
@@ -648,6 +649,8 @@ function initial(){
 
 	if(pppoe_password != "")
 		document.form.wan_PPPPassword.value = pppoe_password;
+	
+	inputCtrl(document.form.confirm_PPPPassword, 0);
 }
 
 function addWANOption(obj, wanscapItem){
@@ -791,6 +794,7 @@ function applyRule(){
 	if(validForm()){
 		form.wanSaveFlag.value = 1;
 		form.wanVCFlag.value = 3;
+		form.isApplyDSLSetting.value = 1; //for set_dsl_apply_flag()
 
 <%if tcWebApi_get("WebCustom_Entry","isMultiSerSupported","h") = "Yes" then%>
 		if(form.wan_dot1q.value == "Yes")
@@ -1089,22 +1093,37 @@ function validForm(){
 				return ;
 
 			//account
+			if(form.wan_PPPUsername.value.length <= 0){
+				alert("<%tcWebApi_get("String_Entry","WANJS9Text","s")%>");
+				form.wan_PPPUsername.focus();
+				return;
+			}
 			if(!validate_string(form.wan_PPPUsername)){
 				alert("<%tcWebApi_get("String_Entry","WANJS19Text","s")%>");
+				form.wan_PPPUsername.focus();
 				return;
 			}
+			if(form.wan_PPPPassword.value.length <= 0){
+				alert("<%tcWebApi_get("String_Entry","WANJS9Text","s")%>");
+				form.wan_PPPPassword.focus();
+				return;
+			}	
+			if(form.confirm_PPPPassword.parentNode.parentNode.style.display != "none" && form.wan_PPPPassword.value != form.confirm_PPPPassword.value){
+					alert("<% tcWebApi_get("String_Entry","File_Pop_content_alert_desc7","s") %>");
+					form.wan_PPPPassword.focus();
+					return;
+			}
+			
 			if(!validate_string(form.wan_PPPPassword)){
 				alert("<%tcWebApi_get("String_Entry","WANJS20Text","s")%>");
+				form.wan_PPPPassword.focus();
 				return;
-			}
-			if(form.wan_PPPUsername.length <= 0 || form.wan_PPPPassword.length <= 0){
-				alert("<%tcWebApi_get("String_Entry","WANJS9Text","s")%>");
-				return;
-			}
+			}			
 
 			//MTU
 			var mtu_num = Number(form.wan_TCPMTU.value);
 			if(!validate_range(form.wan_TCPMTU, 100, 1492)) {
+				form.wan_TCPMTU.focus();
 				return false;
 			}
 
@@ -1112,16 +1131,19 @@ function validForm(){
 			mss = form.wan_TCPMSS.value;
 			if(!validInteger(mss)) {
 				alert('MSS must be digits!');
+				form.wan_TCPMSS.focus();
 				return false;
 			}
 			mss_num = Number(mss);
 			if((mss_num > 1452 || mss_num < 100) && mss_num != 0) {
 				alert("<%tcWebApi_get("String_Entry","WANJS10Text","s")%>");
+				form.wan_TCPMSS.focus();
 				return false;
 			}
 			if(( mss_num!=0 && mtu_num!=0 && mss_num > mtu_num-40 ) || (mss_num==0 && mtu_num!=0 &&mtu_num!=1492))
 			{
 				alert("<%tcWebApi_get("String_Entry","WANJS12Text","s")%>");
+				form.wan_TCPMSS.focus();
 				return false;
 			}
 
@@ -1818,6 +1840,14 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}
 }
 
+function Do_confirm_password(){
+		if(document.form.wan_PPPPassword.value != pppoe_password){
+			inputCtrl(document.form.confirm_PPPPassword, 1);
+			document.form.confirm_PPPPassword.focus();
+			document.form.confirm_PPPPassword.select();			
+		}	
+}
+
 </script>
 </head>
 <body onload="initial();" onunLoad="return unload_body();">
@@ -1846,6 +1876,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 <INPUT TYPE="HIDDEN" NAME="wanBarrierFlag" VALUE="0"/>
 <INPUT TYPE="HIDDEN" NAME="ptm_VC" VALUE="8"/>
 <INPUT TYPE="HIDDEN" NAME="wanVCFlag" VALUE="0"/>
+<INPUT TYPE="HIDDEN" NAME="isApplyDSLSetting" VALUE="0"/>
 <INPUT TYPE="HIDDEN" NAME="service_num_flag" VALUE="0"/>
 <INPUT type="HIDDEN" NAME="isDSLITESupported" value="<% if tcWebApi_get("Info_Ether","isDSLITESupported","h") = "Yes" then asp_write("1") else asp_write("0") end if %>">
 <INPUT type="HIDDEN" NAME="is8021xsupport" value="<% if tcWebApi_get("Info_Ether","is8021xsupport","h") = "Yes" then asp_write("1") else asp_write("0") end if %>">
@@ -2502,7 +2533,11 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 						</tr>
 						<tr>
 							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,5);"><% tcWebApi_Get("String_Entry", "PPPC_Password_in", "s") %></a></th>
-							<td><input type="password" maxlength="64" class="input_32_table" name="wan_PPPPassword" value="" autocapitalization="off" autocomplete="off"></td>
+							<td><input type="password" maxlength="64" class="input_32_table" name="wan_PPPPassword" value="" onBlur="Do_confirm_password();" autocapitalization="off" autocomplete="off"></td>
+						</tr>
+						<tr>
+							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,5);"><%tcWebApi_get("String_Entry","PASS_retype","s")%></a></th>
+							<td><input type="password" maxlength="64" class="input_32_table" name="confirm_PPPPassword" value="" autocapitalization="off" autocomplete="off"></td>
 						</tr>
 						<% if tcWebApi_get("WebCustom_Entry","isPPPAuthen","h") = "Yes" then %>
 						<tr>

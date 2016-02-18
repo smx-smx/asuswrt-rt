@@ -875,8 +875,8 @@ echo 3 > /proc/sys/vm/drop_caches
 # write routing table
 /userfs/bin/tcapi commit Route
 
-# Fix TRGMII timing if need
-FIXFILE=/etc/trgmiifix.sh
+# run platform dependent fix script if need
+FIXFILE=/etc/platdep_fix.sh
 if [ -f $FIXFILE ] ;then
         chmod 777 $FIXFILE
         . $FIXFILE

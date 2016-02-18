@@ -224,22 +224,6 @@ function update_wan_status2(){
 	});
 }
 
-function detectUSBStatusIndex(){
-	$j.ajax({
-		url: '/cgi-bin/update_diskinfo.asp',
-		dataType: 'script',
-		error: function(xhr){
-			detectUSBStatusIndex();
-		},
-		success: function(){
-			if((tmp_mount_0 == 0 && tmp_mount_0 != foreign_disk_total_mounted_number()[0])
-						|| (tmp_mount_1 == 0 && tmp_mount_1 != foreign_disk_total_mounted_number()[1])){
-						location.href = "/cgi-bin/index2.asp";
-						return 0;
-			}
-		}
-	});
-}
 function customize_NM_table(img){
 $("NM_table").style.background = "url('/images/" + img +"')";
 setCookie(img);
@@ -518,10 +502,10 @@ function clickEvent(obj){
 		icon = "iconInternet";
 		stitle = "<% tcWebApi_Get("String_Entry", "statusTitle_Internet", "s") %>";
 
-		$("statusframe").src = "/cgi-bin/device-map/internet_dual.asp";
+		$("statusframe").src = "/cgi-bin/device-map/internet.asp";
 
 		if(parent.wans_flag){
-			$("statusframe").src = "/cgi-bin/device-map/internet_dual.asp";
+			$("statusframe").src = "/cgi-bin/device-map/internet.asp";
 
 			if(obj.id.indexOf("primary") != -1) {
 				stitle = "Primary WAN status";
@@ -923,14 +907,14 @@ function check_usb3(){
 						</td>
 						<!--== Dual WAN ==-->
 						<td id="primary_wan_icon" width="160px;" height="155" align="center" class="NM_radius" valign="middle" bgcolor="#444f53" onclick="showstausframe('Internet_primary');" style="display:none">
-							<a href="/device-map/internet_dual.asp" target="statusframe"><div id="iconInternet_primary" onclick="clickEvent(this);"></div></a>
+							<a href="/device-map/internet.asp" target="statusframe"><div id="iconInternet_primary" onclick="clickEvent(this);"></div></a>
 							<div><%tcWebApi_Get("String_Entry", "dualwan_primary", "s")%>:</div>
 							<div><strong id="primary_status"></strong></div>
 						</td>
 						<td id="dual_wan_gap" width="40px" style="display:none">
 						</td>
 						<td id="secondary_wan_icon" width="160px;" height="155" align="center" class="NM_radius" valign="middle" bgcolor="#444f53" onclick="showstausframe('Internet_secondary');" style="display:none">
-							<a href="/device-map/internet_dual.asp" target="statusframe"><div id="iconInternet_secondary" onclick="clickEvent(this);"></div></a>
+							<a href="/device-map/internet.asp" target="statusframe"><div id="iconInternet_secondary" onclick="clickEvent(this);"></div></a>
 							<div><%tcWebApi_Get("String_Entry", "dualwan_secondary", "s")%>:</div>
 							<div><strong id="seconday_status"></strong></div>
 						</td>

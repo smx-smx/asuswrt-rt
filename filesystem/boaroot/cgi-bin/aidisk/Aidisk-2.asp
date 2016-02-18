@@ -189,7 +189,7 @@ function checkPasswdValid(passwd){
 			<table width="80%" border="1" align="center" cellpadding="2" cellspacing="0" bordercolor="#7ea7bd" class="FormTable_table">
 				<tr>
                   	<th width="100"><%tcWebApi_get("String_Entry","AiDisk_Account","s")%></th>
-                  	<th><%tcWebApi_get("String_Entry","PPPC_Password_in","s")%></th>
+                  	<th><%tcWebApi_get("String_Entry","HSDPAC_Password_in","s")%></th>
                   	<th width="50" ><%tcWebApi_get("String_Entry","AiDisk_Read","s")%></th>
                   	<th width="50" ><%tcWebApi_get("String_Entry","AiDisk_Write","s")%></th>
 				</tr>

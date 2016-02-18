@@ -59,13 +59,13 @@
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script>
 var wans_caps = '<%tcWebApi_Get("Dualwan_Entry", "wans_cap", "s")%>';
 var wans_dualwan_orig = '<%tcWebApi_Get("Dualwan_Entry", "wans_dualwan", "s")%>';
-var wans_routing_rulelist_array = '<%tcWebApi_Get("Dualwan_Entry", "wans_routing_rulelist", "s")%>';
+var wans_routing_rulelist_array = '<%tcWebApi_clean_get("Dualwan_Entry", "wans_routing_rulelist", "s")%>';
 var wans_flag;
 var switch_stb_x = '<%tcWebApi_Get("IPTV_Entry", "switch_stb_x", "s")%>';
 var wans_caps_primary;
@@ -182,17 +182,13 @@ function applyRule(){
 
 		document.form.wan_unit.value = "0";
 		if(document.form.wans_mode.value == "lb"){
-			if(document.form.wans_lb_ratio_0.value !=0 && document.form.wans_lb_ratio_1.value!=0)	// To check LoadBalance ratio value is zero or not, Jieming add 2012/08/01
-				document.form.wans_lb_ratio.value = document.form.wans_lb_ratio_0.value + ":" + document.form.wans_lb_ratio_1.value;
-				else{
-				if(document.form.wans_lb_ratio_0.value == 0)
-					document.form.wans_lb_ratio_0.focus();
-				else
-					document.form.wans_lb_ratio_1.focus();
+			if(!validator.range(document.form.wans_lb_ratio_0, 1, 9))
+					return false;
+			if(!validator.range(document.form.wans_lb_ratio_1, 1, 9))
+					return false;
 
-				alert("<%tcWebApi_Get("String_Entry", "dualwan_mode_lb_note", "s")%>");
-				return false;
-			}
+			document.form.wans_lb_ratio.value = document.form.wans_lb_ratio_0.value + ":" + document.form.wans_lb_ratio_1.value;
+
 
 			if(document.form.wan0_isp_country.options[0].selected == true){
 					document.form.wan0_routing_isp.value = country[document.form.wan0_isp_country.value];
@@ -221,9 +217,9 @@ function applyRule(){
 			else
 				document.form.wandog_enable.value = "0";
 				
-			if(!validate_range(document.form.wandog_interval, 1, 9))
+			if(!validator.range(document.form.wandog_interval, 1, 9))
 					return false;
-			if(!validate_range(document.form.wandog_delay, 0, 99))
+			if(!validator.range(document.form.wandog_delay, 0, 99))
 					return false;	
 		}
 	}
@@ -273,7 +269,7 @@ function applyRule(){
 	if(wans_dualwan_orig.split(" ")[1] == "none")
 		document.form.wan_unit.value = 0;
 
-	showLoading();
+	showLoading(40);
 	document.form.submit();
 }
 
@@ -415,13 +411,16 @@ function appendModeOption(v){
 			appendcountry(document.form.wan1_isp_country);
 			inputCtrl(document.form.wans_routing_enable[0], 1);
 			inputCtrl(document.form.wans_routing_enable[1], 1);
-			if('<% tcWebApi_Get("Dualwan_Entry", "wans_routing_enable", "s") %>' == 1)
+			if('<% tcWebApi_Get("Dualwan_Entry", "wans_routing_enable", "s") %>' == 1) {
 				document.form.wans_routing_enable[0].checked = true;
-			else
-				document.form.wans_routing_enable[1].checked = true;
-
 			$('Routing_rules_table').style.display = "";
 			$('wans_RoutingRules_Block').style.display = "";
+			}
+			else {
+				document.form.wans_routing_enable[1].checked = true;
+				$('Routing_rules_table').style.display = "none";
+				$('wans_RoutingRules_Block').style.display = "none";
+			}
 
 			appendModeOption2("0");
 			document.form.wandog_enable_radio[1].checked = true;
@@ -500,14 +499,14 @@ function addRow_Group(upper){
 	if(document.form.wans_FromIP_x_0.value==""){
 		document.form.wans_FromIP_x_0.value = "all";
 	}
-	else if(valid_IP_form(document.form.wans_FromIP_x_0,2) != true){
+	else if(validator.validIPForm(document.form.wans_FromIP_x_0,2) != true){
 		return false;
 	}
 
 	if(document.form.wans_ToIP_x_0.value==""){
 		document.form.wans_ToIP_x_0.value = "all";
 	}
-	else if(valid_IP_form(document.form.wans_ToIP_x_0,2) != true){
+	else if(validator.validIPForm(document.form.wans_ToIP_x_0,2) != true){
 		document.form.wans_FromIP_x_0.value = "";
 		document.form.wans_ToIP_x_0.value = "";
 		return false;
@@ -549,7 +548,7 @@ function addRow(obj, head){
 }
 
 function show_wans_rules(){
-	var wans_rules_row = wans_routing_rulelist_array.split('<');
+	var wans_rules_row = wans_routing_rulelist_array.split('&#60');
 	var code = "";
 
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="wans_RoutingRules_table">';
@@ -558,7 +557,7 @@ function show_wans_rules(){
 	else{
 		for(var i = 1; i < wans_rules_row.length; i++){
 			code +='<tr id="row'+i+'">';
-			var routing_rules_col = wans_rules_row[i].split('>');
+			var routing_rules_col = wans_rules_row[i].split('&#62');
 			for(var j = 0; j < routing_rules_col.length; j++){
 				if(j != 2){
 					code +='<td width="30%">'+ routing_rules_col[j] +'</td>'; //IP width="98"
@@ -686,49 +685,6 @@ function appendcountry(obj){
 	}
 }
 
-function is_ipaddr_plus_netmask(o,event){
-	keyPressed = event.keyCode ? event.keyCode : event.which;
-
-	if (is_functionButton(event)){
-		return true;
-	}
-
-	if((keyPressed > 46 && keyPressed < 58)){
-		j = 0;
-
-		for(i = 0; i < o.value.length; i++){
-			if(o.value.charAt(i) == '.'){
-				j++;
-			}
-		}
-
-		if(j < 3 && i >= 3){
-			if(o.value.charAt(i-3) != '.' && o.value.charAt(i-2) != '.' && o.value.charAt(i-1) != '.'){
-				o.value = o.value+'.';
-			}
-		}
-
-		return true;
-	}
-	else if(keyPressed == 46){
-		j = 0;
-
-		for(i = 0; i < o.value.length; i++){
-			if(o.value.charAt(i) == '.'){
-				j++;
-			}
-		}
-
-		if(o.value.charAt(i-1) == '.' || j == 3){
-			return false;
-		}
-
-		return true;
-	}
-	return false;
-}
-
-
 function del_Row(obj){
   var i=obj.parentNode.parentNode.rowIndex;
   $('wans_RoutingRules_table').deleteRow(i);
@@ -791,6 +747,17 @@ function pullLANIPList(obj){
 	}
 	else
 		hideClients_Block();
+}
+
+function enable_lb_rules(flag){
+	if(flag == "1"){
+		document.getElementById('Routing_rules_table').style.display = "";
+		document.getElementById('wans_RoutingRules_Block').style.display = "";
+	}
+	else{
+		document.getElementById('Routing_rules_table').style.display = "none";
+		document.getElementById('wans_RoutingRules_Block').style.display = "none";
+	}
 }
 
 var str0="";
@@ -1032,8 +999,8 @@ function add_option_count(obj, obj_t, selected_flag){
 											<tr>
 												<th><%tcWebApi_Get("String_Entry", "dualwan_routing_rule_enable", "s")%></th>
 												<td>
-													<input type="radio" value="1" name="wans_routing_enable" class="content_input_fd" <% if tcWebApi_Get("Dualwan_Entry", "wans_routing_enable", "h") = "1" then asp_Write("checked") end if %>><%tcWebApi_Get("String_Entry", "checkbox_Yes", "s")%>
-													<input type="radio" value="0" name="wans_routing_enable" class="content_input_fd" <% if tcWebApi_Get("Dualwan_Entry", "wans_routing_enable", "h") = "0" then asp_Write("checked") end if %>><%tcWebApi_Get("String_Entry", "checkbox_No", "s")%>
+													<input type="radio" value="1" name="wans_routing_enable" onClick="enable_lb_rules(this.value)" class="content_input_fd" <% if tcWebApi_Get("Dualwan_Entry", "wans_routing_enable", "h") = "1" then asp_Write("checked") end if %>><%tcWebApi_Get("String_Entry", "checkbox_Yes", "s")%>
+													<input type="radio" value="0" name="wans_routing_enable" onClick="enable_lb_rules(this.value)" class="content_input_fd" <% if tcWebApi_Get("Dualwan_Entry", "wans_routing_enable", "h") = "0" then asp_Write("checked") end if %>><%tcWebApi_Get("String_Entry", "checkbox_No", "s")%>
 												</td>
 											</tr>
 										</table>
@@ -1053,10 +1020,10 @@ function add_option_count(obj, obj_t, selected_flag){
 											<tr>
 												<!-- rules info -->
 												<td width="30%">
-													<input type="text" class="input_15_table" maxlength="18" name="wans_FromIP_x_0" style="" onKeyPress="return is_ipaddr_plus_netmask(this,event)">
+													<input type="text" class="input_15_table" maxlength="18" name="wans_FromIP_x_0" style="" onKeyPress="return validator.isIPAddrPlusNetmask(this,event)" autocorrect="off" autocapitalize="off">
 												</td>
 												<td width="30%">
-													<input type="text" class="input_15_table" maxlength="18" name="wans_ToIP_x_0" onkeypress="return is_ipaddr_plus_netmask(this,event)">
+													<input type="text" class="input_15_table" maxlength="18" name="wans_ToIP_x_0" onkeypress="return validator.isIPAddrPlusNetmask(this,event)" autocorrect="off" autocapitalize="off">
 												</td>
 												<td width="25%">
 													<select name="wans_unit_x_0" class="input_option">

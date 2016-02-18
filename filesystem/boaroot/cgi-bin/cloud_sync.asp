@@ -1193,7 +1193,7 @@ function cal_panel_block(){
 
     					<tr>
       					<th width="10%"><% tcWebApi_Get("String_Entry", "Provider", "s") %></th>
-    						<th width="25%"><% tcWebApi_Get("String_Entry", "PPPC_UserName_in", "s") %></a></th>
+					<th width="25%"><% tcWebApi_Get("String_Entry", "HSDPAC_Username_in", "s") %></a></th>
       					<th width="10%"><% tcWebApi_Get("String_Entry", "Cloudsync_Rule", "s") %></a></th>
       					<th width="30%"><% tcWebApi_Get("String_Entry", "routerSync_folder", "s") %></th>
       					<th width="15%"><% tcWebApi_Get("String_Entry", "PPPC_x_WANLink_in", "s") %></th>
@@ -1230,7 +1230,7 @@ function cal_panel_block(){
 
 						  <tr>
 							<th width="30%" style="font-family: Calibri;font-weight: bolder;">
-								<% tcWebApi_Get("String_Entry", "PPPC_Password_in", "s") %>
+								<% tcWebApi_Get("String_Entry", "HSDPAC_Password_in", "s") %>
 							</th>			
 							<td>
 								<input id="cloud_password" name="cloud_password" type="text" autocapitalization="off" onBlur="switchType(false);" onFocus="switchType(true);switchType_IE(this);" maxlength="32" class="input_32_table" style="height: 23px;" value="">

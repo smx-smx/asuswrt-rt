@@ -274,9 +274,7 @@ function pullLANIPList(obj){
 									</div>
 
 									<div style="margin-top:8px" id="logArea">
-										<textarea cols="63" rows="27" wrap="off" readonly="readonly" id="textarea" style="width:99%;font-family:Courier New, Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;">
-											<% nvram_dump("nettool.log","syscmd.sh"); %>
-										</textarea>
+										<textarea cols="63" rows="27" wrap="off" readonly="readonly" id="textarea" style="width:99%;font-family:Courier New, Courier, mono; font-size:11px;background:#475A5F;color:#FFFFFF;"><% nvram_dump("syscmd.log","syscmd.sh"); %></textarea>
 									</div>
 								</td>
 							</tr>

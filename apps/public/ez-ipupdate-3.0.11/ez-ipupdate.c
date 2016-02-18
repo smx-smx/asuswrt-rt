@@ -39,7 +39,7 @@
 // #include <bcmnvram.h>
 #include "libtcapi.h"
 #include "tcutils.h"
-#define	DDNS_INFO	"GUITemp_Entry2"
+#define	DDNS_INFO	"Vram_Entry"
 #define	DDNS_SETTING	"Ddns_Entry"
 #endif  // ASUS_DDNS
 

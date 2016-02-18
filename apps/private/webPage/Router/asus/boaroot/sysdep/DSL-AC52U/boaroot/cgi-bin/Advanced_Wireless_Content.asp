@@ -147,11 +147,9 @@ function initial(){
 	}		
 		
 	if(band5g_support == -1)
-		$("wl_unit_field").style.display = "none";
+		$("wl_unit_field").style.display = "none";			
 		
-	if('<% tcWebApi_get("WLan_Common","WirelessMode","s") %>' == "0")
-		inputCtrl(document.form.wl_bw, 0);	
-		
+	change_wl_nmode(document.form.wl_nmode_x);	
 	handle_11ac_80MHz();	
 		
 	limit_auth_method();
@@ -346,6 +344,35 @@ function check_NOnly_to_GN(){
 	$('wl_NOnly_note').style.display = "none";
 	return true;
 //  Viz add 2012.11.05 restriction for 'N Only' mode  ) end
+}
+
+/* Handle wireless mode changed */
+function change_wl_nmode(obj){	
+	if(obj.value=='9' || obj.value=='0')	//2.4GHZ: auto, legacy
+		inputCtrl(document.form.wl_gmode_check, 1);
+	else
+		inputCtrl(document.form.wl_gmode_check, 0);
+	
+	free_options(document.form.wl_bw);
+	var bws = new Array();
+	var bwsDesc = new Array();
+	var cur = "<%tcWebApi_get("WLan_Common","HT_BW","s")%>";		
+	if(obj.value == '0' || obj.value == '2') { //legacy: 0 for 2.4GHz, 2 for 5GHz		
+		bws = [0];
+		bwsDesc = ["20 MHz"];
+		add_options_x2(document.form.wl_bw, bwsDesc, bws, cur);
+	}
+	else {
+		bws = [1, 0, 2, 3];
+		bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz", "80MHz"];
+		add_options_x2(document.form.wl_bw, bwsDesc, bws, cur);
+		handle_11ac_80MHz();
+	}
+
+	insertExtChannelOption();	
+	limit_auth_method();
+	automode_hint();
+	check_NOnly_to_GN();
 }
 </script>
 </head>
@@ -631,3 +658,4 @@ function check_NOnly_to_GN(){
 
 <!--Advanced_Wireless_Content.asp-->
 </html>
+

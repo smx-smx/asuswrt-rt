@@ -148,6 +148,7 @@ static void do_swap(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void vpn_server_get_parameter(asp_reent* reent, const asp_text* params, asp_text* ret);
 #endif
 
+static void qis_do_dsl_iptv (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void wanstate (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void disable_other_wan (asp_reent* reent, const asp_text* params, asp_text* ret);
@@ -186,9 +187,6 @@ static void load_MBSSID_parameters_from_generic(asp_reent* reent, const asp_text
 static void ej_uptime(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void wl_get_2G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void wl_get_5G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret);
-static void get_isp_list(asp_reent* reent, const asp_text* params, asp_text* ret);
-static void get_isp_list_iptv(asp_reent* reent, const asp_text* params, asp_text* ret);
-static void get_isp_ptm_list(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void auto_detection(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void wps_info(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void wl_auth_list(asp_reent* reent, const asp_text* params, asp_text* ret);
@@ -699,6 +697,17 @@ static void update_http_clientlist(asp_reent* reent, const asp_text* params,  as
 	http_update_allowed_client(); 
 }
 
+static void
+set_dsl_apply_flag (asp_reent* reent, const asp_text* params,  asp_text* ret)
+{
+	char *isApplyDSLSetting = get_param(g_var_post, "isApplyDSLSetting");
+
+	if(isApplyDSLSetting && !strcmp(isApplyDSLSetting, "1")) // apply DSL Setting page
+	{
+		tcapi_set("GUITemp_Entry0", "isApplyDSLSetting", "1");
+	}
+}
+
 void init_asp_funcs(void)
 {
     #ifndef TRENDCHIP
@@ -761,6 +770,7 @@ void init_asp_funcs(void)
 #ifdef RTCONFIG_OPENVPN
 	append_asp_func("vpn_server_get_parameter", vpn_server_get_parameter);
 #endif
+	append_asp_func("qis_do_dsl_iptv", qis_do_dsl_iptv);
 	append_asp_func("do_apply_cgi", do_apply_cgi);
 	append_asp_func("wanstate", wanstate);
 	append_asp_func("disable_other_wan", disable_other_wan);
@@ -801,9 +811,6 @@ void init_asp_funcs(void)
 	append_asp_func ("uptime", ej_uptime);
 	append_asp_func ("wl_get_2G_guestnetwork", wl_get_2G_guestnetwork);
 	append_asp_func ("wl_get_5G_guestnetwork", wl_get_5G_guestnetwork);
-	append_asp_func ("get_isp_list", get_isp_list);
-	append_asp_func ("get_isp_list_iptv", get_isp_list_iptv);
-	append_asp_func ("get_isp_ptm_list", get_isp_ptm_list);
 	append_asp_func ("auto_detection", auto_detection);
 	append_asp_func ("wps_info", wps_info);
 	append_asp_func ("wl_auth_list", wl_auth_list);
@@ -836,6 +843,7 @@ void init_asp_funcs(void)
     append_asp_func ("set_dsl_restart_flag", set_dsl_restart_flag);
     append_asp_func ("should_dsl_do_commit", ej_should_dsl_do_commit);
     append_asp_func ("update_http_clientlist", update_http_clientlist);
+    append_asp_func ("set_dsl_apply_flag", set_dsl_apply_flag);
 #endif
 }
 
@@ -1540,83 +1548,7 @@ wl_get_5G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	// [["1", "ASUS_Guest1", "OPEN", "aes", "", "0", "1", "", "", "", "", "0", "off"], ["1", "ASUS_Guest2", "OPEN", "aes", "", "0", "1", "", "", "", "", "0", "off"], ["0", "ASUS_Guest3", "open", "aes", "", "0", "1", "", "", "", "", "0", "off"]]
 }
 
-void 
-get_isp_list(asp_reent* reent, const asp_text* params, asp_text* ret) {
-	char name[64]={0};
-	FILE* fpIsp;
-	char bufIsp[1048510]={0};
-	char tmp[512]={0};
-
-	strcpy(name,"/etc/ISP_List.txt");
-	
-	fpIsp = fopen(name,"r");
-	if (fpIsp != NULL){
-		strcat(bufIsp, "[ ");
-		while(fgets(tmp, 512, fpIsp)){
-			if (tmp != NULL){
-				strcat(bufIsp, tmp);
-				strcat(bufIsp, "\n");
-			}
-		}
-		strcat(bufIsp, "]");
-		asp_send_response (NULL, bufIsp, strlen(bufIsp));
-
-		fclose(fpIsp);
-	}
-	//return 0;
-}
-void 
-get_isp_list_iptv(asp_reent* reent, const asp_text* params, asp_text* ret) {
-	char name[64]={0};
-	FILE* fpIsp;
-	char bufIsp[1048510]={0};
-	char tmp[512]={0};
-
-	strcpy(name,"/etc/ISP_List_IPTV.txt");
-	
-	fpIsp = fopen(name,"r");
-	if (fpIsp != NULL){
-		strcat(bufIsp, "[ ");
-		while(fgets(tmp, 512, fpIsp)){
-			if (tmp != NULL){
-				strcat(bufIsp, tmp);
-				strcat(bufIsp, "\n");
-			}
-		}
-		strcat(bufIsp, "]");
-		asp_send_response (NULL, bufIsp, strlen(bufIsp));
-
-		fclose(fpIsp);
-	}
-	//return 0;
-}
-void 
-get_isp_ptm_list(asp_reent* reent, const asp_text* params, asp_text* ret) {
-	char name[64]={0};
-	FILE* fpIsp;
-	char bufIsp[1048510]={0};
-	char tmp[512]={0};
-
-	strcpy(name,"/etc/ISP_PTM_List.txt");
-	
-	fpIsp = fopen(name,"r");
-	if (fpIsp != NULL){
-		strcat(bufIsp, "[ ");
-		while(fgets(tmp, 512, fpIsp)){
-			if (tmp != NULL){
-				strcat(bufIsp, tmp);
-				strcat(bufIsp, "\n");
-			}
-		}
-		strcat(bufIsp, "]");
-		asp_send_response (NULL, bufIsp, strlen(bufIsp));
-
-		fclose(fpIsp);
-	}
-	//return 0;
-}
-
-void 
+void
 auto_detection(asp_reent* reent, const asp_text* params, asp_text* ret) {
 
 	system("killall -9 auto_det");
@@ -2046,7 +1978,7 @@ void readWiFiData_RT6856(void)
 	char cmd[128] = {0};
 	char *ptr = NULL;
 
-	sprintf(cmd, "/userfs/bin/iwpriv show traffic" ); //must use its absolute path
+	sprintf(cmd, "/userfs/bin/iwpriv show traffic > /dev/null" ); //must use its absolute path
 	system(cmd);
 	sleep(1);
 	
@@ -2831,7 +2763,6 @@ tcWebApi_Commit (asp_reent* reent, const asp_text* params,  asp_text* ret)
 		/* Paul modify, 2013/3/7 */
 		if (!strcmp(node, "LanguageSwitch_Entry"))
 		{
-			tcapi_set("WebCurSet_Entry", "lang_detected", "0");
 			if (1 == islangChanged()) {
 				initandparserfile();
 			}
@@ -4306,15 +4237,23 @@ modify_sharedfolder (asp_reent* reent, const asp_text* params, asp_text* ret) {
 
 	//Andy Chiu, 2015/01/28. decode path form UTF-8.
 	//con_dbgprintf("[%s, %d](%s, %s, %s)\n", __FUNCTION__, __LINE__, mount_path, folder, new_folder);
-	char new_path[1024], old_path[1024], buf[1024];
-	sprintf(buf, "%s/%s", mount_path, new_folder);
-	if(decode(buf, new_path) > 0)
+	
+	char new_path[1024], old_path[1024], path[1024], buf[1024];
+	sprintf(buf, "%s", new_folder);
+	if(decode(buf, new_path) > 0) {
 		con_dbgprintf("[%s, %d]new:%s\n", __FUNCTION__, __LINE__, new_path);
-	sprintf(buf, "%s/%s", mount_path, folder);
-	if(decode(buf, old_path) > 0)
+	}
+	sprintf(buf, "%s", folder);
+	if(decode(buf, old_path) > 0) {
 		con_dbgprintf("[%s, %d]old:%s\n", __FUNCTION__, __LINE__, old_path);
+	}
+	sprintf(buf, "%s", mount_path);
+	if(decode(buf, path) > 0) {
+		con_dbgprintf("[%s, %d]mount_path:%s\n", __FUNCTION__, __LINE__, path);
+	}
 
-	if(rename(old_path, new_path) < 0)
+	//Carlos 2015/08/03, should be call mod_folder api
+	if(mod_folder(mount_path, old_path, new_path) < 0)
 	{
 		show_error_msg("Action7");
 
@@ -5473,6 +5412,13 @@ set_account_permission (asp_reent* reent, const asp_text* params, asp_text* ret)
 	int right;
 	char tmp[1024];
 
+	//Carlos 2015/07/31, Add UTF-8 processor
+	char buf[1024];
+	sprintf(buf, "%s", folder);
+	if(decode(buf, folder) > 0) {
+		con_dbgprintf("[%s, %d]folder:%s\n", __FUNCTION__, __LINE__, folder);
+	}
+	
 	if (test_if_exist_account(account) != 1){
 		show_error_msg("Input6");
 
@@ -6473,6 +6419,117 @@ static char *get_msg_from_dict(char *lang_path, const char *const msg_name){
 	
 	free(dict_info);
 	return target;
+}
+
+static void qis_do_dsl_iptv (asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char dsltmp_cfg_iptv_pvclist[MAXLEN_TCAPI_MSG] = {0};
+	char dsltmp_transfer_mode[MAXLEN_TCAPI_MSG] = {0};
+	char *nvp, *b;
+	char *p1, *p2, *p3, *p4, *p5;
+	int i = 0;
+	char node[MAXLEN_NODE_NAME];
+	char cmd[256];
+
+	if(tcapi_get("GUITemp_Entry0", "dsltmp_cfg_iptv_pvclist", dsltmp_cfg_iptv_pvclist) == TCAPI_PROCESS_OK
+		&& tcapi_get("GUITemp_Entry0", "dsltmp_transfer_mode", dsltmp_transfer_mode) == TCAPI_PROCESS_OK
+	) {
+		nvp = dsltmp_cfg_iptv_pvclist;
+		while( (b = strsep(&nvp, "<")) != NULL){
+			if((vstrsep(b, ">", &p1, &p2, &p3, &p4, &p5) != 5))
+				continue;
+			++i;
+			_dprintf("set vpi/vci,proto,encap,vlan: [%s/%s][%s][%s][%s]\n", p1,p2,p3,p4,p5);
+			if(!strncmp(dsltmp_transfer_mode, "PTM", 3)) {
+				snprintf(node, sizeof(node), "WanExt_PVC8e%d", i);
+			}
+			else {
+				snprintf(node, sizeof(node), "Wan_PVC%d", i);
+				tcapi_set(node, "VPI", p1);
+				tcapi_set(node, "VCI", p2);
+
+				if(strcmp(p4, "1"))
+					tcapi_set(node, "ENCAP", "1483 Bridged Only LLC");
+				else
+					tcapi_set(node, "ENCAP", "1483 Bridged IP VC-Mux");
+
+				//QoS
+				//tcapi_set(node,"QOS","rt-vbr");
+				//tcapi_set(node,"PCR","300");
+				//tcapi_set(node,"SCR","299");
+				//tcapi_set(node,"MBS","32");
+			}
+			//proto
+			if(!strcmp(p3, "2"))
+				tcapi_set(node, "ISP", "0");
+			else
+				tcapi_set(node, "ISP", "3");
+			//vlan
+			if(!strcmp(p5, "")) {
+				tcapi_set(node, "dot1q", "No");
+			}
+			else {
+				tcapi_set(node, "dot1q", "Yes");
+				tcapi_set(node, "VLANID", p5);
+			}
+
+			tcapi_set(node, "IPVERSION", "IPv4");
+			tcapi_set(node, "Active", "Yes");
+			tcapi_commit(node);
+		}
+
+		if(i) {
+			tcapi_set("IPTV_Entry", "switch_stb_x", "1");
+		#ifdef TCSUPPORT_WAN_ETHER_LAN
+			int wans_lanport = -1;
+			tcapi_set("Dualwan_Entry", "wans_lanport", "4");
+			wans_lanport = get_cur_lanwan_port();
+			if(wans_lanport != -1) {
+				set_lanwan_if(wans_lanport, 4);
+				tcapi_commit("Wan_PVC12");
+			}
+		#endif
+		}
+		else {
+			tcapi_set("IPTV_Entry", "switch_stb_x", "0");
+			//disable iptv pvc if re-run QIS but select internet service only.
+			for(i = 1; i < 8; i++) {
+			#ifdef TCSUPPORT_MULTISERVICE_ON_WAN
+				if(!strncmp(dsltmp_transfer_mode, "PTM", 3)) {
+					snprintf(node, sizeof(node), "WanExt_PVC8e%d", i);
+					snprintf(cmd, sizeof(cmd), "/usr/script/wan_stop.sh 8 %d; /usr/bin/smuxctl rem nas8_%d", i, i);
+				}
+				else {
+					snprintf(node, sizeof(node), "Wan_PVC%d", i);
+					snprintf(cmd, sizeof(cmd), "/usr/script/wan_stop.sh %d 0", i);
+				}
+			#else
+				snprintf(node, sizeof(node), "Wan_PVC%d", i);
+				snprintf(cmd, sizeof(cmd), "/usr/script/wan_stop.sh %d", i);
+			#endif
+				if(tcapi_match(node, "Active", "Yes")) {
+					system(cmd);
+					tcapi_set(node, "Active", "No");
+				}
+			}
+		}
+	}
+	//LAN IPTV Settings
+	if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_iptv_mr", "1")) {
+		tcapi_set("IPTV_Entry", "mr_enable_x", "1");
+	}
+	else {
+		tcapi_set("IPTV_Entry", "mr_enable_x", "0");
+	}
+	if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_iptv_rmvlan", "1")) {
+		tcapi_set("IPTV_Entry", "rmvlan", "1");
+	}
+	else {
+		tcapi_set("IPTV_Entry", "rmvlan", "0");
+	}
+
+	tcapi_commit("IPTV");
+
 }
 
 static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -8285,6 +8342,22 @@ static void ej_dump(asp_reent* reent, const asp_text* params, asp_text* ret) {
 		{
 			dump_fb_fail_content();
 		}
+	}
+	else if(!strcmp(file,"ISP_List")) {
+		sprintf(filename, "/etc/ISP_List.txt");
+		dump_file(wp, filename);
+	}
+	else if(!strcmp(file,"ISP_List_IPTV")) {
+		sprintf(filename, "/etc/ISP_List_IPTV.txt");
+		dump_file(wp, filename);
+	}
+	else if(!strcmp(file,"ISP_PTM_List")) {
+		sprintf(filename, "/etc/ISP_PTM_List.txt");
+		dump_file(wp, filename);
+	}
+	else if(!strcmp(file,"ISP_PTM_List_IPTV")) {
+		sprintf(filename, "/etc/ISP_PTM_List_IPTV.txt");
+		dump_file(wp, filename);
 	}
 #ifdef RTCONFIG_OPENVPN
 	else if(!strncmp(file, "vpn_crt_", 8)) {

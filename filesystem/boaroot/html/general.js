@@ -3220,8 +3220,9 @@ function insertExtChannelOption_5g(){
 function insertExtChannelOption_2g(){
 	var wmode = document.form.wl_nmode_x.value;
 	var CurrentCh = document.form.wl_channel.value;
+	if(CurrentCh == "") CurrentCh = '<% tcWebApi_get("WLan_Common","Channel","s"); %>';
 	var option_length = document.form.wl_channel.options.length;
-
+	
 	//setting wl channel
 	free_options(document.form.wl_channel);
 	var country = '<% tcWebApi_get("WLan_Common","wl0_CountryCode","s"); %>';
@@ -3799,7 +3800,7 @@ function wireless_mode_change(obj){
 	var bws = new Array();
 	var bwsDesc = new Array();
 	var cur = "<%tcWebApi_get("WLan_Common","HT_BW","s")%>";
-	if(obj.value == '0') { //legacy
+	if(obj.value == '0' || obj.value == '2') { //legacy: 0 for 2.4GHz, 2 for 5GHz
 		bws = [0];
 		bwsDesc = ["20 MHz"];
 		add_options_x2(document.form.wl_bw, bwsDesc, bws, cur);
@@ -3821,7 +3822,9 @@ function wireless_mode_change(obj){
 }
 
 function handle_11ac_80MHz(){
-	if(band5g_support == -1 || band5g_11ac_support == -1 || document.form.wl_unit[0].selected == true || document.form.wl_nmode_x.value== '6' || document.form.wl_nmode_x.value== '11') {
+	if(document.form.wl_nmode_x.value == '0' || document.form.wl_nmode_x.value == '2') //legacy: 0 for 2.4GHz, 2 for 5GHz
+		document.form.wl_bw[0].text = "20 MHz";
+	else if(band5g_support == -1 || band5g_11ac_support == -1 || document.form.wl_unit[0].selected == true || document.form.wl_nmode_x.value== '6' || document.form.wl_nmode_x.value== '11') {			
 		document.form.wl_bw[0].text = "20/40 MHz";
 		document.form.wl_bw.remove(3); //remove 80 Mhz when not when not required required
 	} 
