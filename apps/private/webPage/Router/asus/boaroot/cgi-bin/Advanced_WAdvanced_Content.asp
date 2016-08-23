@@ -12,9 +12,8 @@ If Request_Form("editFlag") = "1" then
 	tcWebApi_Set("WLan_Entry","wl1_radio_on","wl1_radio_on")
 	tcWebApi_Set("WLan_Entry","radio_flag","radio_flag")
 	tcWebApi_Set("WLan_Entry","wl_schedule_radio","wl_schedule_radio")
-	tcWebApi_Set("WLan_Entry","wl_radio_date","wl_radio_date_x")
-	tcWebApi_Set("WLan_Entry","wl_radio_time","wl_radio_time_x")
-	'tcWebApi_Set("WLan_Entry","wl_radio_time2","wl_radio_time2_x")
+	tcWebApi_Set("WLan_Entry","wl_sched0","wl_sched0")
+	tcWebApi_Set("WLan_Entry","wl_sched1","wl_sched1")
 	tcWebApi_Set("WLan_Common","BasicRate","wl_rateset")
 	tcWebApi_Set("WLan_Common","FragThreshold","wl_frag")
 	tcWebApi_Set("WLan_Common","RTSThreshold","wl_rts")
@@ -27,6 +26,7 @@ If Request_Form("editFlag") = "1" then
 	tcWebApi_Set("WLan_Common","DLSCapable","wl_DLSCapable")
 	tcWebApi_Set("WLan_Common","wl_wme_no_ack","wl_wme_no_ack")
 	tcWebApi_Set("WLan_Common","TxPower","wl_txpower")
+	tcWebApi_Set("WLan_Common","location_code","location_code")
 	tcWebApi_Set("WLan_Common","wl_ap_isolate","wl_ap_isolate")
 	tcWebApi_Set("WLan_Entry","wl_user_rssi","wl_user_rssi")
 	tcWebApi_Set("WLan_Common","IgmpSnEnable","wl_igs")
@@ -132,6 +132,40 @@ load_parameters_to_generic()
 	border-bottom-right-radius: 1px;
 }
 #slider .ui-slider-handle { border-color: #93E7FF; }
+.parental_th{
+	color:white;
+	background:#2F3A3E;
+	cursor: pointer;
+	width:160px;
+	height:22px;
+	border-bottom:solid 1px black;
+	border-right:solid 1px black;
+} 
+.parental_th:hover{
+	background:rgb(94, 116, 124);
+	cursor: pointer;
+}
+
+.checked{
+	background-color:#9CB2BA;
+	width:82px;
+	border-bottom:solid 1px black;
+	border-right:solid 1px black;
+}
+
+.disabled{
+	width:82px;
+	border-bottom:solid 1px black;
+	border-right:solid 1px black;
+	background-color:#475A5F;
+}
+
+  #selectable .ui-selecting { background: #FECA40; }
+  #selectable .ui-selected { background: #F39814; color: white; }
+  #selectable .ui-unselected { background: gray; color: green; }
+  #selectable .ui-unselecting { background: green; color: black; }
+  #selectable { border-spacing:0px; margin-left:0px;margin-top:0px; padding: 0px; width:100%;}
+  #selectable td { height: 22px; }
 
 
 </style>
@@ -144,6 +178,11 @@ wan_proto = 'pppoe';
 var flag = 0;
 var enable_radio = "<% tcWebApi_get("WLan_Entry","radio_on","s") %>";
 var wl_user_rssi_onload = "<% tcWebApi_get("WLan_Entry","wl_user_rssi","s") %>";
+
+var array = new Array(7);
+var clock_type = "";
+var wifi_schedule_value = "<% tcWebApi_get("WLan_Entry","wl_sched0","s") %>";
+wifi_schedule_value += "<% tcWebApi_get("WLan_Entry","wl_sched1","s") %>";
 
 function login_ip_str() { return '<% tcWebApi_get("WebCurSet_Entry","login_ip_tmp","s"); %>'; }
 
@@ -177,6 +216,9 @@ function initial(){
 	autoFocus('<% get_parameter("af"); %>');
 	
 	register_event();
+	init_array(array);
+	init_cookie();
+	count_time();
 	load_body();	
 
 	if(userRSSI_support > 0)
@@ -184,32 +226,10 @@ function initial(){
 	else
 		document.getElementById("rssiTr").style.display = "none";
 
-	if(sw_mode == "2"){
-		disableAdvFn(17);
-		change_common(document.form.wl_wme, "WLANConfig11b", "wl_wme");
-	}
-	$("wl_rate").style.display = "none";
-	/*if(wifi_hw_sw_support != -1) {
-		$("wl_rf_enable").style.display = "none";
-	}*/
 	if(band5g_support == -1)
-		$("wl_unit_field").style.display = "none";
+		document.getElementById("wl_unit_field").style.display = "none";
 
-/*
-	if(Rawifi_support == -1){ //without rawifi
-		$("DLSCapable").style.display = "none";
-		$("PktAggregate").style.display = "none";
-		$("enable_wl_multicast_forward").style.display = "";
-	}
-	else{
-		free_options(document.form.wl_mrate_x);
-		add_option(document.form.wl_mrate_x, "Disabled", 0, 0 == 0);	//need get the wl_mrate_x value by function
-		add_option(document.form.wl_mrate_x, "Auto", 13, 0 == 13);	//need get the wl_mrate_x value by function
-	}
-	if(repeater_support != -1){ //with RE mode
-		$("DLSCapable").style.display = "none";
-	}
-*/
+	document.getElementById("wl_rate").style.display = "none";
 
 	var mcast_rate = '<% tcWebApi_get("WLan_Common","wl_mrate_x","s") %>';
 	var mcast_unit = '<% tcWebApi_get("WLan_Common","wl_unit","s") %>';
@@ -238,19 +258,20 @@ function initial(){
 		inputCtrl(document.form.wl_wme_no_ack, 0);
 	}
 
-	adjust_tx_power();
-	loadDateTime();
+	adjust_tx_power();	
 	corrected_timezone(DAYLIGHT_orig, TZ_orig);
 
 	if(enable_radio == "1"){
-		$("wl_rf_schedule_enable").style.display = "";
-		$("enable_day_week_tr").style.display = "";
-		$("enable_time_week_tr").style.display = "";
+		document.getElementById("wl_sched_enable").style.display = "";		
 	}
 	else{
-		$("wl_rf_schedule_enable").style.display = "none";
-		$("enable_day_week_tr").style.display = "none";
-		$("enable_time_week_tr").style.display = "none";
+		document.getElementById("wl_sched_enable").style.display = "none";
+	}
+
+	/*location_code Setting*/		
+	if(location_list_support != -1){
+		document.getElementById('region_tr').style.display = "";
+		generate_region();
 	}
 
 	control_TimeField();
@@ -313,9 +334,18 @@ function applyRule(){
 		if(navigator.appName.indexOf("Microsoft") >= 0){ 		// Jieming added at 2013/05/21, to avoid browser freeze when submitting form on IE
 			stopFlag = 1;
 		}
+		
+		split_wl_sched();	
+
 		document.form.submit();
 	}
 }
+
+function split_wl_sched(){
+	document.form.wl_sched0.value = wifi_schedule_value.substring(0,500);
+	document.form.wl_sched1.value = wifi_schedule_value.substring(500,1000);
+}
+
 function validForm(){
 	if(sw_mode != "2"){
 		if(!validate_range(document.form.wl_frag, 256, 2346)
@@ -325,38 +355,8 @@ function validForm(){
 		){
 			return false;
 		}
-	}
-//	if(!validate_timerange(document.form.wl_radio_time_x_starthour, 0) || !validate_timerange(document.form.wl_radio_time2_x_starthour, 0)
-//			|| !validate_timerange(document.form.wl_radio_time_x_startmin, 1) || !validate_timerange(document.form.wl_radio_time2_x_startmin, 1)
-//			|| !validate_timerange(document.form.wl_radio_time_x_endhour, 2) || !validate_timerange(document.form.wl_radio_time2_x_endhour, 2)
-//			|| !validate_timerange(document.form.wl_radio_time_x_endmin, 3) || !validate_timerange(document.form.wl_radio_time2_x_endmin, 3)
-	if(!validate_timerange(document.form.wl_radio_time_x_starthour, 0)
-			|| !validate_timerange(document.form.wl_radio_time_x_startmin, 1)
-			|| !validate_timerange(document.form.wl_radio_time_x_endhour, 2)
-			|| !validate_timerange(document.form.wl_radio_time_x_endmin, 3)
-	)
-		return false;
-	
-	if(document.form.wl_radio_time_x_starthour.value == document.form.wl_radio_time_x_endhour.value && document.form.wl_radio_time_x_startmin.value == document.form.wl_radio_time_x_endmin.value){
-			alert("<%tcWebApi_get("String_Entry","FC_URLActiveTime_itemhint2","s")%>");
-			document.form.wl_radio_time_x_startmin.focus();
-			document.form.wl_radio_time_x_startmin.select;
-			return false;
-	}
-	if(document.form.wl_radio_date_x_Sun.checked == false
-	&& document.form.wl_radio_date_x_Mon.checked == false
-	&& document.form.wl_radio_date_x_Tue.checked == false
-	&& document.form.wl_radio_date_x_Wed.checked == false
-	&& document.form.wl_radio_date_x_Thu.checked == false
-	&& document.form.wl_radio_date_x_Fri.checked == false
-	&& document.form.wl_radio_date_x_Sat.checked == false)
-	//document.form.wl_radio[1].checked=true;
-	{
-		document.form.wl_radio_date_x_Sun.focus();
-		$('blank_warn').style.display = "";
-		return false;
-	}
-			
+	}	
+				
 	if(userRSSI_support){
 		if(document.form.wl_user_rssi.value != 0){
 			if(!validator.range(document.form.wl_user_rssi, -90, -70)){
@@ -372,8 +372,20 @@ refreshpage();
 }
 function disableAdvFn(row){
 for(var i=row; i>=3; i--){
-$("WAdvTable").deleteRow(i);
+document.getElementById("WAdvTable").deleteRow(i);
 }
+}
+
+/* MODELDEP by Territory Code */
+function generate_region(){
+	//var region_name = ["Asia", "Australia", "Brazil", "Canada", "China", "Europe", "Japan", "Korea", "Malaysia", "Middle East", "Russia", "Singapore", "Turkey", "Taiwan", "Ukraine", "United States"];
+	var region_name = ["Asia", "Australia", "Europe"];	//Viz mod 2015.07.31
+	//var region_value = ["APAC", "AU", "BZ", "CA", "CN", "EU", "JP", "KR", "MY", "ME", "RU", "SG", "TR", "TW", "UA", "US"];
+	region_value = ["AA", "AU", "EU"]; //Viz mod 2015.07.31
+	var current_region = '<% tcWebApi_get("WLan_Common","location_code","s") %>';
+	if(current_region == '')
+		current_region = ttc.split("/")[0];
+	add_options_x2(document.form.location_code, region_name, region_value, current_region);
 }
 
 function adjust_tx_power(){
@@ -382,7 +394,7 @@ function adjust_tx_power(){
 	var translated_value = 0;
 	
 	if(!power_support){
-		$("wl_txPower_field").style.display = "none";
+		document.getElementById("wl_txPower_field").style.display = "none";
 	}
 	else{
 		if(power_value_old != ""){
@@ -396,93 +408,34 @@ function adjust_tx_power(){
 				translated_value = 1;			
 			}
 
-			$('slider').children[0].style.width = translated_value + "%";
-			$('slider').children[1].style.left = translated_value + "%";
+			document.getElementById("slider").children[0].style.width = translated_value + "%";
+			document.getElementById("slider").children[1].style.left = translated_value + "%";
 			document.form.wl_txpower.value = translated_value;
 		}
 		else{
-			$('slider').children[0].style.width = power_value_new + "%";
-			$('slider').children[1].style.left = power_value_new + "%";
+			document.getElementById("slider").children[0].style.width = power_value_new + "%";
+			document.getElementById("slider").children[1].style.left = power_value_new + "%";
 			document.form.wl_txpower.value = power_value_new;
 		}
 	}
 }
 
-function loadDateTime(){
-	document.form.wl_radio_date_x_Sun.checked = getDateCheck(document.form.wl_radio_date_x.value, 0);
-	document.form.wl_radio_date_x_Mon.checked = getDateCheck(document.form.wl_radio_date_x.value, 1);
-	document.form.wl_radio_date_x_Tue.checked = getDateCheck(document.form.wl_radio_date_x.value, 2);
-	document.form.wl_radio_date_x_Wed.checked = getDateCheck(document.form.wl_radio_date_x.value, 3);
-	document.form.wl_radio_date_x_Thu.checked = getDateCheck(document.form.wl_radio_date_x.value, 4);
-	document.form.wl_radio_date_x_Fri.checked = getDateCheck(document.form.wl_radio_date_x.value, 5);
-	document.form.wl_radio_date_x_Sat.checked = getDateCheck(document.form.wl_radio_date_x.value, 6);
-	document.form.wl_radio_time_x_starthour.value = getTimeRange(document.form.wl_radio_time_x.value, 0);
-	document.form.wl_radio_time_x_startmin.value = getTimeRange(document.form.wl_radio_time_x.value, 1);
-	document.form.wl_radio_time_x_endhour.value = getTimeRange(document.form.wl_radio_time_x.value, 2);
-	document.form.wl_radio_time_x_endmin.value = getTimeRange(document.form.wl_radio_time_x.value, 3);
-/*
-	document.form.wl_radio_time2_x_starthour.value = getTimeRange(document.form.wl_radio_time2_x.value, 0);
-	document.form.wl_radio_time2_x_startmin.value = getTimeRange(document.form.wl_radio_time2_x.value, 1);
-	document.form.wl_radio_time2_x_endhour.value = getTimeRange(document.form.wl_radio_time2_x.value, 2);
-	document.form.wl_radio_time2_x_endmin.value = getTimeRange(document.form.wl_radio_time2_x.value, 3);
-*/
-}
-function control_Schedule(){
+function control_TimeField(){
 	if(document.form.radio_on[0].checked){
-		$("wl_rf_schedule_enable").style.display = "";
-		$("enable_day_week_tr").style.display = "";
-		$("enable_time_week_tr").style.display = "";
-		document.form.wl_schedule_radio[0].checked = true;
+		document.getElementById("wl_sched_enable").style.display = "";
+		document.form.wl_schedule_radio.disabled = false;
+		if(document.form.wl_schedule_radio[0].checked){
+			document.getElementById("time_setting").style.display = "";
+			document.form.wl_schedule_radio.disabled = false;
+		}
+		else{
+			document.getElementById("time_setting").style.display = "none";
+			document.form.wl_schedule_radio.disabled = true;
+		}
 	}
 	else{
-		$("wl_rf_schedule_enable").style.display = "none";
-		$("enable_day_week_tr").style.display = "none";
-		$("enable_time_week_tr").style.display = "none";
-		document.form.wl_schedule_radio[1].checked = true;
-	}
-
-	control_TimeField();
-}
-function control_TimeField(){		//control time of week & weekend field when wireless radio is down , Jieming added 2012/08/22
-	if(!document.form.wl_schedule_radio[0].checked){
-/*
-		//ASUS WRT hide date and time and separate week and weekend.
-		$('enable_date_week_tr').style.display="none";
-		$('enable_time_week_tr').style.display="none";
-		$('enable_date_weekend_tr').style.display="none";
-		$('enable_time_weekend_tr').style.display="none";
-*/
-		document.form.wl_radio_date_x_Sun.disabled= true;
-		document.form.wl_radio_date_x_Mon.disabled= true;
-		document.form.wl_radio_date_x_Tue.disabled= true;
-		document.form.wl_radio_date_x_Wed.disabled= true;
-		document.form.wl_radio_date_x_Thu.disabled= true;
-		document.form.wl_radio_date_x_Fri.disabled= true;
-		document.form.wl_radio_date_x_Sat.disabled= true;
-		document.form.wl_radio_time_x_starthour.disabled= true;
-		document.form.wl_radio_time_x_startmin.disabled= true;
-		document.form.wl_radio_time_x_endhour.disabled= true;
-		document.form.wl_radio_time_x_endmin.disabled= true;
-	}
-	else{
-/*
-		//ASUS WRT hide date and time and separate week and weekend.
-		$('enable_date_week_tr').style.display="";
-		$('enable_time_week_tr').style.display="";
-		$('enable_date_weekend_tr').style.display="";
-		$('enable_time_weekend_tr').style.display="";
-*/
-		document.form.wl_radio_date_x_Sun.disabled= false;
-		document.form.wl_radio_date_x_Mon.disabled= false;
-		document.form.wl_radio_date_x_Tue.disabled= false;
-		document.form.wl_radio_date_x_Wed.disabled= false;
-		document.form.wl_radio_date_x_Thu.disabled= false;
-		document.form.wl_radio_date_x_Fri.disabled= false;
-		document.form.wl_radio_date_x_Sat.disabled= false;
-		document.form.wl_radio_time_x_starthour.disabled= false;
-		document.form.wl_radio_time_x_startmin.disabled= false;
-		document.form.wl_radio_time_x_endhour.disabled= false;
-		document.form.wl_radio_time_x_endmin.disabled= false;
+		document.getElementById("wl_sched_enable").style.display = "none";
+		document.form.wl_schedule_radio.disabled = true;
 	}
 }
 
@@ -514,8 +467,76 @@ function register_event(){
 			}
 		}); 
 	});
-}
+	
+	var array_temp = new Array(7);
+	var checked = 0
+	var unchecked = 0;
+	init_array(array_temp);
 
+  $j(function() {
+    $j( "#selectable" ).selectable({
+		filter:'td',
+		selecting: function(event, ui){
+					
+		},
+		unselecting: function(event, ui){
+			
+		},
+		selected: function(event, ui){	
+			id = ui.selected.getAttribute('id');
+			column = parseInt(id.substring(0,1), 10);
+			row = parseInt(id.substring(1,3), 10);	
+
+			array_temp[column][row] = 1;
+			if(array[column][row] == 1){
+				checked = 1;
+			}
+			else if(array[column][row] == 0){
+				unchecked = 1;
+			}
+		},
+		unselected: function(event, ui){
+
+		},		
+		stop: function(event, ui){
+			if((checked == 1 && unchecked == 1) || (checked == 0 && unchecked == 1)){
+				for(i=0;i<7;i++){
+					for(j=0;j<24;j++){
+						if(array_temp[i][j] == 1){
+						array[i][j] = array_temp[i][j];					
+						array_temp[i][j] = 0;		//initialize
+						if(j < 10){
+							j = "0" + j;						
+						}		
+							id = i.toString() + j.toString();					
+							document.getElementById(id).className = "checked";					
+						}
+					}
+				}									
+			}
+			else if(checked == 1 && unchecked == 0){
+				for(i=0;i<7;i++){
+					for(j=0;j<24;j++){
+						if(array_temp[i][j] == 1){
+						array[i][j] = 0;					
+						array_temp[i][j] = 0;
+						
+						if(j < 10){
+							j = "0" + j;						
+						}
+							id = i.toString() + j.toString();											
+							document.getElementById(id).className = "disabled";												
+						}
+					}
+				}			
+			}
+		
+			checked = 0;
+			unchecked = 0;
+		}		
+	});		
+  });
+}
 
 function set_power(power_value){	
 	if(power_value < 1){
@@ -528,9 +549,393 @@ function set_power(power_value){
 		alert("The maximun value of power is 1");
 	}
 	
-	$('slider').children[0].style.width = power_value + "%";
-	$('slider').children[1].style.left = power_value + "%";
+	document.getElementById("slider").children[0].style.width = power_value + "%";
+	document.getElementById("slider").children[1].style.left = power_value + "%";
 	document.form.wl_txpower.value = power_value;	
+}
+
+function init_array(arr){
+	for(i=0;i<7;i++){
+		arr[i] = new Array(24);
+
+		for(j=0;j<24;j++){
+			arr[i][j] = 0;
+		}
+	}
+}
+
+function init_cookie(){
+	if(document.cookie.indexOf('clock_type') == -1)		//initialize
+		document.cookie = "clock_type=1";		
+			
+	x = document.cookie.split(';');
+	for(i=0;i<x.length;i++){
+		if(x[i].indexOf('clock_type') != -1){
+			clock_type = x[i].substring(x[i].length-1, x[i].length);			
+		}	
+	}
+}
+
+//draw time slot at first time
+function redraw_selected_time(obj){
+	var start_day = 0;
+	var end_day = 0;
+	var start_time = "";
+	var end_time = "";
+	var time_temp = "";
+	var duration = "";
+	var id = "";
+	
+	for(i=0;i<obj.length;i++){
+		time_temp = obj[i];
+		start_day = parseInt(time_temp.substring(0,1), 10);
+		end_day =  parseInt(time_temp.substring(1,2), 10);
+		start_time =  parseInt(time_temp.substring(2,4), 10);
+		end_time =  parseInt(time_temp.substring(4,6), 10);
+		if((start_day == end_day) && (end_time - start_time) < 0)	//for Sat 23 cross to Sun 00
+			end_day = 7;
+
+		if(start_day == end_day){			// non cross day
+			duration = end_time - start_time;
+			if(duration == 0)	//for whole selected
+				duration = 7*24;
+			
+			while(duration >0){
+				array[start_day][start_time] = 1;
+				if(start_time < 10)
+					start_time = "0" + start_time;
+								
+				id = start_day.toString() + start_time.toString();
+				document.getElementById(id).className = "checked";
+				start_time++;
+				if(start_time == 24){
+					start_time = 0;
+					start_day++;
+					if(start_day == 7)
+						start_day = 0;
+				}
+	
+				duration--;
+				id = "";		
+			}	
+		}else{			// cross day
+			var duration_day = 0;
+			if(end_day - start_day < 0)
+				duration_day = 7 - start_day;
+			else
+				duration_day = end_day - start_day;
+		
+			duration = (24 - start_time) + (duration_day - 1)*24 + end_time;
+			while(duration > 0){
+				array[start_day][start_time] = 1;
+				if(start_time < 10)
+					start_time = "0" + start_time;
+				
+				id = start_day.toString() + start_time.toString();
+				document.getElementById(id).className = "checked";
+				start_time++;
+				if(start_time == 24){
+					start_time = 0;
+					start_day++;
+					if(start_day == 7)
+						start_day = 0;		
+				}
+				
+				duration--;
+				id = "";	
+			}		
+		}	
+	}
+}
+
+function select_all(){
+	var full_flag = 1;
+	for(i=0;i<7;i++){
+		for(j=0;j<24;j++){
+			if(array[i][j] ==0){ 
+				full_flag = 0;
+				break;
+			}
+		}
+		
+		if(full_flag == 0){
+			break;
+		}
+	}
+
+	if(full_flag == 1){
+		for(i=0;i<7;i++){
+			for(j=0;j<24;j++){
+				array[i][j] = 0;
+				if(j<10){
+					j = "0"+j;
+				}
+		
+				id = i.toString() + j.toString();
+				document.getElementById(id).className = "disabled";
+			}
+		}
+	}
+	else{
+		for(i=0;i<7;i++){
+			for(j=0;j<24;j++){
+				if(array[i][j] == 1)
+					continue;
+				else{	
+					array[i][j] = 1;
+					if(j<10){
+						j = "0"+j;
+					}
+			
+					id = i.toString() + j.toString();
+					document.getElementById(id).className = "checked";
+				}
+			}
+		}
+	}
+}
+
+function select_all_day(day){
+	var check_flag = 0
+	day = day.substring(4,5);
+	for(i=0;i<24;i++){
+		if(array[day][i] == 0){
+			check_flag = 1;			
+		}			
+	}
+	
+	if(check_flag == 1){
+		for(j=0;j<24;j++){
+			array[day][j] = 1;
+			if(j<10){
+				j = "0"+j;
+			}
+		
+			id = day + j;
+			document.getElementById(id).className = "checked";	
+		}
+	}
+	else{
+		for(j=0;j<24;j++){
+			array[day][j] = 0;
+			if(j<10){
+				j = "0"+j;
+			}
+		
+			id = day + j;
+			document.getElementById(id).className = "disabled";	
+		}
+	}
+}
+
+function select_all_time(time){
+	var check_flag = 0;
+	time_int = parseInt(time, 10);	
+	for(i=0;i<7;i++){
+		if(array[i][time] == 0){
+			check_flag = 1;			
+		}			
+	}
+	
+	if(time<10){
+		time = "0"+time;
+	}
+
+	if(check_flag == 1){
+		for(i=0;i<7;i++){
+			array[i][time_int] = 1;
+			
+			id = i + time;
+			document.getElementById(id).className = "checked";
+		}
+	}
+	else{
+		for(i=0;i<7;i++){
+			array[i][time_int] = 0;
+
+			id = i + time;
+			document.getElementById(id).className = "disabled";
+		}
+	}
+}
+
+function change_clock_type(type){
+	document.cookie = "clock_type="+type;
+	if(type == 1)
+		var array_time = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"];
+	else
+		var array_time = ["12", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+
+	for(i=0;i<24;i++){
+		if(type == 1)
+			document.getElementById(i).innerHTML = array_time[i] +" ~ "+ array_time[i+1];
+		else{
+			if(i<11 || i == 23)
+				document.getElementById(i).innerHTML = array_time[i] +" ~ "+ array_time[i+1] + " AM";
+			else
+				document.getElementById(i).innerHTML = array_time[i] +" ~ "+ array_time[i+1] + " PM";
+		}	
+	}
+}
+
+
+function save_wifi_schedule(){
+	var flag = 0;
+	var start_day = 0;
+	var end_day = 0;
+	var start_time = 0;
+	var end_time = 0;
+	var time_temp = "";
+	
+	for(i=0;i<7;i++){
+		for(j=0;j<24;j++){
+			if(array[i][j] == 1){
+				if(flag == 0){
+					flag =1;
+					start_day = i;
+					if(j<10)
+						j = "0" + j;
+						
+					start_time = j;				
+				}
+			}
+			else{
+				if(flag == 1){
+					flag =0;
+					end_day = i;
+					if(j<10)
+						j = "0" + j;
+					
+					end_time = j;		
+					if(time_temp != "")
+						time_temp += "<";
+				
+					time_temp += start_day.toString() + end_day.toString() + start_time.toString() + end_time.toString();
+				}
+			}
+		}	
+	}
+	
+	if(flag == 1){
+		if(time_temp != "")
+			time_temp += "<";
+									
+		time_temp += start_day.toString() + "0" + start_time.toString() + "00";	
+	}
+
+	if(time_temp == ""){
+		alert("If you want to deny WiFi radio all time, you should check the '<%tcWebApi_get("String_Entry","WC11b_x_RadioEnable_in","s")%>' to '<%tcWebApi_get("String_Entry","checkbox_No","s")%>'");
+		return false;
+	}
+	
+	wifi_schedule_value = time_temp;
+	document.getElementById("schedule_block").style.display = "none";
+	document.getElementById("titl_desc").style.display = "";
+	document.getElementById("WAdvTable").style.display = "";
+	document.getElementById("apply_btn").style.display = "";
+}
+
+function cancel_wifi_schedule(client){
+	init_array(array);
+	document.getElementById("schedule_block").style.display = "none";
+	document.getElementById("titl_desc").style.display = "";
+	document.getElementById("WAdvTable").style.display = "";
+	document.getElementById("apply_btn").style.display = "";
+}
+
+function count_time(){		// To count system time
+	systime_millsec += 1000;
+	setTimeout("count_time()", 1000);
+}
+
+function show_wifi_schedule(){
+	document.getElementById("titl_desc").style.display = "none";
+	document.getElementById("WAdvTable").style.display = "none";
+	document.getElementById("apply_btn").style.display = "none";
+	document.getElementById("schedule_block").style.display = "";
+
+	var array_date = ["Select All", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+	var array_time_id = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"];
+	if(clock_type == "1")
+		var array_time = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"];
+	else
+		var array_time = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm", "12am"];
+	
+	var code = "";
+	
+	wifi_schedule_row = wifi_schedule_value.split('<');
+
+	code +='<div style="margin-bottom:10px;color: #003399;font-family: Verdana;" align="left">';
+	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable">';
+	code +='<thead><tr><td colspan="6" id="LWFilterList"><%tcWebApi_get("String_Entry","ParentalCtrl_Act_schedule","s")%></td></tr></thead>';
+	code +='<tr><th style="width:40%;height:20px;" align="right"><%tcWebApi_get("String_Entry","General_x_SystemTime_in","s")%></th>';	
+	code +='<td align="left" style="color:#FFF"><input type="text" id="system_time" name="system_time" class="devicepin" value="" readonly="1" style="font-size:12px;width:200px;"></td></tr>';		
+	code +='</table><table id="main_select_table">';
+	code +='<table  id="selectable" class="table_form" >';
+	code += "<tr>";
+	for(i=0;i<8;i++){
+		if(i == 0)
+			code +="<th class='parental_th' onclick='select_all();'>"+array_date[i]+"</th>";	
+		else
+			code +="<th id=col_"+(i-1)+" class='parental_th' onclick='select_all_day(this.id);'>"+array_date[i]+"</th>";			
+	}
+	
+	code += "</tr>";
+	for(i=0;i<24;i++){
+		code += "<tr>";
+		code +="<th id="+i+" class='parental_th' onclick='select_all_time(this.id)'>"+ array_time[i] + " ~ " + array_time[i+1] +"</th>";
+		for(j=0;j<7;j++){
+			code += "<td id="+ j + array_time_id[i] +" class='disabled' ></td>";		
+		}
+		
+		code += "</tr>";			
+	}
+	
+	code +='</table></table></div>';
+	document.getElementById("mainTable").innerHTML = code;
+
+	register_event();
+	redraw_selected_time(wifi_schedule_row);
+	
+	var code_temp = "";
+	code_temp = '<table style="width:350px;margin-left:20px;"><tr>';
+	code_temp += "<td><div style=\"width:95px;font-family:Arial,sans-serif,Helvetica;font-size:18px;\"><%tcWebApi_get("String_Entry","Clock_Format","s")%></div></td>";
+	code_temp += '<td><div>';
+	code_temp += '<select id="clock_type_select" class="input_option" onchange="change_clock_type(this.value);">';
+	code_temp += '<option value="0" >12-hour</option>';
+	code_temp += '<option value="1" >24-hour</option>';
+	code_temp += '</select>';
+	code_temp += '</div></td>';
+	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;">Allow</div></td>';
+	code_temp += '<td><div style="width:90px;height:20px;background:#9CB2BA;"></div></td>';
+	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;">Deny</div></td>';
+	code_temp += '<td><div style="width:90px;height:20px;border:solid 1px #000"></div></td>';
+	code_temp += '</tr></table>';
+	document.getElementById("hintBlock").innerHTML = code_temp;
+	document.getElementById("hintBlock").style.marginTop = "10px";
+	document.getElementById("hintBlock").style.display = "";
+	document.getElementById("ctrlBtn").innerHTML = '<input class="button_gen" type="button" onClick="cancel_wifi_schedule();" value="<%tcWebApi_get("String_Entry","CTL_Cancel","s")%>">';
+	document.getElementById("ctrlBtn").innerHTML += '<input class="button_gen" type="button" onClick="save_wifi_schedule();" value="<%tcWebApi_get("String_Entry","CTL_ok","s")%>">';  
+	document.getElementById("clock_type_select")[clock_type].selected = true;		// set clock type by cookie
+	
+	document.getElementById("mainTable").style.display = "";
+	$j("#mainTable").fadeIn();
+	showclock();
+}
+
+function showclock(){
+	JS_timeObj.setTime(systime_millsec);
+	JS_timeObj2 = JS_timeObj.toString();	
+	JS_timeObj2 = JS_timeObj2.substring(0,3) + ", " +
+	              JS_timeObj2.substring(4,10) + "  " +
+				  checkTime(JS_timeObj.getHours()) + ":" +
+				  checkTime(JS_timeObj.getMinutes()) + ":" +
+				  checkTime(JS_timeObj.getSeconds()) + "  " +
+				  JS_timeObj.getFullYear();
+	document.getElementById("system_time").value = JS_timeObj2;
+	setTimeout("showclock()", 1000);
+		
+	corrected_timezone(DAYLIGHT_orig, TZ_orig);
 }
 </script>
 </head>
@@ -580,6 +985,8 @@ function set_power(power_value){
 <input type="hidden" name="wl0_radio_on" value="<% tcWebApi_staticGet("WLan_Entry","wl0_radio_on","s") %>">
 <input type="hidden" name="wl1_radio_on" value="<% tcWebApi_staticGet("WLan_Entry","wl1_radio_on","s") %>">
 <input type="hidden" name="w_Setting" value="1">
+<input type="hidden" name="wl_sched0" value="<% tcWebApi_staticGet("WLan_Entry","wl_sched0","s") %>">
+<input type="hidden" name="wl_sched1" value="<% tcWebApi_staticGet("WLan_Entry","wl_sched1","s") %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 <tr>
 <td width="17">&nbsp;</td>
@@ -599,11 +1006,19 @@ function set_power(power_value){
 <div>&nbsp;</div>
 		  			<div class="formfonttitle"><%tcWebApi_get("String_Entry","menu5_1","s")%> - <%tcWebApi_get("String_Entry","menu5_1_6","s")%></div>
 						<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
-		 				<div class="formfontdesc"><%tcWebApi_get("String_Entry","WC11b_display5_sd","s")%></div>
+		 				<div id="titl_desc" class="formfontdesc"><%tcWebApi_get("String_Entry","WC11b_display5_sd","s")%></div>
 		 				<div id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=uiViewdateToolsTZ'" style="display:none;margin-left:4px;color:#FFCC00;text-decoration:underline;cursor:pointer;"></div>
+		 				
+			<div id="schedule_block" style="display:none">
+				<div id="hintBlock" style="width: 650px; margin-top: 10px;">
+					<table style="width:350px;"><tbody><tr><td><div style="width:95px;font-family:Arial,sans-serif,Helvetica;font-size:18px;">Clock Format</div></td><td><div><select id="clock_type_select" class="input_option" onchange="change_clock_type(this.value);"><option value="0">12-hour</option><option value="1">24-hour</option></select></div></td><td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;">Allow</div></td><td><div style="width:90px;height:20px;background:#9CB2BA;"></div></td><td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;">Deny</div></td><td><div style="width:90px;height:20px;border:solid 1px #000"></div></td></tr></tbody></table>
+				</div>
+				<div id="mainTable" style="padding:0 20px 20px 20px;"></div>
+				<div id="ctrlBtn" style="text-align:center;"></div>
+			</div>
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" id="WAdvTable">
 	<tr id="wl_unit_field">
-						<th><%tcWebApi_get("String_Entry","Interface","s")%></th>
+		<th><%tcWebApi_get("String_Entry","Interface","s")%></th>
 		<td>
 			<select name="wl_unit" class="input_option" onChange="_change_wl_unit(this.value);">
 				<option class="content_input_fd" value="0" <% if tcWebApi_get("WLan_Common","wl_unit","h") = "0" then asp_Write("selected") end if %>>2.4GHz</option>
@@ -614,41 +1029,21 @@ function set_power(power_value){
 	<tr id="wl_rf_enable">
 	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 1);"><%tcWebApi_get("String_Entry","WC11b_x_RadioEnable_in","s")%></a></th>
 	<td>
-	<input type="radio" value="1" name="radio_on" class="input" onClick="control_Schedule();" <% if tcWebApi_get("WLan_Entry","radio_on","h") = "1" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
-	<input type="radio" value="0" name="radio_on" class="input" onClick="control_Schedule();" <% if tcWebApi_get("WLan_Entry","radio_on","h") = "0" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+	<input type="radio" value="1" name="radio_on" class="input" onClick="control_TimeField();" <% if tcWebApi_get("WLan_Entry","radio_on","h") = "1" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
+	<input type="radio" value="0" name="radio_on" class="input" onClick="control_TimeField();" <% if tcWebApi_get("WLan_Entry","radio_on","h") = "0" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
 	</td>
 	</tr>
-	<tr id="wl_rf_schedule_enable">
+	<tr id="wl_sched_enable">
 	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 22);"><%tcWebApi_get("String_Entry","WC11b_x_RadioEnable_scheduler","s")%></a></th>
 	<td>
-	<input type="radio" value="1" name="wl_schedule_radio" class="input" onClick="control_TimeField();return change_common_radio(this, 'WLANConfig11b', 'wl_schedule_radio', '1')" <% if tcWebApi_get("WLan_Entry","wl_schedule_radio","h") = "1" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
-	<input type="radio" value="0" name="wl_schedule_radio" class="input" onClick="control_TimeField();return change_common_radio(this, 'WLANConfig11b', 'wl_schedule_radio', '0')" <% if tcWebApi_get("WLan_Entry","wl_schedule_radio","h") = "0" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+	<input type="radio" value="1" name="wl_schedule_radio" class="input" onClick="control_TimeField();" <% if tcWebApi_get("WLan_Entry","wl_schedule_radio","h") = "1" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
+	<input type="radio" value="0" name="wl_schedule_radio" class="input" onClick="control_TimeField();" <% if tcWebApi_get("WLan_Entry","wl_schedule_radio","h") = "0" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+	<span id="time_setting" style="padding-left:20px;cursor:pointer;text-decoration:underline" onclick="show_wifi_schedule();">Time Setting</span>
 	</td>
 	</tr>
-	<tr id="enable_day_week_tr">
-		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 2);"><%tcWebApi_get("String_Entry","WC11b_x_RadioEnableDate_in","s")%></a></th>
-		<td>
-			<input type="checkbox" class="input" name="wl_radio_date_x_Sun" onChange="return changeDate();">Sun
-			<input type="checkbox" class="input" name="wl_radio_date_x_Mon" onChange="return changeDate();">Mon
-			<input type="checkbox" class="input" name="wl_radio_date_x_Tue" onChange="return changeDate();">Tue
-			<input type="checkbox" class="input" name="wl_radio_date_x_Wed" onChange="return changeDate();">Wed
-			<input type="checkbox" class="input" name="wl_radio_date_x_Thu" onChange="return changeDate();">Thu
-			<input type="checkbox" class="input" name="wl_radio_date_x_Fri" onChange="return changeDate();">Fri
-			<input type="checkbox" class="input" name="wl_radio_date_x_Sat" onChange="return changeDate();">Sat
-			<span id="blank_warn" style="display:none;">You cannot leave this field blank!</span>
-		</td>
-	</tr>
-	<tr id="enable_time_week_tr">
-		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 3);"><%tcWebApi_get("String_Entry","WC11b_x_RadioEnableTime_in","s")%></a></th>
-		<td>
-			<input type="text" maxlength="2" class="input_3_table" name="wl_radio_time_x_starthour" onKeyPress="return is_number(this,event)" onblur="validate_timerange(this, 0);">:
-			<input type="text" maxlength="2" class="input_3_table" name="wl_radio_time_x_startmin" onKeyPress="return is_number(this,event)" onblur="validate_timerange(this, 1);">-
-			<input type="text" maxlength="2" class="input_3_table" name="wl_radio_time_x_endhour" onKeyPress="return is_number(this,event)" onblur="validate_timerange(this, 2);">:
-			<input type="text" maxlength="2" class="input_3_table" name="wl_radio_time_x_endmin" onKeyPress="return is_number(this,event)" onblur="validate_timerange(this, 3);">
-		</td>
-	</tr>
+		
 	<tr>
-			  			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 5);"><%tcWebApi_get("String_Entry","WC11b_x_IsolateAP_in","s")%></a></th>
+		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 5);"><%tcWebApi_get("String_Entry","WC11b_x_IsolateAP_in","s")%></a></th>
 		<td>
 			<input type="radio" value="1" name="wl_ap_isolate" class="input" onClick="return change_common_radio(this, 'WLANConfig11b', 'wl_ap_isolate', '1')" <% if tcWebApi_get("WLan_Common","wl_ap_isolate","h") = "1" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
 			<input type="radio" value="0" name="wl_ap_isolate" class="input" onClick="return change_common_radio(this, 'WLANConfig11b', 'wl_ap_isolate', '0')" <% if tcWebApi_get("WLan_Common","wl_ap_isolate","h") = "0" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
@@ -809,19 +1204,9 @@ function set_power(power_value){
 	</select>
 	</td>
 	</tr>
-<!--
-<tr id="enable_wl_multicast_forward" style="display:none;">
-<th><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_button1name","s")%> Wireless Multicast Forwarding</th>
-<td>
-<select name="wl_wmf_bss_enable" class="input_option">
-<option value="0"  ><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_buttonname","s")%></option>
-<option value="1"  ><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_button1name","s")%></option>
-</select>
-</td>
-</tr>
--->
+
 	<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3,17);"><%tcWebApi_get("String_Entry","WC11b_x_APSD_in","s")%></a></th>
+	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3,17);"><%tcWebApi_get("String_Entry","WC11b_x_APSD_in","s")%></a></th>
 	<td>
 	<select name="wl_wme_apsd" class="input_option" onchange="return change_common(this, 'WLANConfig11b', 'wl_wme_apsd')">
 	<option value="0" <% if tcWebApi_get("WLan_Common","APSDCapable","h") = "0" then asp_Write("selected") end if %> ><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_buttonname","s")%></option>
@@ -856,8 +1241,12 @@ function set_power(power_value){
 							</div>
 						</td>
 					</tr>
+					<tr id="region_tr" style="display:none">
+						<th><a class="hintstyle" href="javascript:void(0);" onClick=""><%tcWebApi_get("String_Entry","WC11b_x_Region","s")%></a></th>
+						<td><select name="location_code" class="input_option"></select></td>
+					</tr>
 </table>
-<div class="apply_gen">
+<div class="apply_gen" id="apply_btn">
 <input class="button_gen" onclick="applyRule();" type="button" value="<%tcWebApi_get("String_Entry","CTL_apply","s")%>"/>
 </div>
 </td>

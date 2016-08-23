@@ -22,6 +22,13 @@
 	background:url(/images/New_ui/title_bg.png) 0 0 no-repeat;
 	margin:0px auto;
 }
+.qismenu{
+	width:130px;
+	font-size: 12px;
+	font-weight: bold;
+	text-shadow: 1px 1px 0px black;
+	filter: progid:DXImageTransform.Microsoft.DropShadow(OffX=1, OffY=1, Color=#000000);
+}
 </style>
 <script type="text/JavaScript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -43,23 +50,23 @@ var w_Setting_tmp = "<%tcWebApi_get("SysInfo_Entry","w_Setting","s")%>";
 var wan_type = "<%tcWebApi_get("AutoPVC_Common","Detect_XDSL","s")%>";
 
 function set_step(focus_id){
-	/*if(focus_id == "t0")
-		$("t0").className = "lefttabmidfocus";
-	else
-		$("t0").className = "lefttabmid";*/
-	if(focus_id == "t1" || focus_id == "t0")
-		$("t1").className = "lefttabmidfocus";
-	else
-		$("t1").className = "lefttabmid";
-	if(focus_id == "t2")
-		$("t2").className = "lefttabmidfocus";
-	else
-		$("t2").className = "lefttabmid";
-	if(focus_id == "t3")
-		$("t3").className = "lefttabmidfocus";
-	else
-		$("t3").className = "lefttabmid";
-}
+	document.getElementById("t1").className = "lefttabmid";
+	document.getElementById("t2").className = "lefttabmid";
+	document.getElementById("t3").className = "lefttabmid";
+
+	switch(focus_id){
+		case "t2":
+			document.getElementById("t2").className = "lefttabmidfocus";
+			break;
+		case "t3":
+			document.getElementById("t3").className = "lefttabmidfocus";
+			break;
+		default:	
+			document.getElementById("t1").className = "lefttabmidfocus";
+			break;
+	}
+} 
+
 function QIS_load_body(){
 	winW_H();
 	if(navigator.appName.indexOf("Microsoft") >= 0){
@@ -95,7 +102,7 @@ function QIS_load_body(){
 				submit();
 			}
 			else if (detect_status == "down") {
-				if(model_name == "DSL-N12U-C1"){
+				if((model_name == "DSL-N12U-C1") || (model_name == "DSL-N12U-D1")){
 					action = "qis/QIS_manual_setting.asp";
 				}
 				else{
@@ -123,7 +130,7 @@ function QIS_load_body(){
 						action = "qis/QIS_manual_setting.asp";
 				}
 				else{
-					if(model_name == "DSL-N12U-C1"){
+					if((model_name == "DSL-N12U-C1") || (model_name == "DSL-N12U-D1")){
 						action = "qis/QIS_manual_setting.asp";
 					}
 					else{
@@ -133,7 +140,7 @@ function QIS_load_body(){
 				submit();
 			}
 			else {
-				if(model_name == "DSL-N12U-C1"){
+				if((model_name == "DSL-N12U-C1") || (model_name == "DSL-N12U-D1")){
 					action = "qis/QIS_manual_setting.asp";
 				}
 				else{
@@ -156,7 +163,7 @@ function gotoIndex(){
 		}
 	}
 	else
-		location.href = '/cgi-bin/index2.asp';
+		location.href = '/index2.asp';
 }
 </script>
 </head>
@@ -226,12 +233,12 @@ function gotoIndex(){
 </table>
 <table width="998px" border="0" align="center" cellpadding="0" cellspacing="0" background="/images/New_ui/middown_bg.png">
 	<tr>
-		<td style="width:218px;*width:263px;" valign="top">
-			<div class="m_qis_r" style="margin-left: 15px;margin-top: -160px;cursor:pointer;" onclick="gotoIndex();"><table><tbody><tr><td><div id="index_img1"></div></td><td><div><%tcWebApi_get("String_Entry","CTL_Setting","s")%></div></td></tr></tbody></table></div>
-			<div class="lefttabhead" style="margin-left:15px;" id="option0"><table width="192px" height="37px"><tbody><tr><td><%tcWebApi_get("String_Entry","QIS","s")%></td></tr></tbody></table></div>
-			<div class="lefttabmid" id="t1" style="margin-left:15px;"><table height="52px"><tbody><tr><td><img style="margin-left:3px;" border="0" src="/images/qis/qisStep1.png"></td><td><div style="width:120px;"><%tcWebApi_get("String_Entry","QIS_step2","s")%></div></td></tr></tbody></table></div>
-			<div class="lefttabmid" id="t2" style="margin-left:15px;"><table height="52px"><tbody><tr><td><img style="margin-left:3px;" border="0" src="/images/qis/qisStep2.png"></td><td><div style="width:120px;"><%tcWebApi_get("String_Entry","QIS_step3","s")%></div></td></tr></tbody></table></div>
-			<div class="lefttabmid" id="t3" style="margin-left:15px;"><table height="52px"><tbody><tr><td><img style="margin-left:3px;" border="0" src="/images/qis/qisStep3.png"></td><td><div style="width:120px;"><%tcWebApi_get("String_Entry","QIS_step4","s")%></div></td></tr></tbody></table></div>
+		<td style="width:218px;*width:263px;" valign="top">			
+			<div class="m_qis_r" id="btn_gotoindex" style="margin-left: 15px;margin-top: -160px;cursor:pointer;" onclick="gotoIndex();"><table><tbody><tr><td><div class="_index"></div></td><td><div><%tcWebApi_get("String_Entry","CTL_Setting","s")%></div></td></tr></tbody></table></div>
+			<div class="lefttabhead" style="margin-left:15px;" id="option0"><table width="192px" height="37px"><tbody><tr><td><%tcWebApi_get("String_Entry","QIS_title","s")%></td></tr></tbody></table></div>			
+			<div class="lefttabmid" id="t1" style="margin-left:15px;"><table height="52px"><tbody><tr><td><img style="margin-left:3px;" border="0" src="/images/qis/qisStep1.png"></td><td><div class="qismenu"><%tcWebApi_get("String_Entry","QIS_step2","s")%></div></td></tr></tbody></table></div>
+			<div class="lefttabmid" id="t2" style="margin-left:15px;"><table height="52px"><tbody><tr><td><img style="margin-left:3px;" border="0" src="/images/qis/qisStep2.png"></td><td><div class="qismenu"><%tcWebApi_get("String_Entry","QIS_step3","s")%></div></td></tr></tbody></table></div>
+			<div class="lefttabmid" id="t3" style="margin-left:15px;"><table height="52px"><tbody><tr><td><img style="margin-left:3px;" border="0" src="/images/qis/qisStep3.png"></td><td><div class="qismenu"><%tcWebApi_get("String_Entry","QIS_step4","s")%></div></td></tr></tbody></table></div>
 		</td>
 		<td>
 			<div class="_contentM_qis"><iframe name="contentM" id="contentM" class="contentM_qis" scrolling="auto" width="99%" height="540" frameborder="0"></iframe></div>

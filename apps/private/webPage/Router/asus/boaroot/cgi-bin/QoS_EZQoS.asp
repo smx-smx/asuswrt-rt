@@ -1,5 +1,6 @@
 ﻿<% If Request_Form("apply_flag") = "1" then
 	tcWebApi_set("QoS_Entry0","qos_enable","qos_enable")
+	tcWebApi_set("QoS_Entry0","qos_type", "qos_type")
 	tcWebApi_set("QoS_Entry0","qos_obw", "qos_obw")
 	tcWebApi_set("QoS_Entry0","qos_ibw", "qos_ibw")
 	tcWebApi_CommitWithoutSave("Firewall")
@@ -13,6 +14,7 @@ End If
 
 <!--QoS_EZQoS.asp-->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
@@ -39,7 +41,7 @@ var $j = jQuery.noConflict();
 	margin-top:-17px;
 	position:relative;
 	background-color:#4d595d;
-	height: 650px;
+	height: 820px;
 	-webkit-border-bottom-right-radius: 3px;
 	-webkit-border-bottom-left-radius: 3px;
 	-moz-border-radius-bottomright: 3px;
@@ -52,10 +54,17 @@ var $j = jQuery.noConflict();
 wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'pppoe';
+
+var $j = jQuery.noConflict();
+
 var qos_rulelist_array = "<% tcWebApi_get("QoS_Entry0","qos_rulelist","s") %>";
+//WebCurSet_dev_pvc : 0:ATM / 8:PTM / 10:Ethernet / 11:USB / 12:LAN
+var WebCurSet_dev_pvc = "<% tcWebApi_staticGet("WebCurSet_Entry","dev_pvc","s") %>";
 
 var overlib_str0 = new Array();	//Viz add 2011.06 for record longer qos rule desc
 var overlib_str = new Array();	//Viz add 2011.06 for record longer portrange value
+var dsl_DataRateDown = parseInt("<% tcWebApi_get("Info_Adsl","DataRateDown","s") %>".replace("kbps",""));
+var dsl_DataRateUp = parseInt("<% tcWebApi_get("Info_Adsl","DataRateUp","s") %>".replace("kbps",""));
 
 function initial(){
 	show_menu();
@@ -64,24 +73,86 @@ function initial(){
 		$("guest_image").parentNode.style.display = "none";
 
 	if(document.form.qos_enable.value==1){
-		document.form.obw.parentNode.parentNode.style.display = "";
-		document.form.ibw.parentNode.parentNode.style.display = "";		
+		if(document.form.qos_type.value != 2){
+			document.form.obw.parentNode.parentNode.style.display = "";
+			document.form.ibw.parentNode.parentNode.style.display = "";
+		}
+		else{
+			document.form.obw.parentNode.parentNode.style.display = "none";
+			document.form.ibw.parentNode.parentNode.style.display = "none";
+		}	
+		
+		document.getElementById('qos_type_tr').style.display = "";
+		/*
+		if(bwdpi_support != -1){
+			document.getElementById('int_type').style.display = "";
+			document.getElementById('int_type_link').style.display = "";
+			change_qos_type(document.form.qos_type_orig.value);
+		}
+		else
+			show_settings("NonAdaptive");*/
+			
 	}else{
 		document.form.obw.parentNode.parentNode.style.display = "none";
-		document.form.ibw.parentNode.parentNode.style.display = "none";		
+		document.form.ibw.parentNode.parentNode.style.display = "none";
+		document.getElementById('qos_type_tr').style.display = "none";
+		/*
+		if(bwdpi_support){			
+			show_settings("NonAdaptive");
+		}*/
 	}
 	
-	init_changeScale();	
-	showqos_rulelist();
+	/*
+	if(bwdpi_support){
+		document.getElementById('content_title').innerHTML = "<% tcWebApi_Get("String_Entry", "menu5_3_2","s")%> - <% tcWebApi_Get("String_Entry", "Adaptive_QoS_Conf","s")%>";
+		if(document.form.qos_enable.value == 1){
+			if(document.form.qos_type.value == 0){		//Traditional Type
+				document.getElementById("settingSelection").length = 1;
+				add_option(document.getElementById("settingSelection"), '<%tcWebApi_Get("String_Entry", "qos_user_rules","s")%>', 3, 0);
+				add_option(document.getElementById("settingSelection"), '<%tcWebApi_Get("String_Entry", "qos_user_prio","s")%>', 4, 0);
+			}
+			else if(document.form.qos_type.value == 2){		//Bandwidth Limiter
+				add_option(document.getElementById("settingSelection"), "Bandwidth Limiter", 5, 0);
+			}
+			else{		//Adaptive Type or else
+				document.getElementById('settingSelection').style.display = "none";	
+			}
+		}
+		else{		// hide select option if qos disable
+			document.getElementById('settingSelection').style.display = "none";	
+		}
+	}
+	else{	*/
+		document.getElementById('content_title').innerHTML = "<% tcWebApi_Get("String_Entry", "Menu_TrafficManager", "s") %> - QoS";		
+		if(document.form.qos_type.value == 2){		//Bandwidth Limiter
+			add_option(document.getElementById("settingSelection"), "Bandwidth Limiter", 5, 0);
+		}
+		else{		//Traditional Type						
+			add_option(document.getElementById("settingSelection"), '<% tcWebApi_Get("String_Entry", "qos_user_prio", "s") %>', 4, 0);
+			add_option(document.getElementById("settingSelection"), '<% tcWebApi_Get("String_Entry", "qos_user_rules", "s") %>', 3, 0);
+		}		
+	//}
+	
+	init_changeScale();
 	addOnlineHelp($("faq"), ["ASUSWRT", "QoS"]);
 }
 
 function init_changeScale(){
-	var upload = document.form.qos_obw.value;
-	var download = document.form.qos_ibw.value;
-	
-	document.form.obw.value = upload/1024;
-	document.form.ibw.value = download/1024;
+	var upload = parseInt("<% tcWebApi_get("QoS_Entry0","qos_obw","s") %>");
+	var download = parseInt("<% tcWebApi_get("QoS_Entry0","qos_ibw","s") %>");	
+	if((WebCurSet_dev_pvc == "0" || WebCurSet_dev_pvc == "8") && ((!upload || upload == "0") && (!download || download == "0"))){
+		document.form.obw.value = dsl_DataRateUp/1024;
+		document.form.ibw.value = dsl_DataRateDown/1024;
+	}	
+	else{
+		if(!upload)	upload = 0;
+		
+		document.form.obw.value = parseInt(upload/1024);
+		
+		if(!download) download = 0;
+		
+		document.form.ibw.value = parseInt(download/1024);
+	}	
 }
 
 function changeScale(_obj_String){
@@ -92,132 +163,121 @@ function changeScale(_obj_String){
 }
 
 function switchPage(page){
-	if(page == "2")
-		location.href = "Advanced_QOSUserPrio_Content.asp";
-	else if(page == "3")
-		location.href = "Advanced_QOSUserRules_Content.asp";
+	if(page == "1")	
+		location.href = "/cgi-bin/QoS_EZQoS.asp";
+	else if(page == "2")	
+		location.href = "/cgi-bin/AdaptiveQoS_Adaptive.asp";	//remove 2015.07
+	else if(page == "3")	
+		location.href = "/cgi-bin/Advanced_QOSUserRules_Content.asp";
+	else if(page == "4")	
+		location.href = "/cgi-bin/Advanced_QOSUserPrio_Content.asp";
+	else if(page == "5")	
+		location.href = "/cgi-bin/Bandwidth_Limiter.asp";
 	else
 		return false;
 }
 
-function submitQoS(){
-	if(document.form.qos_enable.value == 0 && document.form.qos_enable_orig.value == 0){
+function submitQoS(){	
+	if(document.form.qos_enable.value == 0 && document.form.qos_enable_orig.value == 0){		
 		return false;
 	}
 
 	if(document.form.qos_enable.value == 1){
-		// Jieming To Do: please add a hint here when error occurred, and qos_ibw & qos_obw should allow number only.
-		if(document.form.obw.value.length == 0){
+		if(document.form.qos_type.value != 2){
+			if(document.form.obw.value.length == 0){	//To check field is empty
 				alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
 				document.form.obw.focus();
 				document.form.obw.select();
 				return;
-		}
-		else if(document.form.obw.value == 0){
+			}
+			else if(document.form.obw.value == 0){		// To check field is 0
 				alert("Upload Bandwidth can not be 0");
 				document.form.obw.focus();
 				document.form.obw.select();
+				return;			
+			}
+			else if(document.form.obw.value.split(".").length > 2){		//To check more than two point symbol
+				alert("The format of field of upload bandwidth is invalid");
+				document.form.obw.focus();
+				document.form.obw.select();
 				return;	
-			
-		}
-		else if(document.form.obw.value.split(".").length > 2){		//To check more than two point symbol
-			alert("The format of field of upload bandwidth is invalid");
-			document.form.obw.focus();
-			document.form.obw.select();
-			return;	
-		}
+			}
 		
-		if(document.form.ibw.value.length == 0){
+			if(document.form.ibw.value.length == 0){
 				alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
 				document.form.ibw.focus();
 				document.form.ibw.select();
 				return;
+			}
+			else if(document.form.ibw.value == 0){
+				alert("Download Bandwidth can not be 0");
+				document.form.ibw.focus();
+				document.form.ibw.select();
+				return;	
+			}
+			else if(document.form.ibw.value.split(".").length > 2){
+				alert("The format of field of download bandwidth is invalid");
+				document.form.ibw.focus();
+				document.form.ibw.select();
+				return;	
+			}		
+  		
+			document.form.qos_obw.disabled = false;
+			document.form.qos_ibw.disabled = false;
+			document.form.qos_obw.value = document.form.obw.value*1024;
+			document.form.qos_ibw.value = document.form.ibw.value*1024;
+			document.form.apply_flag.value = "1";
+
+			document.form.action = "/cgi-bin/QoS_EZQoS.asp";			
+			showLoading(5);
+			setTimeout('location = "'+ location.pathname +'";', 5000);
+			document.form.submit();	
 		}
-		else if(document.form.ibw.value < 1){
-			alert("Download Bandwidth can not be less than 1");
-			document.form.ibw.focus();
-			document.form.ibw.select();
-			return;	
-		}
-		else if(document.form.ibw.value.split(".").length > 2){
-			alert("The format of field of download bandwidth is invalid");
-			document.form.ibw.focus();
-			document.form.ibw.select();
-			return;	
-		}
-		// end
-  }	
-
-	document.form.qos_obw.disabled = false;
-	document.form.qos_ibw.disabled = false;
-	document.form.qos_obw.value = document.form.obw.value*1024;
-	document.form.qos_ibw.value = document.form.ibw.value*1024;
-	
-	document.form.apply_flag.value = "1";
-
-	document.form.action = "/cgi-bin/QoS_EZQoS.asp";
-	showLoading(5);
-	setTimeout('location = "'+ location.pathname +'";', 5000);
-	document.form.submit();	
-	
-}
-
-function showqos_rulelist(){
-	var qos_rulelist_row = "";
-	qos_rulelist_row = decodeURIComponent(qos_rulelist_array).split('<');	
-
-	var code = "";
-	code +='<table style="margin-left:3px;" width="95%" border="1" align="center" cellpadding="4" cellspacing="0" class="list_table" id="qos_rulelist_table">';
-	if(qos_rulelist_row.length == 1)	// no exist "<"
-		code +='<tr><td style="color:#FFCC00;height:30px;" colspan="6"><%tcWebApi_get("String_Entry","checkbox_No","s")%> data in table.</td></tr>';
-	else{
-		for(var i = 1; i < qos_rulelist_row.length; i++){
-			overlib_str0[i] ="";
-			overlib_str[i] ="";			
-			code +='<tr id="row'+i+'">';
-			var qos_rulelist_col = qos_rulelist_row[i].split('>');
-			var wid=[22, 21, 17, 14, 16, 12];						
-				for(var j = 0; j < qos_rulelist_col.length; j++){
-						if(j != 0 && j !=2 && j!=5){
-							code +='<td width="'+wid[j]+'%" style="height:30px;">'+ qos_rulelist_col[j] +'</td>';
-						}else if(j==0){
-							if(qos_rulelist_col[0].length >15){
-								overlib_str0[i] += qos_rulelist_col[0];
-								qos_rulelist_col[0]=qos_rulelist_col[0].substring(0, 13)+"...";
-								code +='<td width="'+wid[j]+'%"  title="'+overlib_str0[i]+'" style="height:30px;">'+ qos_rulelist_col[0] +'</td>';
-							}else
-								code +='<td width="'+wid[j]+'%" style="height:30px;">'+ qos_rulelist_col[j] +'</td>';
-						}else if(j==2){
-							if(qos_rulelist_col[2].length >13){
-								overlib_str[i] += qos_rulelist_col[2];
-								qos_rulelist_col[2]=qos_rulelist_col[2].substring(0, 11)+"...";
-								code +='<td width="'+wid[j]+'%"  title="'+overlib_str[i]+'" style="height:30px;">'+ qos_rulelist_col[2] +'</td>';
-							}else
-								code +='<td width="'+wid[j]+'%" style="height:30px;">'+ qos_rulelist_col[j] +'</td>';
-						}else if(j==5){
-								code += '<td width="'+wid[j]+'%" style="height:30px;">';
-
-								if(qos_rulelist_col[5] =="0")
-									code += 'Highest';
-								if(qos_rulelist_col[5] =="1")
-									code += 'High';
-								if(qos_rulelist_col[5] =="2")
-									code += 'Medium';
-								if(qos_rulelist_col[5] =="3")
-									code += 'Low';
-								if(qos_rulelist_col[5] =="4")
-									code += 'Lowest';
-						}
-						code +='</td>';
-				}
-				code +='</tr>';
+		else{
+			location.href = "/cgi-bin/Bandwidth_Limiter.asp";	
 		}
 	}
-	code +='</table>';
-	$("qos_rulelist_Block").innerHTML = code;
-	
-	
-	parse_port="";
+	else{
+		document.form.apply_flag.value = "1";
+		document.form.action = "/cgi-bin/QoS_EZQoS.asp";			
+		showLoading(5);
+		setTimeout('location = "'+ location.pathname +'";', 5000);
+		document.form.submit();	
+	}
+}
+
+function change_qos_type(value){
+	if(value == 0){		//Traditional QoS
+		//document.getElementById('int_type').checked = false;
+		document.getElementById('trad_type').checked = true;
+		document.getElementById('bw_limit_type').checked = false;
+		document.form.obw.parentNode.parentNode.style.display = "";
+		document.form.ibw.parentNode.parentNode.style.display = "";
+		if(document.form.qos_type_orig.value == 0 && document.form.qos_enable_orig.value != 0){
+			document.form.action_script.value = "restart_qos;restart_firewall";
+		}	
+		else{
+			document.form.action_script.value = "reboot";
+			document.form.next_page.value = "Advanced_QOSUserRules_Content.asp";
+		}
+		//show_settings("NonAdaptive");
+	}	
+	else{		//2: Bandwidth Limiter
+		//document.getElementById('int_type').checked = false;
+		document.getElementById('trad_type').checked = false;
+		document.getElementById('bw_limit_type').checked = true;
+		document.form.obw.parentNode.parentNode.style.display = "none";
+		document.form.ibw.parentNode.parentNode.style.display = "none";
+		if(document.form.qos_type_orig.value == 2 && document.form.qos_enable_orig.value != 0)
+			document.form.action_script.value = "restart_qos;restart_firewall";
+		else{
+			document.form.action_script.value = "reboot";
+			document.form.next_page.value = "Bandwidth_Limiter.asp";
+		}
+		//show_settings("NonAdaptive");
+	}
+
+	document.form.qos_type.value = value;
 }
 </script>
 </head>
@@ -238,6 +298,8 @@ function showqos_rulelist(){
 <input type="hidden" name="flag" value="">
 <input type="hidden" name="qos_enable" value="<%if tcWebApi_get("QoS_Entry0","qos_enable","h") = "1" then asp_write("1") else asp_write("0") end if%>">
 <input type="hidden" name="qos_enable_orig" value="<%if tcWebApi_get("QoS_Entry0","qos_enable","h") = "1" then asp_write("1") else asp_write("0") end if%>">
+<input type="hidden" name="qos_type" value="<% tcWebApi_get("QoS_Entry0","qos_type","s") %>">
+<input type="hidden" name="qos_type_orig" value="<% tcWebApi_get("QoS_Entry0","qos_type","s") %>">
 <input type="hidden" name="qos_obw" value="<% tcWebApi_get("QoS_Entry0","qos_obw","s") %>" disabled>
 <input type="hidden" name="qos_ibw" value="<% tcWebApi_get("QoS_Entry0","qos_ibw","s") %>" disabled>
 <table class="content" align="center" cellpadding="0" cellspacing="0">
@@ -255,7 +317,7 @@ function showqos_rulelist(){
 			<br>
 		<!--===================================Beginning of Main Content===========================================-->
 		<div class="qos_table" id="qos_table">
-		<table >
+		<table>
   		<tr>
     			<td bgcolor="#4D595D" valign="top">
     				<table>
@@ -263,19 +325,16 @@ function showqos_rulelist(){
 						<td>
 							<table width="100%">
 								<tr>
-									<td  class="formfonttitle" align="left">								
-										<div ><% tcWebApi_Get("String_Entry", "Menu_TrafficManager", "s") %> - QoS</div>
+									<td class="formfonttitle" align="left">								
+										<div id="content_title"></div>
 									</td>
 									<td align="right" >
 										<div>
-											<select onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option">
-												<!--option><%tcWebApi_get("String_Entry","switchpage","s")%></option-->
-												<option value="1" selected><%tcWebApi_get("String_Entry","qos_automatic_mode","s")%></option>
-												<option value="2"><% tcWebApi_Get("String_Entry", "qos_user_prio", "s") %></option>
-												<option value="3"><% tcWebApi_Get("String_Entry", "qos_user_rules", "s") %></option>
-											</select>	    
+											<select id="settingSelection" onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option">
+												<option value="1" selected><%tcWebApi_get("String_Entry","Adaptive_QoS_Conf","s")%></option>
+											</select>
 										</div>
-									</td>	
+									</td>												
 								</tr>
 							</table>	
 						</td>
@@ -292,7 +351,15 @@ function showqos_rulelist(){
 														<img id="guest_image" src="/images/New_ui/QoS.png">
 													</td>
 													<td style="font-style: italic;font-size: 14px;">
-														<div class="formfontdesc" style="line-height:20px;"><%tcWebApi_get("String_Entry","ezqosDesw","s")%></div>
+														<div id="function_desc" class="formfontdesc" style="line-height:20px;">
+															<%tcWebApi_get("String_Entry","EzQoS_desc","s")%>
+														<ul>
+															<!--li><%tcWebApi_get("String_Entry","EzQoS_desc_Adaptive","s")%></li-->
+															<li><%tcWebApi_get("String_Entry","EzQoS_desc_Traditional","s")%></li>
+															<li><span style="font-size:14px;font-weight:bolder">Bandwidth Limiter</span> helps you to control download and upload max speed of your cleint devices.</li><!--untranslated string-->
+														</ul>
+														To enable QoS function, click the QoS slide switch and fill in the upload and download.<!--unstranlated string-->
+														</div>
 														<div class="formfontdesc">
 															<a id="faq" href="" target="_blank" style="text-decoration:underline;">QoS FAQ</a>
 														</div>
@@ -308,20 +375,36 @@ function showqos_rulelist(){
 									<table style="margin-left:3px; margin-top:15px;" width="95%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 										<tr>
 										<th><%tcWebApi_get("String_Entry","EzQoS_smart_enable","s")%></th>
-											<td>
+											<td colspan="2">
 												<div class="left" style="width:94px; float:left; cursor:pointer;" id="radio_qos_enable"></div>
 												<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
 												<script type="text/javascript">
 													$j('#radio_qos_enable').iphoneSwitch('<%tcWebApi_get("QoS_Entry0","qos_enable","s")%>', 
 														 function() {
 															document.form.qos_enable.value = "1";
-															document.form.obw.parentNode.parentNode.style.display = "";
-															document.form.ibw.parentNode.parentNode.style.display = "";
+															if(document.form.qos_enable_orig.value != 1){
+																if(document.getElementById('bw_limit_type').checked)		//Bandwidth Limiter
+																	document.form.next_page.value = "Bandwidth_Limiter.asp";
+																else
+																	document.form.next_page.value = "Advanced_QOSUserRules_Content.asp";
+															}
+															if(document.form.qos_type.value != 2){
+																document.form.obw.parentNode.parentNode.style.display = "";
+																document.form.ibw.parentNode.parentNode.style.display = "";
+															}
+															else{
+																document.form.obw.parentNode.parentNode.style.display = "none";
+																document.form.ibw.parentNode.parentNode.style.display = "none";
+															}
+															
+															document.getElementById('qos_type_tr').style.display = "";
+															
 														 },
 														 function() {
 															document.form.qos_enable.value = "0";
 															document.form.obw.parentNode.parentNode.style.display = "none";
 															document.form.ibw.parentNode.parentNode.style.display = "none";
+															document.getElementById('qos_type_tr').style.display = "none";
 														 },
 														 {
 															switch_on_container_path: '/switcherplugin/iphone_switch_container_off.png'
@@ -331,12 +414,22 @@ function showqos_rulelist(){
 												</div>	
 											</td>
 										</tr>										
-										
+										<tr id="qos_type_tr" style="display:none">
+											<th>QoS Type</th>
+											<td colspan="2">
+												<!--input id="int_type" value="1" onClick="change_qos_type(this.value);" style="display:none;" type="radio" ><a id="int_type_link" class="hintstyle" style="display:none;" href="javascript:void(0);" onClick="openHint(20, 6);"><label for="int_type"><%tcWebApi_Get("String_Entry", "Adaptive_QoS","s")%></label></a-->
+												<input id="trad_type" value="0" onClick="change_qos_type(this.value);" type="radio" <%If tcWebApi_get("QoS_Entry0","qos_type","h") = "0" then asp_Write("checked") end if%>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 7);"><label for="trad_type"><% tcWebApi_Get("String_Entry", "EzQoS_type_traditional","s")%></label></a>
+												<input id="bw_limit_type" value="2"  onClick="change_qos_type(this.value);" type="radio" <%If tcWebApi_get("QoS_Entry0","qos_type","h") = "2" then asp_Write("checked") end if%>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 8)"><label for="bw_limit_type">Bandwidth Limiter</label></a>
+											</td>
+										</tr>
 										<tr id="upload_tr">
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 2);"><%tcWebApi_get("String_Entry","upload_bandwidth","s")%></a></th>
 											<td>
 												<input type="text" maxlength="10" id="obw" name="obw" onKeyPress="return isNumberFloat(this,event);" class="input_15_table" value="">
 												<label style="margin-left:5px;">Mb/s</label>
+											</td>
+											<td rowspan="2" style="width:250px;">
+												<div>Get the bandwidth information from ISP or go to <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0">Speedtest</a> to check bandwidth</div>
 											</td>
 										</tr>									
 										<tr id="download_tr">
@@ -345,8 +438,7 @@ function showqos_rulelist(){
 												<input type="text" maxlength="10" id="ibw" name="ibw" onKeyPress="return isNumberFloat(this,event);" class="input_15_table" value="">
 												<label style="margin-left:5px;">Mb/s</label>
 											</td>
-										</tr>
-
+										</tr>										
 									</table>
 								</td>
 				</tr>	
@@ -358,33 +450,12 @@ function showqos_rulelist(){
 								<span><%tcWebApi_get("String_Entry","CTL_onlysave","s")%></span>
 							</div>
           				</td>
-        			</tr>
-        			<tr>
-          				<td>
-											<table style="margin-left:3px; margin-top:15px;" width="95%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">
-											<thead>
-											<tr>
-													<td colspan="6" id="TriggerList" style="border-right:none;height:22px;"><% tcWebApi_Get("String_Entry", "BM_UserList_title", "s") %> (<% tcWebApi_Get("String_Entry", "List_limit", "s") %> 32)</td>
-											</tr>
-											</thead>			
-											<tr>
-													<th width="22%" style="height:30px;"><% tcWebApi_Get("String_Entry", "BM_UserList1", "s") %></th>
-													<th width="21%"><a href="javascript:void(0);" onClick="openHint(18,6);"><div class="table_text"><% tcWebApi_Get("String_Entry", "BM_UserList2", "s") %></div></a></th>
-													<th width="17%"><a href="javascript:void(0);" onClick="openHint(18,4);"><div class="table_text"><% tcWebApi_Get("String_Entry", "BM_UserList3", "s") %></div></a></th>
-													<th width="14%"><div class="table_text"><% tcWebApi_Get("String_Entry", "IPC_VServerProto_in", "s") %></div></th>
-													<th width="16%"><a href="javascript:void(0);" onClick="openHint(18,5);"><div class="table_text"><div class="table_text"><% tcWebApi_Get("String_Entry", "UserQoS_transferred", "s") %></div></a></th>
-													<th width="12%"><% tcWebApi_Get("String_Entry", "BM_UserList4", "s") %></th>
-											</tr>											
-										</table>          					
-          					
-          					<div id="qos_rulelist_Block"></div>
-          				</td>
         			</tr>        			
       			</table>
       		</td>  
       	</tr>
 		</table>
-	</div>
+		</div>
 		<!--===================================End of Main Content===========================================-->
 		</td>
 		

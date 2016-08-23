@@ -164,7 +164,7 @@ var ipmonitor = []; // [[IP, MAC, DeviceName, Type, http, printer, iTune], ...]
 var client_list_array = '';
 
 function initial(){
-	setTimeout('update_wan_status2();', 1000);
+	//setTimeout('update_wan_status2();', 1000);
 	show_menu();
 	var isIE6 = navigator.userAgent.search("MSIE 6") > -1;
 	if(isIE6)
@@ -201,12 +201,23 @@ function initial(){
 	
 	check_usb3();	
 
+	if(sw_mode == "1"){
+		document.getElementById("wanIP_status").innerHTML = '<span style="word-break:break-all;">' + wanlink_ipaddr + '</span>'
+		setTimeout("show_ddns_status();", 1);
+
+		if(wanlink_ipaddr == '0.0.0.0' || wanlink_ipaddr == '')
+			document.getElementById("wanIP_div").style.display = "none";
+	}
+
 	var NM_table_img = getCookie("NM_table_img");
 	if(NM_table_img != "" && NM_table_img != null){
 		customize_NM_table(NM_table_img);
 		$("bgimg").options[NM_table_img[4]].selected = 1;
 	}
 	update_wan_status();
+
+	if(wans_flag == 0)
+		change_wan_pvc(wan_primary_pvcunit);
 }
 
 function update_wan_status2(){
@@ -275,12 +286,6 @@ showtext($("NM_connect_status"), "AP Mode");
 }
 
 function show_middle_status(auth_mode, wep){
-	$("wanIP_status").innerHTML = '<span style="word-break:break-all;"> <%tcWebApi_staticGet("DeviceInfo_PVC","WanIP","s")%> </span>'
-	if("<%tcWebApi_staticGet("DeviceInfo_PVC","WanIP","s")%>" == "0.0.0.0" || "<%tcWebApi_staticGet("DeviceInfo_PVC","WanIP","s")%>" == "")
-			$("wanIP_div").style.display = "none";
-
-	setTimeout("show_ddns_status();", 2000);
-
 	var security_mode;
 	switch (auth_mode){
 		case "OPEN":
@@ -505,8 +510,6 @@ function clickEvent(obj){
 		$("statusframe").src = "/cgi-bin/device-map/internet.asp";
 
 		if(parent.wans_flag){
-			$("statusframe").src = "/cgi-bin/device-map/internet.asp";
-
 			if(obj.id.indexOf("primary") != -1) {
 				stitle = "Primary WAN status";
 				change_wan_unit(0);
@@ -515,9 +518,6 @@ function clickEvent(obj){
 				stitle = "Secondary WAN status";
 				change_wan_unit(1);
 			}
-		}
-		else {
-			$("statusframe").src = "/cgi-bin/device-map/internet.asp";
 		}
 	}
 	else if(obj.id.indexOf("Router") > 0){
@@ -626,10 +626,7 @@ function showstausframe(page){
 			document.form.dual_wan_flag.value = 1;
 		else
 			document.form.dual_wan_flag.value = 0;
-		if(parent.wans_flag)
-			page = "Internet_dual";
-		else
-			page = "Internet";
+		page = "Internet";
 	}
 
 	window.open("/cgi-bin/device-map/"+page.toLowerCase()+".asp","statusframe");
@@ -651,17 +648,23 @@ function change_wan_unit(wan_unit_flag){
 	document.form.submit();
 }
 
+function change_wan_pvc(wan_pvc){
+	document.form.wan_pvc.value = wan_pvc;
+	FormActions("/cgi-bin/apply.asp", "change_wan_pvc", "", "");
+	document.form.submit();
+}
+
 function show_ddns_fail_hint() {
 	var str="";
 	if(!((link_status == "2" && (link_auxstatus == "0" || link_auxstatus == "2")) || (secondary_link_status == "2" && (secondary_link_auxstatus == "0" || secondary_link_auxstatus == "2"))))	//Both link down
 		str = "<%tcWebApi_get("String_Entry","Disconnected","s")%>";
 	else if(ddns_server = 'WWW.ASUS.COM') {
-			if(ddns_return_code == 'register,203')
-          str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_hostname","s") %> <% tcWebApi_get("Ddns_Entry","MYHOST","s") %> <% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_registered","s") %>";
-     	else if(ddns_return_code.indexOf('233')!=-1)
-         	str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_hostname", "s") %> <% tcWebApi_get("Ddns_Entry","MYHOST","s") %> <% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_registered_2", "s") %> <% tcWebApi_get("GUITemp_Entry2","ddns_old_name","s"); %>";
-      else if(ddns_return_code.indexOf('296')!=-1)
-					str = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_6", "s")%>";
+		if(ddns_return_code.indexOf('203')!=-1)
+			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_hostname","s") %> <% tcWebApi_get("Ddns_Entry","MYHOST","s") %> <% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_registered","s") %>";
+		else if(ddns_return_code.indexOf('233')!=-1)
+			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_hostname", "s") %> <% tcWebApi_get("Ddns_Entry","MYHOST","s") %> <% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_registered_2", "s") %> <% tcWebApi_get("GUITemp_Entry2","ddns_old_name","s"); %>";
+		else if(ddns_return_code.indexOf('296')!=-1)
+			str = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_6", "s")%>";
 	  	else if(ddns_return_code.indexOf('297')!=-1)
        		str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_7", "s") %>";
 	  	else if(ddns_return_code.indexOf('298')!=-1)
@@ -888,6 +891,7 @@ function check_usb3(){
 <input type="hidden" name="apps_name" value="">
 <input type="hidden" name="apps_flag" value="">
 <input type="hidden" name="wan_unit" value="0">
+<input type="hidden" name="wan_pvc" value="0">
 <input type="hidden" name="dual_wan_flag" value="">
 </form>
 <table class="content" align="center" cellpadding="0" cellspacing="0">

@@ -40,7 +40,7 @@ endif
 	# CFLAGS += -I$(LINUXDIR)/include -I$(SRCBASE)/include
 	CFLAGS += -I$(KERNEL_DIR)/include
 	CFLAGS += -I../../private/tcapi_lib
-	LDFLAGS = -lpthread
+	LDFLAGS = -lpthread -ldl
 #	LDFLAGS += -L$(TOP)/libusb10/libusb/.libs -lusb-1.0
 #	LDFLAGS += -L$(TOP)/libusb/libusb/.libs -lusb
 #	LDFLAGS += -L$(TOP)/libusb-0.1.12/.libs -lusb

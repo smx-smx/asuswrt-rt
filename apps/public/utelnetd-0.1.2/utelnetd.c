@@ -303,8 +303,13 @@ send_iac(struct tsession *ts, unsigned char command, int option)
 
 
 #if !defined(TCSUPPORT_ACCOUNT_ACL) 
+#ifdef RTCONFIG_PROTECTION_SERVER
+static struct tsession *
+make_new_session(int sockfd, char *remoteAddr)
+#else
 static struct tsession *
 make_new_session(int sockfd)
+#endif
 #endif
 {
 	struct termios termbuf;
@@ -390,8 +395,12 @@ make_new_session(int sockfd)
 		DEBUG_OUT("stdin, stdout, stderr: %d %d %d\n", t, t1, t2);
 
 		/* exec shell, with correct argv and env */
-	
+#ifdef RTCONFIG_PROTECTION_SERVER
+		char * argv[ ]={"/bin/login", "-a", remoteAddr ,(char *)0};
+		execv(loginpath, argv);
+#else
 		execv(loginpath, argv_init);
+#endif
 		
 	    	/* NOT REACHED */
 		perror_msg_and_die("execv");
@@ -631,8 +640,26 @@ int main(int argc, char **argv)
 			} else {
 				/* Create a new session and link it into
 				   our active list.  */
-#if !defined(TCSUPPORT_ACCOUNT_ACL) 
+#if !defined(TCSUPPORT_ACCOUNT_ACL)
+#ifdef RTCONFIG_PROTECTION_SERVER
+				struct in_addr ip_addr_t;
+				char addr[8];
+#ifdef TCSUPPORT_IPV6_TELNET
+				//inet_ntop(PF_INET6,&sa.sin6_addr, addr, sizeof(addr));
+				if(IN6_IS_ADDR_V4MAPPED(&sa.sin6_addr)) {
+					sprintf(addr, "%08x", sa.sin6_addr.s6_addr32[3]);
+					sscanf(addr , "%08x", &ip_addr_t.s_addr);
+					printf("[%s:%d] %s\n", __FUNCTION__, __LINE__, inet_ntoa(ip_addr_t));
+				}
+#else
+				sprintf(addr, "%x", sa.sin_addr);
+				sscanf(addr , "%x", &ip_addr_t.s_addr);
+				printf("[%s:%d] %s\n", __FUNCTION__, __LINE__, inet_ntoa(ip_addr_t));
+#endif
+				struct tsession *new_ts = make_new_session(fd, inet_ntoa(ip_addr_t));
+#else
 				struct tsession *new_ts = make_new_session(fd);
+#endif
 #endif
 				if (new_ts) {
 					new_ts->next = sessions;
@@ -654,6 +681,11 @@ int main(int argc, char **argv)
 						sprintf(str, "%s/%08X_%X.pid", telnet_path, 
 							new_ts->sockinfo.sin6_addr.s6_addr32[3],
 							new_ts->sockinfo.sin6_port);
+						//struct in_addr ip_addr;
+						//char ip[8];
+						//sprintf(ip, "%08x", new_ts->sockinfo.sin6_addr.s6_addr32[3]);
+						//sscanf(ip, "%08x", &ip_addr.s_addr);
+						//printf("[%s:%d] %s\n", __FUNCTION__, __LINE__, inet_ntoa(ip_addr));
 					}
 					else {//Take the whole IPv6 address binary representation as file name.
 						sprintf(str, "%s/%08X%08X%08X%08X_%X.pid", telnet_path, 

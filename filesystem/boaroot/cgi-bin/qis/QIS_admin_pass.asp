@@ -63,9 +63,11 @@ function QKinternettype_load_body(){
 
 function submitForm(){
 
-       if(document.form.uiViewUsername.value.length == 0){
+		showtext(document.getElementById("alert_msg1"), "");
+		showtext(document.getElementById("alert_msg2"), "");
+		if(document.form.uiViewUsername.value.length == 0){
                 showtext($("alert_msg1"), "<% tcWebApi_get("String_Entry","JS_Shareblanktest","s") %>");
-		$("alert_msg1").style.display = "";
+				$("alert_msg1").style.display = "";
                 document.form.uiViewUsername.focus();
                 document.form.uiViewUsername.select();
                 return false;
@@ -73,51 +75,68 @@ function submitForm(){
         else{
                 var alert_str = validate_hostname(document.form.uiViewUsername);
                 if(alert_str != ""){
-                        showtext($("alert_msg1"), alert_str);
-                        $("alert_msg1").style.display = "";
+                        showtext($("alert_msg1"), alert_str);                        
                         document.form.uiViewUsername.focus();
                         document.form.uiViewUsername.select();                        
                         return false;
-                }else{
-                        $("alert_msg1").style.display = "none";
                 }
 
                 document.form.uiViewUsername.value = trim(document.form.uiViewUsername.value);
 
-		if(document.form.uiViewUsername.value == "root"
+				if(document.form.uiViewUsername.value == "root"
                                 || document.form.uiViewUsername.value == "guest"
                                 || document.form.uiViewUsername.value == "anonymous"
                 ){
-                                showtext($("alert_msg1"), "<% tcWebApi_get("String_Entry","USB_App_account_alert","s") %>");
-                                $("alert_msg1").style.display = "";
-                                document.form.uiViewUsername.focus();
-                                document.form.uiViewUsername.select();
-                                return false;
-                }
-                else{
-                                $("alert_msg1").style.display = "none";
+						showtext($("alert_msg1"), "<% tcWebApi_get("String_Entry","USB_App_account_alert","s") %>");
+						document.form.uiViewUsername.focus();
+						document.form.uiViewUsername.select();
+						return false;
                 }
 	}
 
 
 	if(document.form.uiViewPassword.value == "" || document.form.uiViewPasswordConfirm.value == ""){
-		alert("<% tcWebApi_get("String_Entry","File_Pop_content_alert_desc6","s") %>");
+		showtext(document.getElementById("alert_msg2"),"* <% tcWebApi_get("String_Entry","File_Pop_content_alert_desc6","s") %>");
+		document.form.uiViewPassword.focus();
+		document.form.uiViewPassword.select();
+		return false;
+	}
+
+	if(document.form.uiViewPassword.value.length > 0 && document.form.uiViewPassword.value.length < 5){
+		showtext(document.getElementById("alert_msg2"),"* <% tcWebApi_get("String_Entry","JS_short_password","s") %>");
 		document.form.uiViewPassword.focus();
 		document.form.uiViewPassword.select();
 		return false;
 	}
 
 	if(document.form.uiViewPassword.value != document.form.uiViewPasswordConfirm.value){
-		alert("<% tcWebApi_get("String_Entry","File_Pop_content_alert_desc7","s") %>");
+		showtext(document.getElementById("alert_msg2"),"* <% tcWebApi_get("String_Entry","File_Pop_content_alert_desc7","s") %>");
 		document.form.uiViewPassword.focus();
 		document.form.uiViewPassword.select();
 		return false;
 	}
 
+	if(document.form.uiViewPassword.value == '<% tcWebApi_get("Account_Entry0","default_passwd","s") %>'){
+                showtext(document.getElementById("alert_msg2"),"* <% tcWebApi_get("String_Entry","QIS_adminpass_confirm0","s") %>");
+                document.form.uiViewPassword.focus();
+                document.form.uiViewPassword.select();  
+                return false;
+        }
+
 	if(!validate_string_webpassword(document.form.uiViewPassword)){
 		document.form.uiViewPassword.focus();
 		document.form.uiViewPassword.select();
 		return false;
+	}
+
+	//confirm common string combination     #JS_common_passwd#
+	var is_common_string = check_common_string(document.form.uiViewPassword.value, "httpd_password");
+	if(document.form.uiViewPassword.value.length > 0 && is_common_string){
+		if(confirm("<% tcWebApi_get("String_Entry","JS_common_passwd","s") %>")){
+			document.form.uiViewPassword.focus();
+			document.form.uiViewPassword.select();
+			return false;   
+		}
 	}
 
 	document.form.submit();
@@ -163,30 +182,35 @@ function clean_scorebar(obj){
 		<tr>
 		  <th width="200"><%tcWebApi_get("String_Entry","Router_Login_Name","s")%></th>
 		  <td class="QISformtd">
-		  		<input type="text" name="uiViewUsername" maxlength="20"  tabindex="1" value="<% tcWebApi_Get("Account_Entry0","username","s") %>" onKeyPress="return is_string(this, event);"" class="input_15_table" autocapitalization="off" autocomplete="off">
+		  		<input type="text" name="uiViewUsername" maxlength="20" tabindex="1" value="<% tcWebApi_Get("Account_Entry0","username","s") %>" onKeyPress="return is_string(this, event);"" class="input_18_table" autocapitalization="off" autocomplete="off">
 				<br/><span id="alert_msg1" style="color:#FFCC00;"></span>
 		  </td>
 		</tr>
 		<tr>
 		  <th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,4)"><%tcWebApi_get("String_Entry","PASS_new","s")%></a></th>
 		  <td class="QISformtd">
-			<input id="uiViewPassword" type="password"  tabindex="2" autocapitalization="off" autocomplete="off" value="" name="uiViewPassword" style="height:25px;" class="input_15_table" maxlength="16" onpaste="return false;" onkeyup="chkPass(this.value, 'http_passwd');" onBlur="clean_scorebar(this);"/>
+			<input id="uiViewPassword" type="password" tabindex="2" autocapitalization="off" autocomplete="off" value="" name="uiViewPassword" style="height:25px;" class="input_18_table" maxlength="16" onpaste="return false;" onkeyup="chkPass(this.value, 'http_passwd');" onBlur="clean_scorebar(this);"/>
 				&nbsp;&nbsp;
-        <div id="scorebarBorder" style="margin-left:140px; margin-top:-26px; display:none;" title="<%tcWebApi_get("String_Entry","LHC_x_Password_itemSecur","s")%>">
-        	<div id="score" name="score" style="margin-top:3px;"></div>
-        	<div id="scorebar" name="scorebar">&nbsp;</div>        	
-        </div>
+			<div id="scorebarBorder" style="margin-left:180px; margin-top:-26px; display:none;" title="<%tcWebApi_get("String_Entry","LHC_x_Password_itemSecur","s")%>">
+			<div id="score" name="score" style="margin-top:3px;"></div>
+			<div id="scorebar" name="scorebar">&nbsp;</div>        	
+			</div>
 		  </td>
 		</tr>
 		<tr>
 		  <th width="200"><span class="hintstyle"><%tcWebApi_get("String_Entry","PASS_retype","s")%></span></th>
 		  <td class="QISformtd">
-			<input id="uiViewPasswordConfirm" type="password"  tabindex="3" autocapitalization="off" autocomplete="off" value="" name="uiViewPasswordConfirm" style="height:25px;" class="input_15_table" maxlength="16" onpaste="return false;"/>
-		  	<div style="margin-top:1px;"><input type="checkbox" name="show_pass_1"  tabindex="4" onclick="pass_checked(document.form.uiViewPassword);pass_checked(document.form.uiViewPasswordConfirm);"><%tcWebApi_get("String_Entry","QIS_show_pass","s")%></div>
+			<input id="uiViewPasswordConfirm" type="password" tabindex="3" autocapitalization="off" autocomplete="off" value="" name="uiViewPasswordConfirm" style="height:25px;" class="input_18_table" maxlength="16" onpaste="return false;"/>
+		  	<div style="margin-top:1px;"><input type="checkbox" name="show_pass_1" tabindex="4" onclick="pass_checked(document.form.uiViewPassword);pass_checked(document.form.uiViewPasswordConfirm);"><%tcWebApi_get("String_Entry","QIS_show_pass","s")%></div>
 		  </td>
 		</tr>
+		<tr>			
+			<td colspan="2">
+				<span id="alert_msg2" style="color:#FC0;margin-left:8px;"></span>
+			</td>
+		</tr>
 	</table>
-	<br>
+	
 	<div id="adminPassDesc" class="QISTutorFont_admin_pass" style="height:200px;margin-left:-10px;">
 		<ul>
 			<li><%tcWebApi_get("String_Entry","QIS_pass_desc3","s")%>

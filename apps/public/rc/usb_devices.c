@@ -2957,7 +2957,7 @@ int set_usb_common_nvram(const char *action, const char *device_name, const char
 					nvram_unset(strcat_r(prefix, "_removed", tmp));
 					nvram_unset(strcat_r(prefix, "_act", tmp)); // for DM.
 					nvram_unset(strcat_r(prefix, "_fs_path0", tmp));
-#ifdef RTCONFIG_DISK_MONITOR
+#ifdef ASUS_DISK_UTILITY
 					nvram_unset(strcat_r(prefix, "_pool_error", tmp));
 #endif
 					nvram_unset(strcat_r(prefix, "_speed", tmp));

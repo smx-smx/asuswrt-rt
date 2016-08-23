@@ -14,12 +14,12 @@ if [ $Active != "1" ] ; then
 fi
 
 WanIP=`tcapi get DeviceInfo_PVC$1 WanIP`
-ddns_ipaddr=`tcapi get GUITemp_Entry2 ddns_ipaddr`
-ddns_updated=`tcapi get GUITemp_Entry2 ddns_updated`
+ddns_ipaddr=`tcapi get Vram_Entry ddns_ipaddr`
+ddns_updated=`tcapi get Vram_Entry ddns_updated`
 ddns_server_x=`tcapi get Ddns_Entry SERVERNAME`
-ddns_server_x_old=`tcapi get GUITemp_Entry2 ddns_server_x_old`
+ddns_server_x_old=`tcapi get Vram_Entry ddns_server_x_old`
 ddns_hostname_x=`tcapi get Ddns_Entry MYHOST`
-ddns_hostname_old=`tcapi get GUITemp_Entry2 ddns_hostname_old`
+ddns_hostname_old=`tcapi get Vram_Entry ddns_hostname_old`
 if [	"$WanIP" = "$ddns_ipaddr" -a \
 	"ddns_server_x" = "ddns_server_x_old" -a \
 	"ddns_hostname_x" = "ddns_hostname_old" -a \
@@ -153,11 +153,11 @@ IPUPDATE_CONF=/etc/ipupdate.conf
 
 # ifconfig $WANIF | sed -ne 's/ *inet addr:\([0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\) *.*/\1/p' > /tmp/ip.tmp
 # IP_USED=`cat /tmp/ip.tmp`
-/userfs/bin/tcapi set GUITemp_Entry2 ddns_return_code ddns_query
-/userfs/bin/tcapi set GUITemp_Entry2 ddns_cache ""
-/userfs/bin/tcapi set GUITemp_Entry2 ddns_ipaddr ""
-/userfs/bin/tcapi set GUITemp_Entry2 ddns_status ""
-/userfs/bin/tcapi set GUITemp_Entry2 ddns_updated ""
+/userfs/bin/tcapi set Vram_Entry ddns_return_code ddns_query
+/userfs/bin/tcapi set Vram_Entry ddns_cache ""
+/userfs/bin/tcapi set Vram_Entry ddns_ipaddr ""
+/userfs/bin/tcapi set Vram_Entry ddns_status ""
+/userfs/bin/tcapi set Vram_Entry ddns_updated ""
 
 if [ $SERVERNAME = "WWW.ASUS.COM" ]; then
 /userfs/bin/ez-ipupdate -c $IPUPDATE_CONF -i $WANIF -F $IPUPDATE_PID -e /sbin/ddns_updated -b /tmp/ddns.cache -A 2 -s ns1.asuscomm.com

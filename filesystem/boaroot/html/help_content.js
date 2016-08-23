@@ -24,7 +24,7 @@ helpcontent[0] = new Array("",
 "<%tcWebApi_get("String_Entry","WC11b_WEPKey_itemtype1","s")%><br/><%tcWebApi_get("String_Entry","WC11b_WEPKey_itemtype2","s")%>",	//21
 '<div><%tcWebApi_get("String_Entry","qis_wireless_help1","s")%>.</div><br/><img src="/images/qis/select_wireless.jpg">',
 '<div><%tcWebApi_get("String_Entry","qis_wireless_help2","s")%></div><br/><img width="350px" src="/images/qis/security_key.png">',
-'<% tcWebApi_Get("String_Entry", "WC11n_automode_limition_hint", "s") %>',
+'',
 "<%tcWebApi_get("String_Entry","Access_Time_desc","s")%>",
 "<%tcWebApi_get("String_Entry","Access_Intranet_desc","s")%>"
 );
@@ -131,7 +131,7 @@ helpcontent[7] = new Array("",
 
 helpcontent[8] = new Array("",
 "<%tcWebApi_get("String_Entry","FC_WanLanLog_id","s")%>",
-"<%tcWebApi_get("String_Entry","FC_x_WanWebEnable_id","s")%>",
+"<%tcWebApi_get("String_Entry","FC_x_WanWebEnable_id","s")%> Notice that this option will control http and https port access from WAN interface.",	/* untranslated */
 "<%tcWebApi_get("String_Entry","FC_x_WanWebPort_id","s")%>",
 "<%tcWebApi_get("String_Entry","FC_x_WanLPREnable_id","s")%>",
 "<%tcWebApi_get("String_Entry","FC_x_WanPingEnable_id","s")%>",
@@ -208,8 +208,8 @@ helpcontent[19] = new Array("",
 "<%tcWebApi_get("String_Entry","Setting_upload_id","s")%>");
 
 helpcontent[20] = new Array("",
-"<%tcWebApi_get("String_Entry","BM_measured_uplink_speed_desc","s")%>",
-"<%tcWebApi_get("String_Entry","BM_manual_uplink_speed_desc","s")%>",
+"",
+'<%tcWebApi_get("String_Entry","BM_manual_link_speed_desc","s")%>',
 "<%tcWebApi_get("String_Entry","min_bound_desc","s")%>",
 "<%tcWebApi_get("String_Entry","max_bound_desc","s")%>",
 "<%tcWebApi_get("String_Entry","bound_zero_desc","s")%>");
@@ -261,19 +261,20 @@ helpcontent[25] = new Array("",
 							"<% tcWebApi_Get("String_Entry", "DSL_PVC_id", "s") %>",
 							"<% tcWebApi_Get("String_Entry", "DSL_Bitswap_id", "s") %>",
 							"<% tcWebApi_Get("String_Entry", "DSL_pwr_saving_id", "s") %>",
-							"This item allows you to tweak the target SNRM of VDSL. For instance with a SNR Down at 8dB, you could set to 7dB or lower value to maximize the downstream performance, 5dB (Max.performance) but please note that the lower the value, DSL modem router will be weaker to defend the line noise, thus sync lost might occur, so please adjust with proper value. However if your VDSL connection is unstable or not able to establish a connection, for this case then set to a higher value such as 9dB ~ 30dB.",
+							"This item allows you to tweak the target SNR Margin of VDSL. For instance with a downstream SNR Margin at 8dB, you could set to 7dB or lower value to maximize the downstream performance, 4dB (Max.performance) but please note that the lower the value, DSL modem router will be weaker to defend the line noise, thus sync lost might occur, so please adjust with proper value. However if your VDSL connection is unstable or not able to establish a connection, for this case then set to a higher value such as 9dB ~ 30dB.",
 							"This item configures Profile to be used for VDSL connection, default is 30a multi mode. However in order to work around the non-standard 30a multi mode VDSL DSLAM sync issue, which deployed by some of Germany ISP, set to 17a multi mode might be needed in order for the VDSL line to sync up. For users of other countries, there is no need to change this setting.",
 							"This item allows you to tweak the Tx Power of VDSL. Reduce Tx Power(-1 dB ~ -7 dB) would increase the downstream performance(reduce more Tx Power leads to higher downstream data rate), but will impact upstream and vice versa.",
 							"This item configures Rx AGC(Auto Gain Control) GAIN for VDSL, if tweak the Stability Adjustment (VDSL) setting still could not get desired downstream speed, then could try to set Rx AGC GAIN Adjustment to High Performance mode. However if your VDSL connection is unstable and has some CRC then could set to Stable mode.",
 							"This item allows you to control whether to Enable/Disable UPBO(Upstream Power Back Off) for VDSL. DSLAM could use UPBO to reduce the Tx Power of your xDSL modem router, in some cases abnormal UPBO control from DSLAM could leads to sync up issue(such as not enough Tx Power to sync with minimum rate). Thus with this feature now you could disable UPBO and won’t get affected by DSLAM setting.",
-							"The G.INP stands for Impulse Noise Protection. It works on ADSL2, ADSL2+, and VDSL2 only. It is enabled to provide enhanced protection against impulse noise or to increase the efficiency of providing impulse noise protection. If your DSLAM does not support it, please disable it.",
+							"The G.INP stands for Impulse Noise Protection. It works on ADSL2, ADSL2+, and VDSL2 only. It is enabled to provide enhanced protection against impulse noise or to increase the efficiency of providing impulse noise protection. If your DSLAM does not support it, please disable it.",	//11
 							"This item allows system to monitor the DSL line, designed to maintain stability of the line. Based on current line condition necessary changes will be adopted.",
 							"This item configures Rx AGC(Auto Gain Control) GAIN for VDSL, if after tweak the Stability Adjustment (VDSL) setting, VDSL connection is still unstable and has some CRC then could set to Stable mode.",
 							"This item configures Rx AGC(Auto Gain Control) GAIN for ADSL, if tweak the Stability Adjustment (ADSL) setting still could not get desired downstream speed, then could try to set Rx AGC GAIN Adjustment to High Performance mode. However if your ADSL connection is unstable and has some CRC then could set to Stable mode.",
 							"This item configures Rx AGC(Auto Gain Control) GAIN for ADSL, if after tweak the Stability Adjustment (ADSL) setting, ADSL connection is still unstable and has some CRC then could set to Stable mode.",
 							"This item supports G.vector. With G.vector crosstalk among the signals in the same cable could be canceled, such as far-end crosstalk (FEXT). Which would significantly improve Signal-to-Noise Ratio (SNR) that leads to higher achievable bit rates. However CO must deploy Vectored VDSL2 DSLAM in order for this feature to work. If you find it doesn't work well or you know the G.vector of your ISP is non-standard, please enable both of this option and Non-standard G.vector.",
 							"This item supports Non-standard G.vector for specific countries. Please note that if your G.vector is standard, please do not enable this option for optimized performance.",
-							"This command is  helpful for some impulse noise environment to enhance line stability."
+							"This command is helpful for some impulse noise environment to enhance line stability.",
+							"This feature allows system to capture diagnostic DSL debug log in the background, duration depends on the \"Diagnostic debug log capture duration\" option, after capture completed debug log would be transmitted automatically to ASUS Support Team for analysis."
 							);
 
 //DualWAN
@@ -284,3 +285,4 @@ helpcontent[26] = new Array("",
 							"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_delay", "s") %>",
 							"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_upper", "s") %>",
 							"<% tcWebApi_Get("String_Entry", "dualwan_failback_desc", "s") %>");
+

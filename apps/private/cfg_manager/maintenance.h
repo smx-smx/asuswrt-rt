@@ -46,7 +46,7 @@
 #if defined(TCSUPPORT_2NTP_SERVER) || defined(TCSUPPORT_3NTP_SERVER)
 #define NTP_CMD	"/userfs/bin/ntpclient -s -c 1 -l -h "
 #else
-#define NTP_CMD	"/userfs/bin/ntpclient -s -c 3 -l -h "
+#define NTP_CMD	"/userfs/bin/ntpclient -s -i 3 -l -h "
 #endif
 #define TIMEZONE_ATTR_SERVER 	"SERVER"
 #ifdef TCSUPPORT_2NTP_SERVER
@@ -128,6 +128,10 @@ int
 timezone_verify(mxml_node_t *node);
 int
 timezone_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
+#ifdef TCSUPPORT_REBOOT_SCHEDULE
+int
+rebootSchedule_init(void);
+#endif
 
 #if 0  /*Orginal ci-command mode */
 int

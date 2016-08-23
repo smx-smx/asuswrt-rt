@@ -203,7 +203,7 @@ typedef unsigned char uint8;            /* 8-bit unsigned integer       */
 #define	SAR_CLK	(SYS_HCLK)/(4.0)		//more accurate if 4.0 not 4
 
 /* define CPU timer clock, FPGA is 50Mhz, ASIC is 250Mhz */
-#define	CPUTMR_CLK		(VPint(0xbfb0008c)&(1<<31) ? 50	: 250)
+#define	CPUTMR_CLK		(VPint(0xbfb0008c)&(1<<31) ? (50*1000000)	: (250*1000000))
 
 #define DSPRAM_BASE		0x9c000000
 

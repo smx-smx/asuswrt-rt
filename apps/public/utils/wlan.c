@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "wlan.h"
 
 int check_UseCEforAPAC(const char *ProductName)
@@ -9,8 +11,11 @@ int check_UseCEforAPAC(const char *ProductName)
 
 	//bzero(tmpstr, sizeof(tmpstr));
 	//EZgetAttrValue("SysInfo", "Entry", "ProductName", tmpstr);
+	if (ProductName == NULL)
+		return ret;
 
 	if (!strcmp(ProductName, "DSL-AC52U") ||
+		!strcmp(ProductName, "DSL-AC55U") ||
 		!strcmp(ProductName, "DSL-AC56U"))
 	{
 		ret = 1;
@@ -28,11 +33,15 @@ int check_SupportDFS(const char *ProductName, const char *BootLoaderVer)
 	// We pass DFS certification of DSL-N66U at Decemer 2013 then use the boot loader version: 2.10 as the anchor to support DFS.
 	int supportBootver = 0x2A;
 
+	if (ProductName == NULL || BootLoaderVer == NULL)
+		return ret;
+
 	bzero(BLVer_Str, sizeof(BLVer_Str));
 	snprintf(BLVer_Str, sizeof(BLVer_Str) - 1, "%s", BootLoaderVer);
 	if (!strcmp(ProductName, "DSL-N66U") ||
 		!strcmp(ProductName, "DSL-AC56U") ||
-		!strcmp(ProductName, "DSL-AC52U"))
+		!strcmp(ProductName, "DSL-AC52U") ||
+		!strcmp(ProductName, "DSL-AC55U"))
 	{
 		tmp=strtok(BLVer_Str, ".");
 		tmp2=strtok(NULL, ".");
@@ -49,10 +58,14 @@ int check_EnableDFSforAPAC(const char *ProductName, const char *BootLoaderVer)
 {
 	int ret = 0;
 
+	if (ProductName == NULL || BootLoaderVer == NULL)
+		return ret;
+
 	if (check_UseCEforAPAC(ProductName) && 
 		check_SupportDFS(ProductName, BootLoaderVer))
 	{
 		if (!strcmp(ProductName, "DSL-AC56U") ||
+			!strcmp(ProductName, "DSL-AC55U") ||
 			!strcmp(ProductName, "DSL-AC52U"))
 		{
 			ret = 1;
@@ -61,20 +74,51 @@ int check_EnableDFSforAPAC(const char *ProductName, const char *BootLoaderVer)
 	return ret;
 }
 
+int check_SupportDFS_by_Region(const char *ProductName, const char *BootLoaderVer, const char *CountryCode)
+{
+	int ret = 0;
+
+	if (ProductName == NULL || BootLoaderVer == NULL 
+		|| CountryCode == NULL)
+		return ret;
+
+	if (check_SupportDFS(ProductName, BootLoaderVer))
+	{
+		if (!strcmp(CountryCode, REGION_EU))
+		{
+			ret = 1;
+		}
+		else if (!strcmp(CountryCode, REGION_APAC))
+		{
+			if (check_EnableDFSforAPAC(ProductName, BootLoaderVer))
+			{
+				ret = 1;
+			}
+		}
+	}
+
+	return ret;
+}
+
 int check_SupportCountrySelect(const char *ProductName, const char *TerritoryCode)
 {
 	int ret = 0;
 
-	if (!strncmp(TerritoryCode, "AA", 2))
+	if (ProductName == NULL || TerritoryCode == NULL)
+		return ret;
+
+	if (!strncmp(TerritoryCode, "AA", 2) ||
+		!strncmp(TerritoryCode, "AU", 2))
 	{
-		if (!strcmp(ProductName, "DSL-AC56U"))
+		if (!strcmp(ProductName, "DSL-AC56U") ||
+			!strcmp(ProductName, "DSL-AC55U") ||
+			!strcmp(ProductName, "DSL-AC52U"))
 		{
 			ret = 1;
 		}
 	}
 	return ret;
 }
-
 
 static channel_list_t channel_list_2g[] = {
 	{
@@ -244,6 +288,18 @@ static skip_channel_list_t channel_list_skip[] = {
 		SKIP_TYPE_SGAU_BW4080,	
 		{	1,
 			{165}, 
+		},
+	},
+	{
+		SKIP_TYPE_2G_LOWPOWER,	
+		{	3,
+			{12,13,14}, 
+		},
+	},
+	{
+		SKIP_TYPE_5G_LOWPOWER,	
+		{	15,
+			{52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140}, 
 		},
 	},
 };
@@ -660,20 +716,81 @@ int get_RegionCode_by_Country(const char *Country, char *buf, int buflen)
 		return -1;
 
 	bzero(buf, buflen);
-	if (!strcmp(Country, "AA"))
+	if (!strcmp(Country, COUNTRY_APAC))
 	{
-		snprintf(buf, buflen, "SG");
+		snprintf(buf, buflen, REGION_APAC);
 	}
-	else if (!strcmp(Country, "EU"))
+	else if (!strcmp(Country, COUNTRY_EU))
 	{
-		snprintf(buf, buflen, "DE");
+		snprintf(buf, buflen, REGION_EU);
 	}
-	else if (!strcmp(Country, "AU"))
+	else if (!strcmp(Country, COUNTRY_AU))
 	{
-		snprintf(buf, buflen, "AU");
+		snprintf(buf, buflen, REGION_AU);
 	}
 
 	return strlen(buf);
 }
 
+int Get_wifi_channel(int band){
+	FILE *fp;
+	char buf[256]={0}, channel[4]={0}, wifi_if[8]={0}, freq[8]={0};
+	char *pValue=NULL;
+	int chan=0;
+
+#if defined(TCSUPPORT_WLAN_RT6856)	//iNIC
+	if(band == 0){
+		strcpy(wifi_if, "ra00_0");
+	}
+	else{
+		strcpy(wifi_if, "ra01_0");
+	}
+#else	//Non-iNIC
+#if defined(TCSUPPORT_DUAL_WLAN)	//dual band.
+	if(band == 0){
+		strcpy(wifi_if, "ra0");
+	}
+	else{
+		strcpy(wifi_if, "rai0");
+	}
+#else
+	strcpy(wifi_if, "ra0");
+#endif
+#endif
+
+	sprintf(buf, "/userfs/bin/iwconfig %s > /tmp/var/iwconfig.tmp", wifi_if);
+	system(buf);
+	fp = fopen("/tmp/var/iwconfig.tmp","r");
+	if(fp != NULL){
+		while(fgets(buf,256,fp)){
+#if defined(TCSUPPORT_WLAN_RT6856)	//iNIC
+			if((pValue=strstr(buf,"Frequency:"))){
+				/*tmpBuf format: Frequency:5.32 GHz*/
+				pValue += strlen("Frequency:");
+				sscanf(pValue,"%s", freq);
+				if(band){	//5G
+					chan = ((int)(atof(freq)*1000)-5000)/5;
+				}
+				else{	// 2G
+					chan = ( ((int)(atof(freq)*1000)-2412)/5)+1;
+				}
+			}
+#else	//Non-iNIC
+			if((pValue=strstr(buf,"Channel="))){
+				/*tmpBuf format: Channel=157*/
+				pValue += strlen("Channel=");
+				sscanf(pValue,"%s", channel);
+				chan = atoi(channel);
+			}
+#endif
+		}
+		fclose(fp);
+		unlink("/tmp/var/iwconfig.tmp");
+		return chan;
+	}
+	else{
+		printf("Get channel fail!!\n");
+		return 0;
+	}
+}
 

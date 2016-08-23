@@ -311,7 +311,7 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 </Cwmp>
 <Upnpd>
 	<Entry autoconf="0" Active="Yes" HostName="DSL-N14U" Manufacturer="ASUSTeK Computer Inc." ModelName="DSL-N14U" ModelNumber="DSL-N14U" Description="DSL-N14U" ManufacturerURL="http://www.asus.com" ModelURL="http://www.asus.com" WANmanufacturerURL="http://www.asus.com" WANconnection_manufacturerURL="http://www.asus.com" LANmanufacturerURL="http://www.asus.com" WANmodelURL="http://www.asus.com" WANconnection_modelURL="http://www.asus.com" LANmodelURL="http://www.asus.com" />
-	<Miniupnpd secure_mode="yes" upnp_port="2869" natpmp="yes" sys_uptime="yes" notify_interval="30" clean="yes" clean_interval="600" clean_threshold="20" uuid="de92cf00-6979-11e4-9803-0800200c9a66" />
+	<Miniupnpd secure_mode="yes" upnp_port="2869" natpmp="yes" sys_uptime="yes" notify_interval="30" clean="yes" clean_interval="600" clean_threshold="100" uuid="de92cf00-6979-11e4-9803-0800200c9a66"  lease_file="/tmp/upnp.lease" />
 </Upnpd>
 <Ddns>
 	<Entry Active="0" SERVERNAME="WWW.ASUS.COM" MYHOST="" USERNAME="" PASSWORD="" WILDCARD="0" />
@@ -327,8 +327,11 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	PM_USE_TLS="true" PM_SMTP_AUTH="LOGIN" PM_SMTP_AUTH_USER="" PM_SMTP_AUTH_PASS="" PM_title="" PM_target="" PM_restart="0" PM_debug="0" PM_freq="0" PM_mon="0" PM_day="0" PM_hour="0"
 	PM_attach_syslog="0" PM_attach_cfgfile="0" PM_attach_iptables="0" />
 </PushMail>
+<DslDiag>
+	<Entry dslx_diag_enable="0" dslx_diag_duration="0" dslx_diag_state="0" dslx_diag_end_uptime="0" dslx_diag_log_path="" dslx_diag_log_link="" />
+</DslDiag>
 <Timezone>
-	<Entry TYPE="0" TZ="GMT-02:00" DAYLIGHT="Disable" SERVER="pool.ntp.org" PCSyncFlag="0" TZ_second="" />
+	<Entry TYPE="0" TZ="GMT" DAYLIGHT="Disable" SERVER="pool.ntp.org" PCSyncFlag="0" TZ_second="" />
 </Timezone>
 <Mac>
 	<Entry WAN_MAC="00:aa:bb:cc:dd:ee" />
@@ -337,7 +340,7 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	<Entry RestoreLinos="1"
 	Vendor="ASUSTeK Computer Inc."
 	ProductName="DSL-N14U"
-	InnerVersion="1.1.0.4"
+	InnerVersion="1.1.1.0"
 	ProductTitle="Wireless-N300 ADSL2/2+ Modem Router"
 	SWVer="V100R001B012" FWVer="3.10.0.24" PubDate="2013/06/06" BatchNum="STC20P0.012.310024" SerialNum="1234" Description="" HWVer=""
 	Customer="WIND"
@@ -578,6 +581,7 @@ SIPAuthenticationName="" SIPPassword="" />
 		modem_enable_qmi="0"
 		Dev3G="AUTO"
 		modem_enable="1"
+		modem_android="0"
 		modem_apn="internet"
 		modem_country=""
 		modem_isp=""
@@ -618,4 +622,7 @@ SIPAuthenticationName="" SIPPassword="" />
 	<Entry runin="0" />
 </Arpstorm>
 <VPNControl />
+<RebootSchedule>
+	<Entry reboot_schedule_enable="0" reboot_schedule="00000000000" />
+</RebootSchedule>
 </ROMFILE>

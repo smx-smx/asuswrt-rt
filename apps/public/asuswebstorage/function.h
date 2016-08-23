@@ -178,6 +178,7 @@ typedef struct FolderNode_t
     char *path;
     //char *name;
     int id;
+    int seq;
 }FolderNode;
 
 typedef struct NodeStack_t
@@ -191,5 +192,51 @@ FolderNode *pop_node(NodeStack **head);
 
 long long FileSize(const char* szFilename);
 int LoadFileIntoBuffer(const char* szFileName, char** pBuffer, int* pBufferLength);
+
+/*save cloud all folders id and seqnum*/
+struct SubNode
+{
+    //int pid;
+    int id;
+    int seq;
+    struct SubNode *Child;
+    struct SubNode *NextBrother;
+};
+
+typedef struct SubNode Hb_SubNode;
+
+Hb_SubNode *create_node(int id,int seq);
+Hb_SubNode *get_parent_node(int pid,Hb_SubNode *node);
+Hb_SubNode *find_node(Hb_SubNode *pnode,int id);
+int update_seq(int id,int seq,Hb_SubNode *node);
+int del_node(int pid,int id);
+int remove_node(Hb_SubNode *node,int id);
+int add_node(int id,int seq,Hb_SubNode *node);
+int insert_node(int pid,int id,int seq);
+int move_node(int move_from_pid,int id,int move_to_pid);
+void free_node(Hb_SubNode *node);
+void print_all_nodes(Hb_SubNode *node);
+
+typedef struct _api_count_s
+{
+    int requestservicegateway;
+    int acquiretoken;
+    int getinfo;
+    int getmysyncfolder;
+    int getpersonalsystemfolder;
+    int getuserstate;
+    int browse;
+    int propfind;
+    int create;
+    int rename;
+    int move;
+    int remove;
+    int getentryinfo;
+    int getchangeseq;
+    int initbinaryupload;
+    int resumebinaryupload;
+    int finishbinaryupload;
+    int directdownload;
+} api_count_s;
 
 #endif

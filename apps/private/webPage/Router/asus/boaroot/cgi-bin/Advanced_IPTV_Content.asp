@@ -25,6 +25,9 @@ var original_switch_stb_x = '<% tcWebApi_get("IPTV_Entry", "switch_stb_x", "s") 
 var original_switch_wantag = 'none';
 var wans_lanport = '<% tcWebApi_get("Dualwan_Entry", "wans_lanport", "s") %>';
 var wans_dualwan_orig = '<% tcWebApi_get("Dualwan_Entry", "wans_dualwan", "s") %>';
+var haveLanWan_support = '<%tcWebApi_get("WebCustom_Entry","haveLanWan","s")%>'
+var haveWan0_support = '<%tcWebApi_get("WebCustom_Entry","haveWan0","s")%>';
+
 
 function initial(){
 	show_menu();
@@ -197,7 +200,7 @@ function validForm(){
 }
 
 function applyRule(){
-<%if tcWebApi_get("WebCustom_Entry","haveLanWan","h") = "Yes" then%>
+	if(haveLanWan_support == "Yes"){
 	if (dualWAN_support != -1) {
 		var port_conflict = false;
 		var iptv_port = document.form.switch_stb_x.value;
@@ -223,10 +226,25 @@ function applyRule(){
 		}
 		if (port_conflict) {
 			alert("<%tcWebApi_get("String_Entry","RC_IPTV_conflict","s")%>");
+			document.form.switch_stb_x.focus();
 			return;
 		}
 	}
-<%end if%>
+	}
+
+	if(haveWan0_support == "Yes"){
+		var port_conflict = false;
+		var iptv_port = document.form.switch_stb_x.value;
+		if (iptv_port == "7" && wans_dualwan_orig.search("wan") >= 0)
+			port_conflict = true;
+		
+		if (port_conflict) {
+			alert("<%tcWebApi_get("String_Entry","RC_IPTV_conflict_WAN","s")%>");
+			document.form.switch_stb_x.focus();
+			return;
+		}
+	}
+
 	if(dsl_support == -1) {
 		if( (original_switch_stb_x != document.form.switch_stb_x.value)
 		|| (original_switch_wantag != document.form.switch_wantag.value)){

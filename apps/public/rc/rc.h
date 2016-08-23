@@ -29,7 +29,6 @@
 #include <net/if.h>
 
 #include <bcmnvram.h>
-// #include <bcmparams.h>
 #include "libtcapi.h"
 #include "tcapi.h"
 #include "tcutils.h"
@@ -138,20 +137,6 @@ do {					\
 #define USB_DISCONNECT		0x07	//For WRTSL54GS
 
 #define SERIAL_NUMBER_LENGTH	12	//ATE need
-/*
-// ?
-#define SET_LED(val) \
-{ \
-	int filep; \
-	if(check_hw_type() == BCM4704_BCM5325F_CHIP) { \
-		if ((filep = open("/dev/ctmisc", O_RDWR,0))) \
-		{ \
-			ioctl(filep, val, 0); \
-			close(filep); \
-		} \
-	} \
-}
-*/
 
 #define SET_LED(val)	do { } while(0)
 
@@ -192,11 +177,11 @@ extern int preset_wan_routes(char *wan_ifname);
 extern int found_default_route(int wan_unit);
 extern int autodet_main(int argc, char *argv[]);
 extern int add_multi_routes(void);
+extern int do_dns_detect();
 #ifdef RTCONFIG_USB_MODEM
 void start_wan_if(int unit);
 void stop_wan_if(int unit);
 #endif
-int restart_dnsmasq(char *ifname, char *dns);
 
 // lan.c
 extern void hotplug_net(void);
@@ -239,6 +224,9 @@ extern void update_wan_state(char *prefix, int state, int reason);
 #ifdef OVERWRITE_DNS
 extern int update_resolvconf();
 #endif
+
+// rtstate.c
+extern void add_rc_support(char *feature);
 
 // udhcpc.c
 extern int udhcpc_wan(int argc, char **argv);
@@ -355,6 +343,10 @@ extern int stop_usbled(void);
 extern void restart_nas_services(int stop, int start);
 extern void stop_nas_services(int force);
 #endif
+#ifdef RTCONFIG_CROND
+extern void start_cron(void);
+extern void stop_cron(void);
+#endif
 extern void start_webdav(void);
 #ifdef RTCONFIG_USB_PRINTER
 extern void start_usblpsrv(void);
@@ -384,7 +376,7 @@ extern int start_app(void);
 extern void usb_notify();
 #endif
 
-#ifdef RTCONFIG_DISK_MONITOR
+#ifdef ASUS_DISK_UTILITY
 extern void start_diskmon(void);
 extern void stop_diskmon(void);
 extern int diskmon_main(int argc, char *argv[]);
@@ -425,6 +417,22 @@ extern void update_vpnc_state(int state, int reason);
 extern int vpnc_ip6up_main(int argc, char **argv);
 extern int vpnc_ip6down_main(int argc, char **argv);
 #endif
+#endif
+
+// openvpn.c
+#ifdef RTCONFIG_OPENVPN
+extern void start_vpnclient(int clientNum);
+extern void stop_vpnclient(int clientNum);
+extern void start_vpnserver(int serverNum);
+extern void stop_vpnserver(int serverNum);
+extern void start_vpn_eas();
+extern void stop_vpn_eas();
+extern void run_vpn_firewall_scripts();
+extern void write_vpn_dnsmasq_config(FILE*);
+extern int write_vpn_resolv(FILE*);
+//static inline void start_vpn_eas() { }
+//#define write_vpn_resolv(f) (0)
+extern void create_openvpn_passwd();
 #endif
 
 // tr069.c
@@ -474,11 +482,8 @@ extern int write_3g_ppp_conf(void);
 
 //services.c
 extern void write_static_leases(char *file);
-#ifdef RTCONFIG_DNSMASQ
-extern void restart_dnsmasq();
-#else
-extern int restart_dns();
-#endif
+extern void start_dnsmasq(void);
+extern void stop_dnsmasq(void);
 extern int ddns_updated_main(int argc, char *argv[]);
 #ifdef RTCONFIG_IPV6
 extern void start_ipv6_tunnel(void);
@@ -490,9 +495,7 @@ extern void stop_dhcp6s(void);
 extern void start_ipv6(void);
 extern void stop_ipv6(void);
 #endif
-#ifdef CONFIG_BCMWL5
-extern void set_acs_ifnames();
-#endif
+
 extern void start_nat_rules(void);
 extern void stop_nat_rules(void);
 extern void stop_syslogd(void);
@@ -500,7 +503,7 @@ extern void stop_klogd(void);
 extern int start_syslogd(void);
 extern int start_klogd(void);
 extern int start_logger(void);
-extern void handle_notifications(void);
+extern void handle_notifications(char* rc_service);
 extern int stop_watchdog(void);
 extern int start_watchdog(void);
 extern int get_apps_name(const char *string);
@@ -511,6 +514,7 @@ extern int run_telnetd(void);
 extern void start_hotplug2(void);
 extern void stop_services(void);
 extern void stop_logger(void);
+extern void setup_passwd(void);
 extern void create_passwd(void);
 extern int start_services(void);
 extern void check_services(void);
@@ -537,17 +541,7 @@ extern void start_autodet(void);
 extern void start_httpd(void);
 extern int wl_wpsPincheck(char *pin_string);
 extern int start_wps_pbc(int unit);
-#if defined(RTCONFIG_RALINK)
-extern int exec_8021x_start(int band, int is_iNIC);
-extern int exec_8021x_stop(int band, int is_iNIC);
-extern int start_8021x(void);
-extern int stop_8021x(void);
-extern int start_wpsfix(void);
-extern int stop_wpsfix(void);
-#endif
-#ifdef RTCONFIG_DNSMASQ
-extern void stop_dnsmasq(void);
-#endif
+extern int service_main(int argc, char *argv[]);
 
 #ifdef BTN_SETUP
 enum BTNSETUP_STATE

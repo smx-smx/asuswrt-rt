@@ -118,6 +118,7 @@ static int block_table[1024];
 int nand_erase_next_goodblock(struct ra_nand_chip *ra, int block, unsigned long addr_l);
 int nand_write_next_goodblock(struct ra_nand_chip *ra, int page_u, int page_l);
 int nand_partition_check(int block);
+int nand_is_rwfs_partition(struct ra_nand_chip *ra, int *block, int *page, unsigned long *addr);
 #endif
 
 #ifdef TCSUPPORT_NAND_RT63368
@@ -1156,6 +1157,10 @@ int nfc_ecc_verify(struct ra_nand_chip *ra, unsigned char *buf, int page, int mo
 	
 //	printk("%s, page:%x mode:%d\n", __func__, page, mode);
 
+#ifdef TCSUPPORT_NAND_BADBLOCK_CHECK
+	if(nand_is_rwfs_partition(ra, NULL, &page, NULL)) return 0;
+#endif
+
 	if (mode == FL_WRITING) {
 		int len = (1 << ra->flash->page_shift) + (1 << ra->flash->oob_shift);
 		int conf; 
@@ -1263,11 +1268,10 @@ ecc_check:
 			ecc_error_code = nfc_ecc_err_handler(i , p+ecc_offset, ecc_swap, &err_byte_index,
 				&err_bit_index );
 			if(ecc_error_code != ECC_NO_ERR){
-				printk("\r\n ecc_error_code= %d, page=%d ,i=%d", ecc_error_code, page, i);
+				printk("\r\n ecc_error_code= %d, page=%d ,i=%d\n", ecc_error_code, page, i);
 				if(ecc_error_code == ECC_ONE_BIT_ERR){
 					//correct the error
-					printk("\r\n  err_byte_index= %d, err_bit_index=%d",
-							 err_byte_index , err_bit_index);
+					//printk("\r\n  err_byte_index= %d, err_bit_index=%d\n", err_byte_index , err_bit_index);
 					correct_byte = buf[err_byte_index + i*512];
 					if((correct_byte&(1<<err_bit_index)) != 0){
 						correct_byte &= (~(1<<err_bit_index));
@@ -1966,7 +1970,10 @@ nand_erase_nand(struct ra_nand_chip *ra, struct erase_info *instr)
 		/* See if block erase succeeded */
 		if (status) {
 	#ifdef TCSUPPORT_NAND_BADBLOCK_CHECK
-		nand_erase_next_goodblock(ra, block, addr);
+		if(nand_is_rwfs_partition(ra, &block, NULL, NULL))
+			printk("%s erase rwfs block %d fail\n", __FUNCTION__, block);
+		else
+			nand_erase_next_goodblock(ra, block, addr);
 	#elif defined(TCSUPPORT_NAND_RT63368)
 		if (update_bmt(addr,
 			UPDATE_ERASE_FAIL, NULL, NULL))
@@ -2214,10 +2221,10 @@ int nandflash_scan_badblock(void)
 					block_table[i]++;
 				}
 		#endif
-		#ifdef TCSUPPORT_ADD_JFFS
-			}else if(badblock >= JFFS_BLOCK_START && badblock < JFFS_BLOCK_END){
+		#if 0	//ignore bad block mechanism
+			}else if(badblock >= RWFS_BLOCK_START && badblock < RWFS_BLOCK_END){
 
-				for(i = JFFS_BLOCK_START; i < JFFS_BLOCK_END; i++)
+				for(i = RWFS_BLOCK_START; i < RWFS_BLOCK_END; i++)
 				{
 					if(block_table[i] == badblock)
 					{
@@ -2226,7 +2233,7 @@ int nandflash_scan_badblock(void)
 
 				}
 
-				for(; i < JFFS_BLOCK_END; i++)
+				for(; i < RWFS_BLOCK_END; i++)
 				{
 					block_table[i]++;
 				}
@@ -2314,13 +2321,11 @@ int nand_partition_check(int block)
 			goto done;
 		}
 #endif
-#ifdef TCSUPPORT_ADD_JFFS
-	}else if(block >= JFFS_BLOCK_START && block < JFFS_BLOCK_END){
-		if(block_table[block] >= JFFS_BLOCK_END){
+	}else if(block >= RWFS_BLOCK_START && block < RWFS_BLOCK_END){
+		if(block_table[block] >= RWFS_BLOCK_END){
 			ret = -1;
 			goto done;
 		}
-#endif
 	}else if(block >= TCSYSLOG_START && block < TCSYSLOG_END){
 		if(block_table[block] >= TCSYSLOG_END){
 			ret = -1;
@@ -2342,6 +2347,25 @@ int nand_partition_check(int block)
 done:
 	return ret;
 
+}
+
+int nand_is_rwfs_partition(struct ra_nand_chip *ra, int *block, int *page, unsigned long *addr)
+{
+	int target_block;
+	if(block) {
+		target_block = *block;
+	}
+	if(page) {
+		target_block = *page >> (ra->flash->erase_shift - ra->flash->page_shift);
+	}
+	if(addr) {
+		target_block = *addr >> ra->flash->erase_shift;
+	}
+
+	if(target_block >= RWFS_BLOCK_START && target_block < RWFS_BLOCK_END)
+		return 1;
+	else
+		return 0;
 }
 
 int nand_erase_next_goodblock(struct ra_nand_chip *ra, int block, unsigned long addr_l)
@@ -2734,7 +2758,10 @@ nand_do_write_ops(struct ra_nand_chip *ra, loff_t to,
 	#endif
 		if (ret) {
 	#ifdef TCSUPPORT_NAND_BADBLOCK_CHECK
-			page = nand_write_next_goodblock(ra, srcpage, page);
+			if(nand_is_rwfs_partition(ra, NULL, &srcpage, NULL))
+				printk("%s: write rwfs page %d fail\n", __FUNCTION__, srcpage);
+			else
+				page = nand_write_next_goodblock(ra, srcpage, page);
 	#elif defined(TCSUPPORT_NAND_RT63368)
 			printk("write fail at page: %d \n", page);
 			memcpy(dat, ra->buffers, SIZE_2KiB_BYTES + SIZE_64iB_BYTES);

@@ -99,7 +99,7 @@ if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
 
 function QKfinish_load_body(){
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_all_title","s")%>";
-	//parent.set_step("t3");
+	parent.set_step("t2");
 
 	if(transfer_mode == "ATM")
 		document.form.prev_page.value = "/cgi-bin/qis/QIS_manual_setting.asp";

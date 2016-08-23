@@ -87,7 +87,7 @@ function initial(){
 	wans_caps_secondary = wans_caps;
 
 	addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
-	addWANOption(document.form.wans_second, wans_caps_secondary.split(" "));	
+	addWANOption(document.form.wans_second, wans_caps_secondary.split(" "));
 
 	form_show(wans_flag);
 	setTimeout("showLANIPList();", 1000);
@@ -122,44 +122,44 @@ function form_show(v){
 		inputCtrl(document.form.wans_primary, 0);	//dualwan disable, also hidden primary, we change wan mode at internet connnection page
 	}
 	else{		//Dual WAN enable
-		
+
 		inputCtrl(document.form.wans_primary, 1);
 		document.form.wans_primary.value = wans_dualwan_orig.split(" ")[0];
-		
+
 		if(wans_dualwan_orig.split(" ")[1] == "none"){
-			
+
 			if(wans_dualwan_orig.split(" ")[0] == "dsl"){
-				
+
 				if(wans_caps.search("wan") >= 0)
 					document.form.wans_second.value = "wan";
 				else if(wans_caps.search("usb") >= 0)
 					document.form.wans_second.value = "usb";
 				else
 					document.form.wans_second.value = "lan";
-					
+
 			}
 			else if(wans_dualwan_orig.split(" ")[0] == "wan"){
-				
+
 				if(wans_caps.search("dsl") >= 0)
 					document.form.wans_second.value = "dsl";
 				else if(wans_caps.search("usb") >= 0)
 					document.form.wans_second.value = "usb";
-				else	
+				else
 					document.form.wans_second.value = "lan";
 			}
 			else{
-				
+
 				if(wans_caps.search("dsl") >= 0)
 					document.form.wans_second.value = "dsl";
 				else if(wans_caps.search("wan") >= 0)
 					document.form.wans_second.value = "wan";
-				
+
 			}
 		}
 		else{
 			document.form.wans_second.value = wans_dualwan_orig.split(" ")[1];
-		
-		}	
+
+		}
 
 		appendLANoption1(document.form.wans_primary);
 		appendLANoption2(document.form.wans_second);
@@ -205,7 +205,7 @@ function applyRule(){
 			save_table();
 		}
 		else{		//fo / fb
-			
+
 			document.form.wans_lb_ratio.disabled = true;
 			document.form.wan0_routing_isp_enable.disabled = true;
 			document.form.wan0_routing_isp.disabled = true;
@@ -216,11 +216,11 @@ function applyRule(){
 				document.form.wandog_enable.value = "1";
 			else
 				document.form.wandog_enable.value = "0";
-				
+
 			if(!validator.range(document.form.wandog_interval, 1, 9))
 					return false;
 			if(!validator.range(document.form.wandog_delay, 0, 99))
-					return false;	
+					return false;
 		}
 	}
 	else{
@@ -289,77 +289,77 @@ function addWANOption(obj, wanscapItem){
 }
 
 function changeWANProto(obj){
-	
+
 	if(wans_flag == 1){	//dual WAN enabled
 		if(document.form.wans_primary.value == document.form.wans_second.value){
 			if(obj.name == "wans_primary"){	//Primary WAN changed to switch Secondary WAN
-								
+
 				if(obj.value == "dsl"){
-					
+
 					if(wans_caps.search("wan") >= 0)
 						document.form.wans_second.value = "wan";
 					else if(wans_caps.search("usb") >= 0)
 						document.form.wans_second.value = "usb";
 					else
-						document.form.wans_second.value = "lan";	
-						
+						document.form.wans_second.value = "lan";
+
 				}
 				else if(obj.value == "wan"){
-					
+
 					if(wans_caps.search("dsl") >= 0)
 						document.form.wans_second.value = "dsl";
 					else if(wans_caps.search("usb") >= 0)
 						document.form.wans_second.value = "usb";
 					else
-						document.form.wans_second.value = "lan";	
+						document.form.wans_second.value = "lan";
 
 				}
 				else{
-					
+
 					if(wans_caps.search("dsl") >= 0)
 						document.form.wans_second.value = "dsl";
 					else if(wans_caps.search("wan") >= 0)
 						document.form.wans_second.value = "wan";
-						
+
 				}
 			}
 			else if(obj.name == "wans_second"){	//Secondary WAN changed to switch Primary WAN
-				
+
 				if(obj.value == "dsl"){
-					
+
 					if(wans_caps.search("wan") >= 0)
 						document.form.wans_primary.value = "wan";
 					else if(wans_caps.search("usb") >= 0)
 						document.form.wans_primary.value = "usb";
-					else	
+					else
 						document.form.wans_primary.value = "lan";
 
 				}
 				else if(obj.value == "wan"){
-					
+
 					if(wans_caps.search("dsl") >= 0)
 						document.form.wans_primary.value = "dsl";
 					else if(wans_caps.search("usb") >= 0)
 						document.form.wans_primary.value = "usb";
-					else	
+					else
 						document.form.wans_primary.value = "lan";
 
 				}
 				else{
-					
+
 					if(wans_caps.search("dsl") >= 0)
 						document.form.wans_primary.value = "dsl";
 					else if(wans_caps.search("wan") >= 0)
 						document.form.wans_primary.value = "wan";
-					
-				}				
+
+				}
 			}
 		}
 		appendLANoption1(document.form.wans_primary);
 		appendLANoption2(document.form.wans_second);
 	}
 	else
-		appendLANoption1(document.form.wans_primary);		//Viz: seems useless 
+		appendLANoption1(document.form.wans_primary);		//Viz: seems useless
 }
 
 function appendLANoption1(obj){
@@ -413,8 +413,8 @@ function appendModeOption(v){
 			inputCtrl(document.form.wans_routing_enable[1], 1);
 			if('<% tcWebApi_Get("Dualwan_Entry", "wans_routing_enable", "s") %>' == 1) {
 				document.form.wans_routing_enable[0].checked = true;
-			$('Routing_rules_table').style.display = "";
-			$('wans_RoutingRules_Block').style.display = "";
+				$('Routing_rules_table').style.display = "";
+				$('wans_RoutingRules_Block').style.display = "";
 			}
 			else {
 				document.form.wans_routing_enable[1].checked = true;
@@ -432,7 +432,7 @@ function appendModeOption(v){
 			document.form.wans_mode.value = "lb";
 		}
 		else{		//failover //failback
-			
+
 			document.getElementById('lb_note').style.display = "none";
 			inputCtrl(document.form.wans_lb_ratio_0, 0);
 			inputCtrl(document.form.wans_lb_ratio_1, 0);
@@ -461,9 +461,9 @@ function appendModeOption(v){
 			document.getElementById("routing_table").style.display = "none";
 
 			document.getElementById("fb_span").style.display = "";
-			
+
 			add_option_count(document.form.wandog_interval, document.form.wandog_maxfail, wandog_maxfail_orig);
-			
+
 			if("<% tcWebApi_Get("Dualwan_Entry", "wans_mode", "s") %>" == "fb" ? true : false)
 			{
 				document.getElementById("fb_checkbox").checked = true;
@@ -553,7 +553,7 @@ function show_wans_rules(){
 
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="wans_RoutingRules_table">';
 	if(wans_rules_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;" colspan="4"><%tcWebApi_get("String_Entry","checkbox_No","s")%> data in table.</td></tr>';
+		code +='<tr><td style="color:#FFCC00;" colspan="4"><%tcWebApi_get("String_Entry","IPC_VSList_Norule","s")%></td></tr>';
 	else{
 		for(var i = 1; i < wans_rules_row.length; i++){
 			code +='<tr id="row'+i+'">';
@@ -762,9 +762,9 @@ function enable_lb_rules(flag){
 
 var str0="";
 function add_option_count(obj, obj_t, selected_flag){
-		
+
 		if(obj_t.name == "wandog_maxfail" || (obj_t.name == "wandog_fb_count" && document.getElementById("wandog_fb_count_tr").style.display == "")) {
-				
+
 				free_options(obj_t);
 				for(var i=1; i<100; i++){
 						//add_option(selectObj, str, value, selected)
@@ -777,7 +777,7 @@ function add_option_count(obj, obj_t, selected_flag){
 		}
 		else{
 				return;
-		}		
+		}
 }
 </script>
 </head>
@@ -892,13 +892,13 @@ function add_option_count(obj, obj_t, selected_flag){
 														<option value="fo" ><%tcWebApi_Get("String_Entry", "dualwan_mode_fo", "s")%></option>
 														<option value="lb" <% if tcWebApi_Get("Dualwan_Entry", "wans_mode", "h") = "lb" then asp_Write("selected") end if %>><%tcWebApi_Get("String_Entry", "dualwan_mode_lb", "s")%></option>
 													</select>
-													<span id="fb_span" style="display:none"><input type="checkbox" id="fb_checkbox"><%tcWebApi_Get("String_Entry", "dualwan_failback_allow", "s")%></span>													
+													<span id="fb_span" style="display:none"><input type="checkbox" id="fb_checkbox"><%tcWebApi_Get("String_Entry", "dualwan_failback_allow", "s")%></span>
 													<script>
 										  			document.getElementById("fb_checkbox").onclick = function(){
 											  				document.form.wans_mode.value = (this.checked == true ? "fb" : "fo");
 											  				document.getElementById("wandog_fb_count_tr").style.display = (this.checked == true ? "" : "none");
 																if(document.getElementById("wandog_fb_count_tr").style.display == "")
-																		add_option_count(document.form.wandog_interval, document.form.wandog_fb_count, wandog_fb_count_orig);	
+																		add_option_count(document.form.wandog_interval, document.form.wandog_fb_count, wandog_fb_count_orig);
 										  			}
 										  		</script>
 													<div id="lb_note" style="color:#FFCC00; display:none;"><%tcWebApi_Get("String_Entry", "dualwan_lb_note", "s")%></div>
@@ -950,7 +950,7 @@ function add_option_count(obj, obj_t, selected_flag){
 												<td>
 													<input type="text" name="wandog_delay" class="input_3_table" maxlength="2" value="<% tcWebApi_Get("Dualwan_Entry", "wandog_delay", "s") %>" onKeyPress="return is_number(this, event);" placeholder="0">&nbsp;&nbsp;<%tcWebApi_Get("String_Entry", "Second", "s")%>
 												</td>
-											</tr>											
+											</tr>
 											<tr>
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,3);"><%tcWebApi_Get("String_Entry", "Interval", "s")%></a></th>
 												<td>

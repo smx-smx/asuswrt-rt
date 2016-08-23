@@ -845,6 +845,7 @@ extern int read_mount_data(const char *device_name
 	char *mount_info = read_whole_file(MOUNT_FILE);
 	char *start, line[PATH_MAX];
 	char target[8];
+	char *det_type;
 
 	if(mount_point == NULL || mount_len <= 0
 			|| type == NULL || type_len <= 0
@@ -893,7 +894,10 @@ extern int read_mount_data(const char *device_name
 		sprintf(full_dev, "/dev/%s", device_name);
 
 		memset(type, 0, type_len);
-		strcpy(type, detect_fs_type(full_dev));
+		if((det_type = detect_fs_type(full_dev)) != NULL)
+			strncpy(type, det_type, type_len-1);
+		else
+			strncpy(type, "Failed", type_len-1);
 	}
 
 	right[2] = 0;

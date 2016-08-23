@@ -21,10 +21,15 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/Javascript" src="/jquery.js"></script>
 <script type="text/javascript">
+
 var Redirect_count = 0;
 var extend_autodet = 1;
+var linkup_autodet = 0;
+var AnnexSwitch_count = 0;
+var AnnexSwitch_enable = 1;
 var wan_type = "<%tcWebApi_get("AutoPVC_Common","Detect_XDSL","s")%>";
 var dsl_autodet_state = "<% tcWebApi_get("AutoPVC_Common","dsltmp_autodet_state","s") %>";
+var dsl_line_state = "<% tcWebApi_get("Info_Adsl","lineState","s") %>";
 var w_Setting = "<%tcWebApi_get("SysInfo_Entry","w_Setting","s")%>";
 
 var makeRequest = {
@@ -61,9 +66,9 @@ var makeRequest = {
 };
 
 function QKDetect_load_body(){
-	//parent.set_step("t1");
+	parent.set_step("t1");
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_detect_sanglass","s")%>";
-	if(parent.autodet_annex_counter == 1){	//trigger dsl autodetect again after switch Annex mode
+	if(parent.autodet_annex_counter > 0){	//trigger dsl autodetect again after switch Annex mode
 		var update_dsl_info = function(){
 			makeRequest.start('/cgi-bin/start_dsl_autodet.asp', function(){}, update_dsl_info);
 		};
@@ -80,37 +85,28 @@ function getWANStatus(){
 			setTimeout("getWANStatus();", 1000);
 		},
 		success: function(response){
-			if(dsl_autodet_state == "pppoe" || dsl_autodet_state == "pppoa")
-				redirect_page("ppp_cfg");
-			else if(dsl_autodet_state == "dhcp")
-				redirect_page("mer_cfg");
-			else if(dsl_autodet_state == "Fail")
-			{
-				if(wan_type == "ATM"){
-					document.form.action = "QIS_manual_setting.asp";
+			if( dsl_line_state == "up") {
+				if(dsl_autodet_state == "pppoe" || dsl_autodet_state == "pppoa")
+					redirect_page("ppp_cfg");
+				else if(dsl_autodet_state == "dhcp")
+					redirect_page("mer_cfg");
+				else if(dsl_autodet_state == "Fail"){
+					if(wan_type == "ATM")
+						redirect_page("manual_setting");
+					else
+						redirect_page("PTM_manual_setting");
 				}
-				else{
-					document.form.action = "QIS_PTM_manual_setting.asp";
-				}
-				document.form.submit();
-				return;
-			}
-			else if((dsl_autodet_state == "initializing") || (dsl_autodet_state == "wait_for_init") ||
-					(dsl_autodet_state == "up") || (dsl_autodet_state == "down") || (dsl_autodet_state == "")) {
-					if(dsl_autodet_state == "up" && wan_type == "PTM"){
-						document.form.action = "QIS_PTM_manual_setting.asp";
-						document.form.submit();
-						return;
-					}
+				else if(wan_type == "PTM")
+					redirect_page("PTM_manual_setting");
+				else {
+					AnnexSwitch_enable = 0;
+					linkup_autodet = 1;
+
 					++Redirect_count;
-					if(Redirect_count >= 24){
-					Redirect_count = 0;
-					++parent.autodet_annex_counter;
-					if(dsl_autodet_state == "up"){
-						if(extend_autodet == 1){ //(ATM)extend for another (24-9)*5=75 seconds for auto detection to finish, so max 195 seconds
+					if(Redirect_count >= 36){	//36*5 = 180 sec = 3 min
+						if(extend_autodet == 1){ //(ATM)extend for another 3*5=15 seconds for auto detection to finish, so max 195 seconds
 							extend_autodet = 0;
-							Redirect_count = 9;
-							getWANStatus();
+							Redirect_count -= 3;
 						}
 						else{
 							if(wan_type == "ATM"){
@@ -123,41 +119,97 @@ function getWANStatus(){
 							return;
 						}
 					}
-					else if(parent.autodet_annex_counter == 1 && parent.model_name != "DSL-N66U" && parent.model_name != "DSL-N12U-C1"){	//MODELDEP : Skip DSL-N66U, DSL-N12U-C1
+					set_state_info(dsl_line_state);
+					setTimeout('getWANStatus();', 5000);
+				}
+			}
+			else if ((dsl_line_state == "initializing") || (dsl_line_state == "wait_for_init")) {
+				if(linkup_autodet == 1) {	//up -> down, restart auto det
+					linkup_autodet = 0;
+					Redirect_count = 0;
+					document.redirectForm.action_script.value = "restart_autodet";
+					document.redirectForm.submit();
+				}
+				AnnexSwitch_enable = 0;
+				set_state_info(dsl_line_state);
+				setTimeout('getWANStatus();', 5000);
+			}
+			else if ( (AnnexSwitch_enable == 1) &&
+				((dsl_line_state == "down") || (dsl_line_state == ""))
+			) {
+				if(linkup_autodet == 1) {	//up -> down, restart auto det
+					linkup_autodet = 0;
+					Redirect_count = 0;
+					document.redirectForm.action_script.value = "restart_autodet";
+					document.redirectForm.submit();
+				}
+
+				++AnnexSwitch_count;
+				if(AnnexSwitch_count >= 12){	//12*5 = 180 sec = 1 min
+					AnnexSwitch_count = 0;
+					++parent.autodet_annex_counter;
+					if(parent.autodet_annex_counter <= 3 && parent.model_name != "DSL-N66U" && parent.model_name != "DSL-N12U-C1" && parent.model_name != "DSL-N12U-D1"){	//MODELDEP : Skip DSL-N66U, DSL-N12U-C1, DSL-N12U-D1
 						if(document.redirectForm.AnnexTypeA.value == "ANNEX A/I/J/L/M")
 							document.redirectForm.AnnexTypeA.value = "ANNEX B/J/M";
-						else if(document.redirectForm.AnnexTypeA.value == "ANNEX B/J/M")
+						else if(document.redirectForm.AnnexTypeA.value == "ANNEX B/J/M"
+								|| document.redirectForm.AnnexTypeA.value == "ANNEX B/J")
 							document.redirectForm.AnnexTypeA.value = "ANNEX A/I/J/L/M";
+						document.redirectForm.action_script.value = "restart_dsl_setting";
 						document.redirectForm.submit();
+
+						set_state_info(dsl_line_state);
+						setTimeout('getWANStatus();', 5000);
 					}
 					else{
-						parent.autodet_annex_counter == 0;
+						parent.autodet_annex_counter = 0;
 						redirect_page("annex_setting");
 					}
 				}
-				else{
-					if(dsl_autodet_state == "down" || dsl_autodet_state == ""){
-						set_no_cable_info(true);
-					}
-					else{
-						set_no_cable_info(false);
-					}
+				else {
+					set_state_info(dsl_line_state);
 					setTimeout('getWANStatus();', 5000);
 				}
 			}
 			else{
-				set_no_cable_info(true);
+				set_state_info(dsl_line_state);
 				setTimeout('getWANStatus();', 5000);
 			}
 		}
 	});
 }
 
-function set_no_cable_info(no_cable){
-	if(no_cable)
-		document.getElementById("no_cable").style.display = "";
-	else
-		document.getElementById("no_cable").style.display = "none";
+function set_state_info(state){
+	switch(state) {				
+		case "":
+			document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Link down (DSL LED Off)</span><br><br>";
+			document.getElementById("LED_state").style.display = "";		
+			document.getElementById("no_cable").style.display = "";
+			break;
+		case "down":
+			document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Link down (DSL LED Off)</span><br><br>";
+			document.getElementById("LED_state").style.display = "";		
+			document.getElementById("no_cable").style.display = "";
+			break;
+		case "wait_for_init":
+			document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Wait for init (DSL LED Flashing)</span><br><br>";
+			document.getElementById("LED_state").style.display = "";		
+			document.getElementById("no_cable").style.display = "none";
+			break;
+		case "initializing":
+			document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Initializing (DSL LED Flashing)</span><br><br>";
+			document.getElementById("LED_state").style.display = "";		
+			document.getElementById("no_cable").style.display = "none";
+			break;
+		case "up":
+			document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Link up (DSL LED On)</span><br><br>";
+			document.getElementById("LED_state").style.display = "";		
+			document.getElementById("no_cable").style.display = "none";
+			break;
+		default:	//include ""
+			document.getElementById("LED_state").style.display = "none";		
+			document.getElementById("no_cable").style.display = "none";
+			break;
+	}
 }
 
 function redirect_page(redirect_flag){
@@ -199,17 +251,26 @@ function redirect_page(redirect_flag){
 			<strong><span><%tcWebApi_get("String_Entry","QKS_detect_waitdesc","s")%></span></strong>
 		</td>
 	</tr>
-	  <tr id="no_cable" style="display:none;">
+	<tr>
 		<td>
 		</td>
 		<td class="test_css">
-			<strong><span><%tcWebApi_get("String_Entry","QIS_NoCable_desc","s")%></span></strong>
+			<strong><span><%tcWebApi_get("String_Entry","QKS_detect_waitdesc1","s")%></span></strong>
 		</td>
-	  </tr>
+	</tr>
+	<tr>
+		<td>
+		</td>
+		<td class="test_css">			
+			<strong><span id="LED_state" style="display:none;"></span></strong>
+			<strong><span id="no_cable" style="color:#FFCC00;display:none;"><%tcWebApi_get("String_Entry","QIS_NoCable_desc","s")%></span></strong>
+		</td>
+	</tr>
 </table>
 </div>
 </form>
-<form method="post" name="redirectForm" action="QIS_process.asp" target="">
+<iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
+<form method="post" name="redirectForm" action="QIS_process.asp"  target="hidden_frame">
 <input type="hidden" name="flag" value="detect">
 <input type="hidden" name="current_page" value="/cgi-bin/qis/QIS_detect.asp">
 <input type="hidden" name="next_page" value="/cgi-bin/qis/QIS_detect.asp">

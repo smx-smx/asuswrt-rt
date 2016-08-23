@@ -96,8 +96,12 @@ ASPOBJS= \
 	asp/gb-lex.o\
 	asp/http-get-utils.o\
 	asp/grammar.o\
-	asp/parsers.o\
-		
+	asp/parsers.o
+ifneq ($(RTCONFIG_OPENVPN), )
+ASPOBJS += asp/openvpn_options.o
+endif
+
+
 all: mxml_lib tcapi_lib asp_file boa boa_indexer
 
 mxml_lib:

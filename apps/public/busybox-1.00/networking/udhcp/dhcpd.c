@@ -366,6 +366,18 @@ int main(int argc, char *argv[])
 			static_lease.expires = 0;
 
 			lease = &static_lease;
+			/*[Fixed issue from Spain customer feedback] 
+			* When user using static IP with Repeater, should be clear arp table
+			* make sure static IP is binding wiht Repeater's MAC address in arp table. 
+			*/
+			struct in_addr ip_addr_t;
+			char addr[8];
+			char cmd[20];
+			sprintf(addr, "%08x", static_lease_ip);
+			sscanf(addr , "%08x", &ip_addr_t.s_addr);
+			//tcdbg_printf("[%s:%d] StaticIP:%s flush arp table\n",__FUNCTION__, __LINE__, inet_ntoa(ip_addr_t));
+			sprintf(cmd, "arp -d %s", inet_ntoa(ip_addr_t));
+			system(cmd);
 
 		}
 		else

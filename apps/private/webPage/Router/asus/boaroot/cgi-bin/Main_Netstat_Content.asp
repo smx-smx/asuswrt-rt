@@ -314,10 +314,10 @@ function validForm(){
 											<td>
 												<select id="NetOption" class="input_option" name="NetOption" onChange="append_value(this);">
 													<option value="-a">Display all sockets</option>
-													<option value="-t">TCP sockets</option>
-													<option value="-u">UDP sockets</option>
+													<option value="-ta">TCP sockets</option>
+													<option value="-ua">UDP sockets</option>
 													<option value="-w">RAW sockets</option>
-													<option value="-x">UNIX sockets</option>
+													<option value="-xa">UNIX sockets</option>
 													<option value="-l">Display listening server sockets</option>
 													<option value="-r">Display routing table</option>
  												</select>	

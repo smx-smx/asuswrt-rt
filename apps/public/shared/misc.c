@@ -1341,7 +1341,9 @@ int is_psr(int unit)
 #ifdef RTCONFIG_OPENVPN
 char *get_parsed_crt(const char *name, char *buf, size_t buf_len)
 {
-	char *value;
+	char node[MAXLEN_NODE_NAME] = {0};
+	char value[MAXLEN_TCAPI_MSG] = {0};
+	int unit;
 	int len, i;
 #if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
 	FILE *fp;
@@ -1349,9 +1351,18 @@ char *get_parsed_crt(const char *name, char *buf, size_t buf_len)
 	char *p = buf;
 #endif
 
-	value = nvram_safe_get(name);
-
-	len = strlen(value);
+	//vpn_crt_xxxxxx1_xxxxxx
+	unit = atoi(name+14);
+	if(!strncmp(name+8, "client", 6)) {
+		snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+CLIENT_IF_START);
+	}
+	else if(!strncmp(name+8, "server", 6)) {
+		snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+SERVER_IF_START);
+	}
+	if(tcapi_get(node, name, value) == TCAPI_PROCESS_OK)
+		len = strlen(value);
+	else
+		len = 0;
 
 #if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
 	if(!check_if_dir_exist(OVPN_FS_PATH))
@@ -1360,22 +1371,23 @@ char *get_parsed_crt(const char *name, char *buf, size_t buf_len)
 #endif
 
 	if(len) {
-	for (i=0; (i < len); i++) {
-		if (value[i] == '>')
-			buf[i] = '\n';
-		else
-			buf[i] = value[i];
-	}
+		for (i=0; (i < len); i++) {
+			if (value[i] == '>')
+				buf[i] = '\n';
+			else
+				buf[i] = value[i];
+		}
 
-	buf[i] = '\0';
+		buf[i] = '\0';
 
 #if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
 		//save to file and then clear nvram value
 		fp = fopen(tmpBuf, "w");
 		if(fp) {
+			chmod(tmpBuf, S_IRUSR|S_IWUSR);
 			fprintf(fp, "%s", buf);
 			fclose(fp);
-			nvram_set(name, "");
+			tcapi_set(node, name, "");
 		}
 #endif
 	}
@@ -1424,9 +1436,11 @@ int set_crt_parsed(const char *name, char *file_path)
 	}
 #else
 	FILE *fp=fopen(file_path, "r");
-	char buffer[3000] = {0};
+	char buffer[4000] = {0};
 	char buffer2[256] = {0};
 	char *p = buffer;
+	char node[MAXLEN_NODE_NAME] = {0};
+	int unit;
 
 	if(fp) {
 		while(fgets(buffer, sizeof(buffer), fp)) {
@@ -1447,7 +1461,17 @@ int set_crt_parsed(const char *name, char *file_path)
 				//*(p-1) = '>';
 		}
 		*p = '\0';
-		nvram_set(name, buffer);
+
+		//vpn_crt_xxxxxx1_xxxxxx
+		unit = atoi(name+14);
+		if(!strncmp(name+8, "client", 6)) {
+			snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+CLIENT_IF_START);
+		}
+		else if(!strncmp(name+8, "server", 6)) {
+			snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+SERVER_IF_START);
+		}
+		tcapi_set(node, name, buffer);
+
 		fclose(fp);
 		return 0;
 	}
@@ -1458,10 +1482,31 @@ int set_crt_parsed(const char *name, char *file_path)
 
 int ovpn_crt_is_empty(const char *name)
 {
+	char node[MAXLEN_NODE_NAME] = {0};
+	char value[MAXLEN_TCAPI_MSG] = {0};
+	int unit;
+	size_t len;
+#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
 	char file_path[128] ={0};
 	struct stat st;
+#endif
 
-	if( nvram_is_empty(name) ) {
+	//vpn_crt_xxxxxx1_xxxxxx
+	unit = atoi(name+14);
+	if(!strncmp(name+8, "client", 6)) {
+		snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+CLIENT_IF_START);
+	}
+	else if(!strncmp(name+8, "server", 6)) {
+		snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+SERVER_IF_START);
+	}
+	if(tcapi_get(node, name, value) == TCAPI_PROCESS_OK)
+		len = strlen(value);
+	else
+		len = 0;
+
+	if( len )
+		return 0;
+	else {
 #if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
 		//check file
 		if(d_exists(OVPN_FS_PATH)) {
@@ -1485,9 +1530,6 @@ int ovpn_crt_is_empty(const char *name)
 #else
 		return 1;
 #endif
-	}
-	else {
-		return 0;
 	}
 }
 #endif

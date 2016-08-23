@@ -42,8 +42,7 @@ var mountedNum = parent.getDiskMountedNum(diskOrder);
 var apps_array = <% apps_info("asus") %>;
 var apps_dev = "<% tcWebApi_get("Apps_Entry", "apps_dev", "s") %>";
 
-function initial(){
-	flash_button();
+function initial(){	
 	showtext($("disk_model_name"), parent.getDiskModelName(diskOrder));
 	showtext($("disk_total_size"), parent.getDiskTotalSize(diskOrder));
 

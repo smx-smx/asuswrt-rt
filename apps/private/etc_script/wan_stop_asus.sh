@@ -64,6 +64,13 @@ if [ "$Active" = "Yes" ]; then
 	tcapi set Wanduck_Common link_internet 0 &
 fi
 
+# ginp
+if [ "$1" = "8" ]; then
+if [ "$ISP" = "0" -o "$ISP" = "2" ]; then
+	killall chkwan
+fi
+fi
+
 ebtables -t filter -D INPUT -i nas$i -p IPv4 --ip-proto 17 --ip-dport 67 -j DROP 2>/dev/null
 ebtables -t filter -D INPUT -i nas$i -p IPv6 --ip6-proto 17 --ip6-dport 547 -j DROP 2>/dev/null
 ebtables -t filter -D OUTPUT -o nas$i -p IPv6 --ip6-proto 58 --ip6-icmpv6type 134 -j DROP 2>/dev/null

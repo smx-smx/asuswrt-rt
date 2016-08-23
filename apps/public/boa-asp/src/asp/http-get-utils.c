@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "shared.h"
 
 #include "http-get-utils.h"
 //#include "../../../lib/libtcapi.h"

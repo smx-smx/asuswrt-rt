@@ -12,6 +12,7 @@ If Request_Form("editFlag") = "1" then
 	tcWebApi_Set("WLan_Common","WirelessMode","wl_nmode_x")
 	tcWebApi_Set("WLan_Common","BGProtection","wl_gmode_protection")
 	tcWebApi_Set("WLan_Common","Channel","wl_channel")
+	tcWebApi_Set("WLan_Common","acs_dfs","acs_dfs")
 	tcWebApi_Set("WLan_Common","HT_BW","wl_bw")
 	tcWebApi_Set("WLan_Common","HT_EXTCHA","wl_nctrlsb")
 	tcWebApi_Set("WLan_Entry","auth_mode_x","wl_auth_mode_save")
@@ -26,13 +27,10 @@ If Request_Form("editFlag") = "1" then
 	tcWebApi_Set("WLan_Entry","phrase_x","wl_phrase_x")
 	tcWebApi_Set("WLan_Entry","RekeyInterval","wl_wpa_gtk_rekey")
 	tcWebApi_Set("WLan_Entry","WPSConfStatus","WPSConfigured")
-
+	load_parameters_from_generic()
 	tcWebApi_commit("WLan_Entry")
 end if
 
-If Request_Form("editFlag") = "1" then
-load_parameters_from_generic()
-end if
 load_parameters_to_generic()
 %>
 
@@ -65,6 +63,9 @@ wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'pppoe';
 var wireless = []; // [[MAC, associated, authorized], ...]
+var cur_control_channel = ["<% tcWebApi_get("Info_WLan","wlanCurChannel_2G","s"); %>", "<% tcWebApi_get("Info_WLan","wlanCurChannel_5G","s"); %>"];
+
+var wl_unit = "<% tcWebApi_get("WLan_Common","wl_unit","s") %>";
 
 function login_ip_str() { return '<% tcWebApi_get("WebCurSet_Entry","login_ip_tmp","s"); %>'; }
 
@@ -93,20 +94,17 @@ function initial(){
 	document.form.wl_key4.value =  decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","key4","s") %>');
 	document.form.wl_phrase_x.value =  decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","phrase_x","s") %>');
 	document.form.wl_channel.value = document.form.wl_channel_orig.value;
-	
-	if(document.form.wl_wpa_psk.value.length <= 0)
-		document.form.wl_wpa_psk.value = "Please type network key";		
-
+		
 	if(document.form.wl_unit[0].selected == true)
 	{
-		$("wl_gmode_checkbox").style.display = "";
+		document.getElementById("wl_gmode_checkbox").style.display = "";
 		if(document.form.wl_nmode_x.value=='6'){
 			document.form.wl_gmode_check.checked = false;
-			$("wl_gmode_check").disabled = true;
+			document.getElementById("wl_gmode_check").disabled = true;
 		}
 		else{
 			document.form.wl_gmode_check.checked = true;
-			$("wl_gmode_check").disabled = false;
+			document.getElementById("wl_gmode_check").disabled = false;
 		}
 	}
 	else{	//5G uses the different Wireless Mode, added by Javier.
@@ -120,10 +118,10 @@ function initial(){
 					document.form.wl_nmode_x[i] = new Option(algos[i], "14");
 					break;
 				case 1:
-					document.form.wl_nmode_x[i] = new Option(algos[i], "6");
+					document.form.wl_nmode_x[i] = new Option(algos[i], "11");
 					break;
 				case 2:
-					document.form.wl_nmode_x[i] = new Option(algos[i], "0");
+					document.form.wl_nmode_x[i] = new Option(algos[i], "2");
 					break;
 				case 3:
 					document.form.wl_nmode_x[i] = new Option(algos[i], "15");
@@ -143,16 +141,27 @@ function initial(){
 		document.form.wl_gmode_check.checked = false;
 		
 	if('<% tcWebApi_get("WLan_Entry","HideSSID","s") %>' == '1'){
-		$('WPS_hideSSID_hint').style.display = "";	
+		document.getElementById('WPS_hideSSID_hint').style.display = "";	
 	}		
 		
 	if(band5g_support == -1)
-		$("wl_unit_field").style.display = "none";			
+		document.getElementById("wl_unit_field").style.display = "none";			
 		
-	change_wl_nmode(document.form.wl_nmode_x);	
+	change_wl_nmode(document.form.wl_nmode_x);
+
+	if(support_dfs == 1 && document.form.wl_channel.value  == '0' && wl_unit == '1'){	//support_dfs, 5GHz, Auto channel
+		document.getElementById('dfs_checkbox').style.display = "";
+		check_DFS_support(document.form.acs_dfs_checkbox);
+	}
+
 	handle_11ac_80MHz();	
 		
 	limit_auth_method();
+
+	if(document.form.wl_channel.value  == '0'){
+		document.getElementById("auto_channel").style.display = "";
+		document.getElementById("auto_channel").innerHTML = "Current control channel: "+cur_control_channel[document.form.wl_unit.value];
+	}
 }
 
 function add_options_value(o, arr, orig){
@@ -204,9 +213,7 @@ function redirect(flag){
 }
 
 function applyRule(){
-	var auth_mode = document.form.wl_auth_mode_x.value;
-	if(document.form.wl_wpa_psk.value == "Please type network key")
-		document.form.wl_wpa_psk.value = "";
+	var auth_mode = document.form.wl_auth_mode_x.value;	
 	if(validForm()){
 		document.form.wps_config_state.value = "1";
 		if((auth_mode == "shared" || auth_mode == "wpa" || auth_mode == "wpa2" || auth_mode == "wpawpa2" || auth_mode == "radius" ||
@@ -262,6 +269,17 @@ function validForm(){
 	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){ //2008.08.04 lock modified
 		if(!validate_psk(document.form.wl_wpa_psk))
 				return false;
+		
+		//confirm common string combination     #JS_common_passwd#
+                var is_common_string = check_common_string(document.form.wl_wpa_psk.value, "wpa_key");
+                if(is_common_string){
+                        if(confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
+                                document.form.wl_wpa_psk.focus();
+                                document.form.wl_wpa_psk.select();
+                                return false;   
+                        }       
+                }	
+
 		if(!validate_range(document.form.wl_wpa_gtk_rekey, 0, 2592000))
 				return false;
 	}
@@ -303,7 +321,7 @@ return true;
 }
 function disableAdvFn(){
 for(var i=18; i>=3; i--)
-$("WLgeneral").deleteRow(i);
+document.getElementById("WLgeneral").deleteRow(i);
 }
 
 function _change_wl_unit(wl_unit){
@@ -314,21 +332,13 @@ function _change_wl_unit(wl_unit){
 	document.form_band.submit();
 }
 
-function clean_input(obj){
-	if(obj.value == "Please type network key")
-			obj.value = "";
-}
-
 function check_NOnly_to_GN(){
-	//var gn_array_2g = [["1", "ASUS_Guest1", "psk", "tkip", "1234567890", "0", "1", "", "", "", "", "0", "off", "0"], ["1", "ASUS_Guest2", "shared", "aes", "", "1", "1", "55555", "", "", "", "0", "off", "0"], ["1", "ASUS_Guest3", "open", "aes", "", "2", "4", "", "", "", "1234567890123", "0", "off", "0"]];
-	//                    Y/N        mssid      auth    asyn    wpa_psk wl_wep_x wl_key k1	k2 k3 k4
-	//var gn_array_5g = [["1", "ASUS_5G_Guest1", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "0"], ["0", "ASUS_5G_Guest2", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", ""], ["0", "ASUS_5G_Guest3", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", ""]];
 	// Viz add 2012.11.05 restriction for 'N Only' mode  ( start
 	if((document.form.wl_nmode_x.value == "11" || document.form.wl_nmode_x.value == "6") && document.form.wl_unit[1].selected == true){		//5G: NOnly
 			for(var i=0;i<gn_array_5g.length;i++){
 					if(gn_array_5g[i][0] == "1"
 							&& (gn_array_5g[i][3] == "tkip" || gn_array_5g[i][5] == "1" || gn_array_5g[i][5] == "2")){
-								$('wl_NOnly_note').style.display = "";
+								document.getElementById('wl_NOnly_note').style.display = "";
 								return false;
 					}
 			}
@@ -336,12 +346,12 @@ function check_NOnly_to_GN(){
 			for(var i=0;i<gn_array_2g.length;i++){
 					if(gn_array_2g[i][0] == "1"
 							&& (gn_array_2g[i][3] == "tkip" || gn_array_2g[i][5] == "1" || gn_array_2g[i][5] == "2")){
-								$('wl_NOnly_note').style.display = "";
+								document.getElementById('wl_NOnly_note').style.display = "";
 								return false;
 					}
 			}
 	}
-	$('wl_NOnly_note').style.display = "none";
+	document.getElementById('wl_NOnly_note').style.display = "none";
 	return true;
 //  Viz add 2012.11.05 restriction for 'N Only' mode  ) end
 }
@@ -364,7 +374,7 @@ function change_wl_nmode(obj){
 	}
 	else {
 		bws = [1, 0, 2, 3];
-		bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz", "80MHz"];
+		bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80MHz"];
 		add_options_x2(document.form.wl_bw, bwsDesc, bws, cur);
 		handle_11ac_80MHz();
 	}
@@ -373,6 +383,13 @@ function change_wl_nmode(obj){
 	limit_auth_method();
 	automode_hint();
 	check_NOnly_to_GN();
+}
+
+function check_DFS_support(obj){
+	if(obj.checked)
+		document.form.acs_dfs.value = 1;
+	else
+		document.form.acs_dfs.value = 0;
 }
 </script>
 </head>
@@ -420,14 +437,8 @@ function change_wl_nmode(obj){
 <input type="hidden" name="wlc_ure_ssid_org" value="" disabled>
 <input type="hidden" name="wl_wpa_mode" value="0">
 <input type="hidden" name="wl_wpa_psk_org" value="12345678">
-<input type="hidden" name="wl_key1_org" value="">
-<input type="hidden" name="wl_key2_org" value="">
-<input type="hidden" name="wl_key3_org" value="">
-<input type="hidden" name="wl_key4_org" value="">
-<input type="hidden" name="wl_phrase_x_org" value="">
 <input type="hidden" maxlength="15" size="15" name="x_RegulatoryDomain" value="" readonly="1">
 <input type="hidden" name="wl_gmode_protection" value='<% tcWebApi_get("WLan_Common","BGProtection","s"); %>'>
-<input type="hidden" name="wl_wme" value="on">
 <input type="hidden" name="wl_mode_x" value="0">
 <input type="hidden" name="wl_nmode" value="">
 <input type="hidden" name="wl_nctrlsb_old" value="<% tcWebApi_get("WLan_Common","HT_EXTCHA","s"); %>">
@@ -435,6 +446,7 @@ function change_wl_nmode(obj){
 <input type="hidden" name="wl_channel_orig" value='<% tcWebApi_get("WLan_Common","Channel","s"); %>'>
 <input type="hidden" name="wl_wep_x_orig" value='0'>
 <input type="hidden" name="wl_subunit" value='-1'>
+<input type="hidden" name="acs_dfs" value='<% tcWebApi_get("WLan_Common","acs_dfs","s"); %>'>
 <input type="hidden" name="editFlag" value="0">
 <input type="hidden" name="wl_auth_mode_save" value="OPEN">
 <input type="hidden" name="wl_crypto_save" value="NONE">
@@ -504,7 +516,7 @@ function change_wl_nmode(obj){
 	<tr>
 		<th><a id="wl_mode_desc" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 4);"><% tcWebApi_Get("String_Entry", "WC11b_x_Mode11g_in", "s") %></a></th>
 		<td>
-			<select name="wl_nmode_x" class="input_option" onChange="wireless_mode_change(this);">
+			<select name="wl_nmode_x" class="input_option" onChange="change_wl_nmode(this);">
 				<option value="9" <% if tcWebApi_get("WLan_Common","WirelessMode","h") = "9" then asp_Write("selected") end if %>><% tcWebApi_Get("String_Entry", "Auto", "s") %></option>
 				<option value="6" <% if tcWebApi_get("WLan_Common","WirelessMode","h") = "6" then asp_Write("selected") end if %>>N Only</option>
 				<option value="0" <% if tcWebApi_get("WLan_Common","WirelessMode","h") = "0" then asp_Write("selected") end if %>>Legacy</option>
@@ -544,6 +556,8 @@ function change_wl_nmode(obj){
 				<option value="10" <% if tcWebApi_get("WLan_Common","Channel","h") = "10" then asp_Write("selected") end if %>>10</option>
 				<option value="11" <% if tcWebApi_get("WLan_Common","Channel","h") = "11" then asp_Write("selected") end if %>>11</option>
 			</select>
+			<span id="auto_channel" style="display:none;margin-left:10px;"></span><br>
+			<span id="dfs_checkbox" style="display:none"><input type="checkbox" onClick="check_DFS_support(this);" name="acs_dfs_checkbox" <% if tcWebApi_get("WLan_Common","acs_dfs","h") = "1" then asp_Write("checked") end if %>><% tcWebApi_Get("String_Entry", "WC11b_EChannel_dfs", "s") %></input></span>
 		</td>
 	</tr>
 	<tr id="wl_nctrlsb_field">
@@ -583,7 +597,7 @@ function change_wl_nmode(obj){
 	<tr>
 		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);">WPA Pre-Shared Key</a></th>
 		<td>
-			<input type="text" name="wl_wpa_psk" maxlength="65" class="input_32_table" value="<% If tcWebApi_get("WLan_Entry","wpa_psk","h") <> "" then  tcWebApi_get("WLan_Entry","wpa_psk","s") else asp_Write("Please type network key") end if %>" onClick="clean_input(this)">
+			<input type="password" name="wl_wpa_psk" maxlength="65" class="input_32_table" value="<% If tcWebApi_get("WLan_Entry","wpa_psk","h") <> "" then tcWebApi_get("WLan_Entry","wpa_psk","s") end if %>" onBlur="switchType(this, false);" onFocus="switchType(this, true);">
 		</td>
 	</tr>
 	<tr>

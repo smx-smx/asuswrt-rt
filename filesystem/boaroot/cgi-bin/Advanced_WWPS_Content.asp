@@ -4,7 +4,7 @@ If Request_Form("editFlag") = "1" then
 	tcWebApi_set("WLan_Common","MBSSID_changeFlag","MBSSID_changeFlag")
 	tcWebApi_set("WLan_Common","MBSSID_able_Flag","MBSSID_able_Flag")
 
-	tcWebApi_Set("WLan_Common","wl_unit","wps_band")
+	tcWebApi_Set("WLan_Common","wl_unit","wl_unit")
 	tcWebApi_Set("WLan_Common","wps_enable","wps_enable")
 
 	If Request_Form("WpsSwitch")="1" Then
@@ -97,10 +97,10 @@ function initial(){
 
 	}else{										//Dual band
 		$("wps_band_tr").style.display = "";
-		if(document.form.wps_band.value == 1){
+		if(document.form.wl_unit.value == 1){
 			$("wps_band_word").innerHTML = "5GHz";
 		}
-		else if(document.form.wps_band.value == 0){
+		else if(document.form.wl_unit.value == 0){
 			$("wps_band_word").innerHTML = "2.4GHz";
 		}
 	}
@@ -133,10 +133,10 @@ function initial(){
 
 function SwitchBand(){
 	if(wps_enable_old == "0"){
-		if(document.form.wps_band.value == "1")
-			document.form.wps_band.value = "0";
+		if(document.form.wl_unit.value == "1")
+			document.form.wl_unit.value = "0";
 		else
-			document.form.wps_band.value = "1";
+			document.form.wl_unit.value = "1";
 	}
 	else{
 		$("wps_band_hint").innerHTML = "* <%tcWebApi_get("String_Entry","WC11b_x_WPSband_hint","s")%>";
@@ -444,7 +444,7 @@ function show_wsc_status(wps_infos){
 <input type="hidden" name="wl_wps_mode" value="disabled" disabled>   <!--wait to add function //javi-->
 <input type="hidden" name="wl_auth_mode_x" value="<% tcWebApi_get("WLan_Entry","auth_mode_x","s"); %>">
 <input type="hidden" name="wl_wep_x" value="<% tcWebApi_get("WLan_Entry","wep_x","s"); %>">
-<input type="hidden" name="wps_band" value="<% tcWebApi_get("WLan_Common","wl_unit","s"); %>">
+<input type="hidden" name="wl_unit" value="<% tcWebApi_get("WLan_Common","wl_unit","s"); %>">
 <input type="hidden" name="wl_crypto" value="<% tcWebApi_get("WLan_Entry","wl_wep_type","s"); %>">
 <input type="hidden" name="editFlag" value="0">
 <input type="hidden" name="MBSSID_changeFlag" value="0">

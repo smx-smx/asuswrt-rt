@@ -290,3 +290,119 @@ status_read (struct status_output *so, struct buffer *buf)
 
   return ret;
 }
+
+//Sam.B,	2013/10.31
+void update_nvram_status(int flag)
+{
+	int pid = getpid();
+	char name[16] = {0};
+	char node[32] = {0};
+	char buf[MAXLEN_TCAPI_MSG] = {0};
+
+	psname(pid, name, 16);	//vpnserverX or vpnclientX
+	if(!strncmp(name, "vpnserver", 9)) {
+		sprintf(node, "OpenVPN_Entry%d", atoi(name+9)+SERVER_IF_START);
+	}
+	else if(!strncmp(name, "vpnclient", 9)) {
+		sprintf(node, "OpenVPN_Entry%d", atoi(name+9)+CLIENT_IF_START);
+	}
+	else {
+		return;
+	}
+
+	switch(flag) {
+	case EXIT_GOOD:
+		tcapi_get(node, "errno", buf);
+		if(atoi(buf)) {
+			tcapi_set_int(node, "state", ST_ERROR);
+		}
+		else {
+			tcapi_set_int(node, "state", ST_EXIT);
+		}
+		break;
+	case EXIT_ERROR:
+		tcapi_set_int(node, "state", ST_ERROR);
+		break;
+	case ADDR_CONFLICTED:
+		tcapi_get(node, "errno", buf);
+		tcapi_set_int(node, "errno", atoi(buf) | ERRNO_IP);
+		break;
+	case ROUTE_CONFLICTED:
+		tcapi_get(node, "errno", buf);
+		tcapi_set_int(node, "errno", atoi(buf) | ERRNO_ROUTE);
+		break;
+	case RUNNING:
+		tcapi_get(node, "errno", buf);
+		if(atoi(buf)) {
+			tcapi_set_int(node, "state", ST_ERROR);
+		}
+		else {
+			tcapi_set_int(node, "state", ST_RUNNING);
+		}
+		break;
+	case SSLPARAM_ERROR:
+		tcapi_set_int(node, "errno", ERRNO_SSL);
+		break;
+	case SSLPARAM_DH_ERROR:
+		tcapi_set_int(node, "errno", ERRNO_DH);
+		break;
+	case RCV_AUTH_FAILED_ERROR:
+		tcapi_set_int(node, "errno", ERRNO_AUTH);
+		break;
+	}
+}
+
+int current_addr(in_addr_t addr)
+{
+	FILE *fp = fopen("/proc/net/route", "r");
+	in_addr_t dest;
+	char buf[256];
+	int i;
+
+	if(fp) {
+		while(fgets(buf, sizeof(buf), fp)) {
+			if(!strncmp(buf, "Iface", 5))
+				continue;
+
+			i = sscanf(buf, "%*s %x", &dest);
+			if (i != 1)
+				break;
+
+			if(dest == addr) {
+				fclose(fp);
+				return 1;
+			}
+		}
+		fclose(fp);
+	}
+	return 0;
+}
+
+int current_route(in_addr_t network, in_addr_t netmask)
+{
+	FILE *fp = fopen("/proc/net/route", "r");
+	in_addr_t dest, mask;
+	char buf[256];
+	int i;
+
+	if(fp) {
+		while(fgets(buf, sizeof(buf), fp)) {
+			if(!strncmp(buf, "Iface", 5))
+				continue;
+
+			i = sscanf(buf, "%*s %x %*s %*s %*s %*s %*s %x",
+					&dest, &mask);
+			if (i != 2)
+				break;
+
+			if(dest == network && mask == netmask) {
+				fclose(fp);
+				return 1;
+			}
+		}
+		fclose(fp);
+	}
+	return 0;
+}
+
+//Sam.E	2013/10/31

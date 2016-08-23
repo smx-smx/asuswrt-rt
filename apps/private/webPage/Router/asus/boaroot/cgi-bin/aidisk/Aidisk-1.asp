@@ -180,7 +180,7 @@ function go_next_page(){
 									else
 										document.getElementById("tosLink").href = "http://www.asus.com/us";
 
-									document.getElementById("tosLink").href += "/Terms_of_Use_Notice_Privacy_Policy/Official_Site"
+									document.getElementById("tosLink").href += "/Terms_of_Use_Notice_Privacy_Policy/Official-Site";
 								})()
 							</script>
 						</li>						
@@ -261,7 +261,7 @@ function go_next_page(){
 									else
 										document.getElementById("tosLink2").href = "http://www.asus.com/us";
 
-									document.getElementById("tosLink2").href += "/Terms_of_Use_Notice_Privacy_Policy/Official_Site"
+									document.getElementById("tosLink2").href += "/Terms_of_Use_Notice_Privacy_Policy/Official-Site";
 								})()
 							</script>
 						</li>					

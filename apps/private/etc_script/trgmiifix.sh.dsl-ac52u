@@ -1,0 +1,27 @@
+#!/bin/sh
+
+#tx data、ctl、clk driving
+ethphxcmd gsww2 0 7a54 77 
+ethphxcmd gsww2 0 7a5c 77 
+ethphxcmd gsww2 0 7a64 77 
+ethphxcmd gsww2 0 7a6c 77 
+ethphxcmd gsww2 0 7a74 77 
+ethphxcmd gsww2 0 7a7c ff 
+ethphxcmd gsww2 1 7a54 77 
+ethphxcmd gsww2 1 7a5c 77 
+ethphxcmd gsww2 1 7a64 77 
+ethphxcmd gsww2 1 7a6c 77 
+ethphxcmd gsww2 1 7a74 77 
+ethphxcmd gsww2 1 7a7c ff 
+
+#rx delay
+ethphxcmd gsww2 0 7a10 33
+ethphxcmd gsww2 0 7a18 33
+ethphxcmd gsww2 0 7a20 33
+ethphxcmd gsww2 0 7a28 33
+ethphxcmd gsww2 0 7a30 33
+ethphxcmd gsww2 1 7a10 33
+ethphxcmd gsww2 1 7a18 33
+ethphxcmd gsww2 1 7a20 33
+ethphxcmd gsww2 1 7a28 33
+ethphxcmd gsww2 1 7a30 33

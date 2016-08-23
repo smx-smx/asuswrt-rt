@@ -1,0 +1,35 @@
+
+AR=$(CROSS)ar
+LD=$(CROSS)ld
+STRIP=$(CROSS)strip
+RANLIB=$(CROSS)ranlib
+SIZE=$(CROSS)size
+
+KERNEL_DIR=../../../linux
+
+INCLUDE = -I$(KERNEL_DIR)/include
+
+KERNEL_INCLUDES:=../../../linux/include/
+
+
+ifneq ($(strip $(TC_CFLAGS)),)
+CFLAGS += $(TC_CFLAGS)
+endif
+
+CFLAGS += -I$(LIB_UTILS_DIR)
+LDFLAGS += -L ../lib -ltcapi -L $(LIB_UTILS_DIR) -lutils
+
+ASUSTESTOBJS=asustest.o
+
+all: asustest
+
+.c.o:
+	$(CC) -c $(CFLAGS) $< -I$(KERNEL_INCLUDES)
+
+ate: $(ASUSTESTOBJS)
+	$(CC) $(ASUSTESTOBJS) -o $@ $(LDFLAGS)
+	$(STRIP) --strip-unneeded ate
+
+
+clean:
+	rm -f ate

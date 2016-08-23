@@ -363,7 +363,8 @@ renew(void)
 
 	/* Update actual DNS or delayed for DHCP+PPP */
 	if (changed) {
-		restart_dnsmasq(wan_ifname, trim_r(dns));
+		//restart_dnsmasq(wan_ifname, trim_r(dns));
+		start_dnsmasq();
 	}
 
 	/* Update connected state and DNS for WEB UI,

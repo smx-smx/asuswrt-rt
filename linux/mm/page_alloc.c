@@ -50,6 +50,7 @@
 #ifdef CONFIG_PROC_FS
 extern int auto_clear_cache_flag;
 extern void tc3162wdog_kick(void);
+extern void drop_pagecache(void);	//Andy Chiu, 2015/11/03. sync from 2.6.36
 #endif
 #endif
 /*

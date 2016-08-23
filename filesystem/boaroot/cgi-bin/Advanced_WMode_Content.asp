@@ -113,19 +113,22 @@ load_body();
 //document.form.wl_channel.value = document.form.wl_channel_orig.value;
 if(sw_mode == 2 && '0' == ''){
 for(var i=5; i>=3; i--)
-$("MainTable1").deleteRow(i);
+document.getElementById("MainTable1").deleteRow(i);
 for(var i=2; i>=0; i--)
-$("MainTable2").deleteRow(i);
-$("repeaterModeHint").style.display = "";
-$("wl_wdslist_Block").style.display = "none";
-$("submitBtn").style.display = "none";
+document.getElementById("MainTable2").deleteRow(i);
+document.getElementById("repeaterModeHint").style.display = "";
+document.getElementById("wl_wdslist_Block").style.display = "none";
+document.getElementById("submitBtn").style.display = "none";
 }
 else
 show_wl_wdslist();
 
+document.getElementById("wl0_hwaddr").value =	document.getElementById("wl0_hwaddr").value.toString().toUpperCase();
+document.getElementById("wl1_hwaddr").value =	document.getElementById("wl1_hwaddr").value.toString().toUpperCase();
+
 if(band5g_support == -1){
-	$("wl_5g_mac").style.display = "none";
-	$("wl_unit_field").style.display = "none";
+	document.getElementById("wl_5g_mac").style.display = "none";
+	document.getElementById("wl_unit_field").style.display = "none";
 }
 
 wl_bwch_hint();
@@ -145,15 +148,15 @@ code +='<td width="30%"><input type="button" class=\"remove_btn\" onclick=\"dele
 }
 }
 code +='</tr></table>';
-$("wl_wdslist_Block").innerHTML = code;
+document.getElementById("wl_wdslist_Block").innerHTML = code;
 }
 function deleteRow(r){
 var i=r.parentNode.parentNode.rowIndex;
-$('wl_wdslist_table').deleteRow(i);
+document.getElementById('wl_wdslist_table').deleteRow(i);
 var wl_wdslist_value = "";
-for(i=0; i<$('wl_wdslist_table').rows.length; i++){
+for(i=0; i<document.getElementById('wl_wdslist_table').rows.length; i++){
 wl_wdslist_value += "<";
-wl_wdslist_value += $('wl_wdslist_table').rows[i].cells[0].innerHTML;
+wl_wdslist_value += document.getElementById('wl_wdslist_table').rows[i].cells[0].innerHTML;
 }
 wl_wdslist_array = wl_wdslist_value;
 if(wl_wdslist_array == "")
@@ -197,13 +200,13 @@ function redirect(){
 	document.location.href = "/cgi-bin/Advanced_WMode_Content.asp";
 }
 function applyRule(){
-	var rule_num = $('wl_wdslist_table').rows.length;
-	var item_num = $('wl_wdslist_table').rows[0].cells.length;
+	var rule_num = document.getElementById('wl_wdslist_table').rows.length;
+	var item_num = document.getElementById('wl_wdslist_table').rows[0].cells.length;
 	var tmp_value = "";
 	for(i=0; i<rule_num; i++){
 		tmp_value += "<"
 		for(j=0; j<item_num-1; j++){
-			tmp_value += $('wl_wdslist_table').rows[i].cells[j].innerHTML;
+			tmp_value += document.getElementById('wl_wdslist_table').rows[i].cells[j].innerHTML;
 			if(j != item_num-2)
 				tmp_value += ">";
 		}
@@ -277,20 +280,21 @@ function rescan(){
 function showLANIPList(){
 	var code = "";
 	var show_name = "";
-
+	var show_title = "";
 	if(wds_aplist != ""){
 		for(var i = 0; i < wds_aplist.length ; i++){
 			wds_aplist[i][0] = decodeURIComponent(wds_aplist[i][0]);
 			if(wds_aplist[i][0] && wds_aplist[i][0].length > 12)
-			show_name = wds_aplist[i][0].substring(0, 10) + "..";
+				show_name = wds_aplist[i][0].substring(0, 10) + "...";
 			else
-			show_name = wds_aplist[i][0];
+				show_name = wds_aplist[i][0];
+			show_title = wds_aplist[i][0];
 			if(wds_aplist[i][1]){
-			code += '<a href="#"><div onmouseover="over_var=1;" onmouseout="over_var=0;" onclick="setClientIP('+i+');"><strong>'+show_name+'</strong>';
+				code += '<a href="#"><div onmouseover="over_var=1;" onmouseout="over_var=0;" onclick="setClientIP('+i+');" title="'+show_title+'"><strong>'+show_name+'</strong>';
 			if(show_name && show_name.length > 0)
-			code += '( '+wds_aplist[i][1]+')';
+				code += '( '+wds_aplist[i][1]+')';
 			else
-			code += wds_aplist[i][1];
+				code += wds_aplist[i][1];
 			code += ' </div></a>';
 			}
 		}
@@ -359,8 +363,8 @@ function _change_wl_unit(wl_unit){
 
 //Control display chanspec hint when wl_bw=1(20/40) or wl_channel=0(Auto)
 function wl_bwch_hint(){  
-		$("wl_bw_hint").style.display=(document.form.wl_bw.value == "1") ? "" : "none";
-		$("wl_ch_hint").style.display=(document.form.wl_channel_orig.value == "0") ? "" : "none";
+		document.getElementById("wl_bw_hint").style.display=(document.form.wl_bw.value == "1") ? "" : "none";
+		document.getElementById("wl_ch_hint").style.display=(document.form.wl_channel_orig.value == "0") ? "" : "none";
 }
 </script>
 </head>

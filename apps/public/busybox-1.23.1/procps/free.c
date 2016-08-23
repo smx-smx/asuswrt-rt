@@ -94,16 +94,6 @@ int free_main(int argc UNUSED_PARAM, char **argv IF_NOT_DESKTOP(UNUSED_PARAM))
 #define FIELDS_3 (FIELDS_5 + 2*6)
 #define FIELDS_2 (FIELDS_5 + 3*6)
 
-#if defined(DSL_N17U) //print a fake mem size to cheat download master
-	printf("Mem: ");
-	printf(FIELDS_5,
-		scale((unsigned long long)61480000),
-		scale(info.totalram - info.freeram),
-		scale(info.freeram),
-		scale(info.sharedram),
-		scale(info.bufferram)
-	);
-#endif
 	printf("Mem: ");
 	printf(FIELDS_5,
 		scale(info.totalram),

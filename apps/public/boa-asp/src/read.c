@@ -26,7 +26,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "../../lib/libtcapi.h"
+#include "tcutils.h"
+#include "ttc.h"
 
+extern int initandparserfile(void);
 /*
  * Name: read_header
  * Description: Reads data from a request socket.  Manages the current
@@ -83,6 +86,7 @@ int read_header(request * req)
 				str_lang[5] = '\0';
 
 				int i, len = strlen(str_lang);
+				int lang_type = 0;
 
 				for(i=0; i<len; ++i)
 				{
@@ -92,10 +96,33 @@ int read_header(request * req)
 				}
 
 				//choose proper language type
-				sprintf(str_type, "%d", getLangType(ttc, str_lang) );
+				lang_type = getLangType(ttc, str_lang);
+				snprintf(str_type, sizeof(str_type), "%d", lang_type);
 				tcapi_set("WebCurSet_Entry", "detected_lang_type", str_type);
 
 				initandparserfile();
+				if(lang_type == LANG_TYPE_CZ || lang_type == LANG_TYPE_DE)
+				{
+					int flag = 0;
+					if(tcapi_match("SysInfo_Entry", "x_Setting", "0")
+						&& tcapi_match("Adsl_Entry", "ANNEXTYPEA", "ANNEX A/I/J/L/M")
+						&& tcapi_match("Info_Adsl", "lineState", "down")
+					){
+						tcapi_set("Adsl_Entry", "ANNEXTYPEA", "ANNEX B/J/M");
+						flag = 1;
+					}
+				#ifdef TCSUPPORT_WAN_PTM
+					if(lang_type == LANG_TYPE_DE) {
+						if(tcapi_match("Adsl_Entry", "vdsl_profile", "0"))
+						{
+							tcapi_set("Adsl_Entry", "vdsl_profile", "1");
+							flag = 1;
+						}
+					}
+				#endif
+					if(flag)
+						tcapi_commit("Adsl_Entry");
+				}
 			}
 		}
 	}

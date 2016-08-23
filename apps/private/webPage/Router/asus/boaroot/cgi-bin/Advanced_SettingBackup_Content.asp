@@ -62,20 +62,28 @@ function uiDoUpdate()
 		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-N16U/);
 	else if(model_name == "DSL-N12E-C1")
 		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-N12E-C1/);
+	else if(model_name == "DSL-N10-D1")
+		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-N10-D1/);
 	else if(model_name == "DSL-N12U-C1")
 		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-N12U-C1/);
+	else if(model_name == "DSL-N12U-D1")
+		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-N12U-D1/);
 	else if(model_name == "DSL-N10-C1")
 		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-N10-C1/);
 	else if(model_name == "DSL-N10P-C1")
 		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-N10P-C1/);
 	else if(model_name == "DSL-N14U")
 		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-N14U/);
+	else if(model_name == "DSL-N14U-B1")
+		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-N14U-B1/);
 	else if(model_name == "DSL-AC56U")
 		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-AC56U/);
 	else if(model_name == "DSL-N17U")
 		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-N17U/);
 	else if(model_name == "DSL-AC52U")
 		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-AC52U/);
+	else if(model_name == "DSL-AC55U")
+		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-AC55U/);
 	else if(model_name == "DSL-N16")
 		string3 = form.tools_FW_UploadFile.value.search(/Settings_DSL-N16/);
 

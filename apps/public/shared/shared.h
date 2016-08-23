@@ -13,16 +13,11 @@
 #endif
 
 #ifndef FALSE
-#define FALSE   false
+#define FALSE   0
 #endif
 #ifndef TRUE
-#define TRUE    true
+#define TRUE    1
 #endif
-
-enum {
-	false	= 0,
-	true	= 1
-};
 
 #ifdef RTCONFIG_PUSH_EMAIL
 //#define logmessage logmessage_push
@@ -220,11 +215,15 @@ enum {
 	MODEL_DSLN10C1,
 	MODEL_DSLN10PC1,
 	MODEL_DSLN12EC1,
+	MODEL_DSLN10D1,
 	MODEL_DSLN12UC1,
+	MODEL_DSLN12UD1,
 	MODEL_DSLN14U,
+	MODEL_DSLN14UB1,
 	MODEL_DSLAC56U,
 	MODEL_DSLN17U,
 	MODEL_DSLAC52U,
+	MODEL_DSLAC55U,
 	MODEL_DSLN16,
 	MODEL_EAN66,
 	MODEL_RTN11P,
@@ -633,9 +632,16 @@ extern const char *ipv6_gateway_address(void);
 #ifdef RTCONFIG_OPENVPN
 #if defined(TCSUPPORT_ADD_JFFS)
 #define OVPN_FS_PATH	"/jffs/openvpn"
+#define MAX_OVPN_CLIENT	5
 #elif defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
 #define OVPN_FS_PATH	"/yaffs/openvpn"
+#define MAX_OVPN_CLIENT	5
+#else
+#define MAX_OVPN_CLIENT	1
 #endif
+#define MAX_OVPN_SERVER	1
+#define CLIENT_IF_START 10
+#define SERVER_IF_START 20
 extern char *get_parsed_crt(const char *name, char *buf, size_t buf_len);
 extern int set_crt_parsed(const char *name, char *file_path);
 extern int ovpn_crt_is_empty(const char *name);
@@ -685,6 +691,29 @@ extern void add_lan_phy(char *phy);
 extern void set_wan_phy(char *phy);
 extern void add_wan_phy(char *phy);
 
+#ifdef RTCONFIG_PROTECTION_SERVER
+#define LOCAL_SOCKET_PORT 1478
+
+enum {
+	PROTECTION_SERVICE_NONE=0,
+	PROTECTION_SERVICE_WEB,
+	PROTECTION_SERVICE_SSH,
+	PROTECTION_SERVICE_TELNET,
+	PROTECTION_SERVICE_SMB
+};
+
+struct state_report
+{
+        char ip_addr[64];	//Access fail address
+	int  loginType;		//login service type, refer _ServerType
+        int  frequency;		//login retry fail time
+        long int now;		//login fail timestamp
+        char note[256];		//some info
+};
+
+int send_socket(struct state_report report);
+#endif
+
 /* semaphore.c */
 extern void init_spinlock(void);
 
@@ -695,4 +724,12 @@ extern int is_psr(int unit);
 extern unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, unsigned long *tx, char *ifname_desc2, unsigned long *rx2, unsigned long *tx2);
 #endif
 
+//tcutils.c
+extern int tcapi_get_int(char* node, char* attr);
+extern int tcapi_set_int(char* node, char* attr, int value);
+extern int tcapi_match(char* node, char* attr, char* value);
+extern char *tcapi_get_string(char* node, char* attr, char* buffer);
+extern int tcapi_get_list(char* target_list, char* list_value, size_t len);
+extern int tcapi_set_list(char* target_list, char* list_value);
 #endif
+

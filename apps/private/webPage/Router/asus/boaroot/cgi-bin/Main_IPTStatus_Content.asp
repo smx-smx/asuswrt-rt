@@ -49,23 +49,22 @@ wan_proto = 'pppoe';
 <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 <tr>
 <td valign="top" >
-<table width="760px" border="0" cellpadding="5" cellspacing="0" bordercolor="#6b8fa3" class="FormTitle" id="FormTitle">
-<tr bgcolor="#4D595D">
-<td valign="top">
-<div>&nbsp;</div>
-		  		<div class="formfonttitle"><%tcWebApi_get("String_Entry","System_Log","s")%> - <%tcWebApi_get("String_Entry","menu5_7_5","s")%></div>
-<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
-		  		<div class="formfontdesc"><%tcWebApi_get("String_Entry","PortForward_title","s")%></div>
-<div style="margin-top:8px">
-<iframe src="/cgi-bin/status_portforward.cgi" width="100%" height="470" marginwidth="5" #marginheight="0" scrolling="no" frameborder="0" align="center"></iframe>
+	<table width="760px" border="0" cellpadding="5" cellspacing="0" bordercolor="#6b8fa3" class="FormTitle" id="FormTitle">
+	<tr bgcolor="#4D595D">
+		<td valign="top">
+			<div>&nbsp;</div>
+		  <div class="formfonttitle"><%tcWebApi_get("String_Entry","System_Log","s")%> - <%tcWebApi_get("String_Entry","menu5_7_5","s")%></div>
+			<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+			<div class="formfontdesc"><%tcWebApi_get("String_Entry","PortForward_title","s")%></div>
+			<div style="margin-top:8px">
+				<textarea style="width:99%; font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;" cols="63" rows="25" wrap="off" readonly><% nvram_dump("iptable.log","iptable.sh") %></textarea>
 			</div>
-			<div class="apply_gen" style="margin-top:0px;">
-			  	<input type="button" onClick="location.href=location.href" value="<%tcWebApi_get("String_Entry","CTL_refresh","s")%>" class="button_gen">
+			<div class="apply_gen" style="margin-top:8px;">
+				<input type="button" onClick="location.href=location.href" value="<%tcWebApi_get("String_Entry","CTL_refresh","s")%>" class="button_gen">
 			</div>
-</td>
-</tr>
-</table>
-</form>
+		</td>
+	</tr>
+	</table>
 </td>
 </tr>
 </table>
@@ -73,6 +72,8 @@ wan_proto = 'pppoe';
 <td width="10" align="center" valign="top">&nbsp;</td>
 </tr>
 </table>
+</form>
+
 <div id="footer"></div>
 </body>
 

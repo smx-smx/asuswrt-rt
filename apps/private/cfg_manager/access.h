@@ -104,6 +104,7 @@
 #define APP_STOP_SH	"/usr/script/AppFilterStop.sh "
 #define URL_STOP_SH	"/usr/script/UrlFilterStop.sh "
 #define STRING_COMMON 	"Common"
+#define STRING_ENTRY 	"Entry"
 #define HTTP "http://"
 #define MAX_URL_INPUT_LENGTH 48
 #define SPCHNUMBER 8

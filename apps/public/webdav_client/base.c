@@ -3834,7 +3834,7 @@ int check_link_internet(int index)
 
         link_flag = atoi(nv);
 #endif
-        if(!link_flag)
+        if(link_flag != 2)
         {
             for(i=0;i<asus_cfg.dir_number;i++)
             {

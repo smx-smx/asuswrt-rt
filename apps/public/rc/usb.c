@@ -396,7 +396,7 @@ void stop_usb(void)
 
 #if defined(RTCONFIG_APP_PREINSTALLED) || defined(RTCONFIG_APP_NETINSTALLED)
 #if defined(RTCONFIG_APP_PREINSTALLED) && defined(RTCONFIG_CLOUDSYNC)
-	if(pids("inotify") || pids("asuswebstorage") || pids("webdav_client")){
+	if(pids("inotify") || pids("asuswebstorage") || pids("webdav_client") || pids("dropbox_client") || pids("ftpclient") || pids("sambaclient") || pids("usbclient")){
 		_dprintf("%s: stop_cloudsync.\n", __FUNCTION__);
 		stop_cloudsync();
 	}
@@ -524,9 +524,8 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *type)
 			/* not a mountable partition */
 			flags = 0;
 		}
-		else if (strcmp(type, "ext2") == 0 || strcmp(type, "ext3") == 0) {
-			sprintf(options, "umask=0000");
-			sprintf(options + strlen(options), ",user_xattr");
+		else if(!strncmp(type, "ext", 3)){
+			sprintf(options, "user_xattr");
 
 			// if (nvram_invmatch("usb_ext_opt", ""))
 				// sprintf(options + strlen(options), "%s%s", options[0] ? "," : "", nvram_safe_get("usb_ext_opt"));
@@ -609,8 +608,8 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *type)
 			}
 
 
-			if (ret != 0) /* give it another try - guess fs */
-				ret = eval("mount", "-o", "noatime,nodev", mnt_dev, mnt_dir);
+			//if (ret != 0) /* give it another try - guess fs */
+				//ret = eval("mount", "-o", "noatime,nodev", mnt_dev, mnt_dir);
 
 			if (ret == 0) {
 				syslog(LOG_INFO, "USB %s%s fs at %s mounted on %s",
@@ -880,6 +879,50 @@ _dprintf("cloudsync: mounted_path=%s.\n", mounted_path);
 	return (ret == 0);
 }
 
+//Andy Chiu, 2015/04/24 add.
+static int diskmon_status(int status)
+{
+	static int run_status = DISKMON_IDLE;
+	int old_status = run_status;
+	char *message;
+	char buf[8];
+
+	switch (status) {
+	case DISKMON_IDLE:
+		message = "be idle";
+		break;
+	case DISKMON_START:
+		message = "start...";
+		break;
+	case DISKMON_UMOUNT:
+		message = "unmount partition";
+		break;
+	case DISKMON_SCAN:
+		message = "scan partition";
+		break;
+	case DISKMON_REMOUNT:
+		message = "re-mount partition";
+		break;
+	case DISKMON_FINISH:
+		message = "done";
+		break;
+	case DISKMON_FORCE_STOP:
+		message = "forcely stop";
+		break;
+	default:
+		/* Just return previous status */
+		return old_status;
+	}
+
+	/* Set new status */
+	run_status = status;
+	sprintf(buf, "%d", status);
+	tcapi_set("USB_Entry", "diskmon_status", buf);
+	//nvram_set_int("diskmon_status", status);
+	logmessage("disk monitor", message);
+	return old_status;
+}
+
 
 /* Mount this partition on this disc.
  * If the device is already mounted on any mountpoint, don't mount it again.
@@ -1047,6 +1090,20 @@ done:
 		start_swapfile(mountpoint);
 #endif
 
+#ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
+		if(ret == MOUNT_VAL_RW) {
+			tcapi_set("DslDiag_Entry", "dslx_diag_log_path", mountpoint);
+			if(tcapi_match("DslDiag_Entry", "dslx_diag_enable", "1") ||
+				(tcapi_match("DslDiag_Entry", "dslx_diag_enable", "0") && tcapi_match("DslDiag_Entry", "dslx_diag_state", "4"))) {
+				_dprintf("%s: trigger DSL line diagnostic.\n", __FUNCTION__);
+				tcapi_commit("DslDiag_Entry");
+			}
+		}
+		else {
+			logmessage("DSL Diagnostic", "USB start failed");
+		}
+#endif
+
 		// check the permission files.
 		if(ret == MOUNT_VAL_RW)
 			test_of_var_files(mountpoint);
@@ -1070,7 +1127,7 @@ done:
 		if(!tcapi_get_int(CLOUDSYNC, "enable_cloudsync") || strlen(cloud_setting) <= 0)
 			return (ret == MOUNT_VAL_RONLY || ret == MOUNT_VAL_RW);
 
-		if(pids("inotify") || pids("asuswebstorage") || pids("webdav_client"))
+		if(pids("inotify") || pids("asuswebstorage") || pids("webdav_client") || pids("dropbox_client") || pids("ftpclient") || pids("sambaclient") || pids("usbclient"))
 			return (ret == MOUNT_VAL_RONLY || ret == MOUNT_VAL_RW);
 
 		// nv = nvp = strdup(nvram_safe_get("cloud_sync"));
@@ -1087,7 +1144,7 @@ done:
 					++count;
 				}
 
-				if(type == 1){
+				if(type == 1 || type == 2 || type == 3 || type == 4 || type == 5 ){
 						start_cloudsync();
 				}
 				else{
@@ -2191,7 +2248,10 @@ void start_cloudsync(){
 	char *cmd2_argv[] = { "/userfs/bin/asuswebstorage", NULL };
 	char *cmd3_argv[] = { "/bin/touch", cloud_token, NULL };
 	char *cmd4_argv[] = { "/userfs/bin/webdav_client", NULL };
-
+	char *cmd5_argv[] = { "/userfs/bin/dropbox_client", NULL };
+	char *cmd6_argv[] = { "/userfs/bin/ftpclient", NULL};
+	char *cmd7_argv[] = { "/userfs/bin/sambaclient", NULL};
+	char *cmd8_argv[] = { "/userfs/bin/usbclient", NULL};
 	// if(getpid()!=1) {
 		// notify_rc("start_cloudsync");
 		// return;
@@ -2231,6 +2291,54 @@ void start_cloudsync(){
 
 				if(pids("inotify") && pids("webdav_client"))
 					logmessage("Webdav client", "daemon is started");
+			}
+			else if(type == 3){
+				if(!pids("inotify"))
+					_eval(cmd1_argv, NULL, 0, &pid);
+
+				if(!pids("dropbox_client")){
+					_eval(cmd5_argv, NULL, 0, &pid);
+					sleep(2); // wait dropbox_client.
+				}
+
+				if(pids("inotify") && pids("dropbox_client"))
+					logmessage("dropbox client", "daemon is started");
+			}
+			else if(type == 2){
+				if(!pids("inotify"))
+					_eval(cmd1_argv, NULL, 0, &pid);
+
+				if(!pids("ftpclient")){
+					_eval(cmd6_argv, NULL, 0, &pid);
+					sleep(2); // wait ftpclient.
+				}
+
+				if(pids("inotify") && pids("ftpclient"))
+					logmessage("ftp client", "daemon is started");
+			}
+			else if(type == 4){
+				if(!pids("inotify"))
+					_eval(cmd1_argv, NULL, 0, &pid);
+
+				if(!pids("sambaclient")){
+					_eval(cmd7_argv, NULL, 0, &pid);
+					sleep(2); // wait sambaclient.
+				}
+
+				if(pids("inotify") && pids("sambaclient"))
+					logmessage("sambaclient", "daemon is started");
+			}
+			else if(type == 5){
+				if(!pids("inotify"))
+					_eval(cmd1_argv, NULL, 0, &pid);
+
+				if(!pids("usbclient")){
+					_eval(cmd8_argv, NULL, 0, &pid);
+					sleep(2); // wait usbclient.
+				}
+
+				if(pids("inotify") && pids("usbclient"))
+					logmessage("usbclient", "daemon is started");
 			}
 			else{
 				count = 0;
@@ -2334,7 +2442,19 @@ void stop_cloudsync()
 	if(pids("asuswebstorage"))
 		killall_tk("asuswebstorage");
 
-	logmessage("Cloudsync client and Webdav_client", "daemon is stoped");
+	if(pids("dropbox_client"))
+		killall_tk("dropbox_client");
+
+	if(pids("ftpclient"))
+		killall_tk("ftpclient");
+
+	if(pids("sambaclient"))
+		killall_tk("sambaclient");
+
+	if(pids("usbclient"))
+		killall_tk("usbclient");
+
+	logmessage("Cloudsync client and Webdav_client and dropbox_client and  ftpclient and  sambaclient and  usbclient", "daemon is stoped");
 }
 #endif
 
@@ -2525,6 +2645,317 @@ int ejusb_main(int argc, char *argv[])
 	tcapi_save();	//Andy Chiu, 2015/03/19
 	return 0;
 }
+
+//Andy Chiu, 2015/04/23. Add for disk utility
+#ifdef ASUS_DISK_UTILITY
+static int stop_diskscan()
+{
+	//return nvram_get_int("diskmon_force_stop");
+	return tcapi_get_int("USB_Entry", "diskmon_force_stop");
+}
+
+static void start_diskscan(int usb_port)
+{
+	disk_info_t *disk_list, *disk_info;
+	partition_info_t *partition_info;
+
+	char devpath[16], buf[64], buf2[64];
+
+	cprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+	if(stop_diskscan())
+		return;
+
+	if(-1 == usb_port)
+	{
+		usb_port = tcapi_get_int("USB_Entry", "scan_port");
+	}
+
+	//get disk list
+	disk_list = read_disk_data();
+	if(disk_list == NULL){
+		cprintf("Can't get any disk's information.\n");
+		return;
+	}
+
+	for(disk_info = disk_list; disk_info != NULL; disk_info = disk_info->next){
+		//check port and type. only storage could do disk utility.
+		sprintf(buf, "usb_path%d", usb_port);
+		if(disk_info->port && atoi(disk_info->port) == usb_port && tcapi_match("USB_Entry", buf, "storage"))
+		{
+			//check all partitions.
+			for(partition_info = disk_info->partitions; partition_info != NULL; partition_info = partition_info->next)
+			{
+				if(partition_info->mount_point == NULL)
+				{
+					cprintf("Skip to scan %s: It can't be mounted.\n");
+					continue;
+				}
+
+				cprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+				
+				// there's some problem with fsck.ext4.
+				if(!strcmp(partition_info->file_system, "ext4"))
+					continue;
+
+				if(stop_diskscan())
+					goto stop_scan;
+				
+				// umount partition and stop USB apps.
+				cprintf("disk_monitor: umount partition %s...\n", partition_info->device);
+				diskmon_status(DISKMON_UMOUNT);
+				sprintf(devpath, "/dev/%s", partition_info->device);
+				umount_partition(devpath, 0, NULL, NULL, EFH_HP_REMOVE);
+
+				if(stop_diskscan())
+					goto stop_scan;
+
+				// scan partition.
+				eval("mount"); /* what for ??? */
+				cprintf("disk_monitor: scan partition %s...\n", partition_info->device);
+				diskmon_status(DISKMON_SCAN);
+				cprintf("[%s, %d]<%s, %s>\n", __FUNCTION__, __LINE__, partition_info->file_system, devpath);
+				//eval("app_fsck.sh", partition_info->file_system, devpath);
+				sprintf(buf2, "app_fsck.sh %s %s", partition_info->file_system, devpath);
+				system(buf2);
+
+				if(stop_diskscan())
+					goto stop_scan;
+
+				// re-mount partition.
+				cprintf("disk_monitor: re-mount partition %s...\n", partition_info->device);
+				diskmon_status(DISKMON_REMOUNT);
+				mount_partition(devpath, -3, NULL, partition_info->device, EFH_HP_ADD);
+
+				start_nas_services(1);
+			}
+		}
+	}
+
+	free_disk_data(&disk_list);
+	// finish & restart USB apps.
+	cprintf("disk_monitor: done.\n");
+	diskmon_status(DISKMON_FINISH);
+	return;
+
+stop_scan:
+	free_disk_data(&disk_list);
+	diskmon_status(DISKMON_FORCE_STOP);
+}
+
+#define NO_SIG -1
+
+static int diskmon_signal = NO_SIG;
+
+static void diskmon_sighandler(int sig)
+{
+	cprintf("[%s, %d]sig(%d)\n", __FUNCTION__, __LINE__, sig);
+#if 1
+	switch(sig) {
+		case SIGTERM:
+			cprintf("disk_monitor: Finish!\n");
+			logmessage("disk_monitor", "Finish");
+			unlink("/var/run/disk_monitor.pid");
+			diskmon_signal = sig;
+			exit(0);
+		case SIGUSR1:
+			//logmessage("disk_monitor", "Check status: %d.", diskmon_status(-1));
+			//cprintf("disk_monitor: Check status: %d.\n", diskmon_status(-1));
+			diskmon_signal = sig;
+			break;
+		case SIGUSR2:
+			logmessage("disk_monitor", "Scan manually...");
+			cprintf("disk_monitor: Scan manually...\n");
+			//diskmon_status(DISKMON_START);
+			start_diskscan(-1);
+			sleep(10);
+			//diskmon_status(DISKMON_IDLE);
+			diskmon_signal = sig;
+			break;
+		case SIGALRM:
+			logmessage("disk_monitor", "Got SIGALRM...");
+			cprintf("disk_monitor: Got SIGALRM...\n");
+			diskmon_signal = sig;
+			break;
+	}
+#endif
+}
+
+void start_diskmon(void)
+{
+	char *diskmon_argv[] = { "disk_monitor", NULL };
+	pid_t pid;
+
+	cprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+	_eval(diskmon_argv, NULL, 0, &pid);
+	cprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+}
+
+void stop_diskmon(void)
+{
+	cprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+	killall_tk("disk_monitor");
+}
+
+int first_alarm = 1;
+
+int diskmon_main(int argc, char *argv[])
+{
+	FILE *fp;
+	sigset_t mask;
+	int diskmon_freq = DISKMON_FREQ_DISABLE;
+	time_t now;
+	struct tm local;
+	char *nv, *nvp;
+	char *set_day, *set_week, *set_hour;
+	int val_day[2] = {0, 0}, val_hour[2] = {0, 0};
+	int wait_second[2] = {0, 0}, wait_hour = 0;
+	int diskmon_alarm_sec = 0;
+
+	cprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+	fp = fopen("/var/run/disk_monitor.pid", "w");
+	if(fp != NULL) {
+		fprintf(fp, "%d", getpid());
+		fclose(fp);
+	}
+
+	cprintf("disk_monitor: starting...\n");
+	//diskmon_status(DISKMON_IDLE);
+
+	nvram_set_int("diskmon_force_stop", 0);
+
+	signal(SIGTERM, diskmon_sighandler);
+	signal(SIGUSR1, diskmon_sighandler);
+	signal(SIGUSR2, diskmon_sighandler);
+	signal(SIGALRM, diskmon_sighandler);
+
+	sigfillset(&mask);
+	sigdelset(&mask, SIGTERM);
+	sigdelset(&mask, SIGUSR1);
+	sigdelset(&mask, SIGUSR2);
+	sigdelset(&mask, SIGALRM);
+
+	int diskmon_enable, port_num;
+	char word[PATH_MAX], *next;
+	char buf[64], attr[32], buf2[64];
+	
+	diskmon_enable = 0;
+	port_num = 0;
+	//parser ehci_ports to confirm the number of usb ports
+	memset(buf, 0, sizeof(buf));
+	tcapi_get("USB_Entry", "ehci_ports", buf);
+	
+	foreach(word, buf, next)
+	{
+		memset(attr, 0, 32);
+		sprintf(attr, "usb_path%d_diskmon_freq", (port_num+1));
+
+		//get freq
+		diskmon_freq = tcapi_get_int("USB_Entry", attr);
+		if(diskmon_freq == DISKMON_FREQ_DISABLE){
+			++port_num;
+			continue;
+		}
+
+		diskmon_enable += 1<<port_num;
+		cprintf("disk_monitor: diskmon_enable=%d.\n", diskmon_enable);
+
+		memset(attr, 0, 32);
+		sprintf(attr, "usb_path%d_diskmon_freq_time", (port_num+1));
+
+		memset(buf2, 0, sizeof(buf2));
+		nvp = tcapi_get_string("USB_Entry", attr, buf2);
+		if(!nvp || strlen(buf2) <= 0){
+			cprintf("disk_monitor: Without setting the running time at the port %d!\n", (port_num+1));
+			++port_num;
+			continue;
+		}
+
+		if((vstrsep(nvp, ">", &set_day, &set_week, &set_hour) != 3)){
+			cprintf("disk_monitor: Without the correct running time at the port %d!\n", (port_num+1));
+			++port_num;
+			continue;
+		}
+
+		val_hour[port_num] = atoi(set_hour);
+		if(diskmon_freq == DISKMON_FREQ_MONTH)
+			val_day[port_num] = atoi(set_day);
+		else if(diskmon_freq == DISKMON_FREQ_WEEK)
+			val_day[port_num] = atoi(set_week);
+		else if(diskmon_freq == DISKMON_FREQ_DAY)
+			val_day[port_num] = -1;
+		cprintf("disk_monitor: Port %d: val_day=%d, val_hour=%d.\n", port_num, val_day[port_num], val_hour[port_num]);
+
+		++port_num;
+	}
+
+	while(1){
+		time(&now);
+		localtime_r(&now, &local);
+		cprintf("disk_monitor: day=%d, week=%d, time=%d:%d.\n", local.tm_mday, local.tm_wday, local.tm_hour, local.tm_min);
+
+		if(diskmon_signal == SIGUSR2){
+			cprintf("disk_monitor: wait more %d seconds and avoid to scan too often.\n", DISKMON_SAFE_RANGE*60);
+			diskmon_alarm_sec = DISKMON_SAFE_RANGE*60;
+		}
+		else if(first_alarm || diskmon_signal == SIGALRM){
+			cprintf("disk_monitor: decide if scan the target...\n");
+			diskmon_alarm_sec = 0;
+			port_num = 0;
+
+			memset(buf, 0, sizeof(buf));
+			tcapi_get("USB_Entry", "ehci_ports", buf);
+
+			foreach(word, buf, next){
+				if(local.tm_min <= DISKMON_SAFE_RANGE){
+					if(val_hour[port_num] == local.tm_hour){
+						if((diskmon_freq == DISKMON_FREQ_MONTH && val_day[port_num] == local.tm_mday)
+								|| (diskmon_freq == DISKMON_FREQ_WEEK && val_day[port_num] == local.tm_wday)
+								|| (diskmon_freq == DISKMON_FREQ_DAY)){
+							cprintf("disk_monitor: Running...\n");
+							// Running!!
+							diskmon_status(DISKMON_START);
+							start_diskscan(port_num + 1);
+							sleep(10);
+							diskmon_status(DISKMON_IDLE);
+						}
+
+						wait_hour = DISKMON_DAY_HOUR;
+					}
+					else if(val_hour[port_num] > local.tm_hour)
+						wait_hour = val_hour[port_num]-local.tm_hour;
+					else // val_hour < local.tm_hour
+						wait_hour = 23-local.tm_hour+val_hour[port_num];
+
+					wait_second[port_num] = wait_hour*DISKMON_HOUR_SEC;
+				}
+				else
+					wait_second[port_num] = (60-local.tm_min)*60;
+				cprintf("disk_monitor: %d: wait_second=%d...\n", port_num, wait_second[port_num]);
+
+				if(diskmon_alarm_sec == 0 || diskmon_alarm_sec > wait_second[port_num])
+					diskmon_alarm_sec = wait_second[port_num];
+
+				++port_num;
+			}
+		}
+
+		if(first_alarm || diskmon_signal == SIGUSR2 || diskmon_signal == SIGALRM){
+			if(first_alarm)
+				first_alarm = 0;
+
+			cprintf("disk_monitor: wait_second=%d...\n", diskmon_alarm_sec);
+			alarm(diskmon_alarm_sec);
+		}
+
+		cprintf("disk_monitor: Pause...\n\n");
+		diskmon_signal = NO_SIG;
+		sigsuspend(&mask);
+	}
+	unlink("/var/run/disk_monitor.pid");
+	return 0;
+}
+
+#endif
 
 #if defined(RTCONFIG_APP_PREINSTALLED) || defined(RTCONFIG_APP_NETINSTALLED)
 int start_app(){

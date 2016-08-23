@@ -20,7 +20,8 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/detect.js"></script>
 <script>
-var fb_response = "<% tcWebApi_staticGet("WebCurSet_Entry","feedbackresponse","s") %>";
+var fb_response = "<% tcWebApi_staticGet("PushMail_Entry","fb_state","s") %>";
+var diag_log_exist = "<% tcWebApi_staticGet("DslDiag_Entry","dslx_diag_log_link","s") %>";
 	
 function initial(){
 	show_menu();
@@ -28,18 +29,68 @@ function initial(){
 }
 
 function check_info(){
-	//if(fb_response == "1"){
+	//0:initial  1:Success  2.Failed  3.Limit?  4.dla
+	if(dsl_diag_support >= 0 && wan_diag_state == "4"){
+		document.getElementById("fb_send_debug_log").style.display = "";		
+		document.getElementById("Email_subject").href = "mailto:xdsl_feedback@asus.com?Subject="+productid;
+		get_debug_log_info();
+		gen_dl_diag_log();
+	}
+	else
 		document.getElementById("fb_success").style.display = "";
+	//if(fb_response == "1"){
+		//document.getElementById("fb_success").style.display = "";
 		
 	//}else{	// 0:default 2:Fail 3:limit reached
 		//document.getElementById("fb_fail").style.display = "";		
 	//}
 }
 
-function redirect(){
-	document.location.href = "/cgi-bin/Advanced_DSL_Feedback.asp";
+function gen_dl_diag_log(){
+	if(diag_log_exist == "" || typeof(diag_log_exist) == "undefined")
+		return;
+	var diag_log_exist_array = diag_log_exist.split('');	//string to characte array
+	for(var i=0;i<diag_log_exist_array.length;i++){
+		if(diag_log_exist_array[i] == 1){
+			document.getElementById("dl_diag_log_"+i).style.display = "";
+			if(i > 0)
+				document.getElementById("dl_diag_log_multiple_desc").style.display = "";
+		}
+	}
 }
 
+function get_debug_log_info(){
+
+	var desc = "DSL DIAGNOSTIC LOG\n";
+	desc += "----------------------------------------------------------------------\n";
+
+	desc += "Model: "+productid+"\n";
+	desc += "Firmware Version: <% tcWebApi_staticGet("DeviceInfo","FwVer","s") %>\n";
+	desc += "Inner Version: <% tcWebApi_staticGet("SysInfo_Entry","InnerVersion","s") %>\n";	
+	desc += "DSL Driver Version:  <% tcWebApi_staticGet("Info_Adsl","fwVer","s") %>\n\n";
+
+	desc += "PIN Code: <% tcWebApi_get("WLan_Entry0", "WscVendorPinCode", "s") %>\n";
+	desc += "MAC Address: <% tcWebApi_Get("Info_Ether","mac","s") %>\n\n";
+
+	desc += "Diagnostic debug log capture duration: <% tcWebApi_staticGet("DslDiag_Entry","dslx_diag_duration","s") %> sec.\n";
+	desc += "DSL connection: <% tcWebApi_staticGet("GUITemp_Entry0","fb_tmp_availability","s") %>\n";
+
+	document.uiForm.fb_send_debug_log_content.value = desc;
+	
+}
+
+function redirect(){
+	document.location.href = "/cgi-bin/Advanced_Feedback.asp";
+}
+
+function reset_diag_state(unit){
+	if(unit == 0)
+		var cfg = '/TCC.log.gz';
+	else
+		var cfg = '/TCC.log.'+unit+'.gz';
+	var code = 'location.assign(\"' + cfg + '\")';
+	eval(code);
+}
 </script>
 <style>
 .feedback_info_0{
@@ -63,6 +114,10 @@ function redirect(){
 
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
+<form method="post" name="diagform" action="/start_apply.asp" target="hidden_frame">
+<input type="hidden" name="current_page" value="Feedback_Info.asp">
+<input type="hidden" name="dslx_diag_state" value="<% tcWebApi_staticGet("DslDiag_Entry", "dslx_diag_state", "s") %>">
+</form>
 <form method="post" name="form" action="" target="hidden_frame">
 <input type="hidden" name="action_mode" value="">
 <input type="hidden" name="action_script" value="">
@@ -105,7 +160,7 @@ function redirect(){
 	<br>
 	<br>
 	<%end if%>
-	<div class="feedback_info_1">We are working hard to improve the firmware of <%tcWebApi_get("String_Entry","Web_Title2","s") %> and your feedback is very important to us. However due to the volume of feedback, please expect a slight delay in email responses.</div>
+	<div class="feedback_info_1">We are working hard to improve the firmware of <%tcWebApi_get("String_Entry","Web_Title2","s") %> and your feedback is very important to us. We will use your feedbacks and comments to strive to improve your ASUS experience.</div>
 	<br>
 	<br>
 	<div class="feedback_info_1">To get help from other users, you could post your question in the <a href="http://vip.asus.com/forum/topic.aspx?board_id=11&SLanguage=en-us" style="color:#FFCC00;" target="_blank">ASUS VIP Forum</a>.</div>
@@ -114,6 +169,25 @@ function redirect(){
 </div>
 
 <div id="fb_fail" style="display:none;">
+</div>
+
+<div id="fb_send_debug_log" style="display:none;">
+	<br>
+	<br>
+	<div class="feedback_info_0">Diagnostic DSL debug log capture completed.</div>
+	<br>
+	<div class="feedback_info_1" id="dl_diag_log_0" onClick="reset_diag_state(0);" style="display:none; text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Click here to download the debug log and add as mail attachment.<br></div>
+
+	<div class="feedback_info_1" id="dl_diag_log_multiple_desc" style="display:none;">Click on each link to download the complete log files and add as email attachment. Please note that each file size is around 5 MByte, please send separate mails to us(each mail contain only one attachment). <br></div>
+	<div class="feedback_info_1" id="dl_diag_log_1" onClick="reset_diag_state('a');" style="display:none; text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Partial debug log (Part 1)<br></div>
+	<div class="feedback_info_1" id="dl_diag_log_2" onClick="reset_diag_state('b');" style="display:none; text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Partial debug log (Part 2)<br></div>
+	<div class="feedback_info_1" id="dl_diag_log_3" onClick="reset_diag_state('c');" style="display:none; text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Partial debug log (Part 3)<br></div>
+	<div class="feedback_info_1" id="dl_diag_log_4" onClick="reset_diag_state('d');" style="display:none; text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Partial debug log (Part 4)<br></div>
+	<div class="feedback_info_1" id="dl_diag_log_5" onClick="reset_diag_state('e');" style="display:none; text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Partial debug log (Part 5)<br></div>
+	<br>
+	<div class="feedback_info_1">Please send us an email directly ( <a id="Email_subject" href="" target="_top" style="color:#FFCC00;">xdsl_feedback@asus.com</a> ). Simply copy from following text area and paste as mail content. <br></div>
+	<textarea name="fb_send_debug_log_content" cols="70" rows="15" style="width:95%; margin-left:30px;font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;" readonly></textarea>
+	<br>	
 </div>
 
 <div id="fb_deny" style="display:none;">

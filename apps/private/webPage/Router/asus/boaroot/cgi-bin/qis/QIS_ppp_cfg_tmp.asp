@@ -22,6 +22,32 @@ span{
 	margin:0px auto;
 	ime-mode:disabled;
 }
+#DE_ISP_note{
+	font-size:14px;
+	font-family:Arial, Helvetica, sans-serif;
+	text-align:left;
+	margin-left:70px;	
+	margin-top:-10px;
+}
+.isp_note_title{
+	color:#FFCC00;
+}
+.isp_note{	
+	margin-top:5px;
+	line-height:100%;
+}
+.account_format{
+	margin-top:5px;
+	margin-left:30px;
+}
+.num2{
+	color:#569AC7;
+	font-weight: bold;
+}
+.num1{
+	color:#CCFF00;
+	font-weight: bold;
+}
 </style>
 <script type="text/javascript">
 var prctl_str = "";
@@ -109,7 +135,10 @@ if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
 
 function QKfinish_load_body(){
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_all_title","s")%>";
-	//parent.set_step("t3");
+	parent.set_step("t2");
+	
+	DE_ISP_note_detect();
+	
 	if(transfer_mode == "ATM")
 	{
 		//Brazil - GVT
@@ -147,6 +176,42 @@ function QKfinish_load_body(){
 	}
 	else //PTM
 		document.form.prev_page.value = "/cgi-bin/qis/QIS_PTM_manual_setting.asp";
+}
+
+function DE_ISP_note_detect(){
+	//Germany ISP setting note start-------------------
+	//console.log( country_str+" > "+prctl_val+" > "+vpi_val+" > "+vci_val+" > "+encap_val+" > "+ispname_str);
+	//ATM
+	//Germany > 0 > 1 > 32 > 0 > Deutsche Telekom
+	//Germany > 0 > 1 > 32 > 0 > 1&1
+	//Germany > 0 > 8 > 35 > 0 > NetCologne
+	//Germany > 0 > 8 > 35 > 0 > NetCologne (VLAN ID 10)
+	//PTM
+	//Germany > 0 > 8 > 35 > 0 > Deutsche Telekom (ohne Entertain)
+	//Germany > 0 > 8 > 35 > 0 > Deutsche Telekom (mit Entertain)
+	//Germany > 0 > 8 > 35 > 0 > 1&1 (Telekom VDSL Resale Anschluss)
+	if(country_str == "Germany" 
+		&& (ispname_str == "Deutsche Telekom" || ispname_str == "1&1" || ispname_str == "NetCologne" || ispname_str == "NetCologne (VLAN ID 10)" || 
+				ispname_str == "Deutsche Telekom (ohne Entertain)" || ispname_str == "Deutsche Telekom (mit Entertain)" || ispname_str == "1&1 (Telekom VDSL Resale Anschluss)"))
+	{
+		document.getElementById("DE_ISP_note").style.display="";
+		document.getElementById("Deutsche_Telekom").style.display="none";
+		document.getElementById("Deutsche_1n1_ATM").style.display="none";
+		document.getElementById("Deutsche_1n1_PTM").style.display="none";
+		document.getElementById("Deutsche_NetCologne").style.display="none";
+		if(ispname_str == "Deutsche Telekom" || ispname_str == "Deutsche Telekom (ohne Entertain)" || ispname_str == "Deutsche Telekom (mit Entertain)")
+			document.getElementById("Deutsche_Telekom").style.display="";
+		if(ispname_str == "1&1")	
+			document.getElementById("Deutsche_1n1_ATM").style.display="";
+		if(ispname_str == "1&1 (Telekom VDSL Resale Anschluss)")	
+			document.getElementById("Deutsche_1n1_PTM").style.display="";
+		if(ispname_str == "NetCologne" || ispname_str == "NetCologne (VLAN ID 10)")	
+			document.getElementById("Deutsche_NetCologne").style.display="";				
+	}
+	else
+		document.getElementById("DE_ISP_note").style.display="none";
+	
+	//Germany ISP setting note end-------------------	
 }
 
 function submitForm(){
@@ -236,7 +301,31 @@ function submitForm(){
 		</tr>
 	</table>
 
-	<br><br>
+	<br>
+	
+	<div id="DE_ISP_note" style="display:none;">
+		<span class="isp_note_title">Notice:</span> Bitte geben Sie diese Zugangsdaten in folgendem Format ein.</span>
+		<div class="isp_note" id="Deutsche_Telekom" style="display:none;">	<!--ATM: 231 & PTM: 66, 67 -->
+			Für Telekom ADSL und VDSL Anschlüsse<br>
+			Bei einer 12-stelligen Zugangsnummer (Neue Zugangsdaten):<br>
+			<div class="account_format">Anschlusskennung<span class="num1">Zugangsnummer</span><span class="num2">Mitbenutzernummer</span>@t-online.de</div><br>
+			Bei einer Zugangsnummer mit weniger als 12 Stellen (Alte Zugangsdaten):<br>
+			<div class="account_format">Anschlusskennung<span class="num1">Zugangsnummer</span>#<span class="num2">Mitbenutzernummer</span>@t-online.de</div>
+		</div>	
+		<div class="isp_note" id="Deutsche_1n1_ATM" style="display:none;">	<!-- ATM: 219 -->
+			Bei einem 1&1 ADSL Anschluss
+			<div class="account_format">1und1/<span class="num1">benutzername</span>@online.de (1&1 Internetzugangs-Kennung)</div>
+		</div>
+		<div class="isp_note" id="Deutsche_1n1_PTM" style="display:none;">	<!-- PTM: 62 -->
+			Bei einem 1&1 VDSL Anschluss (basierend auf Telekom Technik) - Bitte ein „H“ voranstellen:
+			<div class="account_format">H1und1/<span class="num1">benutzername</span>@online.de (1&1 Internetzugangs-Kennung)</div>
+		</div>
+		<div class="isp_note" id="Deutsche_NetCologne" style="display:none;">	<!-- ATM: 246, 247 -->
+			<div class="account_format">nc-<span class="num1">username</span>@netcologne.de</div>
+		</div>
+	</div>
+	
+	<br>
 
 	<table id="tblsetting_2" class="QISform" width="400" border="0" align="center" cellpadding="3" cellspacing="0">
 		<tr>

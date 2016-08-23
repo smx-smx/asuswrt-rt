@@ -1,14 +1,14 @@
 
 CFLAGS = -Wall -Os $(TC_CFLAGS)
 CFLAGS += -I.
-CFLAGS += -I../shared
-LDFLAGS = -L../shared -lshared
+CFLAGS += -I../shared -I../utils
+LDFLAGS = -L../shared -lshared -L../utils -lutils
 ifneq ($(RTCONFIG_USB),)
 CFLAGS += -I../libdisk
 LDFLAGS += -L../libdisk -ldisk
 endif
 CFLAGS += -I$(APP_TCAPILIB_DIR)
-LDFLAGS += -L$(APP_TCAPILIB_DIR) -ltcapi
+LDFLAGS += -L$(APP_TCAPILIB_DIR) -ltcapi -lcrypt
 
 CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -DU2EC
@@ -24,11 +24,16 @@ OBJS += tcpcheck.o
 ifneq ($(RTCONFIG_USB),)
 OBJS += usb.o
 OBJS += usb_devices.o
-OBJS += pppd.o
 endif
+OBJS += pppd.o
 
 ifeq ($(RTCONFIG_ACCEL_PPTPD),y)
 OBJS += vpn.o
+endif
+
+ifeq ($(RTCONFIG_OPENVPN),y)
+CFLAGS += -DRTCONFIG_CROND
+OBJS += openvpn.o
 endif
 
 ifeq ($(RTCONFIG_VPNC),y)

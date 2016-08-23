@@ -11,7 +11,7 @@ case $f in
 	"asusware.big")
 		# DSL big-endian MIPS: DSL-N66U
 		pkg_type="mipsbig"
-		PKG_LIST="openssl zlib libevent ncurses readline libxml2 pcre spawn-fcgi libjpeg libexif libogg flac libvorbis expat asuslibdaemon asusavahi bzip2 gdbm sqlite"
+		PKG_LIST="openssl zlib libevent ncurses readline libxml2 pcre spawn-fcgi libjpeg libexif libogg flac libvorbis expat bzip2 gdbm sqlite"
 		;;
 	"asusware.mipsbig")
 		# QCA big-endian MIPS: RT-AC55U

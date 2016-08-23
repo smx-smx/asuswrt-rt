@@ -20,6 +20,7 @@ If Request_Form("ModemSaveFlag")="1" Then
 		tcWebApi_commit("Wan_PVC11")
 	End If
 	tcWebApi_set("USBModem_Entry","modem_enable","modem_enable")
+	tcWebApi_set("USBModem_Entry","modem_android","modem_android")
 	tcWebApi_set("USBModem_Entry","modem_country","modem_country")
 	tcWebApi_set("USBModem_Entry","modem_isp","modem_isp")
 	tcWebApi_set("USBModem_Entry","modem_apn","modem_apn")
@@ -94,6 +95,7 @@ End If
 <script type="text/javascript" src="/detect.js"></script>
 <script type="text/javascript" src="/wcdma_list.js"></script>
 <script type="text/javaScript" src="/jquery.js"></script>
+<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script>
 var $j = jQuery.noConflict();
 
@@ -102,6 +104,8 @@ function login_ip_str() { return '<% tcWebApi_get("WebCurSet_Entry","login_ip_tm
 function login_mac_str() { return ''; }
 
 var wireless = []; // [[MAC, associated, authorized], ...]
+var usb_modem_enable = 0;
+var modem_android_orig = '<% tcWebApi_get("USBModem_Entry","modem_android","s")%>';
 var modem_card = '<% tcWebApi_get("USBModem_Entry","Dev3G","s")%>';
 var country = '<% tcWebApi_get("USBModem_Entry","modem_country","s")%>';
 var isp = '<% tcWebApi_get("USBModem_Entry","modem_isp","s")%>';
@@ -121,15 +125,66 @@ var passlist = new Array();
 var wans_dualwan = '<% tcWebApi_get("Dualwan_Entry","wans_dualwan","s") %>';
 var wans_flag = (wans_dualwan.search("none") == -1) ? 1:0;
 
+usb_modem_enable = ('<% tcWebApi_get("USBModem_Entry","modem_enable","s")%>' != "0")? 1:0;
+
 function initial(){
 		show_menu();
 		
 		if(dualWAN_support != "-1" && wans_flag)
 			genWANSoption();				
-		
-		switch_modem_mode('<% tcWebApi_get("USBModem_Entry","modem_enable","s") %>');
-		gen_country_list();
+
 		reloadProfile();
+
+	document.form.modem_android.value = modem_android_orig;
+	if(usb_modem_enable){
+		document.getElementById("modem_android_tr").style.display="";
+		if(modem_android_orig == "0"){
+			switch_modem_mode('<% tcWebApi_get("USBModem_Entry","modem_enable","s")%>');
+			gen_country_list();
+			reloadProfile();
+
+			change_apn_mode();
+		}
+		else{
+			hide_usb_settings(1);
+			document.getElementById("android_desc").style.display="";
+		}
+	}
+	else{
+		hide_usb_settings();
+	}
+
+	$j('#usb_modem_switch').iphoneSwitch(usb_modem_enable,
+		function() {
+			if(dualWAN_support)
+				document.form.wans_dualwan.value = wans_dualwan_array[0]+" usb";
+			document.getElementById("modem_android_tr").style.display="";
+			document.form.modem_enable.value = "1";
+			if(document.form.modem_android.value == "0"){
+				switch_modem_mode(document.form.modem_enable.value);
+				document.getElementById("android_desc").style.display="none";
+				gen_country_list();
+				reloadProfile();
+				//inputCtrl(document.form.modem_android, 1);
+				change_apn_mode();
+			}
+			else{
+				document.getElementById("android_desc").style.display="";
+				hide_usb_settings(1);
+			}
+		},
+		function() {
+			document.form.modem_enable.value = "0";
+			if(dualWAN_support){
+				if(usb_index == 0)
+						document.form.wans_dualwan.value = wans_dualwan_array[1]+" none";
+					else
+						document.form.wans_dualwan.value = wans_dualwan_array[0]+" none";
+			}
+			document.getElementById("modem_android_tr").style.display="none";
+			hide_usb_settings();
+		}
+	);
 
 		if(wimax_support == -1){
 			for (var i = 0; i < document.form.modem_enable_option.options.length; i++) {
@@ -291,9 +346,9 @@ function show_4G_modem_list(){
 		}
 }
 function switch_modem_mode(mode){
-		document.form.modem_enable.value = mode;
-		show_modem_list(mode);
-		
+	document.form.modem_enable.value = mode;
+	show_modem_list(mode);
+
 	if(mode == "1"){ // WCDMA
 		inputCtrl(document.form.Dev3G, 1);
 		inputCtrl(document.form.modem_country, 1);
@@ -483,8 +538,7 @@ function show_APN_list(){
 
 function applyRule(){
 	if(validForm()){
-		document.form.modem_enable.value = (document.form.modem_enable_radio.value == 0)?0:document.form.modem_enable.value;
-		if(document.form.modem_enable.value == 0)
+		if(document.form.modem_enable.value == "0")
 				document.form.PVC11_active.value = "No";
 		else
 				document.form.PVC11_active.value = "Yes";
@@ -644,6 +698,50 @@ function redirect_DSL(){
 	document.location.href = "/cgi-bin/Advanced_DSL_Content.asp";
 }
 
+function hide_usb_settings(_flag){
+	inputCtrl(document.form.modem_enable_option, 0);
+	inputCtrl(document.form.modem_country, 0);
+	inputCtrl(document.form.modem_isp, 0);
+	inputCtrl(document.form.modem_apn, 0);
+	if(pin_opt) inputCtrl(document.form.modem_pincode, 0);
+	inputCtrl(document.form.modem_dialnum, 0);
+	inputCtrl(document.form.modem_user, 0);
+	inputCtrl(document.form.modem_pass, 0);
+	inputCtrl(document.form.modem_ttlsid, 0);
+	inputCtrl(document.form.Dev3G, 0);
+}
+
+function select_usb_device(obj){
+	if(obj.selectedIndex == 0){
+		switch_modem_mode(document.form.modem_enable_option.value);
+		gen_country_list();
+		reloadProfile();
+		change_apn_mode();
+		document.getElementById("android_desc").style.display="none";
+	}
+	else{
+		document.getElementById("android_desc").style.display="";
+		hide_usb_settings(1);
+	}
+
+}
+
+function change_apn_mode(){
+	inputCtrl(document.form.modem_country, 1);
+	if(document.form.modem_country.value == ""){
+		inputCtrl(document.form.modem_isp, 0);
+		inputCtrl(document.form.modem_enable_option, 1);
+	}
+	else{
+		inputCtrl(document.form.modem_isp, 1);
+		inputCtrl(document.form.modem_enable_option, 0);
+	}
+	inputCtrl(document.form.modem_apn, 1);
+	inputCtrl(document.form.modem_dialnum, 1);
+	inputCtrl(document.form.modem_user, 1);
+	inputCtrl(document.form.modem_pass, 1);
+}
+
 </script>
 </head>
 <body onload="initial();" onunLoad="return unload_body();">
@@ -682,6 +780,7 @@ function redirect_DSL(){
 <input type="hidden" name="wanTransFlag" value="0">
 <input type="hidden" name="wanVCFlag" value="0">
 <input type="hidden" name="ModemSaveFlag" value="0">
+<input type="hidden" name="wans_dualwan" value="<% tcWebApi_staticGet("Dualwan_Entry","wans_dualwan","s") %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 <tr>
@@ -754,8 +853,25 @@ function redirect_DSL(){
 <tr>
 		<th><%tcWebApi_get("String_Entry","HSDPAC_hsdpa_enable_in","s")%></th>
 		<td>
-				<input type="radio" name="modem_enable_radio" value="1" onclick="switch_modem_mode(document.form.modem_enable_option.value);reloadProfile();" <%if tcWebApi_get("USBModem_Entry","modem_enable","h") <> "0" then asp_write("checked") end if%>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
-				<input type="radio" name="modem_enable_radio" value="0" onclick="switch_modem_mode(0);reloadProfile();" <%if tcWebApi_get("USBModem_Entry","modem_enable","h") = "0" then asp_write("checked") end if%>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+			<div class="left" style="width:94px; float:left; cursor:pointer;" id="usb_modem_switch"></div>
+			<div class="clear" style="height:32px; width:74px; position: relative; overflow: hidden"></div>
+		</td>
+</tr>
+<tr id="modem_android_tr" style="display:none;">
+		<th><%tcWebApi_get("String_Entry","select_usb_device","s")%></th>
+		<td>
+			<select id="modem_android" name="modem_android" class="input_option" onChange="select_usb_device(this);">
+				<option value="0"><%tcWebApi_get("String_Entry","menu5_4_4","s")%></option>
+				<option value="1"><%tcWebApi_get("String_Entry","Android_phone","s")%></option>
+			</select>
+			<div  class="formfontdesc" id="android_desc" style="display:none; color:#FFCC00;margin-top:5px;">
+				<%tcWebApi_get("String_Entry","usb_tethering_hint0","s")%>
+				<ol style="margin-top: 0px;">
+				<li><%tcWebApi_get("String_Entry","usb_tethering_hint1","s")%></li>
+				<li><%tcWebApi_get("String_Entry","usb_tethering_hint2","s")%></li>
+				<li><%tcWebApi_get("String_Entry","usb_tethering_hint3","s")%></li>
+				</ol>
+			</div>
 		</td>
 </tr>
 <tr>

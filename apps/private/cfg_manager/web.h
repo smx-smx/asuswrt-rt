@@ -32,7 +32,7 @@ typedef unsigned long ULONG;
 
 //the index of dynamic display
 #define DYN_DISP_MAIN_INDEX				0
-#define DYN_DISP_MAIN_VOIP_INDEX			6 
+#define DYN_DISP_MAIN_VOIP_INDEX			6
 
 #define DYN_DISP_INTERFACE_INDEX			2
 #define DYN_DISP_INTERFACE_WLAN_NDEX		3
@@ -43,8 +43,8 @@ typedef unsigned long ULONG;
 #define DYN_DISP_ACCESS_CWMP_INDEX		6
 #define DYN_DISP_ACCESS_CWMP_PARENTALCONTROL_INDEX	7
 
-#define DYN_DISP_MAINTENANCE_INDEX		5 
-#define DYN_DISP_MAINTENANCE_SAVE_INDEX	6 
+#define DYN_DISP_MAINTENANCE_INDEX		5
+#define DYN_DISP_MAINTENANCE_SAVE_INDEX	6
 
 
 #define ACCOUNT_NUM 3
@@ -69,9 +69,12 @@ typedef unsigned long ULONG;
 #ifdef TCSUPPORT_WAN_PTM
 #define VDSLINFO_B0_PATH "/proc/tc3162/ptm_b0_stats"
 #define VDSLINFO_B1_PATH "/proc/tc3162/ptm_b1_stats"
-#if defined(TCSUPPORT_CWMP_VDSL)
+#if 1 //defined(TCSUPPORT_CWMP_VDSL)
 #define VDSL_INTERFACE_CFG_PATH "/proc/tc3162/vdsl_interface_config"
 #endif
+#ifdef TCSUPPORT_CPU_MT7510
+#define VDSL_DIAGNOSTIC_PATH "/proc/tc3162/vdsl_diagnostic"
+#endif /* TCSUPPORT_CPU_MT7510 */
 #endif
 
 #define ETHER_LAN		0
@@ -138,7 +141,7 @@ typedef unsigned long ULONG;
 #endif
 #endif
 
-#ifdef TCSUPPORT_WPA_SUPPLICANT 
+#ifdef TCSUPPORT_WPA_SUPPLICANT
 #define TEMPSETTING "IPOEDot1xInfo"
 #endif
 #define WEBCURT     "WebCustom"
@@ -157,13 +160,13 @@ typedef unsigned long ULONG;
 #else
 #if defined(TCSUPPORT_WAN_ATM)
 #define HAVE_ATM                    "haveAtm"
-#endif  
+#endif
 #if defined(TCSUPPORT_WAN_PTM)
 #define HAVE_PTM                    "havePtm"
-#endif  
+#endif
 #if defined(TCSUPPORT_WAN_ETHER)
 #define HAVE_WAN0                   "haveWan0"
-#endif  
+#endif
 #endif
 
 /* frank added for hwnat qos bug */
@@ -279,7 +282,7 @@ typedef unsigned long ULONG;
 #define TEST_FAIL	"Fail"
 #define RECV1ICMPPKT	"1 packets received"
 
-#ifdef TCSUPPORT_IPV6_PRIVACYADDRS 
+#ifdef TCSUPPORT_IPV6_PRIVACYADDRS
 #define IPV6_PRIVACYADDRS_PATH	"/tmp/privacyaddrs"
 #endif
 #define DEF_GW_FLAG	"UG"
@@ -297,7 +300,7 @@ typedef unsigned long ULONG;
 
 #ifdef IPV6
 #define UDHCP6C_PID_PATH	"/var/run/dhcp6c_%s.pid"
-#define	DHCP6C_RESTART_CMD	"/userfs/bin/dhcp6c -c /etc/dhcp6c_%s.conf %s  -p  /var/run/dhcp6c_%s.pid"	
+#define	DHCP6C_RESTART_CMD	"/userfs/bin/dhcp6c -c /etc/dhcp6c_%s.conf %s  -p  /var/run/dhcp6c_%s.pid"
 #endif
 #define UDHCPC_PID_PATH	"/var/run/udhcpc-nas%s.pid"
 #if defined(TCSUPPORT_ETH4_WAN_PORT)
@@ -387,7 +390,7 @@ typedef unsigned long ULONG;
 #define MAX_SPLIT_OFFSET 	9// mod 512
 #define CWMPDSLDIAGNOSTIC	"CDSLDiagnostic"
 #define DIAGNOSTICSUB		"Common"
-//because the statistic data is very large,so we use more proc file to transfer from kernal space to user space 
+//because the statistic data is very large,so we use more proc file to transfer from kernal space to user space
 #define OTHER_PROFILE_INDEX 		0
 #define HLINpsds_PROFILE_INDEX_1 	1
 #define HLINpsds_PROFILE_INDEX_2 	2
@@ -414,7 +417,7 @@ typedef unsigned long ULONG;
 #define PRDDUCTCLASSLEN 64
 #define MANUFACUREROUILEN 64
 #define SERIALNUMLEN 128
-#if !defined(TCSUPPORT_PRODUCTIONLINE_DATE) 
+#if !defined(TCSUPPORT_PRODUCTIONLINE_DATE)
 #define RESERVELEN (PROLINE_CWMPPARA_RA_SIZE-PRDDUCTCLASSLEN-MANUFACUREROUILEN-SERIALNUMLEN-2*sizeof(int))
 #endif
 
@@ -471,7 +474,7 @@ typedef struct {
 	char* val;
 } cuskitInfo_map_t;
 
-void 
+void
 GetCuskitInfoFromBootloader(long addr, char *cuskit_info);
 
 int
@@ -577,7 +580,7 @@ checkPpp(int cur_pvc, int cur_serv);
 checkPpp(int cur_pvc);
 #endif
 //added by xyzhu_nj_20091209
-int 
+int
 ifInfo_read(mxml_node_t *node, ifaceType type);
 int devDefInf_read(mxml_node_t *node);
 int
@@ -597,7 +600,7 @@ get_dhcpClient_Info_vlaue(char *str, char *keyword, int length, char *val);
 //#ifdef CWMP
 #if defined(CWMP) || defined(RTCONFIG_TR069)
 //add by brian for dsl diagnostic
-int 
+int
 cwmp_dsl_diagnostic_init(void);
 int
 cwmp_dsl_diagnostic_read(mxml_node_t *top, char name[][MAX_NODE_NAME], char *attr);
@@ -624,7 +627,7 @@ IPInterface_init(void);
 int
 wifiMacTab_init(void);
 
-int 
+int
 getIpFromArp(char *macAttr, char *ip);
 
 #if defined(RT3390) || defined(RT3090) || defined(RT5392) || defined(MT7601E)|| defined(MT7592)
@@ -639,6 +642,18 @@ getIpFromArp(char *macAttr, char *ip);
 #define MODE_OFDM		1
 #define MODE_HTMIX		2
 #define MODE_HTGREENFIELD	3
+#if defined(MT7592) || defined(MT7612E)
+#define MODE_VHT		4	//Andy Chiu, 2015/08/25
+#endif
+
+//Andy Chiu, 2015/08/25
+#if defined(MT7592) || defined(MT7612E)
+#define BAND_WIDTH_20		0
+#define BAND_WIDTH_40		1
+#define BAND_WIDTH_80		2
+#define BAND_WIDTH_BOTH	3
+#define BAND_WIDTH_10		4	/* 802.11j has 10MHz. This definition is for internal usage. doesn't fill in the IE or other field. */
+#endif
 
 #define BW_20			0
 #define BW_40			1
@@ -647,34 +662,21 @@ getIpFromArp(char *macAttr, char *ip);
 
 
 // MIMO Tx parameter, ShortGI, MCS, STBC, etc.  these are fields in TXWI. Don't change this definition!!!
-#if defined(TCSUPPORT_WLAN_RT6856)	//iNIC, little endian
-typedef union  _MACHTTRANSMIT_SETTING {
-	struct  {
-	unsigned short	BW:1;	//channel bandwidth 20MHz or 40 MHz
-	unsigned short	MCS:7;	// MCS
-	unsigned short	MODE:2;	// Use definition MODE_xxx.
-	unsigned short	rsv:3;
-	unsigned short	STBC:2;	//SPACE
-	unsigned short	ShortGI:1;
-	} field;
-	unsigned short	word;
- } MACHTTRANSMIT_SETTING, *PMACHTTRANSMIT_SETTING;
-#else	//Non-iNIC, big endian
-typedef union  _MACHTTRANSMIT_SETTING {
-	struct  {
-	unsigned short	MODE:2;	// Use definition MODE_xxx.
-	unsigned short	rsv:3;
-	unsigned short	STBC:2;	//SPACE
-	unsigned short	ShortGI:1;
-	unsigned short	BW:1;	//channel bandwidth 20MHz or 40 MHz
-	unsigned short	MCS:7;	// MCS
-	} field;
-	unsigned short	word;
- } MACHTTRANSMIT_SETTING, *PMACHTTRANSMIT_SETTING;
-#endif
-
 //Remember to sync with WiFi_driver/include/oid.h if WiFi driver is updated.
-#if defined(TCSUPPORT_WLAN_RT6856)	//iNIC
+//Andy Chiu, 2015/06/30. collect these.
+#if defined(TCSUPPORT_WLAN_RT6856)
+typedef union  _MACHTTRANSMIT_SETTING {
+	struct  {
+	unsigned short	BW:1;	//channel bandwidth 20MHz or 40 MHz
+	unsigned short	MCS:7;	// MCS
+	unsigned short	MODE:2;	// Use definition MODE_xxx.
+	unsigned short	rsv:3;
+	unsigned short	STBC:2;	//SPACE
+	unsigned short	ShortGI:1;
+	} field;
+	unsigned short	word;
+ } MACHTTRANSMIT_SETTING, *PMACHTTRANSMIT_SETTING;
+
 typedef struct _RT_802_11_MAC_ENTRY {
 	UCHAR ApIdx;
 	UCHAR Addr[ETHER_ADDR_LEN];
@@ -689,9 +691,24 @@ typedef struct _RT_802_11_MAC_ENTRY {
 	MACHTTRANSMIT_SETTING MaxRate;
 } RT_802_11_MAC_ENTRY, *PRT_802_11_MAC_ENTRY;
 #elif defined(MT7592)
+typedef union _MACHTTRANSMIT_SETTING {
+	//Andy Chiu, 2015/08/25. update date structure.
+	struct {
+		USHORT MODE:3;	/* Use definition MODE_xxx. */
+		USHORT iTxBF:1;
+		USHORT eTxBF:1;
+		USHORT STBC:1;	/* only support in HT/VHT mode with MCS0~7 */
+		USHORT ShortGI:1;
+		USHORT BW:2;	/* channel bandwidth 20MHz/40/80 MHz */
+		USHORT ldpc:1;
+		USHORT MCS:6;	/* MCS */
+	} field;
+	USHORT word;
+} MACHTTRANSMIT_SETTING, *PMACHTTRANSMIT_SETTING;
+
 typedef struct _RT_802_11_MAC_ENTRY {
 	UCHAR ApIdx;
-	UCHAR Addr[ETHER_ADDR_LEN];
+	UCHAR Addr[MAC_ADDR_LENGTH];
 	UCHAR Aid;
 	UCHAR Psm;		/* 0:PWR_ACTIVE, 1:PWR_SAVE */
 	UCHAR MimoPs;		/* 0:MMPS_STATIC, 1:MMPS_DYNAMIC, 3:MMPS_Enabled */
@@ -702,28 +719,124 @@ typedef struct _RT_802_11_MAC_ENTRY {
 	MACHTTRANSMIT_SETTING TxRate;
 	UINT32 LastRxRate;
 } RT_802_11_MAC_ENTRY, *PRT_802_11_MAC_ENTRY;
-#else
+#elif defined(RT5392) || defined(RT3090) || defined(TCSUPPORT_DUAL_WLAN_RT5592_RT3593)
+typedef union _MACHTTRANSMIT_SETTING {
+	struct {
+		USHORT	MODE:2;	// Use definition MODE_xxx.
+		USHORT	rsv:3;
+		USHORT	STBC:2;	//SPACE
+		USHORT	ShortGI:1;
+		USHORT	BW:1;	//channel bandwidth 20MHz or 40 MHz
+		USHORT	MCS:7;	// MCS
+	} field;
+	USHORT word;
+} MACHTTRANSMIT_SETTING, *PMACHTTRANSMIT_SETTING;
+
 typedef struct _RT_802_11_MAC_ENTRY {
 	UCHAR ApIdx;
-	UCHAR Addr[ETHER_ADDR_LEN];
+	UCHAR Addr[MAC_ADDR_LENGTH];
 	UCHAR Aid;
-	UCHAR Psm;	/* 0:PWR_ACTIVE, 1:PWR_SAVE */
-	UCHAR MimoPs;	/* 0:MMPS_STATIC, 1:MMPS_DYNAMIC, 3:MMPS_Enabled */
+	UCHAR Psm;		/* 0:PWR_ACTIVE, 1:PWR_SAVE */
+	UCHAR MimoPs;		/* 0:MMPS_STATIC, 1:MMPS_DYNAMIC, 3:MMPS_Enabled */
+	CHAR AvgRssi0;
+	CHAR AvgRssi1;
+	CHAR AvgRssi2;
+	UINT32 ConnectedTime;
+	MACHTTRANSMIT_SETTING TxRate;
+//#ifdef RTMP_RBUS_SUPPORT
+	UINT32		LastRxRate;
+	SHORT		StreamSnr[3];				/* BF SNR from RXWI. Units=0.25 dB. 22 dB offset removed */
+	SHORT		SoundingRespSnr[3];			/* SNR from Sounding Response. Units=0.25 dB. 22 dB offset removed */
+/*	SHORT		TxPER;	*/					/* TX PER over the last second. Percent */
+/*	SHORT		reserved;*/
+//#endif /* RTMP_RBUS_SUPPORT */
+} RT_802_11_MAC_ENTRY, *PRT_802_11_MAC_ENTRY;
+#endif
+
+typedef struct _RT_802_11_MAC_TABLE {
+	ULONG Num;
+	RT_802_11_MAC_ENTRY Entry[MAX_NUMBER_OF_MAC];
+} RT_802_11_MAC_TABLE, *PRT_802_11_MAC_TABLE;
+
+//Andy Chiu, 2015/06/30. Add 5G mac table
+#if defined(MT7612E)
+typedef union _MACHTTRANSMIT_SETTING_5G{
+	//Andy Chiu, 2015/08/25. update date structure.
+	struct {
+		USHORT MODE:3;	/* Use definition MODE_xxx. */
+		USHORT iTxBF:1;
+		USHORT eTxBF:1;
+		USHORT STBC:1;	/* only support in HT/VHT mode with MCS0~7 */
+		USHORT ShortGI:1;
+		USHORT BW:2;	/* channel bandwidth 20MHz/40/80 MHz */
+		USHORT ldpc:1;
+		USHORT MCS:6;	/* MCS */
+	} field;
+	USHORT word;
+} MACHTTRANSMIT_SETTING_5G, *PMACHTTRANSMIT_SETTING_5G;
+
+typedef struct _RT_802_11_MAC_ENTRY_5G {
+	UCHAR ApIdx;
+	UCHAR Addr[MAC_ADDR_LENGTH];
+	UCHAR Aid;
+	UCHAR Psm;		/* 0:PWR_ACTIVE, 1:PWR_SAVE */
+	UCHAR MimoPs;		/* 0:MMPS_STATIC, 1:MMPS_DYNAMIC, 3:MMPS_Enabled */
 	CHAR AvgRssi0;
 	CHAR AvgRssi1;
 	CHAR AvgRssi2;
 	UINT32 ConnectedTime;
 	MACHTTRANSMIT_SETTING TxRate;
 	UINT32 LastRxRate;
-	SHORT StreamSnr[3];	/* BF SNR from RXWI. Units=0.25 dB. 22 dB offset removed */
-	SHORT SoundingRespSnr[3];
-} RT_802_11_MAC_ENTRY, *PRT_802_11_MAC_ENTRY;
-#endif
 
-typedef struct _RT_802_11_MAC_TABLE {
-    unsigned long       Num;
-    RT_802_11_MAC_ENTRY Entry[MAX_LEN_OF_MAC_TABLE];
-} RT_802_11_MAC_TABLE, *PRT_802_11_MAC_TABLE;
+//sync with MT7620
+	SHORT StreamSnr[3];				/* BF SNR from RXWI. Units=0.25 dB. 22 dB offset removed */
+	SHORT SoundingRespSnr[3];			/* SNR from Sounding Response. Units=0.25 dB. 22 dB offset removed */
+/*	SHORT TxPER;	*/					/* TX PER over the last second. Percent */
+/*	SHORT reserved;*/
+} RT_802_11_MAC_ENTRY_5G, *PRT_802_11_MAC_ENTRY_5G;
+
+typedef struct _RT_802_11_MAC_TABLE_5G {
+	ULONG Num;
+	RT_802_11_MAC_ENTRY_5G Entry[MAX_NUMBER_OF_MAC];
+} RT_802_11_MAC_TABLE_5G, *PRT_802_11_MAC_TABLE_5G;
+#elif defined(RT5592)
+typedef union _MACHTTRANSMIT_SETTING_5G{
+	struct {
+		USHORT	MODE:2;	// Use definition MODE_xxx.
+		USHORT	rsv:3;
+		USHORT	STBC:2;	//SPACE
+		USHORT	ShortGI:1;
+		USHORT	BW:1;	//channel bandwidth 20MHz or 40 MHz
+		USHORT	MCS:7;	// MCS
+	} field;
+	USHORT word;
+} MACHTTRANSMIT_SETTING_5G, *PMACHTTRANSMIT_SETTING_5G;
+
+typedef struct _RT_802_11_MAC_ENTRY_5G {
+	UCHAR ApIdx;
+	UCHAR Addr[MAC_ADDR_LENGTH];
+	UCHAR Aid;
+	UCHAR Psm;		/* 0:PWR_ACTIVE, 1:PWR_SAVE */
+	UCHAR MimoPs;		/* 0:MMPS_STATIC, 1:MMPS_DYNAMIC, 3:MMPS_Enabled */
+	CHAR AvgRssi0;
+	CHAR AvgRssi1;
+	CHAR AvgRssi2;
+	UINT32 ConnectedTime;
+	MACHTTRANSMIT_SETTING TxRate;
+	UINT32 LastRxRate;
+
+//sync with MT7620
+	SHORT StreamSnr[3];				/* BF SNR from RXWI. Units=0.25 dB. 22 dB offset removed */
+	SHORT SoundingRespSnr[3];			/* SNR from Sounding Response. Units=0.25 dB. 22 dB offset removed */
+/*	SHORT TxPER;	*/					/* TX PER over the last second. Percent */
+/*	SHORT reserved;*/
+} RT_802_11_MAC_ENTRY_5G, *PRT_802_11_MAC_ENTRY_5G;
+
+typedef struct _RT_802_11_MAC_TABLE_5G {
+	ULONG Num;
+	RT_802_11_MAC_ENTRY_5G Entry[MAX_NUMBER_OF_MAC];
+} RT_802_11_MAC_TABLE_5G, *PRT_802_11_MAC_TABLE_5G;
+#endif
 
 typedef struct mac_entry_s {
 	unsigned char Addr[MAC_ADDR_LENGTH];
@@ -737,9 +850,13 @@ typedef struct mac_table_s {
 extern int _get_sta_list(int band, RT_802_11_MAC_TABLE *sta_list);
 extern int DisConnectSta(int band, RT_802_11_MAC_TABLE *sta_list);
 
-typedef struct _SITE_SURVEY_RT3352_iNIC
+
+typedef struct _SITE_SURVEY_2G
 {
 	char channel[4];
+#if defined(TCSUPPORT_WLAN_RT6856)
+	char len[4];
+#endif
 	unsigned char ssid[33];
 	char bssid[20];
 	char authmode[15];	//security part1
@@ -751,7 +868,36 @@ typedef struct _SITE_SURVEY_RT3352_iNIC
 	char wps[4];
 	char dpid[4];
 	char newline;
-} SITE_SURVEY_RT3352_iNIC;
+} SITE_SURVEY_2G;
+
+
+typedef struct _SITE_SURVEY_5G
+{
+	char channel[4];
+#if defined(TCSUPPORT_WLAN_RT6856)
+	char len[4];
+#endif
+	unsigned char ssid[33];
+	char bssid[20];
+	char authmode[15];	//security part1
+	char encryption[8];	//security part2 and need to shift data
+#if defined(MT7612E)
+	char signal[10];
+	char wmode[9];
+	char extch[7];
+	char nt[3];
+	char wps[4];
+	char dpid[5];
+#else
+	char signal[9];
+	char wmode[8];
+	char extch[7];
+	char nt[3];
+	char wps[4];
+	char dpid[4];
+#endif
+	char newline;
+} SITE_SURVEY_5G;
 
 typedef struct _SITE_SURVEY
 {
@@ -776,7 +922,7 @@ typedef struct _SITE_SURVEY_ARRAY
 
 #define SITE_SURVEY_APS_MAX	(16*1024)
 
-void 
+void
 getMacEntryByIndex( mac_table_t *pMacTable, int index );
 #ifdef BBUTOWBU
 #ifdef WSC_AP_SUPPORT
@@ -832,7 +978,7 @@ defaultWan_init(void);
 int
 defaultWan_read(mxml_node_t *node, char nodeName[][MAX_NODE_NAME], char *attr);
 
-#ifdef TCSUPPORT_WPA_SUPPLICANT 
+#ifdef TCSUPPORT_WPA_SUPPLICANT
 int
 IPOEDot1xInfo_init(void);
 int
@@ -844,7 +990,7 @@ webCustom_init(void);
 int
 webCustom_read(mxml_node_t *node, char nodeName[][MAX_NODE_NAME], char *attr);
 
-#ifdef TCSUPPORT_IPV6_PRIVACYADDRS 
+#ifdef TCSUPPORT_IPV6_PRIVACYADDRS
 char*
 getWanIpInfo(int type, char* device, char* buf);
 #endif
@@ -878,15 +1024,15 @@ int
 logAccess_read(mxml_node_t *top, char name[][MAX_NODE_NAME], char *attr);
 int
 logAccess_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
-int 
+int
 read_logMsg_from_flash(char *file_name);
-int 
+int
 update_logFile(mxml_node_t *top);
-int  
+int
 write_logMsg_to_flash();
-int 
+int
 check_logMsg_level(char *logMsg);
-unsigned long 
+unsigned long
 get_logfile_size(char *fileName);
 
 enum severity_level{

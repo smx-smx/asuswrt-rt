@@ -72,7 +72,7 @@ p{
 	background-color: #222;
 	font-size: 10px;
 	font-family: monospace;
-	padding: 2px 3px;
+	padding: 1px 2px;
 	border-radius: 3px;	
 }
 .imgUserIcon{
@@ -189,7 +189,7 @@ function drawClientList(tab){
 
 		clientHtmlTd += '<div class="clientBg"><table width="100%" height="85px" border="0">';
 		//imgUserIcon
-		clientHtmlTd += '<tr><td rowspan="3" width="85px">';
+		clientHtmlTd += '<tr><td rowspan="3" width="80px">';
 		userImage = getUserIcon(clientObj.MacAddr, custom_usericon);		
 		if(userImage != "") {
 			clientHtmlTd += '<div title="'+ clientObj.dpiType + '"">';
@@ -221,9 +221,9 @@ function drawClientList(tab){
 
 		if(parent.sw_mode == 1){
 			clientHtmlTd += ' <span class="ipMethod" onmouseover="return overlib(\''
-			clientHtmlTd += clientObj.isStaticIP ? "<%tcWebApi_get("String_Entry","BOP_ctype_title5","s")%>" : "<%tcWebApi_get("String_Entry","BOP_ctype_title1","s")%>";
+			clientHtmlTd += ipState[clientObj.ipMethod];
 			clientHtmlTd += '\')" onmouseout="nd();">'
-			clientHtmlTd += clientObj.isStaticIP ? "Static" : "DHCP" + '</span>';
+			clientHtmlTd += clientObj.ipMethod + '</span>';
 		}
 		clientHtmlTd += '</td>';
 		
@@ -378,7 +378,7 @@ function oui_query(mac) {
 	tab = mac.split(mac.substr(2,1));
 
   $j.ajax({
-    url: 'http://standards.ieee.org/cgi-bin/ouisearch?'+ tab[0] + '-' + tab[1] + '-' + tab[2],
+    url: 'https://services11.ieee.org/RST/standards-ra-web/rest/assignments/download/?registry=MA-L&format=html&text=' + tab[0] + tab[1] + tab[2],
 		type: 'GET',
     error: function(xhr) {
 			if(overlib.isOut)

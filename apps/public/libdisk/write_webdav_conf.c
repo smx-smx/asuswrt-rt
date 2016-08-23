@@ -79,18 +79,15 @@ int main(int argc, char *argv[]) {
 	if (fp==NULL) return -1;
 	
 	/* Load modules */
+	fprintf(fp, "server.modules+=(\"mod_aicloud_invite\")\n");
 	fprintf(fp, "server.modules+=(\"mod_aicloud_auth\")\n");
 	fprintf(fp, "server.modules+=(\"mod_alias\")\n");
-	fprintf(fp, "server.modules+=(\"mod_userdir\")\n");
 	fprintf(fp, "server.modules+=(\"mod_aidisk_access\")\n");
-	fprintf(fp, "server.modules+=(\"mod_sharelink\")\n");
-	fprintf(fp, "server.modules+=(\"mod_create_captcha_image\")\n");
+	fprintf(fp, "server.modules+=(\"mod_aicloud_sharelink\")\n");
+	fprintf(fp, "server.modules+=(\"mod_query_field_json\")\n");
 	fprintf(fp, "server.modules+=(\"mod_webdav\")\n");
 	fprintf(fp, "server.modules+=(\"mod_smbdav\")\n");
-	fprintf(fp, "server.modules+=(\"mod_redirect\")\n");
 	fprintf(fp, "server.modules+=(\"mod_compress\")\n");
-	fprintf(fp, "server.modules+=(\"mod_usertrack\")\n");
-	fprintf(fp, "server.modules+=(\"mod_rewrite\")\n");
 	
 	// if (nvram_match("st_webdav_mode", "2")){
 	if (tcapi_match(WEBDAV, "st_webdav_mode", "2")){
@@ -105,11 +102,11 @@ int main(int argc, char *argv[]) {
 	fprintf(fp, "server.errorlog=\"/tmp/lighttpd/err.log\"\n");
 	fprintf(fp, "server.pid-file=\"/tmp/lighttpd/lighttpd.pid\"\n");
 	fprintf(fp, "server.arpping-interface=\"br0\"\n");
-	fprintf(fp, "server.errorfile-prefix=\"/usr/css/status-\"\n");
+	fprintf(fp, "server.errorfile-prefix=\"/usr/lighttpd/css/status-\"\n");
 	fprintf(fp, "dir-listing.activate=\"disable\"\n");
 	fprintf(fp, "server.syslog=\"/tmp/lighttpd/syslog.log\"\n");
 	fprintf(fp, "router.product-image=\"/boaroot/html/images/Model_producticon.png\"\n");
- 	fprintf(fp, "aicloud.version=\"2.0.0.5\"\n");
+ 	//fprintf(fp, "aicloud.version=\"2.0.1.1\"\n");
 	fprintf(fp, "router.app_installation-url=\"cgi-bin/APP_Installation.asp\"\n");
 	fprintf(fp, "aicloud.max-sharelink=5\n");
 
@@ -150,7 +147,7 @@ int main(int argc, char *argv[]) {
     	fprintf(fp, "   }\n");
 	fprintf(fp, "	else $HTTP[\"url\"]=~\"^/smb($|/)\"{\n");
 	fprintf(fp, "		server.document-root = \"/\"\n");
-	fprintf(fp, "		alias.url=(\"/smb\"=>\"/usr\")\n");
+	fprintf(fp, "		alias.url=(\"/smb\"=>\"/usr/lighttpd\")\n");
 	fprintf(fp, "		smbdav.auth_ntlm = (\"Microsoft-WebDAV\",\"xxBitKinex\",\"WebDrive\")\n");
 	fprintf(fp, "		webdav.activate=\"enable\"\n");
 	fprintf(fp, "		webdav.is-readonly=\"disable\"\n");
@@ -158,7 +155,7 @@ int main(int argc, char *argv[]) {
 	fprintf(fp, "	}\n");
 	fprintf(fp, "	else $HTTP[\"url\"] =~ \"^/favicon.ico$\"{\n");
     	fprintf(fp, "		server.document-root = \"/\"\n");
-    	fprintf(fp, "		alias.url = ( \"/favicon.ico\" => \"/usr/css/favicon.ico\" ) \n"); 
+    	fprintf(fp, "		alias.url = ( \"/favicon.ico\" => \"/usr/lighttpd/css/favicon.ico\" ) \n"); 
     	fprintf(fp, "		webdav.activate = \"enable\" \n");
     	fprintf(fp, "		webdav.is-readonly = \"enable\"\n");
 	fprintf(fp, "	}\n");
@@ -289,6 +286,12 @@ WEBDAV_SETTING:
 	fprintf(fp, "$SERVER[\"socket\"]==\":%s\"{\n",get_webdav_https_port());
 	fprintf(fp, "	ssl.pemfile=\"/tmp/lighttpd/server.pem\"\n");
 	fprintf(fp, "	ssl.engine=\"enable\"\n");
+	fprintf(fp, "   ssl.use-compression=\"disable\"\n");
+	fprintf(fp, "   ssl.use-sslv2=\"disable\"\n");
+	fprintf(fp, "   ssl.use-sslv3=\"disable\"\n");
+	fprintf(fp, "   ssl.honor-cipher-order=\"enable\"\n");
+	fprintf(fp, "   ssl.cipher-list=\"ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES256-SHA256:AES256-SHA:AES128-GCM-SHA256:AES128-SHA256:AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;\"\n");
+	fprintf(fp, "   url.aicloud-auth-deny = (\"query_field.json\")\n");
 	fprintf(fp, "	$HTTP[\"url\"]=~\"^/%s($|/)\"{\n", get_productid());
     	fprintf(fp, "       	server.document-root = \"/\"\n");
 	fprintf(fp, "       	alias.url=(\"/%s\"=>\"/tmp/mnt\")\n", get_productid());	
@@ -298,7 +301,7 @@ WEBDAV_SETTING:
 	fprintf(fp, "	}\n");
 	fprintf(fp, "	else $HTTP[\"url\"]=~\"^/smb($|/)\"{\n");
 	fprintf(fp, "		server.document-root = \"/\"\n");
-	fprintf(fp, "		alias.url=(\"/smb\"=>\"/usr\")\n");
+	fprintf(fp, "		alias.url=(\"/smb\"=>\"/usr/lighttpd\")\n");
 	fprintf(fp, "		smbdav.auth_ntlm = (\"Microsoft-WebDAV\",\"xxBitKinex\",\"WebDrive\")\n");
 	fprintf(fp, "		webdav.activate=\"enable\"\n");
 	fprintf(fp, "		webdav.is-readonly=\"disable\"\n");
@@ -306,7 +309,7 @@ WEBDAV_SETTING:
 	fprintf(fp, "	}\n");
 	fprintf(fp, "	else $HTTP[\"url\"] =~ \"^/favicon.ico$\"{\n");
     	fprintf(fp, "		server.document-root = \"/\"\n");
-    	fprintf(fp, "		alias.url = ( \"/favicon.ico\" => \"/usr/css/favicon.ico\" ) \n"); 
+    	fprintf(fp, "		alias.url = ( \"/favicon.ico\" => \"/usr/lighttpd/css/favicon.ico\" ) \n"); 
     	fprintf(fp, "		webdav.activate = \"enable\" \n");
     	fprintf(fp, "		webdav.is-readonly = \"enable\"\n");
 	fprintf(fp, "	}\n");

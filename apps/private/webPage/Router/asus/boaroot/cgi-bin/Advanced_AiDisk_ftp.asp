@@ -27,7 +27,6 @@ End If
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
-<script type="text/javascript" src="/aidisk/AiDisk_folder_tree.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
@@ -96,13 +95,7 @@ function chech_usb()
 		//$("sharebtn").disabled = true;
 	}
 }
-function show_footer(){
-	footer_code = '<div align="center" class="bottom-image"></div>';
-	footer_code +='<div align="center" class="copyright"><%tcWebApi_get("String_Entry","footer_copyright_desc","s")%></div>';
-	
-	$("footer").innerHTML = footer_code;
-	flash_button();
-}
+
 function get_disk_tree(){
 	if(this.isLoading == 0){
 		get_layer_items("0", "gettree");
@@ -585,7 +578,7 @@ function applyRule(){
 
 function validForm(){
 
-	if(!validate_range(document.form.st_max_user, 1, 5)){
+	if(!validate_range(document.form.st_max_user, 1, 10)){
 		document.form.st_max_user.focus();
 		document.form.st_max_user.select();
 		return false;
@@ -705,7 +698,7 @@ function validForm(){
 						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,1);"><%tcWebApi_get("String_Entry","ShareNode_MaximumLoginUser_in","s")%></a>
 					</th>
 					<td>
-						<input type="text" name="st_max_user" class="input_3_table" maxlength="1" value="<% tcWebApi_Get("Samba_Entry", "st_max_user", "s") %>" onKeyPress="return is_number(this, event);" onblur=""><!-- validate_number_range(this, 1, 5); -->
+						<input type="text" name="st_max_user" class="input_3_table" maxlength="1" value="<% tcWebApi_Get("Samba_Entry", "st_max_user", "s") %>" onKeyPress="return is_number(this, event);">
 					</td>
 				</tr>
 				<tr>

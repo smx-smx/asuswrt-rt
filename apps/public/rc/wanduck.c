@@ -32,13 +32,13 @@ static void safe_leave(int signo){
 	signal(SIGINT, SIG_IGN);
 
 	FD_ZERO(&allset);
-	close(http_sock);
-	close(dns_sock);
 
 	int i, ret;
-	for(i = 0; i < maxfd; ++i){
+	for(i = 0; i <= maxfd; ++i){
 		ret = close(i);
 		csprintf("## close %d: result=%d.\n", i, ret);
+		if(ret == -1)
+			csprintf("## error= %s.\n", strerror(errno));
 	}
 
 #ifndef RTCONFIG_BCMARM
@@ -345,15 +345,6 @@ char *organize_tcpcheck_cmd(char *dns_list, char *cmd, int size){
 	return cmd;
 }
 
-int do_dns_detect(){
-	const char *test_url = "www.asus.com";
-
-	if(gethostbyname(test_url) != NULL)
-		return 1;
-
-	return 0;
-}
-
 int do_tcp_dns_detect(int wan_unit){
 	FILE *fp = NULL;
 	char line[80], cmd[PATH_MAX];
@@ -402,6 +393,8 @@ int detect_internet(int wan_unit){
 	unsigned long rx_packets, tx_packets;
 #endif
 	char prefix_wan[8], wan_ifname[16];
+	int ori_link_internet;	//Andy Chiu, 2015/11/11
+	char buf[32] = {0}, buf2[32] = {0};		//Andy Chiu, 2015/11/11
 
 	memset(prefix_wan, 0, 8);
 	sprintf(prefix_wan, "wan%d_", wan_unit);
@@ -409,6 +402,14 @@ int detect_internet(int wan_unit){
 	memset(wan_ifname, 0, 16);
 	strcpy(wan_ifname, get_wan_ifname(wan_unit));
 
+	//Andy Chiu, 2015/11/11. Get original link_internet.
+/*	//Andy Chiu, 2015/11/18. There is some problem on this modification on main trunk. 
+	memset(buf, 0, sizeof(buf));
+	memset(buf2, 0, sizeof(buf2));
+	sprintf(buf, "link_wan%d", wan_unit);
+	tcapi_get("Wanduck_Common", buf, buf2);
+	ori_link_internet = atoi(buf2);
+*/
 	if(
 #ifdef RTCONFIG_DUALWAN
 			strcmp(dualwan_mode, "lb") &&
@@ -431,19 +432,55 @@ int detect_internet(int wan_unit){
 		link_internet = CONNED;
 
 	if(link_internet == DISCONN){
-		nvram_set_int("link_internet", 0);
+#ifndef NO_DETECT_INTERNET
+		nvram_set_int("link_internet", 1);
+#endif
 		record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NO_INTERNET_ACTIVITY);
 
 		if(!(nvram_get_int("web_redirect")&WEBREDIRECT_FLAG_NOINTERNET)) {
-			nvram_set_int("link_internet", 1);
+#ifndef NO_DETECT_INTERNET
+			nvram_set_int("link_internet", 2);
+#endif
 			link_internet = CONNED;
 		}
 	}
 	else{
-		nvram_set_int("link_internet", 1);
+#ifndef NO_DETECT_INTERNET
+		nvram_set_int("link_internet", 2);
+#endif
 		record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NONE);
 	}
 
+	//Andy Chiu, 2015/11/11
+#if 0		//Andy Chiu, 2015/11/18. There is some problem on this modification on main trunk. 
+	if(link_internet != ori_link_internet)	//check current link status and old
+	{
+		if(0 == link_internet)	//check link status, if it's different from old, update Wanduck status
+		{
+			//get state_t
+			sprintf(prefix_wan, "wan%d_state_t", wan_unit);
+			tcapi_get("Wanduck_Common", prefix_wan, buf);
+			int conn_status = atoi(buf);
+
+			if(conn_status == 2)
+			{
+				char prefix[] = "wanXXXXXXXXXX_";
+				//wan_down(get_wan_ifname(wan_unit));
+				_dprintf("%s(%s)\n", __FUNCTION__, wan_ifname);
+
+				/* Skip physical interface of VPN connections */
+				if(wan_ifunit(wan_ifname) < 0)
+					return link_internet;
+
+				/* Figure out nvram variable name prefix for this i/f */
+				if(wan_prefix(wan_ifname, prefix) < 0)
+					return link_internet;
+
+				update_wan_state(prefix, WAN_STATE_DISCONNECTED, WAN_STOPPED_REASON_NONE);
+			}
+		}
+	}
+#endif	
 	return link_internet;
 }
 
@@ -815,10 +852,12 @@ _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state
 			}
 		}
 		else if(!link_wan[wan_unit]){
+#ifndef NO_DETECT_INTERNET
 #ifdef RTCONFIG_DUALWAN
 			if(strcmp(dualwan_mode, "lb"))
 #endif
-				nvram_set_int("link_internet", 0);
+				nvram_set_int("link_internet", 1);
+#endif
 
 			record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NOPHY);
 
@@ -833,7 +872,7 @@ _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state
 #if 0
 		if(!link_wan[wan_unit]){
 			// ?: type error?
-			nvram_set_int("link_internet", 0);
+			nvram_set_int("link_internet", 1);
 
 			record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NOPHY);
 
@@ -843,8 +882,8 @@ _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state
 			}
 		}
 #else
-		if(nvram_get_int("link_internet") != 1)
-			nvram_set_int("link_internet", 1);
+		if(nvram_get_int("link_internet") != 2)
+			nvram_set_int("link_internet", 2);
 
 		return CONNED;
 #endif
@@ -1433,7 +1472,7 @@ int wanduck_main(int argc, char *argv[]){
 	int nready, maxi, sockfd;
 	int wan_unit;
 	char prefix_wan[8];
-	//char cmd[32];
+	char cmd[32];
 	char tmp[100]="";
 #if !ASUSWRT
 	int i;
@@ -1509,7 +1548,9 @@ int wanduck_main(int argc, char *argv[]){
 	nvram_set_int("link_wan", 0);
 	nvram_set_int("link_wan1", 0);
 #endif
-	nvram_set_int("link_internet", 2);
+#ifndef NO_DETECT_INTERNET
+	nvram_set_int("link_internet", 0);
+#endif
 
 	for(wan_unit = WAN_UNIT_FIRST; wan_unit < WAN_UNIT_MAX; ++wan_unit){
 		link_setup[wan_unit] = 0;
@@ -1785,28 +1826,21 @@ _dprintf("wanduck(%d): detect the modem to be reset...\n", wan_unit);
 				if(dualwan_unit__usbif(wan_unit)){
 					if(link_wan[wan_unit] == 1 && current_state[wan_unit] == WAN_STATE_INITIALIZING && boot_end == 1){
 						csprintf("wanduck: start_wan_if %d.\n", wan_unit);
-#if ASUSWRT
 						snprintf(cmd, 32, "start_wan_if %d", wan_unit);
+#if ASUSWRT
 						notify_rc(cmd);
+#else
+						system(cmd);
 #endif
 						continue;
 					}
 					else if(!link_wan[wan_unit] && current_state[wan_unit] != WAN_STATE_INITIALIZING){
 						csprintf("wanduck: stop_wan_if %d.\n", wan_unit);
-#if ASUSWRT
 						snprintf(cmd, 32, "stop_wan_if %d", wan_unit);
+#if ASUSWRT
 						notify_rc(cmd);
 #else
-						memset(tmp, 0, sizeof(tmp));
-#ifdef TCSUPPORT_MULTISERVICE_ON_WAN
-						if(wan_unit == WAN_UNIT_PTM0 || wan_unit == WAN_UNIT_ETH)
-							sprintf(tmp, "WanExt_PVC%de0", wan_unit);
-						else
-#endif
-							sprintf(tmp, "Wan_PVC%d", wan_unit);
-						//tcapi_set(tmp, "Active", "No");
-						csprintf("Stop %s\n", tmp);
-						tcapi_commit(tmp);
+						system(cmd);
 #endif
 						continue;
 					}

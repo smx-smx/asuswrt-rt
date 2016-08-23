@@ -280,7 +280,7 @@ function applyRule(){
 
 		if(( i == rule_num -1 ) || (i%6 == 5) )
 		{
-			if(tmp_value == "<No data in table." || tmp_value == "<")
+			if(tmp_value == "<")
 			        tmp_value = "";
 			attrIndex = Math.floor(i/6);
 			switch(attrIndex)
@@ -464,12 +464,13 @@ function hideClients_Block(){
 
 /*----------} Mouse event of fake LAN IP select menu-----------------*/
 function addRow(obj, head){
-if(head == 1)
-vts_rulelist_array += "<"
-else
-vts_rulelist_array += ">"
-vts_rulelist_array += obj.value;
-obj.value = "";
+	if(head == 1)
+		vts_rulelist_array += "<"
+	else
+		vts_rulelist_array += ">"
+
+	vts_rulelist_array += obj.value;
+	obj.value = "";
 }
 function addRow_Group(upper){
 	if(validForm()){
@@ -511,8 +512,8 @@ function addRow_Group(upper){
 				}
 			}
 		}
-		addRow(document.form.vts_desc_x_0 ,1);				
-		if(document.form.vts_srcipaddr_x_0.value != ""){
+		addRow(document.form.vts_desc_x_0 ,1);
+		if(document.form.vts_srcipaddr_x_0.value.length > 0){
 			addRow(document.form.vts_srcipaddr_x_0, 0);
 			vts_rulelist_array += "@"+document.form.vts_port_x_0.value;
 		}
@@ -680,20 +681,20 @@ function del_Row(r){
 	showvts_rulelist();
 }
 function showvts_rulelist(){
-	var vts_rulelist_row = vts_rulelist_array.split('<');
+	var vts_rulelist_row = decodeURIComponent(vts_rulelist_array).split('<');
 	var code = "";
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="vts_rulelist_table">';
 	if(vts_rulelist_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;" colspan="7">No data in table.</td></tr>';
+		code +='<tr><td style="color:#FFCC00;" colspan="7"><%tcWebApi_get("String_Entry","IPC_VSList_Norule","s")%></td></tr>';
 	else{
 		for(var i = 1; i < vts_rulelist_row.length; i++){
-			overlib_str0[i] ="";
-			overlib_str[i] ="";
+			
+			overlib_str0[i] ="";	//for service name overlib
+			overlib_str[i] ="";		//for src port range overlib
 			code +='<tr id="row'+i+'">';
 			var vts_rulelist_col = vts_rulelist_row[i].split('>');
 			var wid=[20, 17, 14, 22, 9, 10];
-			var p = "";
-			for(var j = 0; j < vts_rulelist_col.length; j++){
+			for(var j = 0; j < vts_rulelist_col.length; j++){	
 				if(j==0){
 					if(vts_rulelist_col[0].length >23){
 						overlib_str0[i] += vts_rulelist_col[0];
@@ -710,28 +711,31 @@ function showvts_rulelist(){
 					
 						if(vts_rulelist_srcipnport[1].length >13){
 							overlib_str[i] += vts_rulelist_srcipnport[1];
-							vts_rulelist_col[i] = vts_rulelist_srcipnport[1].substring(0, 11)+"...";
-							code +='<td width="'+wid[2]+'%" title='+overlib_str[i]+'>'+ vts_rulelist_col[i] +'</td>';
-						}else
-							code +='<td width="'+wid[2]+'%">'+ vts_rulelist_srcipnport[1] +'</td>';
-					}else{
-						code +='<td width="'+wid[1]+'%"></td>';
-						if(vts_rulelist_col[1].length >13){
-							overlib_str[i] += vts_rulelist_col[1];
-							vts_rulelist_col[i] = vts_rulelist_col[1].substring(0, 11)+"...";
-							code +='<td width="'+wid[2]+'%" title='+overlib_str[i]+'>'+ vts_rulelist_col[i] +'</td>';
+							vts_rulelist_srcipnport[1] = vts_rulelist_srcipnport[1].substring(0, 11)+"...";
+							code +='<td width="'+wid[2]+'%" title='+overlib_str[i]+'>'+ vts_rulelist_srcipnport[1] +'</td>';
 						}
 						else
-							code +='<td width="'+wid[2]+'%">'+ vts_rulelist_col[1] +'</td>';
+							code +='<td width="'+wid[2]+'%">'+ vts_rulelist_srcipnport[1] +'</td>';
+					}
+					else{
+						
+						code +='<td width="'+wid[1]+'%"></td>';	//src ip is null
+						if(vts_rulelist_col[1].length >13){
+							overlib_str[i] += vts_rulelist_col[1];
+							vts_rulelist_col[1] = vts_rulelist_col[1].substring(0, 11)+"...";
+							code +='<td width="'+wid[2]+'%" title='+overlib_str[i]+'>'+ vts_rulelist_col[1] +'</td>';	//src port range
+						}
+						else
+							code +='<td width="'+wid[2]+'%">'+ vts_rulelist_col[1] +'</td>';		//src port range
 					}
 				}
-				else{//j push back cause add srcip
-					p = j+1;				
-					code +='<td width="'+wid[p]+'%">'+ vts_rulelist_col[j] +'</td>';
+				
+				if(j > 1){//j push back cause add srcip
+					var index = parseInt(j)+1;					
+					code +='<td width="'+wid[index]+'%">'+ vts_rulelist_col[j] +'</td>';
 				}
 			}
-			code +='<td width="8%"><!--input class="edit_btn" onclick="edit_Row(this);" value=""/-->';
-			code +='<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
+			code +='<td width="8%"><input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
 		}
 	}
 	code +='</table>';

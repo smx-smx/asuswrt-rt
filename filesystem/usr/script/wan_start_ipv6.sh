@@ -77,9 +77,16 @@ if [ "$WAN_MAC" = "" ] ; then
 	fi
 	WAN_MAC=$LAN_MAC
 fi
-		
+
 if [ "$Active" != "Yes" ] ; then
 	exit 0
+fi
+
+# ginp
+if [ "$1" = "8" ]; then
+if [ "$ISP" = "0" ] || [ "$ISP" = "2" ]; then
+	/userfs/bin/chkwan &
+fi
 fi
 
 # power up Ethernet Wan
@@ -156,6 +163,25 @@ then
 else
 	DUALWAN_ENABLED=1
 fi
+
+## function to set clone MAC address
+setCloneMAC()
+{
+	if [ "$TCSUPPORT_UNIQUEMAC" != "" ] ;then
+		if [ "$UNIQUEMAC_FLAG" = "1" ]; then
+			/sbin/ifconfig nas$i hw ether $UNIQUE_MAC
+		else
+			if [ "$WAN_MAC" != "" ]; then
+				/sbin/ifconfig nas$i hw ether $WAN_MAC
+			fi
+		fi
+	else
+		if [ "$WAN_MAC" != "" ]; then
+			/sbin/ifconfig nas$i hw ether $WAN_MAC
+		fi
+	fi
+}
+
 if [ $ISP = "0" ] ; then
 
 	if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" != "" ] && [ "$TCSUPPORT_WAN_PTM" != "" -o "$TCSUPPORT_WAN_ETHER" != "" ] && [ "$isPTMETHER" = "1" ]; then
@@ -199,21 +225,7 @@ if [ $ISP = "0" ] ; then
 
 	/sbin/ifconfig nas$i down
 
-	if [ "$TCSUPPORT_UNIQUEMAC" != "" ] ;then
-		if [ "$UNIQUEMAC_FLAG" = "1" ]; then
-			/sbin/ifconfig nas$i hw ether $UNIQUE_MAC
-		else
-			if [ "$WAN_MAC" != "" ]; then
-				/sbin/ifconfig nas$i hw ether $WAN_MAC
-			fi
-		fi
-	else
-		if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" = "" ] || [ "$TCSUPPORT_WAN_PTM" = "" -a "$TCSUPPORT_WAN_ETHER" = "" ] || [ "$isPTMETHER" != "1" ] ;then
-			if [ "$WAN_MAC" != "" ]; then
-				/sbin/ifconfig nas$i hw ether $WAN_MAC
-			fi
-		fi
-	fi
+	setCloneMAC
 
 	if [ "$IPVERSION" != "IPv4" ] && [ "$EnableDynIPv6" = "0" ]; then
 		echo 1 > /proc/sys/net/ipv6/conf/nas$i/autoconf
@@ -351,21 +363,8 @@ elif [ $ISP = "1" ] ; then
 
 	/sbin/ifconfig nas$i down
 
-	if [ "$TCSUPPORT_UNIQUEMAC" != "" ] ;then
-		if [ "$UNIQUEMAC_FLAG" = "1" ]; then
-			/sbin/ifconfig nas$i hw ether $UNIQUE_MAC
-		else	
-			if [ "$WAN_MAC" != "" ]; then
-				/sbin/ifconfig nas$i hw ether $WAN_MAC
-			fi
-		fi
-	else
-		if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" = "" ] || [ "$TCSUPPORT_WAN_PTM" = "" -a "$TCSUPPORT_WAN_ETHER" = "" ] || [ "$isPTMETHER" != "1" ] ;then
-			if [ "$WAN_MAC" != "" ]; then
-				/sbin/ifconfig nas$i hw ether $WAN_MAC
-			fi
-		fi	
-	fi
+	setCloneMAC
+
 	#	/sbin/ifconfig nas$i $IPADDR netmask $NETMASK up
 	#	/sbin/ifconfig nas$i $IPADDR6/$PREFIX6
 	#	echo -e "server=$DNSIPv61st@nas$i\\nserver=$DNSIPv62nd@nas$i">>/etc/dnsmasq.conf
@@ -549,21 +548,7 @@ elif [ $ISP = "2" ] ; then
 					PPP_PARAM="$PPP_PARAM -chap -mschap -mschap-v2"
 				fi
 
-				if [ "$TCSUPPORT_UNIQUEMAC" != "" ] ;then
-					if [ "$UNIQUEMAC_FLAG" = "1" ]; then
-						/sbin/ifconfig nas$i hw ether $UNIQUE_MAC
-					else	
-						if [ "$WAN_MAC" != "" ]; then
-							/sbin/ifconfig nas$i hw ether $WAN_MAC
-						fi
-					fi
-				else
-					if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" = "" ] || [ "$TCSUPPORT_WAN_PTM" = "" -a "$TCSUPPORT_WAN_ETHER" = "" ] || [ "$isPTMETHER" != "1" ] ;then
-						if [ "$WAN_MAC" != "" ]; then
-			 				/sbin/ifconfig nas$i hw ether $WAN_MAC
-						fi
-					fi	
-				fi
+				setCloneMAC
 
 				/sbin/ifconfig nas$i 0.0.0.0
 				ENCAP=""
@@ -595,21 +580,8 @@ elif [ $ISP = "2" ] ; then
 			echo $! > /var/run/nas$i.pid
 			sleep 1
 
-			if [ "$TCSUPPORT_UNIQUEMAC" != "" ] ;then
-				if [ "$UNIQUEMAC_FLAG" = "1" ]; then
-					/sbin/ifconfig nas$i hw ether $UNIQUE_MAC
-				else	
-					if [ "$WAN_MAC" != "" ]; then
-						/sbin/ifconfig nas$i hw ether $WAN_MAC
-					fi
-				fi
-			else
-				if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" = "" ] || [ "$TCSUPPORT_WAN_PTM" = "" -a "$TCSUPPORT_WAN_ETHER" = "" ] || [ "$isPTMETHER" != "1" ] ;then
-					if [ "$WAN_MAC" != "" ]; then
-			 			/sbin/ifconfig nas$i hw ether $WAN_MAC
-					fi
-				fi	
-			fi
+			setCloneMAC
+
 			/sbin/ifconfig nas$i 0.0.0.0
 
 			# PPPoA
@@ -809,25 +781,8 @@ elif [ $ISP = "3" ] ; then
 		sleep 1
 	fi
 
-	
-if [ "$TCSUPPORT_UNIQUEMAC" != "" ] ;then
-	if [ "$UNIQUEMAC_FLAG" = "1" ]; then
-		#if [ "$LAN_MAC" != "" ]; then
-		#/sbin/ifconfig nas$i hw ether $LAN_MAC
-		#fi
-		/sbin/ifconfig nas$i hw ether $UNIQUE_MAC
-	else	
-		if [ "$WAN_MAC" != "" ]; then
-		/sbin/ifconfig nas$i hw ether $WAN_MAC
-		fi
-	fi
-else
-	if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" = "" ] || [ "$TCSUPPORT_WAN_PTM" = "" -a "$TCSUPPORT_WAN_ETHER" = "" ] || [ "$isPTMETHER" != "1" ] ;then
-		if [ "$WAN_MAC" != "" ]; then
-			 /sbin/ifconfig nas$i hw ether $WAN_MAC
-		fi	
-	fi	
-fi
+setCloneMAC
+
 	# WAN_STATE_STOPPED.
 	if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" != "" ] && [ "$TCSUPPORT_WAN_PTM" != "" -o "$TCSUPPORT_WAN_ETHER" != "" ] ;then
 		if [ "$isPTMETHER" = "1" ] ; then

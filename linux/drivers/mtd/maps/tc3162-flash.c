@@ -69,6 +69,14 @@ static struct map_info tc3162_map = {
 	#endif
 #endif
 
+#ifdef TCSUPPORT_SQUASHFS_ADD_YAFFS
+#ifdef TCSUPPORT_NAND_BADBLOCK_CHECK
+#define	SQUASHFS_ADD_YAFFS_SIZE 0x3a00000	//58M
+#else
+#define	SQUASHFS_ADD_YAFFS_SIZE 0xa00000	//10M
+#endif
+#endif
+
 static struct mtd_partition tc3162_parts[] = {
 	{									 	/* First partition */
 		  name 	     : "bootloader",	 	/* Bootloader section */
@@ -136,6 +144,14 @@ static struct mtd_partition tc3162_parts[] = {
 		offset       : MTDPART_OFS_APPEND
 	}
 #endif
+#if defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
+	,
+	 {
+		  name       : "yaffs",
+		  size       : SQUASHFS_ADD_YAFFS_SIZE,
+		  offset     : MTDPART_OFS_APPEND
+	}
+#endif
  #ifdef TCSUPPORT_MTD_ENCHANCEMENT
  	,
 	 {
@@ -170,6 +186,12 @@ static int __init tc3162_mtd_init(void)
 	struct mtd_info *mtd;
 	unsigned int *header;
 	unsigned int addr;
+
+#ifdef TCSUPPORT_SQUASHFS_ADD_YAFFS
+	u_int32_t nand_yaffs_size = SQUASHFS_ADD_YAFFS_SIZE;
+#else
+	u_int32_t nand_yaffs_size = 0;
+#endif
 
 	#if defined(CONFIG_DUAL_IMAGE) || defined(TCSUPPORT_MTD_ENCHANCEMENT) || defined(TCSUPPORT_MULTI_BOOT) || defined(TCSUPPORT_NAND_BADBLOCK_CHECK)
 	int i = 0;
@@ -329,7 +351,7 @@ static int __init tc3162_mtd_init(void)
 				#ifdef TCSUPPORT_NAND_BADBLOCK_CHECK
 					tc3162_parts[i].size = 0x2000000;
 				#else
-					tc3162_parts[i].size = tc3162_mtd_info->size - 6*tc3162_mtd_info->erasesize - tclinux_slave_offset;
+					tc3162_parts[i].size = tc3162_mtd_info->size - jffs_size - nand_yaffs_size - 6*tc3162_mtd_info->erasesize - tclinux_slave_offset;
 				#endif
 				} else {
 					tc3162_parts[i].size = tc3162_mtd_info->size - tclinux_slave_offset;
@@ -373,7 +395,7 @@ static int __init tc3162_mtd_init(void)
 			tc3162_parts[4].size = 0x4000000;
 		#else
 			/* the last block store nand flash romfile */
-			tc3162_parts[4].size = tc3162_mtd_info->size - 6*tc3162_mtd_info->erasesize - 0x20000;
+			tc3162_parts[4].size = tc3162_mtd_info->size - jffs_size - nand_yaffs_size - 6*tc3162_mtd_info->erasesize - 0x20000;
 		#endif
 		}
 	}
@@ -431,10 +453,10 @@ static int __init tc3162_mtd_init(void)
 			if (tc3162_mtd_info->erasesize == 0x10000) {
 				tc3162_parts[i].size = tc3162_mtd_info->size - jffs_size - BLOCK_NUM_FOR_RESERVEAREA*( tc3162_mtd_info->erasesize) -0x20000;
 			} else if (tc3162_mtd_info->erasesize == 0x20000) {
-				tc3162_parts[i].size = tc3162_mtd_info->size - jffs_size - 6*( tc3162_mtd_info->erasesize) -0x20000; 
+				tc3162_parts[i].size = tc3162_mtd_info->size - jffs_size - nand_yaffs_size - BLOCK_NUM_FOR_RESERVEAREA*( tc3162_mtd_info->erasesize) -0x20000; 
 			/* 16K block size NAND Flash */
 			} else {
-				tc3162_parts[i].size = tc3162_mtd_info->size - jffs_size - BLOCK_NUM_FOR_RESERVEAREA*(0x10000);
+				tc3162_parts[i].size = tc3162_mtd_info->size - jffs_size - nand_yaffs_size - BLOCK_NUM_FOR_RESERVEAREA*(0x10000);
 			}
 			#endif
 			if(tclinux_size > tc3162_parts[i].size)
@@ -456,10 +478,10 @@ static int __init tc3162_mtd_init(void)
 				if (tc3162_mtd_info->erasesize == 0x10000) {
 					tc3162_parts[i].size = tc3162_mtd_info->size - jffs_size - BLOCK_NUM_FOR_RESERVEAREA*( tc3162_mtd_info->erasesize) -tclinux_slave_offset;
 				} else if (tc3162_mtd_info->erasesize == 0x20000) {
-					tc3162_parts[i].size = tc3162_mtd_info->size - jffs_size - 6*( tc3162_mtd_info->erasesize) -tclinux_slave_offset; 
+					tc3162_parts[i].size = tc3162_mtd_info->size - jffs_size - nand_yaffs_size - BLOCK_NUM_FOR_RESERVEAREA*( tc3162_mtd_info->erasesize) -tclinux_slave_offset; 
 				/* 16K block size NAND Flash */
 				} else {
-					tc3162_parts[i].size = tc3162_mtd_info->size - jffs_size - BLOCK_NUM_FOR_RESERVEAREA*(0x10000) - tclinux_slave_offset;
+					tc3162_parts[i].size = tc3162_mtd_info->size - jffs_size - nand_yaffs_size - BLOCK_NUM_FOR_RESERVEAREA*(0x10000) - tclinux_slave_offset;
 				}
 
 				if(tclinux_slave_size > tc3162_parts[i].size)

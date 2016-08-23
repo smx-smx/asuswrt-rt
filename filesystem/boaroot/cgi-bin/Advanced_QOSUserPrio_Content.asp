@@ -225,9 +225,9 @@ function switchPage(page){
 		location.href = "QoS_EZQoS.asp";
 	else if(page == "3")
 		location.href = "Advanced_QOSUserRules_Content.asp";	
-		else
-    			return false;
-			}
+	else
+    		return false;
+}
 
 </script>
 </head>
@@ -276,16 +276,16 @@ function switchPage(page){
 						<table width="100%" >
 						<tr >
 						<td  class="formfonttitle" align="left">								
-										<div style="margin-top:5px;"><% tcWebApi_Get("String_Entry", "Menu_TrafficManager", "s") %> - QoS</div>
-									</td>
+							<div style="margin-top:5px;"><% tcWebApi_Get("String_Entry", "Menu_TrafficManager", "s") %> - QoS</div>
+						</td>
 						<td align="right" >	
 						<div style="margin-top:5px;">
 	   					<select onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option">
-								<!--option>Switch Pages:</option-->
-								<option value="1"><%tcWebApi_get("String_Entry","qos_automatic_mode","s")%></option>
-								<option value="2" selected><% tcWebApi_Get("String_Entry", "qos_user_prio", "s") %></option>
-								<option value="3" ><% tcWebApi_Get("String_Entry", "qos_user_rules", "s") %></option>
-							</select>	    
+							<!--option>Switch Pages:</option-->
+							<option value="1"><%tcWebApi_get("String_Entry","Adaptive_QoS_Conf","s")%></option>
+							<option value="2" selected><% tcWebApi_Get("String_Entry", "qos_user_prio", "s") %></option>
+							<option value="3" ><% tcWebApi_Get("String_Entry", "qos_user_rules", "s") %></option>
+						</select>	    
 						</div>
 						
 						</td>

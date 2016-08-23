@@ -8,6 +8,7 @@ var chanList = 0;
 var wep1, wep2, wep3, wep4;
 var varload=0;
 var final_flag = 0; // for validate_ipaddr() always return true.
+
 if(navigator.appName.indexOf("Microsoft") != -1){
 nav = false;
 document.onkeydown = MicrosoftEventHandler_KeyDown;
@@ -328,20 +329,31 @@ return true;
 }
 
 function validate_string_webpassword(string_obj){
-	invalid_char = "";
-	for(var i = 0; i < string_obj.value.length; ++i){
-			if(string_obj.value.charAt(i) < ' ' || string_obj.value.charAt(i) > '~' || string_obj.value.charAt(i) == '%' || string_obj.value.charAt(i) == '"' || string_obj.value.charAt(i) == ';'){		//ascii: 32~126  except 37 (%) & 34 (") & ; (59)
-					invalid_char = invalid_char+string_obj.value.charAt(i);
-			}
+	if(string_obj.value.charAt(0) == '"'){
+		if(flag != "noalert")
+			alert('<%tcWebApi_get("String_Entry","JS_validstr1","s")%> ["]');
+
+		string_obj.value = "";
+		string_obj.focus();
+		return false;
 	}
+	else{
+
+		invalid_char = "";
+		for(var i = 0; i < string_obj.value.length; ++i){
+				if(string_obj.value.charAt(i) < ' ' || string_obj.value.charAt(i) > '~' || string_obj.value.charAt(i) == '%' || string_obj.value.charAt(i) == '"' || string_obj.value.charAt(i) == ';'){		//ascii: 32~126  except 37 (%) & 34 (") & ; (59)
+					invalid_char = invalid_char+string_obj.value.charAt(i);
+				}
+		}
 		
-	if(invalid_char != ""){
+		if(invalid_char != ""){
 			alert("<%tcWebApi_get("String_Entry","JS_validstr2","s")%> '"+invalid_char+"' !");
 			string_obj.value = "";
 			string_obj.focus();
 			return false;
+		}
+		return true;
 	}
-	return true;
 }
 
 function validate_string_group(o){
@@ -668,10 +680,7 @@ o.select();
 return false;
 }
 if ((v=='wan_ipaddr_x' && matchSubnet2(o.value, document.form.wan_netmask_x, document.form.lan_ipaddr.value, document.form.lan_netmask)) ||
-(v=='lan_ipaddr' && matchSubnet2(o.value, document.form.lan_netmask, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x)) ||
-(isModel3() == 'WL550gE' && v=='wan_ipaddr_x' && matchSubnet2(o.value, document.form.wan_netmask_x, document.form.lan1_ipaddr.value, document.form.lan1_netmask)) ||
-(isModel3() == 'WL550gE' && v=='lan1_ipaddr' && matchSubnet2(o.value, document.form.lan1_netmask, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x))
-)
+(v=='lan_ipaddr' && matchSubnet2(o.value, document.form.lan_netmask, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x)))
 {
 alert(o.value + " <%tcWebApi_get("String_Entry","JS_validip","s")%>");
 if (v=='wan_ipaddr_x')
@@ -702,10 +711,7 @@ return false;
 }
 if (requireWANIP(v) && (
 (v=='wan_netmask_x' && matchSubnet2(document.form.wan_ipaddr_x.value, o, document.form.lan_ipaddr.value, document.form.lan_netmask)) ||
-(v=='lan_netmask' && matchSubnet2(document.form.lan_ipaddr.value, o, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x)) ||
-(isModel3() == 'WL550gE' && v=='wan_netmask_x' && matchSubnet2(document.form.wan_ipaddr_x.value, o, document.form.lan_ipaddr.value, document.form.lan_netmask)) ||
-(isModel3() == 'WL550gE' && v=='lan1_netmask' && matchSubnet2(document.form.lan1_ipaddr.value, o, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x))
-))
+(v=='lan_netmask' && matchSubnet2(document.form.lan_ipaddr.value, o, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x))))
 {alert(o.value + " <%tcWebApi_get("String_Entry","JS_validip","s")%>");
 if (v=='wan_netmask_x')
 {document.form.wan_ipaddr_x.value = "10.1.1.1";
@@ -723,24 +729,7 @@ o.focus();
 o.select();
 return false;
 }
-if(v=='lan1_ipaddr')
-{if(isModel3() == 'WL550gE' && matchSubnet(document.form.lan_ipaddr.value, document.form.lan1_ipaddr.value, 3))
-{alert(o.value + " <%tcWebApi_get("String_Entry","JS_validip","s")%>");
-o.value = "";
-o.focus();
-o.select();
-return false;
-}
-}
-else if(v=='lan_ipaddr' && isBand() != 'b')
-{if(isModel3() == 'WL550gE' && matchSubnet(document.form.lan_ipaddr.value, document.form.lan1_ipaddr.value, 3))
-{alert(o.value + " <%tcWebApi_get("String_Entry","JS_validip","s")%>");
-o.value = "";
-o.focus();
-o.select();
-return false;
-}
-}
+
 o.value = v1 + "." + v2 + "." + v3 + "." + v4;
 if ((v1 > 0) && (v1 < 127)) mask = "255.0.0.0";
 else if ((v1 > 127) && (v1 < 192)) mask = "255.255.0.0";
@@ -900,10 +889,7 @@ if((wan_route_x == "IP_Bridged" && wan_nat_x == "0") || sw_mode=="2" || sw_mode=
 ; // there is no WAN in AP mode, so it wouldn't be compared with the wan ip..., etc.
 else if(requireWANIP(v) && (
 (v=='wan_ipaddr_x' && matchSubnet2(o.value, document.form.wan_netmask_x, document.form.lan_ipaddr.value, document.form.lan_netmask)) ||
-(v=='lan_ipaddr' && matchSubnet2(o.value, document.form.lan_netmask, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x)) ||
-(isModel3() == 'WL550gE' && v=='wan_ipaddr_x' && matchSubnet2(o.value, document.form.wan_netmask_x, document.form.lan1_ipaddr.value, document.form.lan1_netmask)) ||
-(isModel3() == 'WL550gE' && v=='lan1_ipaddr' && matchSubnet2(o.value, document.form.lan1_netmask, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x))
-)){
+(v=='lan_ipaddr' && matchSubnet2(o.value, document.form.lan_netmask, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x)))){
 alert(o.value + " <%tcWebApi_get("String_Entry","JS_validip","s")%>");
 if(v == 'wan_ipaddr_x'){
 document.form.wan_ipaddr_x.value = "10.1.1.1";
@@ -935,10 +921,7 @@ if((wan_route_x == "IP_Bridged" && wan_nat_x == "0") || sw_mode=="2" || sw_mode=
 ; // there is no WAN in AP mode, so it wouldn't be compared with the wan ip..., etc.
 else if(requireWANIP(v) && (
 (v=='wan_netmask_x' && matchSubnet2(document.form.wan_ipaddr_x.value, o, document.form.lan_ipaddr.value, document.form.lan_netmask)) ||
-(v=='lan_netmask' && matchSubnet2(document.form.lan_ipaddr.value, o, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x)) ||
-(isModel3() == 'WL550gE' && v=='wan_netmask_x' && matchSubnet2(document.form.wan_ipaddr_x.value, o, document.form.lan_ipaddr.value, document.form.lan_netmask)) ||
-(isModel3() == 'WL550gE' && v=='lan1_netmask' && matchSubnet2(document.form.lan1_ipaddr.value, o, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x))
-)){
+(v=='lan_netmask' && matchSubnet2(document.form.lan_ipaddr.value, o, document.form.wan_ipaddr_x.value, document.form.wan_netmask_x)))){
 alert(o.value + " <%tcWebApi_get("String_Entry","JS_validip","s")%>");
 if (v=='wan_netmask_x'){
 document.form.wan_ipaddr_x.value = "10.1.1.1";
@@ -956,24 +939,7 @@ o.focus();
 o.select();
 return false;
 }
-if(v=='lan1_ipaddr'){
-if(isModel3() == 'WL550gE' && matchSubnet(document.form.lan_ipaddr.value, document.form.lan1_ipaddr.value, 3)){
-alert(o.value + " <%tcWebApi_get("String_Entry","JS_validip","s")%>");
-o.value = "";
-o.focus();
-o.select();
-return false;
-}
-}
-else if(v=='lan_ipaddr' && isBand() != 'b'){
-if(isModel3() == 'WL550gE' && matchSubnet(document.form.lan_ipaddr.value, document.form.lan1_ipaddr.value, 3)){
-alert(o.value + " <%tcWebApi_get("String_Entry","JS_validip","s")%>");
-o.value = "";
-o.focus();
-o.select();
-return false;
-}
-}
+
 o.value = v1 + "." + v2 + "." + v3 + "." + v4;
 if((v1 > 0) && (v1 < 127)) mask = "255.0.0.0";
 else if ((v1 > 127) && (v1 < 192)) mask = "255.255.0.0";
@@ -1494,25 +1460,6 @@ add_option(document.form.TriggerKnownApps, wItem[i][0], wItem[i][0], 0);
 else if(document.form.current_page.value == "Advanced_BasicFirewall_Content.asp"){
 change_firewall(rcheck(document.form.fw_enable_x));
 }
-else if (document.form.current_page.value == "Advanced_Firewall_Content.asp"){
-wItem = new Array(new Array("WWW", "80", "TCP"),new Array("TELNET", "23", "TCP"),new Array("FTP", "20:21", "TCP"));
-free_options(document.form.LWKnownApps);
-add_option(document.form.LWKnownApps, "User Defined", "User Defined", 1);
-for (i = 0; i < wItem.length; i++){
-add_option(document.form.LWKnownApps, wItem[i][0], wItem[i][0], 0);
-}
-document.form.filter_lw_date_x_Sun.checked = getDateCheck(document.form.filter_lw_date_x.value, 0);
-document.form.filter_lw_date_x_Mon.checked = getDateCheck(document.form.filter_lw_date_x.value, 1);
-document.form.filter_lw_date_x_Tue.checked = getDateCheck(document.form.filter_lw_date_x.value, 2);
-document.form.filter_lw_date_x_Wed.checked = getDateCheck(document.form.filter_lw_date_x.value, 3);
-document.form.filter_lw_date_x_Thu.checked = getDateCheck(document.form.filter_lw_date_x.value, 4);
-document.form.filter_lw_date_x_Fri.checked = getDateCheck(document.form.filter_lw_date_x.value, 5);
-document.form.filter_lw_date_x_Sat.checked = getDateCheck(document.form.filter_lw_date_x.value, 6);
-document.form.filter_lw_time_x_starthour.value = getTimeRange(document.form.filter_lw_time_x.value, 0);
-document.form.filter_lw_time_x_startmin.value = getTimeRange(document.form.filter_lw_time_x.value, 1);
-document.form.filter_lw_time_x_endhour.value = getTimeRange(document.form.filter_lw_time_x.value, 2);
-document.form.filter_lw_time_x_endmin.value = getTimeRange(document.form.filter_lw_time_x.value, 3);
-}
 else if(document.form.current_page.value == "Advanced_URLFilter_Content.asp"){
 document.form.url_date_x_Sun.checked = getDateCheck(document.form.url_date_x.value, 0);
 document.form.url_date_x_Mon.checked = getDateCheck(document.form.url_date_x.value, 1);
@@ -1535,25 +1482,7 @@ final_flag = 1;
 }
 change = 0;
 }
-function change_wireless_firewall()
-{if (isModel() == "WL600")
-{if (document.form.FirewallConfig_DmzEnable[0].checked == true )
-{if (document.form.FirewallConfig_DmzDevices.value == "Both")
-document.form.WirelessFirewall_img.src = "graph/wf_both.gif";
-else if (document.form.FirewallConfig_DmzDevices.value == "802.11a only")
-document.form.WirelessFirewall_img.src = "graph/wf_a.gif";
-else if (document.form.FirewallConfig_DmzDevices.value == "802.11g only")
-document.form.WirelessFirewall_img.src = "graph/wf_g.gif";
-}
-else document.form.WirelessFirewall_img.src = "graph/wf_none.gif";
-}
-else
-{if (document.form.FirewallConfig_DmzEnable[0].checked == true)
-{document.form.WirelessFirewall_img.src = "graph/wf_g.gif";
-}
-else document.form.WirelessFirewall_img.src = "graph/wf_none.gif";
-}
-}
+
 function change_firewall(r)
 {if (r == "0")
 {
@@ -1609,25 +1538,7 @@ else if (document.form.current_page.value == "Advanced_LFirewall_Content.asp")
 else if (document.form.current_page.value == "Advanced_WebCam_Content.asp")
 {updateDateTime(document.form.current_page.value);
 }
-else if (document.form.current_page.value == "Advanced_WirelessGuest_Content.asp")
-{if (!validate_ipaddr_final(document.form.lan1_ipaddr, 'lan1_ipaddr') ||
-!validate_ipaddr_final(document.form.lan1_netmask, 'lan1_netmask') ||
-!validate_ipaddr_final(document.form.dhcp1_start, 'dhcp1_start') ||
-!validate_ipaddr_final(document.form.dhcp1_end, 'dhcp1_end')) return false;
-if (intoa(document.form.dhcp1_start.value)>intoa(document.form.dhcp1_end.value))
-{tmp = document.form.dhcp1_start.value;
-document.form.dhcp1_start.value = document.form.dhcp1_end.value;
-document.form.dhcp1_end.value = tmp;
-}
-inputCtrl(document.form.wl_guest_phrase_x_1, 1);
-inputCtrl(document.form.wl_guest_wep_x_1, 1);
-inputCtrl(document.form.wl_guest_key1_1, 1);
-inputCtrl(document.form.wl_guest_key2_1, 1);
-inputCtrl(document.form.wl_guest_key3_1, 1);
-inputCtrl(document.form.wl_guest_key4_1, 1);
-inputCtrl(document.form.wl_guest_key_1, 1);
-unmasq_wepkey_guest();
-}
+
 return true;
 }
 function onSubmitCtrl(o, s) {
@@ -1764,8 +1675,9 @@ function setup_script(s)
 {document.form.action_script.value = s;
 }
 }
+
 function automode_hint(){ //Lock add 2009.11.05 for 54Mbps limitation in auto mode + WEP/TKIP.
-	if((document.form.wl_nmode_x.value == "9" || document.form.wl_nmode_x.value == "8" || document.form.wl_nmode_x.value == "14") &&	//9:2.4GHz auto 8:5GHz auto
+	if((document.form.wl_nmode_x.value == "9" || document.form.wl_nmode_x.value == "8" || document.form.wl_nmode_x.value == "14") &&	//9:2.4GHz auto, 8:5GHz auto, 14:5GHz AC auto
 		(document.form.wl_wep_x.value == 1 || document.form.wl_wep_x.value == 2 || document.form.wl_auth_mode_x.value == "radius" || (document.form.wl_crypto.value.indexOf("TKIP") == 0 && !document.form.wl_crypto.disabled))){
 		if(document.form.current_page.value == "Advanced_Wireless_Content.asp"
 				|| document.form.current_page.value == "device-map/router.asp"
@@ -1877,27 +1789,6 @@ function change_common(o, s, v){
 		automode_hint();
 		check_NOnly_to_GN();
 	}
-	else if (v == "wl_guest_auth_mode_1") /* Handle AuthenticationMethod Change */
-	{wl_auth_mode_change_guest(0);
-		if (o.value == "psk" || mode == "psk2" || mode == "pskpsk2"){
-		document.form.wl_guest_wpa_psk_1.focus();
-		document.form.wl_guest_wpa_psk_1.select();
-		}
-		else if (o.value == "shared" || o.value == "radius"){
-		document.form.wl_guest_phrase_x_1.focus();
-		document.form.wl_guest_phrase_x_1.select();
-		}
-	}
-	else if (v == "wl_guest_wep_x_1") /* Handle AuthenticationMethod Change */
-	{
-		change_wlweptype_guest(o, "WLANConfig11b");
-	}
-	else if (v == "wl_guest_crypto_1"){
-		wl_auth_mode_change_guest(0);
-	}
-	else if (s == "FirewallConfig" && v=="DmzDevices"){
-		change_wireless_firewall();
-	}
 	else if (s=="WLANConfig11b" && v=="x_Mode11g"){
 		RefreshRateSetList(document.form.WLANConfig11b_x_Mode11g.value, true);
 	}
@@ -1920,7 +1811,7 @@ function change_common(o, s, v){
 			inputCtrl(document.form.wl_wme_apsd, 0);
 		}
 		else{
-			if(document.form.wl_nmode_x.value == "9" || document.form.wl_nmode_x.value == "8" || document.form.wl_nmode_x.value == "6" || document.form.wl_nmode_x.value == "11" || document.form.wl_nmode_x.value == "14"){ //2.4GHz & 5GHz: auto, n only
+			if(document.form.wl_nmode_x.value == "9" || document.form.wl_nmode_x.value == "8" || document.form.wl_nmode_x.value == "6" || document.form.wl_nmode_x.value == "11" || document.form.wl_nmode_x.value == "14"){ //2.4GHz 9:auto & 6:n only; 5GHz 8:auto & 11:n only; 5GHz AC 14: auto
 				document.form.wl_wme_no_ack.value = "off";
 				inputCtrl(document.form.wl_wme_no_ack, 0);
 			}else
@@ -2008,30 +1899,11 @@ function change_ddns_setting(v){
 function change_common_radio(o, s, v, r){
 	change = 1;
 	pageChanged = 1;
-	if (v=='wl_wdsapply_x')
-	{}
-	else if (v=='wl_lazywds')
-	{}
-	else if (v=='wl_closed'){
+	if (v=='wl_closed'){
 			if(r==1)
 					showhide("WPS_hideSSID_hint",1);
 			else
 					showhide("WPS_hideSSID_hint",0);			
-	}
-	else if (v=='wl_schedule_radio')
-	{
-		if(document.form.wl_schedule_radio[0].checked==true){
-			if(document.form.wl_radio_date_x_Sun.checked == false
-			&& document.form.wl_radio_date_x_Mon.checked == false
-			&& document.form.wl_radio_date_x_Tue.checked == false
-			&& document.form.wl_radio_date_x_Wed.checked == false
-			&& document.form.wl_radio_date_x_Thu.checked == false
-			&& document.form.wl_radio_date_x_Fri.checked == false
-			&& document.form.wl_radio_date_x_Sat.checked == false){
-				alert("<%tcWebApi_get("String_Entry","JS_Shareblanktest","s")%>");
-				return false;
-			}
-		}
 	}
 	else if (v=='wps_mode')
 	{
@@ -2039,15 +1911,6 @@ function change_common_radio(o, s, v, r){
 			inputCtrl(document.form.wsc_sta_pin, 1);
 		else
 			inputCtrl(document.form.wsc_sta_pin, 0);
-	}
-	else if (v=="qos_dfragment_enable")
-	{
-		if (r == '1'){
-			inputCtrl(document.form.qos_dfragment_size, 1);
-		}
-		else{
-			inputCtrl(document.form.qos_dfragment_size, 0);
-		}
 	}
 	else if(v == "ddns_enable_x"){
 		var hostname_x = '<% tcWebApi_get("Ddns_Entry","MYHOST","s") %>';
@@ -2100,40 +1963,6 @@ function change_common_radio(o, s, v, r){
 	else if (v=="fw_enable_x")
 	{change_firewall(r);
 	}
-	else if (v=="x_AESEnable")
-	{if (r == '1')
-	{if (document.form.WLANConfig11a_AuthenticationMethod.value!="Open System")
-	{rst = confirm("If you would like to enable AES unique, Authentication should be set as Open System!");
-	if (rst)
-	document.form.WLANConfig11a_AuthenticationMethod.value = "Open System";
-	else
-	{inputRCtrl2(document.form.WLANConfig11a_x_AESEnable, 1);
-	return false;
-	}
-	}
-	else
-	{if (document.form.WLANConfig11a_WEPType.value == "None")
-	{rst = confirm("If you would like to enable AES unique, WEP should be enabled too!");
-	if (rst)
-	{document.form.WLANConfig11a_WEPType.value = "64bits";
-	change_wlweptype(document.form.WLANConfig11a_WEPType, "WLANConfig11a");
-	}
-	else
-	{inputRCtrl2(document.form.WLANConfig11a_x_AESEnable, 1);
-	return false;
-	}
-	}
-	}
-	}
-	}
-	else if (s=="PrinterStatus" && v=="usb_webhttpport_x")
-	{if (document.form.usb_webhttpport_x_check.checked)
-	{document.form.usb_webhttpcheck_x.value = "1";
-	}
-	else
-	{document.form.usb_webhttpcheck_x.value = "0";
-	}
-	}
 	else if (v=="lan_proto_x")
 	{if (r == '1')
 	{inputCtrl(document.form.lan_ipaddr, 0);
@@ -2145,9 +1974,6 @@ function change_common_radio(o, s, v, r){
 	inputCtrl(document.form.lan_netmask, 1);
 	inputCtrl(document.form.lan_gateway, 1);
 	}
-	}
-	else if (s=='FirewallConfig' && v=='DmzEnable')
-	{change_wireless_firewall();
 	}
 	else if (s=="PPPConnection" && v=="wan_pppoe_idletime")
 	{if (document.form.wan_pppoe_idletime_check.checked)
@@ -2242,7 +2068,7 @@ else wepLen = "128";
 }
 return(pflag + wepLen);
 }
-function change_wlweptype(o, s, isload){
+function change_wlweptype(o, s, isload, edit_unit){
 	var wflag = 0;
 	
 	if(o.value != "0"){
@@ -2251,15 +2077,12 @@ function change_wlweptype(o, s, isload){
 			is_wlphrase("WLANConfig11b", "wl_phrase_x", document.form.wl_phrase_x);
 	}
 	
-	wl_wep_change();
+	wl_wep_change(edit_unit);
 }
 function is_wlkey(o, event){
 keyPressed = event.keyCode ? event.keyCode : event.which;
 if(keyPressed == 0)
 return true;
-if(document.form.current_page.value == "Advanced_WirelessGuest_Content.asp")
-wep = document.form.wl_guest_wep_x_1.value;
-else
 wep = document.form.wl_wep_x.value;
 if((keyPressed > 47 && keyPressed < 58) ||
 (keyPressed > 64 && keyPressed < 71) ||
@@ -2280,9 +2103,6 @@ return false;
 return true;
 }
 function change_wlkey(o, s){
-if(document.form.current_page.value == "Advanced_WirelessGuest_Content.asp")
-wep = document.form.wl_guest_wep_x_1.value;
-else
 wep = document.form.wl_wep_x.value;
 if(wep == "1"){
 if(o.value.length > 10)
@@ -2467,25 +2287,6 @@ document.form.filter_lw_time_x_startmin,
 document.form.filter_lw_time_x_endhour,
 document.form.filter_lw_time_x_endmin);
 }
-else if (s == "Advanced_WAdvanced_Content.asp")
-{
-if (isModel()!="WL520gc" && isModel()!="SnapAP")
-{
-document.form.wl_radio_date_x.value = setDateCheck(
-document.form.wl_radio_date_x_Sun,
-document.form.wl_radio_date_x_Mon,
-document.form.wl_radio_date_x_Tue,
-document.form.wl_radio_date_x_Wed,
-document.form.wl_radio_date_x_Thu,
-document.form.wl_radio_date_x_Fri,
-document.form.wl_radio_date_x_Sat);
-document.form.wl_radio_time_x.value = setTimeRange(
-document.form.wl_radio_time_x_starthour,
-document.form.wl_radio_time_x_startmin,
-document.form.wl_radio_time_x_endhour,
-document.form.wl_radio_time_x_endmin);
-}
-}
 else if (s == "Advanced_URLFilter_Content.asp")
 {
 document.form.url_date_x.value = setDateCheck(
@@ -2549,85 +2350,6 @@ else if (s=='x_NTPServer1'){
 }
 }
 
-/* Used when WEP is changed */
-function changeWEPType()
-{if (document.form.wl_wep.value == "0")
-{flag = 0;
-}
-else
-{flag = 1;
-}
-inputCtrl(document.form.wl_phrase_x, flag);
-inputCtrl(document.form.wl_key1, flag);
-inputCtrl(document.form.wl_key2, flag);
-inputCtrl(document.form.wl_key3, flag);
-inputCtrl(document.form.wl_key4, flag);
-inputCtrl(document.form.wl_key, flag);
-}
-/* Used when Authenication Method is changed */
-function changeAuthType()
-{if (document.form.wl_auth_mode_x.value == "shared")
-{inputCtrl(document.form.wl_crypto, 0);
-inputCtrl(document.form.wl_wpa_psk, 0);
-inputCtrl(document.form.wl_wep, 1);
-inputCtrl(document.form.wl_phrase_x, 1);
-inputCtrl(document.form.wl_key1, 1);
-inputCtrl(document.form.wl_key2, 1);
-inputCtrl(document.form.wl_key3, 1);
-inputCtrl(document.form.wl_key4, 1);
-inputCtrl(document.form.wl_key, 1);
-inputCtrl(document.form.wl_wpa_gtk_rekey, 0);
-}
-else if (document.form.wl_auth_mode_x.value == "psk")
-{inputCtrl(document.form.wl_crypto, 1);
-inputCtrl(document.form.wl_wpa_psk, 1);
-inputCtrl(document.form.wl_wep, 1);
-inputCtrl(document.form.wl_phrase_x, 1);
-inputCtrl(document.form.wl_key1, 1);
-inputCtrl(document.form.wl_key2, 1);
-inputCtrl(document.form.wl_key3, 1);
-inputCtrl(document.form.wl_key4, 1);
-inputCtrl(document.form.wl_key, 1);
-inputCtrl(document.form.wl_wpa_gtk_rekey, 0);
-}
-else if (document.form.wl_auth_mode_x.value == "wpa")
-{inputCtrl(document.form.wl_crypto, 0);
-inputCtrl(document.form.wl_wpa_psk, 0);
-inputCtrl(document.form.wl_wep, 0);
-inputCtrl(document.form.wl_phrase_x, 0);
-inputCtrl(document.form.wl_key1, 0);
-inputCtrl(document.form.wl_key2, 0);
-inputCtrl(document.form.wl_key3, 0);
-inputCtrl(document.form.wl_key4, 0);
-inputCtrl(document.form.wl_key, 0);
-inputCtrl(document.form.wl_wpa_gtk_rekey, 0);
-}
-else if (document.form.wl_auth_mode_x.value == "radius")
-{inputCtrl(document.form.wl_crypto, 1);
-inputCtrl(document.form.wl_wpa_psk, 1);
-inputCtrl(document.form.wl_wep, 1);
-inputCtrl(document.form.wl_phrase_x, 1);
-inputCtrl(document.form.wl_key1, 1);
-inputCtrl(document.form.wl_key2, 1);
-inputCtrl(document.form.wl_key3, 1);
-inputCtrl(document.form.wl_key4, 1);
-inputCtrl(document.form.wl_key, 1);
-inputCtrl(document.form.wl_wpa_gtk_rekey, 0);
-}
-else
-{inputCtrl(document.form.wl_crypto, 0);
-inputCtrl(document.form.wl_wpa_psk, 0);
-inputCtrl(document.form.wl_wep, 1);
-inputCtrl(document.form.wl_phrase_x, 1);
-inputCtrl(document.form.wl_key1, 1);
-inputCtrl(document.form.wl_key1, 1);
-inputCtrl(document.form.wl_key1, 1);
-inputCtrl(document.form.wl_key1, 1);
-inputCtrl(document.form.wl_key1, 1);
-inputCtrl(document.form.wl_key, 1);
-inputCtrl(document.form.wl_wpa_gtk_rekey, 0);
-}
-}
 /* input : s: service id, v: value name, o: current value */
 /* output: wep key1~4 */
 function is_wlphrase(s, v, o){
@@ -2635,20 +2357,13 @@ var pseed = new Array;
 var wep_key = new Array(5);
 if(v=='wl_wpa_psk')
 return(valid_WPAPSK(o));
-if(document.form.current_page.value == "Advanced_WirelessGuest_Content.asp"){
-wepType = document.form.wl_guest_wep_x_1.value;
-wepKey1 = document.form.wl_guest_key1_1;
-wepKey2 = document.form.wl_guest_key2_1;
-wepKey3 = document.form.wl_guest_key3_1;
-wepKey4 = document.form.wl_guest_key4_1;
-}
-else{ // note: current_page == "Advanced_Wireless_Content.asp"
+// note: current_page == "Advanced_Wireless_Content.asp"
 wepType = document.form.wl_wep_x.value;
 wepKey1 = document.form.wl_key1;
 wepKey2 = document.form.wl_key2;
 wepKey3 = document.form.wl_key3;
 wepKey4 = document.form.wl_key4;
-}
+
 phrase = o.value;
 if(wepType == "1"){
 for(var i = 0; i < phrase.length; i++){
@@ -2702,9 +2417,13 @@ password = password+ch;
 }
 return true;
 }
-function wl_wep_change(){
+
+var wl0_nmode_x = '<% tcWebApi_get("WLan_Common","wl0_WirelessMode","s") %>';
+var wl1_nmode_x = '<% tcWebApi_get("WLan_Common","wl1_WirelessMode","s") %>';
+function wl_wep_change(edit_unit){	
 var mode = document.form.wl_auth_mode_x.value;
 var wep = document.form.wl_wep_x.value;
+
 	if(mode == "psk" || mode == "psk2" || mode == "pskpsk2" || mode == "wpa" || mode == "wpa2" || mode == "wpawpa2"){
 		if(mode != "wpa" && mode != "wpa2" && mode != "wpawpa2"){
 			inputCtrl(document.form.wl_crypto, 1);
@@ -2735,35 +2454,66 @@ var wep = document.form.wl_wep_x.value;
 		inputCtrl(document.form.wl_crypto, 0);
 		inputCtrl(document.form.wl_wpa_psk, 0);
 		inputCtrl(document.form.wl_wpa_gtk_rekey, 0);
-		
-		if(mode == "open" && (document.form.wl_nmode_x.value != 0 && document.form.wl_nmode_x.value != 2)){	//2.4GHz legacy 
-			document.form.wl_wep_x.parentNode.parentNode.style.display = "none";
-			document.form.wl_wep_x.value = "0";
-		}	
-		else	
-			inputCtrl(document.form.wl_wep_x, 1);	
-	
-		if(wep != "0"){
-			inputCtrl(document.form.wl_phrase_x, 1);
-			inputCtrl(document.form.wl_key1, 1);
-			inputCtrl(document.form.wl_key2, 1);
-			inputCtrl(document.form.wl_key3, 1);
-			inputCtrl(document.form.wl_key4, 1);
-			inputCtrl(document.form.wl_key, 1);
-		}
-		else{
-			inputCtrl(document.form.wl_phrase_x, 0);
-			inputCtrl(document.form.wl_key1, 0);
-			inputCtrl(document.form.wl_key2, 0);
-			inputCtrl(document.form.wl_key3, 0);
-			inputCtrl(document.form.wl_key4, 0);
-			inputCtrl(document.form.wl_key, 0);
-		}
+				
+		if(edit_unit != "undefine" || edit_unit != ""){	//for Guest network			
+			if(mode == "open" && (edit_unit == '0' && wl0_nmode_x != 0)){	//0: 2.4GHz legacy
+				document.form.wl_wep_x.parentNode.parentNode.style.display = "none";
+				document.form.wl_wep_x.value = "0";
+			}
+			else if(mode == "open" && (edit_unit ==  '1' && wl1_nmode_x != 2)){ //2: 5GHz legacy
+				document.form.wl_wep_x.parentNode.parentNode.style.display = "none";
+				document.form.wl_wep_x.value = "0";			
+			}	
+			else{
+				inputCtrl(document.form.wl_wep_x, 1);
+				if(wep != "0"){
+					inputCtrl(document.form.wl_phrase_x, 1);
+					inputCtrl(document.form.wl_key1, 1);
+					inputCtrl(document.form.wl_key2, 1);
+					inputCtrl(document.form.wl_key3, 1);
+					inputCtrl(document.form.wl_key4, 1);
+					inputCtrl(document.form.wl_key, 1);
+				}
+				else{
+					inputCtrl(document.form.wl_phrase_x, 0);
+					inputCtrl(document.form.wl_key1, 0);
+					inputCtrl(document.form.wl_key2, 0);
+					inputCtrl(document.form.wl_key3, 0);
+					inputCtrl(document.form.wl_key4, 0);
+					inputCtrl(document.form.wl_key, 0);
+				}
+			}	
+		}		
+		else{	//for else wireless setting pages
+			if(mode == "open" && (document.form.wl_nmode_x.value != 0 && document.form.wl_nmode_x.value != 2)){
+				document.form.wl_wep_x.parentNode.parentNode.style.display = "none";
+				document.form.wl_wep_x.value = "0";
+			}	
+			else{
+				inputCtrl(document.form.wl_wep_x, 1);	
+				if(wep != "0"){
+					inputCtrl(document.form.wl_phrase_x, 1);
+					inputCtrl(document.form.wl_key1, 1);
+					inputCtrl(document.form.wl_key2, 1);
+					inputCtrl(document.form.wl_key3, 1);
+					inputCtrl(document.form.wl_key4, 1);
+					inputCtrl(document.form.wl_key, 1);
+				}
+				else{
+					inputCtrl(document.form.wl_phrase_x, 0);
+					inputCtrl(document.form.wl_key1, 0);
+					inputCtrl(document.form.wl_key2, 0);
+					inputCtrl(document.form.wl_key3, 0);
+					inputCtrl(document.form.wl_key4, 0);
+					inputCtrl(document.form.wl_key, 0);
+				}
+			}	
+		}			
 	}
 	change_key_des(); // 2008.01 James.
 }
 
-function change_wep_type(mode, isload){
+function change_wep_type(mode, isload, edit_unit){
 	var cur_wep = "<% tcWebApi_get("WLan_Entry","wep_x", "s") %>";
 	var wep_type_array;
 	var value_array;
@@ -2788,7 +2538,7 @@ function change_wep_type(mode, isload){
 	if(mode == "psk" || mode == "psk2" || mode == "pskpsk2" || mode == "wpa" || mode == "wpa2" || mode == "wpawpa2" || mode == "radius") //2009.03 magic
 			document.form.wl_wep_x.value = "0";
 			
-	change_wlweptype(document.form.wl_wep_x, "WLANConfig11b", isload);
+	change_wlweptype(document.form.wl_wep_x, "WLANConfig11b", isload, edit_unit);
 }
 
 function wl_auth_mode_reconf(){
@@ -2801,54 +2551,61 @@ document.form.wl_auth_mode_x.options[i] = null;
 }
 
 function insertExtChannelOption(){
-	if('<% tcWebApi_get("WLan_Common","wl_unit","s"); %>' == '1'){
-				insertExtChannelOption_5g();	
-	}else{
-				insertExtChannelOption_2g();
-	}	
+	if('<% tcWebApi_get("WLan_Common","wl_unit","s"); %>' == '1')
+		insertExtChannelOption_5g();
+	else
+		insertExtChannelOption_2g();
 }
 
 function insertExtChannelOption_5g(){
     var country = "<% tcWebApi_get("WLan_Common","wl1_CountryCode","s"); %>";
     var orig = document.form.wl_channel.value;
+    var wl_channel_list_5g = new Array(<% get_wl_channel_list_5g(); %>);
+    var wl_channel_skiplist_5g = { <% get_wl_channel_skiplist_5g(); %> };    
+
     free_options(document.form.wl_channel);
-    //Viz banned 2014.09.30
-    /*
-		if(wl_channel_list_5g != ""){	//With wireless channel 5g hook
-				wl_channel_list_5g = eval('<hook channel_list_5g(); hook>');
-				if(document.form.wl_bw.value != "0" && document.form.wl_nmode_x.value != "2")
-				{ //cut channels >= 165 when bw != 20MHz
-					var i;
-					for(i=0; i < wl_channel_list_5g.length; i++)
-						if(wl_channel_list_5g[i] == "165")
-						{
-							wl_channel_list_5g.splice(i,(wl_channel_list_5g.length - i));
-							break;
+    
+    //With wireless channel 5g hook
+		if(wl_channel_list_5g != ""){
+				var wl_channel_list_5g_length = wl_channel_list_5g.length;
+				var wl_channel_skiplist_5g_length = 0;				
+				if(document.form.wl_bw.value == "2" || (band5g_11ac_support < 0 && document.form.wl_bw.value == "1")){
+						// bw== 40MHz   || 20/40MHz
+						wl_channel_skiplist_5g_length = wl_channel_skiplist_5g[40].length;
+						for(var x=wl_channel_skiplist_5g_length;x>0;x--){
+								for(var y=0;y<wl_channel_list_5g_length;y++){
+									if(wl_channel_skiplist_5g[40][x-1] == wl_channel_list_5g[y])
+										wl_channel_list_5g.splice(y,1)
+								}	
 						}
-					//remove ch56 when bw == 40MHz or remove ch56,60,64 when bw == 80MHz, on NO ch52 is provided.
-					for(i=0; i < wl_channel_list_5g.length; i++)
-					{
-						if(wl_channel_list_5g[i] == "56" && (i == 0 || wl_channel_list_5g[i-1] != "52"))
-						{
-							if(Rawifi_support && band5g_11ac_support && (document.form.wl_bw.value == "3" || document.form.wl_bw.value == "1") && (document.form.wl_nmode_x.value == "0" || document.form.wl_nmode_x.value == "8"))
-							{
-								for(var j=wl_channel_list_5g.length; j>=i ; j--)
-									if(wl_channel_list_5g[j] >= "56" && wl_channel_list_5g[j] <= "64")
-										wl_channel_list_5g.splice(j,1);
-							} else {
-								wl_channel_list_5g.splice(i,1);
-							}
-							break;
+				} 
+				else if(document.form.wl_bw.value == "3" || (band5g_11ac_support >= 0 && document.form.wl_bw.value == "1")){	
+						// bw== 80MHz	|| 20/40/80MHz
+						wl_channel_skiplist_5g_length = wl_channel_skiplist_5g[80].length;
+						for(var x=wl_channel_skiplist_5g_length;x>0;x--){
+								for(var y=0;y<wl_channel_list_5g_length;y++){
+									if(wl_channel_skiplist_5g[80][x-1] == wl_channel_list_5g[y])
+										wl_channel_list_5g.splice(y,1)
+								}	
 						}
-					}
 				}
-				if(wl_channel_list_5g[0] != "<% tcWebApi_Get("String_Entry", "Auto", "s") %>")
-						wl_channel_list_5g.splice(0,0,"0");
+				else{	
+						// bw== 20MHz
+						wl_channel_skiplist_5g_length = wl_channel_skiplist_5g[20].length;
+						for(var x=wl_channel_skiplist_5g_length;x>0;x--){
+								for(var y=0;y<wl_channel_list_5g_length;y++){
+									if(wl_channel_skiplist_5g[20][x-1] == wl_channel_list_5g[y])
+										wl_channel_list_5g.splice(y,1)
+								}	
+						}						
+				}
+				 				
+				if(wl_channel_list_5g[0] != 0)
+					wl_channel_list_5g.splice(0,0,"0");
 												
 				channels = wl_channel_list_5g;
-		}else{   	//start Without wireless channel 5g hook
-			*/		//Viz banned 2014.09.30
-			
+		}
+		else{   	//start Without wireless channel 5g hook
         if (document.form.wl_bw.value == "0"){ // 20 MHz
 						inputCtrl(document.form.wl_nctrlsb, 0);
                 	if (country == "AL" || 
@@ -3201,7 +2958,7 @@ function insertExtChannelOption_5g(){
                 		channels = new Array(0, 36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 149, 153, 157, 161);
                 }                
                 
-    //Viz banned 2014.09.30}	//end Without wireless channel 5g hook
+    }	//end Without wireless channel 5g hook
     
         var ch_v = new Array();
         for(var i=0; i<channels.length; i++){
@@ -3305,7 +3062,7 @@ function insertExtChannelOption_2g(){
 	else
 		inputCtrl(document.form.wl_nctrlsb, 0);
 }
-function wl_auth_mode_change(isload){
+function wl_auth_mode_change(isload, edit_unit){
 	var mode = document.form.wl_auth_mode_x.value;
 	var i, cur, algos;
 	inputCtrl(document.form.wl_wep_x, 1);
@@ -3328,9 +3085,7 @@ function wl_auth_mode_change(isload){
 		break;
 		}
 		}
-		if(isModel() == "SnapAP" || isBand() == 'b')
-		algos = new Array("TKIP");
-		else{
+		
 		opts = document.form.wl_auth_mode_x.options;
 		if(opts[opts.selectedIndex].text == "WPA-Personal")
 		algos = new Array("TKIP");
@@ -3338,7 +3093,7 @@ function wl_auth_mode_change(isload){
 		algos = new Array("AES");
 		else
 		algos = new Array("AES", "TKIP+AES");
-		}
+		
 		/* Reconstruct algorithm array from new crypto algorithms */
 		document.form.wl_crypto.length = algos.length;
 		for(i=0; i<algos.length; i++){
@@ -3385,7 +3140,7 @@ function wl_auth_mode_change(isload){
 				document.form.wl_crypto[i].selected = true;
 		}
 	}
-	change_wep_type(mode, isload);
+	change_wep_type(mode, isload, edit_unit);
 	/* Save current network key index */
 	cur = "1";
 	for(var i = 0; i < document.form.wl_key.length; i++){
@@ -3410,51 +3165,9 @@ function wl_auth_mode_change(isload){
 			document.form.wl_key[i].selected = true;
 	}
 	
-	wl_wep_change();
+	wl_wep_change(edit_unit);
 }
-function wl_rate_change()
-{
-orig = document.form.wl_rate.value;
-free_options(document.form.wl_rate);
-if (document.form.wl_nmode_x.value == "0" || document.form.wl_nmode_x.value == "2")
-{
-vitems = new Array("0", "1000000", "2000000", "5500000", "6000000", "9000000", "11000000", "12000000", "18000000", "24000000", "36000000", "48000000", "54000000");
-items = new Array("Auto", "1", "2", "5.5", "6", "9", "11", "12", "18", "24", "36", "48", "54");
-}
-else
-{
-vitems = new Array("0", "1000000", "2000000", "5500000", "11000000");
-items = new Array("Auto", "1", "2", "5.5", "11");
-}
-add_options_x2(document.form.wl_rate, items, vitems, orig);
-}
-function masq_wepkey()
-{wep1 = document.form.wl_key1.value;
-wep2 = document.form.wl_key2.value;
-wep3 = document.form.wl_key3.value;
-wep4 = document.form.wl_key4.value;
-if (wep1.length == 10)
-{wep = "**********";
-}
-else if (wep1.length == 26)
-{wep = "**************************";
-}
-else wep = "";
-document.form.wl_key1.value = wep;
-document.form.wl_key2.value = wep;
-document.form.wl_key3.value = wep;
-document.form.wl_key4.value = wep;
-}
-function unmasq_wepkey()
-{if (document.form.wl_key1.value.indexOf("**********") != -1)
-document.form.wl_key1.value = wep1;
-if (document.form.wl_key2.value.indexOf("**********") != -1)
-document.form.wl_key2.value = wep2;
-if (document.form.wl_key3.value.indexOf("**********") != -1)
-document.form.wl_key3.value = wep3;
-if (document.form.wl_key4.value.indexOf("**********") != -1)
-document.form.wl_key4.value = wep4;
-}
+
 function showhide(element, sh)
 {
 var status;
@@ -3474,66 +3187,9 @@ else if (document.layers){
 document.layers[element].display = status;
 }
 }
-var Add_Flag = "";
-var Edit_Flag = "";
-var Mkdir_Flag = "";
-var Share_Path = "";
-function isMode()
-{if (document.form.wan_nat_x.value == '1')
-mode = 'Gateway';
-else if (document.form.wan_route_x.value == 'IP_Routed')
-mode = 'Router';
-else
-mode = 'AP';
-return mode;
-}
-function isModel(){
-model = 'WL600';
-pid = document.form.productid.value;
-if (pid.indexOf("WL520gc")!=-1 ||
-pid.indexOf("WL500g-X")!=-1 ||
-pid.indexOf("WL500g-E")!=-1 ||
-pid.indexOf("WL550gE")!=-1 ||
-pid.indexOf("WL530")!=-1) model = 'WL520gc';
-else if (pid.indexOf("WL500")!=-1 ||
-pid.indexOf("WL700")!=-1 ||
-pid.indexOf("WL-500gP V2")!=-1 ||
-pid.indexOf("WLMIMO")!=-1
-) model = 'WL500';
-else if (pid.indexOf("WL331")!=-1) model = 'WL331';
-else if (pid.indexOf("SnapAP")!=-1) model = 'SnapAP';
-else if (pid.indexOf("WL300")!=-1) model = 'WL300';
-else if (pid.indexOf("WL550")!=-1) model = 'WL550';
-else if (pid.indexOf("WL520gu")!=-1) model = 'WL520gu';
-return model;
-}
-function isModel3()
-{model3 = 'WL500';
-pid = document.form.productid.value;
-if (pid.indexOf("WL550gE")!=-1) model3 = 'WL550gE';
-return model3;
-}
-function isBand()
-{band = 'g';
-pid = document.form.productid.value;
-if (pid.indexOf("WL500b")!=-1) band = 'b';
-return band;
-}
-function isFlash()
-{flash = '4MB';
-pid = document.form.productid.value;
-if (pid.indexOf("WL331g")!=-1) flash = '2MB';
-else if (pid.indexOf("WL500g.Lite")!=-1) flash = '2MB';
-else if (pid.indexOf("WL500b.Lite")!=-1) flash = '2MB';
-else if (pid.indexOf("WL500g-X")!=-1 || pid.indexOf("WL500g-E")!=-1 || pid.indexOf("WL520gc")!=-1 || pid.indexOf("WL550gE")!=-1) flash = '2MB';
-return flash;
-}
-var foldersTree = 0
-var timeOutId = 0
+
 var pageChanged = 0;
 var pageChangedCount = 0;
-var goquick=0;
-
 
 /*Viz 2011.03 for Input value check, start*/
 function valid_IP_form(obj, flag){
@@ -3768,16 +3424,8 @@ function wep_encryption_change(obj){
 }
 
 /* Handle Authentication Method changed */
-function authentication_method_change(obj){
-	wl_auth_mode_change(0);
-	
-	//disable temporary, Jieming added
-	/*if(obj.value == "psk" || obj.value == "psk2" || obj.value == "pskpsk2" || obj.name == "wl_crypto"){
-		document.form.wl_wpa_psk.focus();
-	}
-	else if(obj.value == "shared"){ 
-		document.form.wl_key.focus();
-	}*/
+function authentication_method_change(obj, edit_unit){	//edit_unit for Guestnetwork	
+	wl_auth_mode_change(0, edit_unit);	
 		
 	//nmode_limitation();
 	automode_hint();

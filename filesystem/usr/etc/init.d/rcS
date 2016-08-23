@@ -46,11 +46,17 @@ fi
 	mknod /dev/mtd3 c 90 6
 	mknod /dev/mtd4 c 90 8
 	mknod /dev/mtd5 c 90 10
-	mknod /dev/mtd6 c 90 12
 if [  "$TCSUPPORT_DUAL_IMAGE" != "" ] ;then
 	mknod /dev/mtd6 c 90 12
 	mknod /dev/mtd7 c 90 14
 	mknod /dev/mtd8 c 90 16
+if [  "$TCSUPPORT_SQUASHFS_ADD_YAFFS" != "" -o "$TCSUPPORT_ADD_JFFS" != "" ] ;then
+	mknod /dev/mtd9 c 90 18
+fi
+else
+if [  "$TCSUPPORT_SQUASHFS_ADD_YAFFS" != "" -o "$TCSUPPORT_ADD_JFFS" != "" ] ;then
+	mknod /dev/mtd6 c 90 12
+fi
 fi
 	mknod /dev/mtdblock0 b 31 0
 	mknod /dev/mtdblock1 b 31 1
@@ -62,6 +68,13 @@ if [  "$TCSUPPORT_DUAL_IMAGE" != "" ] ;then
 	mknod /dev/mtdblock6 b 31 6
 	mknod /dev/mtdblock7 b 31 7
 	mknod /dev/mtdblock8 b 31 8
+if [  "$TCSUPPORT_SQUASHFS_ADD_YAFFS" != "" -o "$TCSUPPORT_ADD_JFFS" != "" ] ;then
+	mknod /dev/mtdblock9 b 31 9
+fi
+else
+if [  "$TCSUPPORT_SQUASHFS_ADD_YAFFS" != "" -o "$TCSUPPORT_ADD_JFFS" != "" ] ;then
+	mknod /dev/mtdblock6 b 31 6
+fi
 fi
 	mknod /dev/null c 1 3
 	mknod /dev/ppp c 108 0
@@ -121,6 +134,12 @@ if [  "$TCSUPPORT_RA_HWNAT" != "" ] ;then
 	mknod /dev/mtr0 c 250 0
 fi
 
+if [ "$ASUS_OPENVPN" != "" ]; then
+	mknod /dev/tun c 10 200
+	mkdir -m 0777 -p /dev/net
+	ln -s /dev/tun /dev/net/tun
+fi
+
 # frank added 20110128
 #if [ "$TCSUPPORT_SDRAM_16M" != "" ] ;then
 #/userfs/bin/skbmgr 1280 400 &
@@ -135,6 +154,8 @@ fi
 /bin/mkdir -m 0777 -p /var/tmp
 /bin/mkdir -m 0777 -p /tmp/opt
 /bin/mkdir -m 0777 -p /tmp/ppp
+/bin/mkdir -m 0777 -p /tmp/xdsl
+/bin/mkdir -m 0755 -p /var/spool/cron/crontabs
 
 if [ "$TCSUPPORT_USB_3G_DONGLE" != "" ] ;then
 	cp -rf /rom/etc/ppp /etc/
@@ -282,6 +303,12 @@ if [ "$TCSUPPORT_VOIP" != "" ] ;then
 echo "TCSUPPORT_VOIP"
 userfs/bin/tcVoIPApiServer &
 fi
+
+if [ "ASUS_PROTECTION_SERVER" != "" ]; then
+echo "ASUS_PROTECTION_SERVER"
+/usr/sbin/protection_server &
+fi
+
 
 /userfs/bin/cfg_manager & 
 sleep 2
@@ -832,10 +859,6 @@ else
 fi
 fi
 
-#echo 1280 > /proc/net/skbmgr_driver_max_skb
-echo 4096 > /proc/net/skbmgr_driver_max_skb
-echo 4096 > /proc/net/skbmgr_limit
-
 #reduce tcp retry times from 5 to 3
 echo 3 > /proc/sys/net/ipv4/tcp_syn_retries
 
@@ -889,6 +912,7 @@ if [ -f $CLEAN_CACHE_FILE ] ;then
         $CLEAN_CACHE_FILE &
 fi
 
+echo "Product name=[$PRODUCTNAME]" > /proc/tc3162/dbg_msg
 fwver=`cat /etc/fwver.conf`
 echo "Firmware version=[$fwver]" > /proc/tc3162/dbg_msg
 

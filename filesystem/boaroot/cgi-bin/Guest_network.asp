@@ -4,14 +4,14 @@ tcWebApi_set("WLan_Common","MBSSID_changeFlag","MBSSID_changeFlag")
 tcWebApi_set("WLan_Common","MBSSID_able_Flag","MBSSID_able_Flag")
 If Request_Form("editFlag") = "1" then
 	tcWebApi_Set("SysInfo_Entry","w_Setting","w_Setting")
-	tcWebApi_commit("SysInfo_Entry")
-
-	tcWebApi_Set("ACL_Entry","wl_macmode","wl_macmode")
-	tcWebApi_Commit("ACL_Entry")
-	
+	tcWebApi_commit("SysInfo_Entry")	
 	tcWebApi_Set("WLan_Common","wl_unit","wl_unit")
 	tcWebApi_Set("WLan_Common","wl_subunit","wl_subunit")
+
+	load_parameters_to_generic()
+
 	tcWebApi_Set("WLan_Entry","ssid","wl_ssid")
+	tcWebApi_Set("WLan_Common","WirelessMode","wl_nmode_orig")
 	tcWebApi_Set("WLan_Entry","auth_mode_x","wl_auth_mode_save")
 	tcWebApi_Set("WLan_Entry","crypto","wl_crypto_save")
 	tcWebApi_Set("WLan_Entry","wpa_psk","wl_wpa_psk")
@@ -21,24 +21,26 @@ If Request_Form("editFlag") = "1" then
 	tcWebApi_Set("WLan_Entry","key2","wl_key2")
 	tcWebApi_Set("WLan_Entry","key3","wl_key3")
 	tcWebApi_Set("WLan_Entry","key4","wl_key4")
-	tcWebApi_Set("WLan_Entry","expire","wl_expire")
-	tcWebApi_Set("WLan_Entry","lanaccess","wl_lanaccess")
 	tcWebApi_Set("WLan_Entry","phrase_x","wl_phrase_x")
+	tcWebApi_Set("WLan_Entry","expire","wl_expire")
+	tcWebApi_Set("WLan_Entry","lanaccess","wl_lanaccess")	
 	tcWebApi_Set("WLan_Entry","wl0.1_bss_enabled","wl0.1_bss_enabled")
 	tcWebApi_Set("WLan_Entry","wl0.2_bss_enabled","wl0.2_bss_enabled")
 	tcWebApi_Set("WLan_Entry","wl0.3_bss_enabled","wl0.3_bss_enabled")
 	tcWebApi_Set("WLan_Entry","wl1.1_bss_enabled","wl1.1_bss_enabled")
 	tcWebApi_Set("WLan_Entry","wl1.2_bss_enabled","wl1.2_bss_enabled")
-	tcWebApi_Set("WLan_Entry","wl1.3_bss_enabled","wl1.3_bss_enabled")	
+	tcWebApi_Set("WLan_Entry","wl1.3_bss_enabled","wl1.3_bss_enabled")		
+	tcWebApi_Set("WLan_Entry","wl_macmode","wl_macmode")
+	tcWebApi_Set("WLan_Entry","wl_maclist","wl_maclist")	
 
 	If Request_Form("MBSSID_able_Flag") = "0" then
 	load_MBSSID_parameters_from_generic()
 	end if
 
 	tcWebApi_Commit("WLan_Entry")
+	tcWebApi_Commit("ACL_Entry")
 end if
 
-load_parameters_to_generic()
 load_MBSSID_parameters_to_generic()
 %>
 
@@ -61,57 +63,81 @@ load_MBSSID_parameters_to_generic()
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
+<script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/detect.js"></script>
+<style>
+.WL_MAC_Block{
+	border:1px outset #999;
+	background-color:#576D73;
+	position:absolute;
+	*margin-top:27px;	
+	margin-left:107px;
+	*margin-left:-133px;
+	width:255px;
+	text-align:left;	
+	height:auto;
+	overflow-y:auto;
+	z-index:200;
+	padding: 1px;
+	display:none;
+}
+.WL_MAC_Block div{
+	background-color:#576D73;
+	height:auto;
+	*height:20px;
+	line-height:20px;
+	text-decoration:none;
+	font-family: Lucida Console;
+	padding-left:2px;
+}
+.WL_MAC_Block a{
+	background-color:#EFEFEF;
+	color:#FFF;
+	font-size:12px;
+	font-family:Arial, Helvetica, sans-serif;
+	text-decoration:none;	
+}
+.WL_MAC_Block div:hover, .WL_MAC_Block a:hover{
+	background-color:#3366FF;
+	color:#FFFFFF;
+	cursor:default;
+}
+</style>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'dhcp';
-var radio_2 = '<% tcWebApi_get("WLan_Entry","wl0_radio_on","s"); %>';
-var radio_5 = '<% tcWebApi_get("WLan_Entry","wl1_radio_on","s"); %>';
+var radio_2 = '<% tcWebApi_get("WLan_Entry","wl0_radio_on","s") %>';
+var radio_5 = '<% tcWebApi_get("WLan_Entry","wl1_radio_on","s") %>';
 
-if('<% tcWebApi_get("WLan_Common","wl_unit","s"); %>' == '1'){
-	var macmode = '<% tcWebApi_get("ACL_Entry","wl1_wl_macmode","s"); %>';
-}
-else{
-	var macmode = '<% tcWebApi_get("ACL_Entry","wl0_wl_macmode","s"); %>';
-}
+var wl0_nmode_x = '<% tcWebApi_get("WLan_Common","wl0_WirelessMode","s") %>';
+var wl1_nmode_x = '<% tcWebApi_get("WLan_Common","wl1_WirelessMode","s") %>';
 
-var wireless = []; // [[MAC, associated, authorized], ...]
-var modify_mode = '<% get_parameter("flag"); %>';
+var modify_mode = '<% get_parameter("flag"); %>';	//Viz keep Confirm
 
+var gn_array = gn_array_2g;
+var wl_maclist_x_array = decodeURIComponent(gn_array[0][16]).replace(/&#60/g, "<");
 
-function login_ip_dec() { return '1107404992'; }
-function login_ip_str() { return '<% tcWebApi_get("WebCurSet_Entry","login_ip_tmp","s"); %>'; }
-
-function login_mac_str() { return ''; }
+var manually_maclist_list_array = new Array();
+Object.prototype.getKey = function(value) {
+	for(var key in this) {
+		if(this[key] == value) {
+			return key;
+		}
+	}
+	return null;
+};
 
 function initial(){
 	show_menu();
-	insertExtChannelOption();
-	wl_auth_mode_change(1);
-
+	//insertExtChannelOption();
 	//if(downsize_support != -1)
-	//	$("guest_image").parentNode.style.display = "none";
+	//	document.getElementById("guest_image").parentNode.style.display = "none";	
 
 	mbss_display_ctrl();
-	gen_gntable();
-	if(modify_mode == 1)
-		guest_divctrl(1);
-	else
-		guest_divctrl(0);
-
-	document.form.wl_ssid.value =  decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","ssid","s") %>');
-	document.form.wl_wpa_psk.value =  decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","wpa_psk","s") %>');
-	document.form.wl_key1.value =  decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","key1","s") %>');
-	document.form.wl_key2.value =  decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","key2","s") %>');
-	document.form.wl_key3.value =  decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","key3","s") %>');
-	document.form.wl_key4.value =  decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","key4","s") %>');
-	document.form.wl_phrase_x.value =  decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","phrase_x","s") %>');
-	document.form.wl_channel.value = document.form.wl_channel_orig.value;
-	
-	if(document.form.wl_wpa_psk.value.length <= 0)
-		document.form.wl_wpa_psk.value = "Please type network key";		
+	gen_gntable();	
+	guest_divctrl(0);
 
 	if(document.form.wl_gmode_protection.value == "auto")
 		document.form.wl_gmode_check.checked = true;
@@ -119,35 +145,30 @@ function initial(){
 		document.form.wl_gmode_check.checked = false;
 
 	if(band5g_support == -1 || no5gmssid_support != -1){
-		$("guest_table5").style.display = "none";
-	}
-
-	$("wl_vifname").innerHTML = document.form.wl_subunit.value;
-	change_wl_expire_radio();
-	if(macmode == "disabled"){
-		document.form.wl_macmode_option.disabled = "disabled";
-		$('ACL_disabled_hint').style.display = "";
-		$('ACL_enabled_hint').style.display = "none";
-	}
-	else{
-		document.form.wl_macmode_option.disabled = "";
-		$('ACL_disabled_hint').style.display = "none";
-		$('ACL_enabled_hint').style.display = "";
+		document.getElementById("guest_table5").style.display = "none";
 	}
 
 	if(radio_2 != 1){
-		$('2g_radio_hint').style.display ="";
+		document.getElementById('2g_radio_hint').style.display ="";
 	}
 	if(radio_5 != 1){
-		$('5g_radio_hint').style.display ="";
+		document.getElementById('5g_radio_hint').style.display ="";
 	}
 
 	if(document.form.preferred_lang.value == "JP"){    //use unique font-family for JP
-		$('2g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
-		$('5g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
+		document.getElementById('2g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
+		document.getElementById('5g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
+	}
+	
+	if("<% get_parameter("af"); %>" == "wl_NOnly_note"){
+		var childsel=document.createElement("div");
+		childsel.setAttribute("id","wl_NOnly_note");
+		childsel.style.color="#FFCC00";
+		document.getElementById('gn_desc').parentNode.appendChild(childsel);
+		document.getElementById("wl_NOnly_note").innerHTML="* Please change the guest network authentication to WPA2 Personal AES.";	
 	}
 
-	GN_limit_auth_method();
+	showWLMACList();	
 }
 
 function change_wl_expire_radio(){
@@ -185,45 +206,59 @@ else
 	window.location = "Advanced_ACL_Content.asp?af=wl_maclist_x_0&refresh=5";
 }
 
-function gen_gntable_tr(unit, gn_array){
+function gen_gntable_tr(unit, gn_array, slicesb){
 	var GN_band = "";
 	var htmlcode = "";
 	if(unit == 0) GN_band = 2;
 	if(unit == 1) GN_band = 5;
-	htmlcode += '<table align="left" style="margin:auto;margin-left:20px;border-collapse:collapse;width:95%;">';
-	htmlcode += '<tr><th align="left" style="width:200px;">';
+	
+	htmlcode += '<table align="left" style="margin:auto;margin-left:20px;border-collapse:collapse;width:720px;';
+	if(slicesb > 0)
+		htmlcode += 'margin-top:20px;';	
+	htmlcode += '"><tr><th align="left" style="width:160px;">';
 	htmlcode += '<table id="GNW_'+GN_band+'G" class="gninfo_th_table" align="left" style="margin:auto;border-collapse:collapse;">';
-	htmlcode += '<tr><th align="left" style="height:30px;"><% tcWebApi_Get("String_Entry", "QIS_finish_wireless_item1", "s") %></th></tr>';
-	htmlcode += "<tr><th align=\"left\" style=\"height:30px;\"><% tcWebApi_Get("String_Entry", "WC11b_AuthenticationMethod_in", "s") %></th></tr>";
-	htmlcode += '<tr><th align="left" style="height:30px;"><% tcWebApi_Get("String_Entry", "Network_key", "s") %></th></tr>';
-	htmlcode += '<tr><th align="left" style="height:30px;"><% tcWebApi_Get("String_Entry", "mssid_time_remaining", "s") %></th></tr>';
+	htmlcode += '<tr><th align="left" style="height:40px;"><% tcWebApi_Get("String_Entry", "QIS_finish_wireless_item1", "s") %></th></tr>';
+	htmlcode += "<tr><th align=\"left\" style=\"height:40px;\"><% tcWebApi_Get("String_Entry", "WC11b_AuthenticationMethod_in", "s") %></th></tr>";
+	htmlcode += '<tr><th align="left" style="height:40px;"><% tcWebApi_Get("String_Entry", "Network_key", "s") %></th></tr>';
+	htmlcode += '<tr><th align="left" style="height:40px;"><% tcWebApi_Get("String_Entry", "mssid_time_remaining", "s") %></th></tr>';
 	//DSL-N66U seems workless for this option Access Intranet
 	if(sw_mode != "3"){
-			htmlcode += '<tr><th align="left" style="width:20%;height:30px;"><% tcWebApi_Get("String_Entry", "Access_Intranet", "s") %></th></tr>';
+			htmlcode += '<tr><th align="left" style="width:20%;height:28px;"><% tcWebApi_Get("String_Entry", "Access_Intranet", "s") %></th></tr>';
 	}
-	htmlcode += '<tr><th align="left" style="height:30px;"></th></tr>';
+	htmlcode += '<tr><th align="left" style="height:40px;"></th></tr>';
 	htmlcode += '</table></th>';
-	for(var i=0; i<gn_array.length; i++){
-			var subunit = i+1;
+	
+	var gn_array_length = gn_array.length;
+	for(var i=0; i<gn_array_length; i++){
+			var subunit = i+1+slicesb*4;
 			htmlcode += '<td style="padding-right:30px"><table id="GNW_'+GN_band+'G'+i+'" class="gninfo_table" align="center" style="margin:auto;border-collapse:collapse;">';
 			if(gn_array[i][0] == "1"){
 					htmlcode += '<tr><td align="center" class="gninfo_table_top"></td></tr>';
-					if(gn_array[i][1].length < 21)
-							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ decodeURIComponent(gn_array[i][1]) +'</td></tr>';
-					else
-							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ decodeURIComponent(gn_array[i][1]).substring(0,17) +'...</td></tr>';
-
+					show_str = decodeURIComponent(gn_array[i][1]);
+					if(show_str.length >= 21)
+						show_str = show_str.substring(0,17) + "...";
+					show_str = handle_show_str(show_str);	
+					htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ show_str +'</td></tr>';
 					htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ translate_auth(gn_array[i][2]) +'</td></tr>';
-					if(gn_array[i][2].indexOf("PSK") >= 0 && gn_array[i][4].length < 21)
-							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ decodeURIComponent(gn_array[i][4]) +'</td></tr>';
+					
+					if(gn_array[i][2].indexOf("wpa") >= 0 || gn_array[i][2].indexOf("radius") >= 0)
+							show_str = "";					
 					else if(gn_array[i][2].indexOf("PSK") >= 0)
-							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ decodeURIComponent(gn_array[i][4]).substring(0,17) +'...</td></tr>';
+							show_str = gn_array[i][4];
 					else if(gn_array[i][2] == "OPEN" && gn_array[i][5] == "0")
-							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><%tcWebApi_get("String_Entry","checkbox_No","s")%></td></tr>';
+							show_str = "None";
 					else{
-							var key_index = parseInt(gn_array[i][6])+6;							
-							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ decodeURIComponent(gn_array[i][key_index]) +'</td></tr>';
+							var key_index = parseInt(gn_array[i][6])+6;
+							show_str = gn_array[i][key_index];													
 					}
+					
+					show_str = decodeURIComponent(show_str);
+					if(show_str.length >= 21)
+						show_str = show_str.substring(0,17) + "...";
+					show_str = handle_show_str(show_str);
+					if(show_str.length <= 0)
+						show_str = "&nbsp; ";
+					htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ show_str +'</td></tr>';
 
 					if(gn_array[i][11] == 0)
 							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><% tcWebApi_Get("String_Entry", "Limitless", "s") %></td></tr>';
@@ -271,21 +306,28 @@ function _change_wl_unit_status(__unit){
 function gen_gntable(){
 	var htmlcode = "";
 	var htmlcode5 = "";
+	var gn_array_2g_tmp = gn_array_2g;
+	var gn_array_5g_tmp = gn_array_5g;
+	var band2sb = 0;
+	var band5sb = 0;
 	
 	htmlcode += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_2g">';
 	htmlcode += '<tr id="2g_title"><td align="left" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;"><span>2.4GHz</span>';
 	htmlcode += '<span id="2g_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <%tcWebApi_get("String_Entry","GuestNetwork_Radio_Status","s") %> <a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(0);"><%tcWebApi_get("String_Entry","btn_go","s")%></a></span></td></tr>';
-	htmlcode += gen_gntable_tr(0, gn_array_2g);
+	htmlcode += '<tr><td>';
+	htmlcode += gen_gntable_tr(0, gn_array_2g_tmp, band2sb);
+	htmlcode += '</td></tr>';
 	htmlcode += '</table>';
-	$("guest_table2").innerHTML = htmlcode;
-
+	document.getElementById("guest_table2").innerHTML = htmlcode;
 
 	htmlcode5 += '<br><table style="margin-left:20px;margin-top:35px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g">';
 	htmlcode5 += '<tr id="5g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>5GHz</span><td><tr>';
 	htmlcode5 += '<span id="5g_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <%tcWebApi_get("String_Entry","GuestNetwork_Radio_Status","s") %> <a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(1);"><%tcWebApi_get("String_Entry","btn_go","s")%></a></span></td></tr>';
-	htmlcode5 += gen_gntable_tr(1, gn_array_5g);
-	htmlcode5 += '</table>';
-	$("guest_table5").innerHTML = htmlcode5;
+	htmlcode5 += '<tr><td>';
+	htmlcode5 += gen_gntable_tr(1, gn_array_5g_tmp, band5sb);
+	htmlcode5 += '</td></tr>';
+	htmlcode5 += '</table>';	
+	document.getElementById("guest_table5").innerHTML = htmlcode5;	
 }
 
 function add_options_value(o, arr, orig){
@@ -326,17 +368,36 @@ function TranslateWRTtoMTK(){
 	else
 		document.form.wl_auth_mode_save.value = "OPEN";
 
-	if(auth_mode == "open")	//avoid to misunderstand that had been encrypt.
+	if(auth_mode == "open" || auth_mode == "")	//avoid to misunderstand that had been encrypt.
 		document.form.wl_crypto_save.value = "NONE";
 	else
 		document.form.wl_crypto_save.value = document.form.wl_crypto.value;
 }
 
-function applyRule(){
-	if(document.form.wl_wpa_psk.value == "Please type network key")
-		document.form.wl_wpa_psk.value = "";	
+function TranslateWRTtoMTK_auth_mode(term){
+	if(term == "OPEN")
+		return "open";
+	else if(term == "SHARED")
+		return "shared";
+	else if(term == "WPAPSK")
+		return "psk";
+	else if(term == "WPA2PSK")
+		return "psk2";
+	else if(term == "WPAPSKWPA2PSK")
+		return "pskpsk2";
+	else if(term == "WPA")
+		return "wpa";
+	else if(term == "WPA2")
+		return "wpa2";
+	else if(term == "WPA1WPA2")
+		return "wpawpa2";
+	else if(term == "Radius")
+		return "radius";			
+}
 
+function applyRule(){	
 	if(validForm()){
+		updateMacList();
 		inputCtrl(document.form.wl_crypto, 1);
 		inputCtrl(document.form.wl_wpa_psk, 1);
 		inputCtrl(document.form.wl_wep_x, 1);
@@ -352,10 +413,12 @@ function applyRule(){
 		else
 			document.form.wl_expire.value = 0;
 
-//		if(wl6_support != -1)
-//			document.form.action_wait.value = parseInt(document.form.action_wait.value)+10;			// extend waiting time for BRCM new driver
-
 		TranslateWRTtoMTK();
+		if(document.form.wl_unit.value == 1)
+			document.form.wl_nmode_orig.value = wl1_nmode_x;
+		else
+			document.form.wl_nmode_orig.value = wl0_nmode_x;	
+				
 		document.form.action = "/cgi-bin/Guest_network.asp";
 		document.form.editFlag.value = "1" ;
 		document.form.MBSSID_able_Flag.value = "0" ;
@@ -367,20 +430,14 @@ function applyRule(){
 		}
 		else
 		{
-			showLoading(23);
-			setTimeout("redirect();", 23000);
+			showLoading(28);//23
+			setTimeout("redirect();", 28000);
 		}
 		if(navigator.appName.indexOf("Microsoft") >= 0){ 		// Jieming added at 2013/05/21, to avoid browser freeze when submitting form on IE
 			stopFlag = 1;
-		}
+		}		
 		
-		if(document.form.wl_macmode_option.value == "disabled"){
-			document.form.wl_macmode.value = "disabled";
-		}
-		else{
-			document.form.wl_macmode.value = macmode;
-		}
-		
+		en_dis_guest_unit(document.form.wl_unit.value, document.form.wl_subunit.value, "1");
 		document.form.submit();
 	}
 }
@@ -397,6 +454,15 @@ function validForm(){
 	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){
 		if(!validate_psk(document.form.wl_wpa_psk))
 			return false;
+		//confirm common string combination     #JS_common_passwd#
+			var is_common_string = check_common_string(document.form.wl_wpa_psk.value, "wpa_key");
+			if(is_common_string){
+				if(confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
+					document.form.wl_wpa_psk.focus();
+					document.form.wl_wpa_psk.select();
+					return false;   
+				}       
+			}
 	}
 	else{
 		var cur_wep_key = eval('document.form.wl_key'+document.form.wl_key.value);
@@ -439,45 +505,61 @@ function disableAdvFn(){
 
 function guest_divctrl(flag){
 	if(flag == 1){
-		$("guest_table2").style.display = "none";
+		document.getElementById("guest_table2").style.display = "none";
 		if(band5g_support != -1)
-			$("guest_table5").style.display = "none";
-		$("gnset_table").style.display = "";
+			document.getElementById("guest_table5").style.display = "none";
+			
+		document.getElementById("gnset_table").style.display = "";
 		//DSL-N66U seems workless for this option Access Intranet 
 		if(sw_mode == "3")
 				inputCtrl(document.form.wl_lanaccess, 0);
-		$("applyButton").style.display = "";
+				
+		document.getElementById("applyButton").style.display = "";				
 	}
 	else{
-		$("guest_table2").style.display = "";
+		document.getElementById("guest_table2").style.display = "";
 		if(band5g_support == -1 || no5gmssid_support != -1)
-				$("guest_table5").style.display = "none";
+				document.getElementById("guest_table5").style.display = "none";
 		else
-				$("guest_table5").style.display = "";
-		$("gnset_table").style.display = "none";
-		$("applyButton").style.display = "none";
+				document.getElementById("guest_table5").style.display = "";
+				
+		document.getElementById("gnset_table").style.display = "none";
+		document.getElementById("applyButton").style.display = "none";
+		document.getElementById("maclistMain").style.display = "none";
 	}
 }
 
 function mbss_display_ctrl(){
 	// generate options
-	if(wl_vifnames != ""){
-		$("wl_channel_field").style.display = "none";
-		$("wl_nctrlsb_field").style.display = "none";
+	if(multissid_support){		
+		document.getElementById("wl_channel_field").style.display = "none";
+		document.getElementById("wl_nctrlsb_field").style.display = "none";
 			for(var i=1; i<multissid_support+1; i++){
 				add_options_value(document.form.wl_subunit, i, '<% tcWebApi_get("WLan_Common","wl_subunit","s"); %>');
 			}
 	}
 	else{
-		$("gnset_table").style.display = "none";
-		$("guest_table2").style.display = "none";
+		document.getElementById("gnset_table").style.display = "none";
+		document.getElementById("guest_table2").style.display = "none";
 		if(band5g_support != -1)
-			$("guest_table5").style.display = "none";
-		$("applyButton").style.display = "none";
-		$("applyButton").innerHTML = "Not support!";
-		$("applyButton").style.fontSize = "25px";
-		$("applyButton").style.marginTop = "125px";
+			document.getElementById("guest_table5").style.display = "none";
+			
+		document.getElementById("applyButton").style.display = "none";
+		document.getElementById("applyButton").innerHTML = "Not support!";
+		document.getElementById("applyButton").style.fontSize = "25px";
+		document.getElementById("applyButton").style.marginTop = "125px";
 	}
+}
+
+function en_dis_guest_unit(_unit, _subunit, _setting){
+	var NewInput = document.createElement("input");
+	NewInput.type = "hidden";
+	NewInput.name = "wl"+ _unit + "." + _subunit +"_bss_enabled";
+	NewInput.value = _setting;
+	document.form.appendChild(NewInput);
+	document.form.wl_unit.value = _unit;
+	document.form.wl_subunit.value = _subunit;	
+	//document.form.submit();
 }
 
 function close_guest_unit(_unit, _subunit){
@@ -491,42 +573,294 @@ function close_guest_unit(_unit, _subunit){
 	document.form.action = "/cgi-bin/Guest_network.asp";
 	document.form.editFlag.value = "1" ;
 	document.form.MBSSID_able_Flag.value = "1" ;
-	showLoading(2);
-	setTimeout("redirect();", 2000);
+	showLoading(4);
+	setTimeout("redirect();", 4000);
 	document.form.submit();
 }
 
-function change_guest_unit(_unit, _subunit){
+var edit_unit = "";
+function change_guest_unit(_unit, _subunit){	
+	var idx;
+	switch(_unit){
+		case 0:
+			edit_unit=0;
+			gn_array = gn_array_2g;
+			document.form.wl_nmode_x.value = wl0_nmode_x;
+			break;
+		case 1:			
+			edit_unit=1;
+			gn_array = gn_array_5g;
+			document.form.wl_nmode_x.value = wl1_nmode_x;
+			break;
+		default:
+			break;
+	}	
+	idx = _subunit - 1;
+	GN_limit_auth_method();	//use this OK ? Viz
+	//limit_auth_method(_unit);	
+	
 	document.form.wl_unit.value = _unit;
 	document.form.wl_subunit.value = _subunit;
-	document.form.current_page.value = "Guest_network.asp";
-	document.form.next_page.value = "Guest_network.asp";
-	document.form.flag.value = "1";
-	document.form.target = "";
-	document.form.submit();
+	document.getElementById("wl_vifname").innerHTML = document.form.wl_subunit.value;
+	document.form.wl_bss_enabled.value = decodeURIComponent(gn_array[idx][0]);
+	document.form.wl_ssid.value = decodeURIComponent(gn_array[idx][1]);
+	
+	var wl_auth_mode_value = TranslateWRTtoMTK_auth_mode(decodeURIComponent(gn_array[idx][2]));
+	document.form.wl_auth_mode_x.value = wl_auth_mode_value;	
+	wl_auth_mode_change(1);
+	document.form.wl_crypto.value = decodeURIComponent(gn_array[idx][3]);		
+	document.form.wl_wpa_psk.value = decodeURIComponent(gn_array[idx][4]);
+	document.form.wl_wep_x.value = decodeURIComponent(gn_array[idx][5]);
+	document.form.wl_key.value = decodeURIComponent(gn_array[idx][6]);
+	document.form.wl_key1.value = decodeURIComponent(gn_array[idx][7]);
+	document.form.wl_key2.value = decodeURIComponent(gn_array[idx][8]);
+	document.form.wl_key3.value = decodeURIComponent(gn_array[idx][9]);
+	document.form.wl_key4.value = decodeURIComponent(gn_array[idx][10]);
+	document.form.wl_phrase_x.value = decodeURIComponent(gn_array[idx][17]);
+	document.form.wl_expire.value = decodeURIComponent(gn_array[idx][11]);
+	document.form.wl_lanaccess.value = decodeURIComponent(gn_array[idx][12]);	
+	
+	wl_wep_change(_unit);
+	change_wl_expire_radio();
+	guest_divctrl(1);
+	
+	updateMacModeOption();
 }
 
-function create_guest_unit(_unit, _subunit){
-	var NewInput = document.createElement("input");
-	NewInput.type = "hidden";
-	NewInput.name = "wl"+ _unit + "." + _subunit +"_bss_enabled";
-	NewInput.value = "1";
-	document.form.appendChild(NewInput);
-	document.form.wl_unit.value = _unit;
-	document.form.wl_subunit.value = _subunit;	
-	document.form.action = "/cgi-bin/Guest_network.asp";
-	document.form.editFlag.value = "1" ;
-	document.form.MBSSID_able_Flag.value = "1" ;
-	showLoading(2);
-	setTimeout("redirect();", 2000);
-	document.form.submit();
+function create_guest_unit(_unit, _subunit){	
+	switch(_unit){
+		case 0:
+			gn_array = gn_array_2g;
+			break;
+		case 1:
+			gn_array = gn_array_5g;
+			break;
+		default:
+			break;			
+	}
+	
+	if(gn_array[_subunit-1][15] != "1"){
+		change_guest_unit(_unit, _subunit);
+		document.form.wl_bss_enabled.value = "1";
+	}else{
+		en_dis_guest_unit(_unit, _subunit, "1");
+	}
+	
 }
 
-function clean_input(obj){
-	if(obj.value == "Please type network key")
-			obj.value = "";
+// mac filter
+function updateMacModeOption(){
+	wl_maclist_x_array = decodeURIComponent(gn_array[document.form.wl_subunit.value-1][16]).replace(/&#60/g, "<");
+	var wl_maclist_x_row = wl_maclist_x_array.split('<');
+	var clientName = "New device";
+	manually_maclist_list_array = [];
+	for(var i = 1; i < wl_maclist_x_row.length; i++) {
+		if(clientList[wl_maclist_x_row[i]]) {
+			clientName = clientList[wl_maclist_x_row[i]].Name;
+		}
+		else {
+			clientName = "New device";
+		}
+		manually_maclist_list_array[wl_maclist_x_row[i]] = clientName;
+	}
+	show_wl_maclist_x();
+
+	document.form.wl_macmode.value = gn_array[document.form.wl_subunit.value-1][14];	
+	document.form.wl_maclist.value = decodeURIComponent(gn_array[document.form.wl_subunit.value-1][16]).replace(/&#60/g, "<");
+	document.getElementById("maclistMain").style.display = (gn_array[document.form.wl_subunit.value-1][14] == "disabled") ? "none" : "";
 }
 
+function show_wl_maclist_x(){
+	var code = "";
+	code +='<table width="80%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="wl_maclist_x_table">'; 
+	document.form.wl_maclist.value = "";
+	if(Object.keys(manually_maclist_list_array).length == 0)
+		code +='<tr><td style="color:#FFCC00;"><%tcWebApi_get("String_Entry","IPC_VSList_Norule","s")%></td>';
+	else{
+		//user icon
+		//var userIconBase64 = "NoIcon";
+		var clientName, deviceType, deviceVender;
+		var count=0;
+		Object.keys(manually_maclist_list_array).forEach(function(key) {
+			var clientMac = key;
+			if(clientList[clientMac]) {
+				clientName = clientList[clientMac].Name;
+				deviceType = clientList[clientMac].type;
+				//deviceVender = clientList[clientMac].dpiVender;
+			}
+			else {
+				clientName = "New device";
+				deviceType = 0;
+				//deviceVender = "";
+			}
+			code +='<tr id="row_'+clientMac+'">';
+			code +='<td width="80%" align="center">';
+			code += '<table style="width:100%;"><tr>';
+			//Icon removed
+			code += '<td style="border:0px; text-align:center;">';
+			code += '<div>' + clientName + '</div>';
+			code += '<div>' + clientMac + '</div>';
+			code += '</td></tr></table>';
+			code += '</td>';
+			code +='<td width="20%"><input type="button" class=\"remove_btn\" onclick=\"deleteRow(this, \'' + clientMac + '\');\" value=\"\"/></td></tr>';
+			if(count>0) 
+				document.form.wl_maclist.value += "<";
+			document.form.wl_maclist.value += clientMac;
+			count++;
+		});
+	}	
+	
+  	code +='</tr></table>';
+	document.getElementById("wl_maclist_x_Block").innerHTML = code;
+}
+
+function deleteRow(r, delMac){
+	var i = r.parentNode.parentNode.rowIndex;
+	delete manually_maclist_list_array[delMac];
+	document.getElementById('wl_maclist_x_table').deleteRow(i);
+
+	if(Object.keys(manually_maclist_list_array).length == 0)
+		show_wl_maclist_x();
+}
+
+function addRow(obj, upper){
+	var rule_num = document.getElementById('wl_maclist_x_table').rows.length;
+	var item_num = document.getElementById('wl_maclist_x_table').rows[0].cells.length;
+	var mac = obj.value.toUpperCase();
+
+	if(rule_num >= upper){
+		alert("<%tcWebApi_get("String_Entry","JS_itemlimit1","s")%> " + upper + " <%tcWebApi_get("String_Entry","JS_itemlimit2","s")%>");
+		return false;	
+	}	
+	
+	if(mac==""){
+		alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
+		obj.focus();
+		obj.select();			
+		return false;
+	}else if(!check_macaddr(obj, check_hwaddr_flag(obj))){
+		obj.focus();
+		obj.select();	
+		return false;	
+	}
+		
+		//Viz check same rule
+	for(i=0; i<rule_num; i++){
+		for(j=0; j<item_num-1; j++){	
+			if(manually_maclist_list_array[mac] != null){
+				alert("<%tcWebApi_get("String_Entry","JS_duplicate","s")%>");
+				return false;
+			}	
+		}		
+	}		
+	
+	if(clientList[mac]) {
+		manually_maclist_list_array[mac] = (clientList[mac].nickName == "") ? clientList[mac].name : clientList[mac].nickName;
+	}
+	else {
+		manually_maclist_list_array[mac] = "New device";
+	}
+
+	obj.value = ""
+	show_wl_maclist_x();
+}
+
+function updateMacList(){
+	var rule_num = document.getElementById('wl_maclist_x_table').rows.length;
+	var item_num = document.getElementById('wl_maclist_x_table').rows[0].cells.length;
+	var tmp_value = "";
+
+	Object.keys(manually_maclist_list_array).forEach(function(key) {
+		tmp_value += "<" + key;
+	});
+
+	if(tmp_value == "<"+"<%tcWebApi_get("String_Entry","IPC_VSList_Norule","s")%>" || tmp_value == "<")
+		tmp_value = "";	
+
+	document.form.wl_maclist.value = tmp_value;
+}
+
+function check_macaddr(obj,flag){ //control hint of input mac address
+	if(flag == 1){
+		var childsel=document.createElement("div");
+		childsel.setAttribute("id","check_mac");
+		childsel.style.color="#FFCC00";
+		obj.parentNode.appendChild(childsel);
+		document.getElementById("check_mac").innerHTML="<%tcWebApi_get("String_Entry","LHC_MnlDHCPMacaddr_id","s")%>";		
+		document.getElementById("check_mac").style.display = "";
+		return false;
+	}else if(flag ==2){
+		var childsel=document.createElement("div");
+		childsel.setAttribute("id","check_mac");
+		childsel.style.color="#FFCC00";
+		obj.parentNode.appendChild(childsel);
+		document.getElementById("check_mac").innerHTML="<%tcWebApi_get("String_Entry","IPC_x_illegal_mac","s")%>";
+		document.getElementById("check_mac").style.display = "";
+		return false;		
+	}else{	
+		document.getElementById("check_mac") ? document.getElementById("check_mac").style.display="none" : true;
+		return true;
+	}	
+}
+
+var isMenuopen = 0;
+function pullWLMACList(obj){	//Viz here 2015/10/23
+	if(isMenuopen == 0){		
+		obj.src = "/images/arrow-top.gif"
+		document.getElementById("WL_MAC_List_Block").style.display = "block";
+		document.form.wl_maclist_x_0.focus();		
+		isMenuopen = 1;
+	}
+	else
+		hideClients_Block();
+}
+
+function hideClients_Block(){
+	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("WL_MAC_List_Block").style.display="none";
+	isMenuopen = 0;
+}
+
+var over_var = 0;
+function showWLMACList(){
+	if(clientList.length == 0){
+		setTimeout(function() {
+			genClientList();
+			showWLMACList();
+		}, 500);
+		return false;
+	}
+	
+	var code = "";
+	var show_macaddr = "";
+	var wireless_flag = 0;
+	for(i=0;i<clientList.length;i++){		
+		if(clientList[clientList[i]].isWL != 0){		//0: wired, 1: 2.4GHz, 2: 5GHz, filter clients under current band
+			wireless_flag = 1;
+			var clientName = clientList[clientList[i]].Name;
+			code += '<a title=' + clientList[i] + '><div onmouseover="over_var=1;" onmouseout="over_var=0;" onclick="setClientmac(\''+clientList[i]+'\');"><strong>' + clientName + '</strong> ';
+			code += ' </div></a>';
+		}
+	}
+			
+	code +='<!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';	
+	document.getElementById("WL_MAC_List_Block").innerHTML = code;
+	
+	if(wireless_flag == 0)
+		document.getElementById("pull_arrow").style.display = "none";
+	else
+		document.getElementById("pull_arrow").style.display = "";
+}
+
+function setClientmac(macaddr){
+	document.form.wl_maclist_x_0.value = macaddr;
+	hideClients_Block();
+	over_var = 0;
+}
+
+function maclistMain_display(obj){	
+	document.getElementById("maclistMain").style.display = (obj.value == "disabled") ? "none" : "";
+}
 </script>
 </head>
 
@@ -572,19 +906,15 @@ function clean_input(obj){
 <input type="hidden" name="wl_country_code" value="TW" disabled>
 <input type="hidden" name="firmver" value="<% tcWebApi_staticGet("DeviceInfo","FwVer","s") %>">
 <input type="hidden" name="wl_ssid_org" value="ASUS%5FGuest1">
+<input type="hidden" name="wl_nmode_orig" value="">
 <input type="hidden" name="wl_wpa_psk_org" value="">
-<input type="hidden" name="wl_key1_org" value="">
-<input type="hidden" name="wl_key2_org" value="">
-<input type="hidden" name="wl_key3_org" value="">
-<input type="hidden" name="wl_key4_org" value="">
-<input type="hidden" name="wl_phrase_x_org" value="">
 <input type="hidden" name="x_RegulatoryDomain" value="" readonly="1">
 <input type="hidden" name="wl_wme" value="on">
 <input type="hidden" name="wl_nctrlsb_old" value="1">
 <input type="hidden" name="wl_key_type" value='1'>
 <input type="hidden" name="wl_channel_orig" value='<% tcWebApi_get("WLan_Common","Channel","s"); %>'>
 <input type="hidden" name="wl_expire" value='<% tcWebApi_get("WLan_Entry","expire","s"); %>'>
-<input type="hidden" name="wl_macmode" value='<% tcWebApi_get("ACL_Entry","wl_macmode","s"); %>'>
+<input type="hidden" name="wl_maclist" value="<% tcWebApi_get("ACL_Entry0","wl_maclist","s"); %>">
 <input type="hidden" name="wl_gmode_protection" value="auto" disabled>
 <input type="hidden" name="wl_wpa_mode" value="0" disabled>
 <input type="hidden" name="wl_mode_x" value="0" disabled>
@@ -639,7 +969,7 @@ function clean_input(obj){
 
 			<!-- info table -->
 			<div id="guest_table2"></div>
-			<div id="guest_table5" style="margin-top:200px;"></div>
+			<div id="guest_table5"></div>
 
 			<!-- setting table -->
 			<table width="80%" border="1" align="center" style="margin-top:10px;margin-bottom:20px;" cellpadding="4" cellspacing="0" id="gnset_table" class="FormTable">
@@ -690,9 +1020,9 @@ function clean_input(obj){
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 4);"><%tcWebApi_get("String_Entry","WC11b_x_Mode11g_in","s")%></a></th>
 					<td>
 						<select name="wl_nmode_x" class="input_option" onChange="return change_common(this, 'WLANConfig11b', 'wl_nmode_x');" disabled>
-							<option value="9" <% if tcWebApi_get("WLan_Common","WirelessMode","h") = "9" then asp_Write("selected") end if %>>Auto</option>
-							<option value="6" <% if tcWebApi_get("WLan_Common","WirelessMode","h") = "6" then asp_Write("selected") end if %>>N Only</option>
-							<option value="0" <% if tcWebApi_get("WLan_Common","WirelessMode","h") = "0" then asp_Write("selected") end if %>>Legacy</option>
+							<option value="9">Auto</option>
+							<option value="6">N Only</option>
+							<option value="0">Legacy</option>
 						</select>
 						<input type="checkbox" name="wl_gmode_check" id="wl_gmode_check" value="" onClick="return change_common(this, 'WLANConfig11b', 'wl_gmode_check', '1')"> b/g Protection</input>
 						<span id="wl_nmode_x_hint" style="display:none"><%tcWebApi_get("String_Entry","WC11n_automode_limition_hint","s")%></span>
@@ -733,12 +1063,12 @@ function clean_input(obj){
 		  	<tr>
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 5);"><%tcWebApi_get("String_Entry","WC11b_AuthenticationMethod_in","s")%></a></th>
 					<td>
-				  		<select name="wl_auth_mode_x" class="input_option" onChange="authentication_method_change(this);">
-								<option value="open" <% if tcWebApi_get("WLan_Entry","auth_mode_x","h") = "OPEN" then asp_Write("selected") end if %>>Open System</option>
-								<option value="shared" <% if tcWebApi_get("WLan_Entry","auth_mode_x","h") = "SHARED" then asp_Write("selected") end if %>>Shared Key</option>
-								<option value="psk" <% if tcWebApi_get("WLan_Entry","auth_mode_x","h") = "WPAPSK" then asp_Write("selected") end if %>>WPA-Personal</option>
-								<option value="psk2" <% if tcWebApi_get("WLan_Entry","auth_mode_x","h") = "WPA2PSK" then asp_Write("selected") end if %>>WPA2-Personal</option>
-								<option value="pskpsk2" <% if tcWebApi_get("WLan_Entry","auth_mode_x","h") = "WPAPSKWPA2PSK" then asp_Write("selected") end if %>>WPA-Auto-Personal</option>
+				  		<select name="wl_auth_mode_x" class="input_option" onChange="authentication_method_change(this, edit_unit);">
+								<option value="open">Open System</option>
+								<option value="shared">Shared Key</option>
+								<option value="psk">WPA-Personal</option>
+								<option value="psk2">WPA2-Personal</option>
+								<option value="pskpsk2">WPA-Auto-Personal</option>
 				  		</select>
 					</td>
 		  	</tr>
@@ -747,8 +1077,8 @@ function clean_input(obj){
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 6);"><%tcWebApi_get("String_Entry","WC11b_WPAType_in","s")%></a></th>
 					<td>
 			  		<select name="wl_crypto" class="input_option" onChange="return change_common(this, 'WLANConfig11b', 'wl_crypto')">
-							<option value="AES" <% if tcWebApi_get("WLan_Entry","crypto","h") = "AES" then asp_Write("selected") end if %>>AES</option>
-							<option value="TKIPAES" <% if tcWebApi_get("WLan_Entry","crypto","h") = "TKIPAES" then asp_Write("selected") end if %>>TKIP+AES</option>
+							<option value="AES">AES</option>
+							<option value="TKIPAES">TKIP+AES</option>
 			  		</select>
 					</td>
 		  	</tr>
@@ -756,7 +1086,7 @@ function clean_input(obj){
 		  	<tr>
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><%tcWebApi_get("String_Entry","WC11b_x_PSKKey_in","s")%></a></th>
 					<td>
-			  		<input type="text" name="wl_wpa_psk" maxlength="65" class="input_32_table" value="<% If tcWebApi_get("WLan_Entry","wpa_psk","h") <> "" then tcWebApi_get("WLan_Entry","wpa_psk","s") else asp_Write("Please type network key") end if %>" onClick="clean_input(this)">
+			  		<input type="password" name="wl_wpa_psk" maxlength="65" class="input_32_table" value="<% If tcWebApi_get("WLan_Entry","wpa_psk","h") <> "" then tcWebApi_get("WLan_Entry","wpa_psk","s") end if %>" onBlur="switchType(this, false);" onFocus="switchType(this, true);">
 					</td>
 		  	</tr>
 
@@ -764,7 +1094,7 @@ function clean_input(obj){
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 9);"><%tcWebApi_get("String_Entry","WC11b_WEPType_in","s")%></a></th>
 					<td>
 			  		<select name="wl_wep_x" class="input_option" onChange="return change_common(this, 'WLANConfig11b', 'wl_wep_x');">
-							<option value="0" <% if tcWebApi_get("WLan_Entry","wep_x","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>ne</option>
+							<option value="0" <% if tcWebApi_get("WLan_Entry","wep_x","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%></option>
 							<option value="1" <% if tcWebApi_get("WLan_Entry","wep_x","h") = "1" then asp_Write("selected") end if %>>WEP-64bits</option>
 							<option value="2" <% if tcWebApi_get("WLan_Entry","wep_x","h") = "2" then asp_Write("selected") end if %>>WEP-128bits</option>
 			  		</select>
@@ -825,21 +1155,44 @@ function clean_input(obj){
 							<option value="off" <% if tcWebApi_get("WLan_Entry","lanaccess","h") = "off" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_buttonname","s")%></option>
 			  		</select>
 					</td>
-			 	</tr>
-				
-				<tr id="mac_filter_guest" style="display:none">
-					<th>Enable MAC Filter</th>
+			 	</tr>				
+				<tr>
+					<th><%tcWebApi_get("String_Entry","enable_macmode","s")%></th>
 					<td>
-						<select name="wl_macmode_option" class="input_option">
-							<option class="content_input_fd" value="" <% if tcWebApi_get("ACL_Entry","wl_macmode","h") = "" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%></option>
-							<option class="content_input_fd" value="disabled" <% if tcWebApi_get("ACL_Entry","wl_macmode","h") = "disabled" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%></option>
-						</select>
-						&nbsp;
-						<span id="ACL_enabled_hint" style="cursor:pointer;display:none;text-decoration:underline;" onclick="goToACLFilter();"><%tcWebApi_get("String_Entry","FC_MFList_groupitemname","s")%></span>
-						<span id="ACL_disabled_hint" style="cursor:pointer;display:none;text-decoration:underline;" onclick="goToACLFilter();"><%tcWebApi_get("String_Entry","Guest_Network_enable_ACL","s")%></span>	
+							<select name="wl_macmode" class="input_option" onChange="maclistMain_display(this);">
+								<option class="content_input_fd" value="disabled" <% if tcWebApi_get("ACL_Entry0","wl_macmode","h") = "disabled" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_disable","s")%></option>
+								<option class="content_input_fd" value="allow" <% if tcWebApi_get("ACL_Entry0","wl_macmode","h") = "allow" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","FC_MFMethod_item1","s")%></option>
+								<option class="content_input_fd" value="deny" <% if tcWebApi_get("ACL_Entry0","wl_macmode","h") = "deny" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","FC_MFMethod_item2","s")%></option>
+							</select>
 					</td>
 				</tr>
 			</table>
+			
+			<div id="maclistMain">
+			<table id="maclistTable" width="80%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">
+				<thead>
+				<tr>
+					<td colspan="2"><%tcWebApi_get("String_Entry","FC_MFList_groupitemname","s")%>&nbsp;(<%tcWebApi_get("String_Entry","List_limit","s")%>&nbsp;16)</td>
+				</tr>
+				</thead>
+				<tr>
+					<th width="80%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);">Client Name (MAC address)<!--untranslated--></th> 
+					<th width="20%"><%tcWebApi_get("String_Entry","list_add_delete","s")%></th>
+				</tr>
+				<tr>
+					<td width="80%">
+						<input type="text" maxlength="17" class="input_macaddr_table" name="wl_maclist_x_0" onKeyPress="return is_hwaddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% tcWebApi_get("Info_Ether","mac","s") %>" style="width:255px;">
+						<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;display:none;" onclick="pullWLMACList(this);" title="<%tcWebApi_get("String_Entry","select_wireless_MAC","s")%>" onmouseover="over_var=1;" onmouseout="over_var=0;">
+						<div id="WL_MAC_List_Block" class="WL_MAC_Block"></div>
+					</td>
+					<td width="20%">	
+						<input type="button" class="add_btn" onClick="addRow(document.form.wl_maclist_x_0, 16);" value="">
+					</td>
+				</tr>      		
+			</table>
+			
+			<div id="wl_maclist_x_Block"></div>
+			</div>
 
 			<div class="apply_gen" id="applyButton">
 				<input type="button" class="button_gen" value="<%tcWebApi_get("String_Entry","CTL_Cancel","s")%>" onclick="guest_divctrl(0);">

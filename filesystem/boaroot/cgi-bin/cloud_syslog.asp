@@ -58,7 +58,7 @@ function initial(){
 					<tbody>
 					<tr>
 						<td>
-							<a href="cloud_main.asp"><div class="tab"><span>AiCloud</span></div></a>
+							<a href="cloud_main.asp"><div class="tab"><span><%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%></span></div></a>
 						</td>
 						<td>
 							<a href="cloud_sync.asp"><div class="tab"><span><% tcWebApi_Get("String_Entry","smart_sync","s") %></span></div></a>

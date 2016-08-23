@@ -27,8 +27,8 @@ ime-mode:disabled;
 var w_Setting = "<%tcWebApi_get("SysInfo_Entry","w_Setting","s")%>";
 
 function QKfinish_load_body(){
-parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_all_title","s")%>";
-//parent.set_step("t3");
+	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_all_title","s")%>";
+	parent.set_step("t1");
 }
 function submitForm(){
 	if(validForm()){
@@ -65,10 +65,7 @@ function gotomanual() {
 	<tr>
 		<td align="left">
 			<span class="description_down"><%tcWebApi_get("String_Entry","dslsetting_disc2_setting","s")%></span>
-		</td>
-		<!--td align="right">
-			<img onclick="gotoIndex();" style="cursor:pointer;" align="right" title="Go to Home" src="/images/backtohome.png" onMouseOver="this.src='/images/backtohomeclick.png'" onMouseOut="this.src='/images/backtohome.png'">
-		</td-->
+		</td>		
 	</tr>
 </table>
 </div>
@@ -77,9 +74,9 @@ function gotomanual() {
 <table id="tblsetting_1" class="QISform" width="400" border=0 align="center" cellpadding="5" cellspacing="0">
 	<tr>
 		<td>
-			<input type="radio" value="ANNEX A/I/J/L/M" name="AnnexTypeA"  tabindex="1" class="input">Annex A
+			<input type="radio" value="ANNEX A/I/J/L/M" name="AnnexTypeA" id="id_AnnexTypeA" tabindex="1" class="input"><label for="id_AnnexTypeA">Annex A</label>
 		<br><br>
-			<input type="radio" value="ANNEX B/J/M" name="AnnexTypeA"  tabindex="2" class="input">Annex B
+			<input type="radio" value="ANNEX B/J/M" name="AnnexTypeA" id="id_AnnexTypeB" tabindex="2" class="input"><label for="id_AnnexTypeB">Annex B</label>
 		<br><br><br>
 		<%tcWebApi_get("String_Entry","QIS_chooseAnnex_desc1","s")%><br><br>
 		<%tcWebApi_get("String_Entry","ADSL_FW_note","s")%> <%tcWebApi_get("String_Entry","QIS_NoCable_desc","s")%> <%tcWebApi_get("String_Entry","QIS_chooseAnnex_desc2","s")%>

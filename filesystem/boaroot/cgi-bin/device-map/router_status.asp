@@ -161,9 +161,8 @@ function tabclickhandler(wl_unit){
 		}
 		else{
 			document.form_band.wl_unit.value = wl_unit;
-			parent.showLoading(2);
-			setTimeout("redirect();", 2000);
 			document.form_band.submit();
+			setTimeout("redirect();", 1000);
 		}	
 	}
 }

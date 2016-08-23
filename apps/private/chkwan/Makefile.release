@@ -1,0 +1,24 @@
+AR=$(CROSS)ar
+LD=$(CROSS)ld
+STRIP=$(CROSS)strip
+RANLIB=$(CROSS)ranlib
+SIZE=$(CROSS)size
+LIBDIR=$(CROSS_PATH)/lib
+
+CFLAGS	= -I$(APP_TCAPILIB_DIR)
+LDFLAGS = -L$(APP_TCAPILIB_DIR) -ltcapi
+
+OBJS= chkwan.o
+EXECS= chkwan
+
+all: chkwan
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
+
+rtkethcmd: $(OBJS) 
+	$(CC) $(OBJS) -o $@ $(LDFLAGS)
+	$(STRIP) --strip-unneeded $(EXECS)
+
+clean:
+	rm -f $(EXECS)

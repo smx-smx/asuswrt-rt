@@ -196,6 +196,10 @@ static int rctest_main(int argc, char *argv[])
 #endif
 			stop_services();
 		}
+		else if (strcmp(argv[1], "chk_ping") == 0) {
+			
+			do_dns_detect();
+		}
 		else {
 			printf("what?\n");
 		}
@@ -259,6 +263,11 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_USB
 	{ "ejusb",			ejusb_main			},
 #endif
+#ifdef ASUS_DISK_UTILITY
+	{ "disk_monitor",		diskmon_main			},
+#endif
+	{ "service",			service_main			},
+
 	{NULL, NULL}
 };
 
@@ -498,6 +507,11 @@ int main(int argc, char **argv)
 			return ret; //return 0 on success!
 		}
 	}
+#ifdef RTCONFIG_OPENVPN
+	else if (!strcmp(base, "add_ovpn_fw_rules")) {
+		run_vpn_firewall_scripts();
+	}
+#endif
 
 	printf("Unknown applet: %s\n", base);
 	return 0;

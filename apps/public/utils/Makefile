@@ -1,5 +1,9 @@
 CFLAGS = -Os -Wall $(EXTRACFLAGS) -fPIC
 
+ifneq ($(TC_CFLAGS), )
+CFLAGS+=$(TC_CFLAGS)
+endif
+
 OBJS = wlan.o ttc.o 
 
 all: libutils.so libutils.a

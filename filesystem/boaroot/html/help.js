@@ -109,6 +109,7 @@ top.location.href = "Main_AdslStatus_Content.asp";
 
 <% available_disk_names_and_sizes(); %>
 
+var debug_end_time = parseInt('<% tcWebApi_staticGet("DslDiag_Entry","dslx_diag_end_uptime","s") %>');
 var wans_mode = '<% tcWebApi_staticGet("Dualwan_Entry","wans_mode","s") %>';
 var wans_lanport = '<%tcWebApi_Get("Dualwan_Entry", "wans_lanport", "s")%>';
 
@@ -118,7 +119,14 @@ function overHint(itemNum){
 	var title5 = 0;
 	if(itemNum == 9){		//Viz add 2013.03 for adsl sync status
 		statusmenu = "<div class='StatusHint'>DSL :</div>";
-		if(wan_line_state == "up")
+		if(wan_diag_state == "1" && 
+			((rc_support.search("usbX1") >= 0 && usb_path1.search("storage") >= 0) || 
+				(rc_support.search("usbX2") >= 0 && (usb_path1.search("storage") >= 0 && usb_path2.search("storage") >= 0)))
+		){
+			lineDesc = "Diagnostic debug log capture in progress.<br>";
+			lineDesc += show_diagTime();
+		}
+		else if(wan_line_state == "up")
 			lineDesc = "Link up";
 		else if(wan_line_state == "wait for init")	
 			lineDesc = "Wait for init";
@@ -211,7 +219,7 @@ function overHint(itemNum){
 					statusmenu += "<span>" + decodeURIComponent(gn_array_5g[i][1]) + " (";
 					
 					if(gn_array_5g[i][11] == 0)
-						statusmenu += '<%tcWebApi_get("String_Entry","Limitless","s")%>';
+						statusmenu += '<%tcWebApi_get("String_Entry","Limitless","s")%>)</span><br>';
 					else{
 						var expire_hr = Math.floor(gn_array_5g[i][13]/3600);
 						var expire_min = Math.floor((gn_array_5g[i][13]%3600)/60);
@@ -223,11 +231,8 @@ function overHint(itemNum){
 							else	
 								statusmenu += '<b id="expire_min_'+i+'">< 1</b> Min';							
 						}	
-					}
-
-					statusmenu += " left)</span><br>";
-					
-					
+						statusmenu += " left)</span><br>";
+					}									
 				}
 			}
 		}
@@ -550,11 +555,33 @@ function overHint(itemNum){
 	return overlib(statusmenu, OFFSETX, -160, LEFT, DELAY, 400);
 }
 
+function show_diagTime(){
+				
+	Etime = debug_end_time - boottime;
+	EHours = Math.floor(Etime / 3600);	
+	EMinutes = Math.floor(Etime % 3600 / 60);	
+	boottime += 1;
+	//setTimeout("show_diagTime();", 1000);
+	if(EHours <= 0 && EMinutes <= 0)
+		return "<% tcWebApi_Get("String_Entry", "mssid_time_remaining", "s") %> : <span>0</span> <% tcWebApi_Get("String_Entry", "Hour", "s") %> <span>0</span> <% tcWebApi_Get("String_Entry", "Minute", "s") %>";
+	else
+		return "<% tcWebApi_Get("String_Entry", "mssid_time_remaining", "s") %> : <span>"+EHours+"</span> <% tcWebApi_Get("String_Entry", "Hour", "s") %> <span>"+EMinutes+"</span> <% tcWebApi_Get("String_Entry", "Minute", "s") %>";
+}
+
+function cancel_diag(){		
+		parent.document.canceldiagForm.submit();
+}
+
 var usb_path_tmp = new Array('usb=<% tcWebApi_Get("USB_Entry", "usb_path1", "s") %>', 'usb=<% tcWebApi_Get("USB_Entry", "usb_path2", "s") %>');
 function openHint(hint_array_id, hint_show_id, flag){
 	if(hint_array_id == 24){
 		var _caption = "";
-		if(hint_show_id == 6){
+		
+		if(hint_show_id == 8){	//2014.10 Viz add for dsl dslx_diag_state
+			statusmenu = "<span class='StatusClickHint' onclick='cancel_diag();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>Cancel debug capture</span>";
+			_caption = "DSL Line Diagnostic capture";
+		}
+		else if(hint_show_id == 6){
 			statusmenu = "<span class='StatusClickHint' onclick='gotoDSL_log();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>Go to DSL Log</span>";
 			_caption = "DSL Log";
 		}
@@ -567,14 +594,15 @@ function openHint(hint_array_id, hint_show_id, flag){
 			_caption = "<%tcWebApi_get("String_Entry","Guest_Network","s")%>";
 		}
 		else if(hint_show_id == 3){
+			return;	//tmp remove the following improper behavior
 			if(sw_mode == 1){
 				if(dualWAN_support == -1 || wans_dualwan_array[1] == "none"){
 						if((link_status == "2" && link_auxstatus == "0") || (link_status == "2" && link_auxstatus == "2"))
 								statusmenu = "<span class='StatusClickHint' onclick='suspendconn(0,2);' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'><%tcWebApi_get("String_Entry","disconnect_internet","s")%></span>";
 						//else if(link_status == "2" && link_auxstatus == "2") //link_status == 5
 						else{
-								statusmenu = "<span class='StatusClickHint' onclick='suspendconn(1);' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>";
-								if(usb_index == 0){
+								statusmenu = "<span class='StatusClickHint' onclick='goToWAN(0);' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>";								
+								if(usb_index == 0){	//pri WAN == usb
 									//if(gobi_support)
 										//statusmenu += "Go to Mobile Broadband Setting.</span>";
 									//else
@@ -678,10 +706,10 @@ function openHint(hint_array_id, hint_show_id, flag){
 	var tag_name= document.getElementsByTagName('a');
 	for (var i=0;i<tag_name.length;i++)
 		tag_name[i].onmouseout=nd;
-	if(hint_array_id == 0 && hint_show_id > 21)
-		return overlib(helpcontent[hint_array_id][hint_show_id], FIXX, 270, FIXY, 30);
-	else if(helpcontent == [] || helpcontent == "" || hint_array_id > helpcontent.length)
+	if(helpcontent == [] || helpcontent == "" || hint_array_id > helpcontent.length)
 		return overlib('<%tcWebApi_get("String_Entry","defaultHint","s")%>', HAUTO, VAUTO);
+	else if(hint_array_id == 0 && hint_show_id > 21 && hint_show_id < 24)
+		return overlib(helpcontent[hint_array_id][hint_show_id], FIXX, 270, FIXY, 30);
 	else{
 		if(hint_show_id > helpcontent[hint_array_id].length)
 			return overlib('<%tcWebApi_get("String_Entry","defaultHint","s")%>', HAUTO, VAUTO);
@@ -1772,6 +1800,52 @@ nd = no_overlib;
 ver3fix = true;
 }
 
+// ---------- Viz add common string check for password 2015.09 start--------
+function check_common_string(pwd, flag){
+        //Sequential
+	var termAlphas = "abcdefghijklmnopqrstuvwxyz";
+	var termNumerics = "01234567890";
+	var termSymbols = "~!@#$%^&*()_+";
+	var termKeyboards1 = "qwertyuiop";
+	var termKeyboards2 = "asdfghjkl";
+	var termKeyboards3 = "zxcvbnm";
+	var termCommon5 = ["123123","abc123","letmein","master","qazwsx","admin"];
+	var termCommon8 = ["adminpassword","loginpassword","passw0rd","password","useradmin","userpassword"];
+	var nSeqString = 0;
+        if(flag == "httpd_password"){   //at lease length 5             
+                if(termAlphas.toLowerCase().indexOf(pwd) != -1 || termAlphas.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+                if(termNumerics.toLowerCase().indexOf(pwd) != -1 || termNumerics.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+                if(termSymbols.toLowerCase().indexOf(pwd) != -1 || termSymbols.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+                if(termKeyboards1.toLowerCase().indexOf(pwd) != -1 || termKeyboards1.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+                if(termKeyboards2.toLowerCase().indexOf(pwd) != -1 || termKeyboards2.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+                if(termKeyboards3.toLowerCase().indexOf(pwd) != -1 || termKeyboards3.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+                for(var s=0;s<termCommon5.length;s++){
+                        if(pwd == termCommon5[s])       { nSeqString++; }
+                }
+                for(var t=0;t<termCommon8.length;t++){
+                        if(pwd == termCommon8[t])       { nSeqString++; }
+                }
+        }
+	else if(flag == "wpa_key"){     //at lease length 8
+                if(termAlphas.toLowerCase().indexOf(pwd) != -1 || termAlphas.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+                if(termNumerics.toLowerCase().indexOf(pwd) != -1 || termNumerics.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+                if(termSymbols.toLowerCase().indexOf(pwd) != -1 || termSymbols.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+                if(termKeyboards1.toLowerCase().indexOf(pwd) != -1 || termKeyboards1.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+                if(termKeyboards2.toLowerCase().indexOf(pwd) != -1 || termKeyboards2.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+                for(var s=0;s<termCommon8.length;s++){
+                        if(pwd == termCommon8[s])       { nSeqString++; }
+                }
+        }
+
+        //pure repeat character string
+        if(pwd == pwd.charAt(0).repeat(pwd.length)) { nSeqString++; }
+
+        if(nSeqString > 0)
+                return true;
+        else
+                return false;
+}
+// ---------- Viz add common string check for password 2015.09 end--------
 
 // ---------- Viz add for pwd strength check [Start] 2012.12 -----
 
@@ -1944,13 +2018,6 @@ function chkPass(pwd, flag) {
 			$('scorebarBorder').style.display = "";
 			$('scorebar').style.backgroundPosition = "-" + parseInt(nScore * 4) + "px";
 			$('score').innerHTML = sComplexity;
-	}
-	else {
-		/* Display default score criteria to client */
-		if(flag == 'http_passwd'){
-				orig_pwd = decodeURIComponent("<% tcWebApi_char_to_ascii("Account_Entry0","web_passwd","s") %>");				
-				chkPass(orig_pwd, 'http_passwd');
-		}
 	}
 }
 

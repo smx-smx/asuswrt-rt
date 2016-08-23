@@ -23,6 +23,11 @@
 #include <fs_secure.h>
 #endif
 
+#ifdef RTCONFIG_PROTECTION_SERVER
+#include <shared.h>
+#endif
+
+
 #ifdef CONFIG_FEATURE_U_W_TMP
 // import from utmp.c
 static void checkutmp(int picky);
@@ -74,6 +79,7 @@ extern int login_main(int argc, char **argv)
 	char tty[BUFSIZ];
 	char full_tty[200];
 	char fromhost[512];
+	char *remoteIP = NULL;
 	char username[USERNAME_SIZE];
 	const char *tmp;
 	int amroot;
@@ -103,9 +109,12 @@ extern int login_main(int argc, char **argv)
 	alarmstarted = 1;
 
 #if !defined(TCSUPPORT_ACCOUNT_ACL) 
-	while (( flag = getopt(argc, argv, "f:h:p")) != EOF ) {
+	while (( flag = getopt(argc, argv, "a:f:h:p")) != EOF ) {
 #endif
 		switch ( flag ) {
+		case 'a':
+			remoteIP = optarg;
+			break;
 		case 'p':
 			opt_preserve = 1;
 			break;
@@ -237,9 +246,20 @@ auth_ok:
 #if !defined(TCSUPPORT_ACCOUNT_ACL) 
 		puts("Login incorrect");
 #endif
+#ifdef RTCONFIG_PROTECTION_SERVER
+		struct state_report t_report;
+		strcpy(t_report.ip_addr, remoteIP);
+		t_report.loginType = PROTECTION_SERVICE_TELNET;
+		strcpy(t_report.note, "From busybox login, LOGIN FAIL");
+		send_socket(t_report);
+#endif
 		username[0] = 0;
 		if ( ++count == 3 ) {
+#ifdef RTCONFIG_PROTECTION_SERVER
+			syslog ( LOG_WARNING, "invalid password for `%s'%s via %s\n", pw->pw_name, fromhost, remoteIP);
+#else
 			syslog ( LOG_WARNING, "invalid password for `%s'%s\n", pw->pw_name, fromhost);
+#endif
 			return EXIT_FAILURE;
 	}
 	}

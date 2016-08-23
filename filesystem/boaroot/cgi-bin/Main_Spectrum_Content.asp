@@ -37,7 +37,7 @@ AUTOLOGOUT_MAX_MINUTE = 0;
 
 // Check ADSL/VDSL mode todecide spectrum updating time
 var delay_time = 0;
-var dsl_mode = "<% tcWebApi_get("Info_Adsl", "Opmode", "s") %>";
+var dsl_mode = "<% tcWebApi_get("Info_Adsl", "xDSLmode", "s") %>";
 var dsl_mode_check = dsl_mode.search("VDSL");
 if(dsl_mode_check >=0)
 		delay_time = 45;

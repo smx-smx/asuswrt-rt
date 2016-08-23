@@ -4,8 +4,12 @@ If Request_Form("current_page") = "/cgi-bin/qis/QIS_admin_pass.asp" Then
 	tcWebApi_set("GUITemp_Entry0","web_passwd","uiViewPassword")
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_detect.asp" Then
-	tcWebApi_set("Adsl_Entry","ANNEXTYPEA","AnnexTypeA")
-        tcWebApi_commit("Adsl_Entry")
+	if Request_Form("action_script") = "restart_dsl_setting" Then
+		tcWebApi_set("Adsl_Entry","ANNEXTYPEA","AnnexTypeA")
+		tcWebApi_commit("Adsl_Entry")
+	elseif Request_Form("action_script") = "restart_autodet" Then
+		auto_detection()
+	end if
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_wireless.asp" Then
 	tcWebApi_Set("GUITemp_Entry0","dsltmp_cfg_wl0_ssid","wl0_ssid")
@@ -37,6 +41,12 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_manual_setting.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_country","dsltmp_cfg_country")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_transfer_mode","dsltmp_transfer_mode")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_wanTypeOption","dsltmp_wanTypeOption")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_th3bb","dsltmp_cfg_th3bb")
+	if Request_Form("dsltmp_cfg_th3bb") = "1" Then
+		tcWebApi_set("Adsl_Entry","MODULATIONTYPE","dsltmp_cfg_modulation")
+		tcWebApi_set("Adsl_Entry","ANNEXTYPEA","dsltmp_cfg_annex")
+	end if
+	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_PTM_manual_setting.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_prctl","dsltmp_cfg_prctl")
@@ -50,6 +60,24 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_PTM_manual_setting.asp" 
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_country","dsltmp_cfg_country")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_transfer_mode","dsltmp_transfer_mode")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_wanTypeOption","dsltmp_wanTypeOption")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_set_ginp","dsltmp_set_ginp")
+	tcWebApi_set("Vram_Entry","dsltmp_qis_set_ginp","dsltmp_set_ginp")
+	if Request_Form("dsltmp_set_ginp") = "1" Then
+		tcWebApi_set("Adsl_Entry","dslx_ginp","dsltmp_cfg_ginp")
+	end if
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_th3bb","dsltmp_cfg_th3bb")
+	if Request_Form("dsltmp_cfg_th3bb") = "1" Then
+		tcWebApi_set("Adsl_Entry","MODULATIONTYPE","dsltmp_cfg_modulation")
+		tcWebApi_set("Adsl_Entry","ANNEXTYPEA","dsltmp_cfg_annex")
+		tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vpi","dsltmp_cfg_vpi")
+		tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vci","dsltmp_cfg_vci")
+		tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_encap","dsltmp_cfg_encap")
+	end if
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_de17a","dsltmp_cfg_de17a")
+	if Request_Form("dsltmp_cfg_de17a") = "1" Then
+		tcWebApi_set("Adsl_Entry","vdsl_profile","dsltmp_cfg_vdslprofile")
+	end if
+	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ppp_cfg.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vpi","dsltmp_cfg_vpi")
@@ -67,11 +95,13 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ppp_cfg.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_pppoe_passwd","dsltmp_cfg_pppoe_passwd")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_wanTypeOption","dsltmp_wanTypeOption")
 	tcWebApi_set("GUITemp_Entry0","with_wan_setting","with_wan_setting")
+	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ppp_cfg_tmp.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_pppoe_username","dsltmp_cfg_pppoe_username")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_pppoe_passwd","dsltmp_cfg_pppoe_passwd")
 	tcWebApi_set("GUITemp_Entry0","with_wan_setting","with_wan_setting")
+	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_mer_cfg.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vpi","dsltmp_cfg_vpi")
@@ -90,6 +120,7 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_mer_cfg.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_dhcp_clientid","dsltmp_dhcp_clientid")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_wanTypeOption","dsltmp_wanTypeOption")
 	tcWebApi_set("GUITemp_Entry0","with_wan_setting","with_wan_setting")
+	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_mer_cfg_tmp.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_DHCPClient","dsltmp_cfg_DHCPClient")
@@ -102,6 +133,7 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_mer_cfg_tmp.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_dhcp_clientid","dsltmp_dhcp_clientid")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_wanTypeOption","dsltmp_wanTypeOption")
 	tcWebApi_set("GUITemp_Entry0","with_wan_setting","with_wan_setting")
+	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ipoa_cfg_tmp.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_DHCPClient","dsltmp_cfg_DHCPClient")
@@ -112,9 +144,11 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ipoa_cfg_tmp.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_dns1","dsltmp_cfg_dns1")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_dns2","dsltmp_cfg_dns2")
 	tcWebApi_set("GUITemp_Entry0","with_wan_setting","with_wan_setting")
+	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_bridge_cfg_tmp.asp" Then
 	tcWebApi_set("GUITemp_Entry0","with_wan_setting","with_wan_setting")
+	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_finish.asp" Then
 	'QIS_admin_pass.asp
@@ -161,13 +195,13 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_finish.asp" Then
 			tcWebApi_set("Wan_PVC","SCR","value_empty")
 			tcWebApi_set("Wan_PVC","MBS","value_empty")
 
-		elseif tcWebApi_get("GUITemp_Entry0","dsltmp_transfer_mode","h") = "PTM" then
-			if tcWebApi_get("GUITemp_Entry0","dsltmp_cfg_vlanid","h") <> "" then
-				tcWebApi_set("Wan_PVC","dot1q","value_yes")
-				tcWebApi_set("Wan_PVC","VLANID","dsltmp_cfg_vlanid")
-			else
-				tcWebApi_set("Wan_PVC","dot1q","value_no")
-			end if
+		end if
+
+		if tcWebApi_get("GUITemp_Entry0","dsltmp_cfg_vlanid","h") <> "" then
+			tcWebApi_set("Wan_PVC","dot1q","value_yes")
+			tcWebApi_set("Wan_PVC","VLANID","dsltmp_cfg_vlanid")
+		else
+			tcWebApi_set("Wan_PVC","dot1q","value_no")
 		end if
 
 		tcWebApi_set("Wan_PVC","ISP","dsltmp_wanTypeOption")
@@ -177,6 +211,11 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_finish.asp" Then
 		tcWebApi_set("Wan_PVC","DEFGATEWAY6","value_empty")
 
 		disable_other_wan()
+
+		'DSL Setting
+		if tcWebApi_get("GUITemp_Entry0","dsltmp_dsl_restart","h") = "1" then
+			tcWebApi_CommitWithoutSave("Adsl_Entry")
+		end if
 
 		if tcWebApi_get("GUITemp_Entry0","dsltmp_wanTypeOption","h") = "0" then 'Automatic IP
 
@@ -374,7 +413,9 @@ tcWebApi_set("GUITemp_Entry0","QIS_currentPage","current_page")
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 </head>
 <script type="text/javascript">
-	if("<% tcWebApi_get("GUITemp_Entry0","QIS_currentPage","s") %>" != "/cgi-bin/qis/QIS_finish.asp")
+	if("<% tcWebApi_get("GUITemp_Entry0","QIS_currentPage","s") %>" != "/cgi-bin/qis/QIS_finish.asp"
+		&& "<% tcWebApi_get("GUITemp_Entry0","QIS_currentPage","s") %>" != "<% tcWebApi_get("GUITemp_Entry0","QIS_nextPage","s") %>"
+	)
 		document.location.href = "<% tcWebApi_get("GUITemp_Entry0","QIS_nextPage","s") %>";
 </script>
 

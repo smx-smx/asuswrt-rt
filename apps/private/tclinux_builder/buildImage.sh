@@ -20,6 +20,12 @@ test ! -e $romfile && echo "romfile not exist or wrong name" && exit 0
 test ! -e $kernel && echo "linux.7z not exist or wrong name" && exit 0
 test ! -e $rootfs && echo "rootfs not exist or wrong name" && exit 0
 
+#replace ATE test config value
+sed -i 's/HT_BW="1"/HT_BW="2"/g' romfile.cfg
+sed -i 's/wl0_HT_BW="1"/wl0_HT_BW="2"/g' romfile.cfg
+sed -i 's/wl1_HT_BW="1"/wl1_HT_BW="2"/g' romfile.cfg
+sed -i 's/telnetd_enable="0"/telnetd_enable="1"/g' romfile.cfg
+
 #Calculating the files' sizes
 size_b=$(stat -c%s "$blder")
 size_f=$(stat -c%s "$romfile")
@@ -173,6 +179,11 @@ else
 fi
 fi
 
+if [ "$TCSUPPORT_CT" == "" ] ;then
+echo "add crc32 at the end of tclinux_allineone"
+../../../tools/trx/trx  -g
+fi
+
 if [ "$TCSUPPORT_2_6_36_KERNEL" != "" ] ;then
 if [ "$TCSUPPORT_BOOTROM_LARGE_SIZE" != "" ] && [ "$TCSUPPORT_BB_NAND" != "" ];then
 #Generating tclinux_allinone for NAND,tcboot is 256k,romfile is 256k
@@ -184,20 +195,16 @@ if [ "$TCSUPPORT_BOOTROM_LARGE_SIZE" != "" ] && [ "$TCSUPPORT_BB_NAND" != "" ];t
 	echo "Need a padding for NAND romfile"
 	split -b $remainder_f padding
 	mv xaa padding_f
-	cat tcboot.bin padding_b romfile.cfg padding_f tclinux.bin > tclinux_allinone_nand
-	#echo `./byteswap tclinux_allinone_nand`
-fi
-fi
-
+	cat tcboot.bin padding_b romfile.cfg padding_f tclinux.bin > tclinux_allinone
 if [ "$TCSUPPORT_CT" == "" ] ;then
-#add crc32 at the end of tclinux_allineone
-../../../tools/trx/trx  -g
+	echo "add crc32 at the end of tclinux_allineone"
+	../../../tools/trx/trx  -g
 fi
-
-sed -i 's/HT_BW="1"/HT_BW="2"/g' tclinux_allinone
-sed -i 's/wl0_HT_BW="1"/wl0_HT_BW="2"/g' tclinux_allinone
-sed -i 's/wl1_HT_BW="1"/wl1_HT_BW="2"/g' tclinux_allinone
-sed -i 's/telnetd_enable="0"/telnetd_enable="1"/g' tclinux_allinone
+	echo `./ecc_generator tclinux_allinone tclinux_allinone_ecc`
+	rm -f tclinux_allinone
+	mv tclinux_allinone_ecc tclinux_allinone
+fi
+fi
 
 #echo `./byteswap tclinux_allinone`
 

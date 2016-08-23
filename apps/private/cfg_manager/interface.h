@@ -311,6 +311,8 @@ struct port_mask
 #define NOT_AUTO_CHANNEL	0
 #define IS_AUTO_CHANNEL	1
 
+/*SysInfo node*/
+#define SYSINFO "SysInfo"
 
 /*Info node*/
 #define INFO	"Info"

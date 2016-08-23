@@ -186,6 +186,7 @@ wl0_WscSerialNumber="00000000" wl0_WscV2Support="1" wl0_RadioOn="1"
 wl_wep_type="0" wl_phrase="" radio_on="1" radio_flag="1" wl_schedule_radio="1" wl_radio_date="1111111" wl_radio_time="00002359" 
 wl0_wl_wep_type="0" wl0_wl_phrase="" wl0_radio_on="1" wl0_radio_flag="1" wl0_wl_schedule_radio="1" wl0_wl_radio_date="1111111" wl0_wl_radio_time="00002359"
 wl_user_rssi="0" wl0_wl_user_rssi="0"
+wl_sched0="000000" wl_sched1="000000" wl0_wl_sched0="000000" wl0_wl_sched1="000000"
 />
 </WLan>
 <Firewall>
@@ -309,7 +310,7 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 </Cwmp>
 <Upnpd>
 	<Entry autoconf="0" Active="Yes" HostName="DSL-N10-C1" Manufacturer="ASUSTeK Computer Inc." ModelName="DSL-N10-C1" ModelNumber="DSL-N10-C1" Description="DSL-N10-C1" ManufacturerURL="http://www.asus.com" ModelURL="http://www.asus.com" WANmanufacturerURL="http://www.asus.com" WANconnection_manufacturerURL="http://www.asus.com" LANmanufacturerURL="http://www.asus.com" WANmodelURL="http://www.asus.com" WANconnection_modelURL="http://www.asus.com" LANmodelURL="http://www.asus.com" />
-	<Miniupnpd secure_mode="yes" upnp_port="2869" natpmp="yes" sys_uptime="yes" notify_interval="30" clean="yes" clean_interval="600" clean_threshold="20" uuid="de92cf00-6979-11e4-9803-0800200c9a66" />
+	<Miniupnpd secure_mode="yes" upnp_port="2869" natpmp="yes" sys_uptime="yes" notify_interval="30" clean="yes" clean_interval="600" clean_threshold="100" uuid="de92cf00-6979-11e4-9803-0800200c9a66"  lease_file="/tmp/upnp.lease" />
 </Upnpd>
 <Ddns>
 	<Entry Active="0" SERVERNAME="WWW.ASUS.COM" MYHOST="" USERNAME="" PASSWORD="" WILDCARD="0" />
@@ -326,7 +327,7 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	PM_attach_syslog="0" PM_attach_cfgfile="0" PM_attach_iptables="0" />
 </PushMail>
 <Timezone>
-	<Entry TYPE="0" TZ="GMT+08:00" DAYLIGHT="Disable" SERVER="pool.ntp.org" PCSyncFlag="0" TZ_second="" />
+	<Entry TYPE="0" TZ="GMT" DAYLIGHT="Disable" SERVER="pool.ntp.org" PCSyncFlag="0" TZ_second="" />
 </Timezone>
 <Mac>
 	<Entry WAN_MAC="00:aa:bb:cc:dd:ee" />
@@ -335,7 +336,7 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	<Entry RestoreLinos="1"
 	Vendor="ASUSTeK Computer Inc."
 	ProductName="DSL-N10-C1"
-	InnerVersion="1.1.0.4"
+	InnerVersion="1.1.1.0"
 	ProductTitle="Wireless-N150 ADSL2/2+ Modem Router"
 	SWVer="V100R001B012" FWVer="3.10.0.24" PubDate="2013/06/06" BatchNum="STC20P0.012.310024" SerialNum="1234" Description="" HWVer=""
 	btn_ez_radiotoggle="0"

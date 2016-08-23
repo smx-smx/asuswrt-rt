@@ -26,7 +26,6 @@ End If
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
-<script type="text/javascript" src="/aidisk/AiDisk_folder_tree.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
@@ -92,13 +91,7 @@ function chech_usb()
 		//$("sharebtn").disabled = true;
 	}
 }
-function show_footer(){
-	footer_code = '<div align="center" class="bottom-image"></div>';
-	footer_code +='<div align="center" class="copyright"><%tcWebApi_get("String_Entry","footer_copyright_desc","s")%></div>';
-	
-	$("footer").innerHTML = footer_code;
-	flash_button();
-}
+
 function get_disk_tree(){
 	if(this.isLoading == 0){
 		get_layer_items("0", "gettree");

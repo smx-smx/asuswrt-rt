@@ -461,13 +461,19 @@ function applyRule(){
 	if(doAdminUiMgmtIpValidate()==false)
 		return;
 
-	if (form.PrimaryDns.value == "")
+	if (form.PrimaryDns.value == "" && form.SecondDns.value == "")
 		form.dnsTypeRadio.value = "0";
 	else
 	{
 		form.dnsTypeRadio.value = "1";
-  		if(inValidIPAddr(form.PrimaryDns.value))
-		      	return false;
+		if(form.PrimaryDns.value != "") {
+  			if(inValidIPAddr(form.PrimaryDns.value))
+		      		return false;
+		}
+		if(form.SecondDns.value != "") {
+  			if(inValidIPAddr(form.SecondDns.value))
+		      		return false;
+		}
 	}
 
 	if (form.winsIP.value != "")
@@ -477,6 +483,7 @@ function applyRule(){
 	}
 
 	document.uiViewLanForm.dhcpFlag.value = 0;
+	originData.onlinelist_cache = "";
 	showLoading(42);	//Extend from 17 to 42 to restore_webtype
 	setTimeout("redirect();", 42000);
 	if(navigator.appName.indexOf("Microsoft") >= 0){ 		// Jieming added at 2013/05/21, to avoid browser freeze when submitting form on IE
@@ -560,34 +567,37 @@ function get_default_pool(ip, netmask){
 	}
 }
 
-function showLANIPList(){	
+function showLANIPList(){
+
 	if(clientList.length == 0){
 		setTimeout(function() {
 			genClientList();
 			showLANIPList();
 		}, 500);
-		return false;
+		$("ClientList_Block_PC").innerHTML = "";
+		
 	}
-	
-	var htmlCode = "";		
-	for(var i=0; i<clientList.length;i++){
-		var clientObj = clientList[clientList[i]];
+	else{
+		var htmlCode = "";		
+		for(var i=0; i<clientList.length;i++){
+			var clientObj = clientList[clientList[i]];
 
-		if(clientObj.IP == "offline") clientObj.IP = "";
-		if(clientObj.Name.length > 30) clientObj.Name = clientObj.Name.substring(0, 27) + "...";
+			if(clientObj.IP == "offline") clientObj.IP = "";
+			if(clientObj.Name.length > 30) clientObj.Name = clientObj.Name.substring(0, 27) + "...";
 
-		htmlCode += '<a><div onmouseover="over_var=1;" onmouseout="over_var=0;" onclick="setClientIP(\'';
-		htmlCode += clientObj.MacAddr;
-		htmlCode += '\', \'';
-		htmlCode += clientObj.IP;
-		htmlCode += '\');"><strong>';
-		htmlCode += clientObj.MacAddr;
-		htmlCode += '</strong> ( ';
-		htmlCode += clientObj.Name;
-		htmlCode += ' )</div></a><!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';	
+			htmlCode += '<a><div onmouseover="over_var=1;" onmouseout="over_var=0;" onclick="setClientIP(\'';
+			htmlCode += clientObj.MacAddr;
+			htmlCode += '\', \'';
+			htmlCode += clientObj.IP;
+			htmlCode += '\');"><strong>';
+			htmlCode += clientObj.MacAddr;
+			htmlCode += '</strong> ( ';
+			htmlCode += clientObj.Name;
+			htmlCode += ' )</div></a><!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';	
+		}
+
+		$("ClientList_Block_PC").innerHTML = htmlCode;
 	}
-
-	$("ClientList_Block_PC").innerHTML = htmlCode;
 }
 
 function setClientIP(macaddr, ipaddr){
@@ -654,7 +664,6 @@ $("check_mac").innerHTML="The format for the MAC address is six groups of two he
 <INPUT TYPE="HIDDEN" NAME="DNSproxy" VALUE="Yes">
 <INPUT TYPE="HIDDEN" NAME="dnsTypeRadio" VALUE='0'>
 <INPUT TYPE="HIDDEN" NAME="DHCPPhyPortEth0" VALUE="Yes">
-<INPUT TYPE="HIDDEN" NAME="SecondDns" VALUE="N/A">
 <INPUT TYPE="HIDDEN" NAME="uiViewIPAddr" VALUE="<%If tcWebApi_get("Lan_Entry","IP","h") <> "" then tcWebApi_get("Lan_Entry","IP","s") end if%>" disabled>
 <INPUT TYPE="HIDDEN" NAME="uiViewNetMask" VALUE="<%If tcWebApi_get("Lan_Entry","netmask","h") <> "" then tcWebApi_get("Lan_Entry","netmask","s") end if%>" disabled>
 <table class="content" align="center" cellpadding="0" cellspacing="0">
@@ -739,12 +748,12 @@ $("check_mac").innerHTML="The format for the MAC address is six groups of two he
 <INPUT TYPE="TEXT" NAME="PrimaryDns" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<% If tcWebApi_get("Dproxy_Entry","type","h") = "1" then tcWebApi_get("Dproxy_Entry","Primary_DNS","s") else asp_Write("") end if %>" onKeyPress="return is_ipaddr(this, event);">
 </td>
 </tr>
-<!--<tr>
-<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);">Secondary DNS</a></th>
+<tr>
+<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);"><%tcWebApi_get("String_Entry","LHC_x_LDNSServer2_in","s")%></a></th>
 <td>
-<INPUT TYPE="TEXT" NAME="SecondDns" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<% If tcWebApi_get("Dproxy_Entry","type","h") = "1" then tcWebApi_get("Dproxy_Entry","Secondary_DNS","s") else asp_Write("N/A") end if %>" >
+<INPUT TYPE="TEXT" NAME="SecondDns" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<% If tcWebApi_get("Dproxy_Entry","type","h") = "1" then tcWebApi_get("Dproxy_Entry","Secondary_DNS","s") else asp_Write("") end if %>" onKeyPress="return is_ipaddr(this, event);">
 </td>
-</tr>-->
+</tr>
 <tr>
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,8);"><%tcWebApi_get("String_Entry","LHC_x_WINSServer_in","s")%></a></th>
 <td>

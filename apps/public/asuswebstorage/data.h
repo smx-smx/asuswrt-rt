@@ -152,6 +152,7 @@ typedef struct FOLDER
 //    int markid;
 //    char metadata[NORMALSIZE];
     int isdeleted;
+    int ischangeseq;
 }Folder;
 
 typedef struct FILEATTRIBUTE

@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="/images/favicon.png">
 <link rel="icon" href="/images/favicon.png">
-<title>ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - AiCloud</title>
+<title>ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%></title>
 <link rel="stylesheet" type="text/css" href="/index_style.css"> 
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script type="text/javascript" src="/state.js"></script>
@@ -259,7 +259,7 @@ This agreement constitutes the entire agreement between you and ASUS with respec
 					<tbody>
 					<tr>
 						<td>
-							<div class="tabclick"><span>AiCloud</span></div>
+							<div class="tabclick"><span><%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%></span></div>
 						</td>
 						<td>
 							<a href="cloud_sync.asp"><div class="tab" id="tab_smartsync"><span><% tcWebApi_Get("String_Entry","smart_sync","s") %></span></div></a>
@@ -286,7 +286,7 @@ This agreement constitutes the entire agreement between you and ASUS with respec
 							<tr>
 							  <td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
-									<div class="formfonttitle">AiCloud</div>
+									<div class="formfonttitle"><%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%></div>
 									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 									<table width="100%" height="550px" style="border-collapse:collapse;">
 
@@ -336,10 +336,6 @@ This agreement constitutes the entire agreement between you and ASUS with respec
 											</td>
 									  </tr>
 
-									  <!--tr bgcolor="#444f53">
-									    <td height="40"><div align="center" style="margin-top:-30px;font-size: 18px;text-shadow: 1px 1px 0px black;">Cloud Disk</div></td>
-									  </tr-->
-
 									  <tr height="10px">
 											<td colspan="3">
 											</td>
@@ -348,7 +344,7 @@ This agreement constitutes the entire agreement between you and ASUS with respec
 									  <tr bgcolor="#444f53" width="235px">
 									    <td bgcolor="#444f53" class="cloud_main_radius_left" width="20%" height="50px">
 												<div style="padding:10px;" align="center"><img src="/images/cloudsync/001.png">
-													<div align="center" style="margin-top:10px;font-size: 18px;text-shadow: 1px 1px 0px black;">Cloud Disk</div>
+													<div align="center" style="margin-top:10px;font-size: 18px;text-shadow: 1px 1px 0px black;"><%tcWebApi_Get("String_Entry", "Cloud_Disk", "s")%></div>
 												</div>
 											</td>
 
@@ -401,10 +397,6 @@ This agreement constitutes the entire agreement between you and ASUS with respec
 											</td>
 									  </tr>
 
-									  <!--tr bgcolor="#444f53">
-									    <td height="40"><div align="center" style="margin-top:-30px;font-size: 18px;text-shadow: 1px 1px 0px black;">Cloud Disk</div></td>
-									  </tr-->
-
 									  <tr height="10px">
 											<td colspan="3">
 											</td>
@@ -413,7 +405,7 @@ This agreement constitutes the entire agreement between you and ASUS with respec
 									  <tr bgcolor="#444f53">
 									    <td bgcolor="#444f53" class="cloud_main_radius_left" width="20%" height="50px">
 												<div align="center"><img src="/images/cloudsync/002.png">
-													<div align="center" style="margin-top:10px;font-size: 18px;text-shadow: 1px 1px 0px black;">Smart Access</div>
+													<div align="center" style="margin-top:10px;font-size: 18px;text-shadow: 1px 1px 0px black;"><%tcWebApi_Get("String_Entry", "Smart_Access", "s")%></div>
 												</div>
 											</td>
 									    <td>
@@ -464,10 +456,6 @@ This agreement constitutes the entire agreement between you and ASUS with respec
 												</div>	
 											</td>
 									  </tr>
-
-									  <!--tr bgcolor="#444f53">
-									    <td height="40"><div align="center" style="margin-top:-30px;font-size: 18px;text-shadow: 1px 1px 0px black;">Smart Access</div></td>
-									  </tr-->
 
 									  <tr height="10px">
 											<td colspan="3">

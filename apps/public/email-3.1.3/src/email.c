@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "getopt.h"
 
@@ -200,6 +201,7 @@ moduleUsage(const char *module)
 	exit(0);
 }
 
+
 int
 main(int argc, char **argv)
 {
@@ -208,12 +210,17 @@ main(int argc, char **argv)
 	char *cc_string = NULL;
 	char *bcc_string = NULL;
 	const char *opts = "f:n:a:p:oVedvtb?c:s:r:u:i:g:m:H:x:";
-	FILE *fp;
+	FILE *fp = NULL;
 	char tmp[128]={0};
 
 	//clean the related error flag and file.
 	system("tcapi set PushMail_Entry fb_state 0");
-	system("rm /tmp/email_error_message");
+	fp = fopen(EMAIL_LOG_FILE, "r");
+	if( fp != NULL ){
+		printf("There is previous %s file so remove it !!\n", EMAIL_LOG_FILE);
+		fclose(fp);
+		unlink(EMAIL_LOG_FILE);
+	}
 
 	/* Set certian global options to NULL */
 	conf_file = NULL;
@@ -383,17 +390,6 @@ main(int argc, char **argv)
 	signal(SIGQUIT, properExit);
 
 	createMail();
-	fp = fopen("/tmp/email_error_message", "r");
-	if( fp != NULL ){
-		//printf("Something wrong in Push Mail service and indicate the fb_state as 2!!!\n");
-		system("tcapi set PushMail_Entry fb_state 2");
-		fclose(fp);
-	}
-	else{
-		//printf("Push Mail service success and indicate the fb_state as 1!!!\n");
-		system("tcapi set PushMail_Entry fb_state 1");
-		system("rm -f /tmp/xdslissuestracking");
-	}
 	properExit(0);
 
 	/* We never get here, but gcc will whine if i don't return something */

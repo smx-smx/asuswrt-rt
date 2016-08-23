@@ -44,19 +44,17 @@ fatal(const char *message, ...)
 	va_list vp;
 	FILE *fp;
 
-	fp = fopen("/tmp/email_error_message", "a+b");
+	fp = fopen(EMAIL_LOG_FILE, "a+b");
 	if( fp == NULL ){
 	    printf("open file error!!\n");
-	    return -1;
+	    return;
 	}
 
 	va_start(vp, message);
 	fprintf(stderr, "email: FATAL: ");
-
 	fputs("email: FATAL: ", fp);
 
 	vfprintf(stderr, message, vp);
-
 	vfprintf(fp, message, vp);
 
 	/* if message has a \n mark, don't call perror */

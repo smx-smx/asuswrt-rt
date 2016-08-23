@@ -99,6 +99,8 @@ struct pageset {
 	struct pageset *next;
 };
 
+void dbgprintf (const char * format, ...);
+
 /* alias */
 void add_alias(char *fakename, char *realname, int script);
 int translate_uri(request * req);

@@ -1013,6 +1013,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "telnetd_enable", "0"},
 
 	{ "Dev3G", "AUTO"},
+	{ "modem_android", "0"},
 	{ "modem_enable", "1"}, // 0: disabled, 1: WCDMA, 2: CDMA2000, 3: TD-SCDMA, 4: WiMAX.
 	{ "modem_pincode", ""},
 	{ "modem_apn", "internet"},

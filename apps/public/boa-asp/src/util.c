@@ -24,6 +24,7 @@
 /* $Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/apps/public/boa-asp/src/util.c#1 $ */
 
 #include "boa.h"
+#include <stdarg.h>
 
 #define HEX_TO_DECIMAL(char1, char2)	\
     (((char1 >= 'A') ? (((char1 & 0xdf) - 'A') + 10) : (char1 - '0')) * 16) + \
@@ -699,3 +700,22 @@ int encryptRomfile(char *src, char *dst, char *productName)
 	return 0;
 }
 //Ren.E
+
+//it shows debug messages on console.
+void dbgprintf (const char * format, ...)
+{
+	FILE *f;
+	int nfd;
+	va_list args;
+	/* Don't let /dev/console block */
+	if((nfd = open("/dev/console", O_WRONLY | O_NONBLOCK)) > 0){
+		if((f = fdopen(nfd, "w")) != NULL){
+			va_start(args, format);
+			vfprintf(f, format, args);
+			va_end(args);
+			fclose(f);
+		}
+		close(nfd);
+	}
+}
+

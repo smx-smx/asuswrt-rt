@@ -5,7 +5,7 @@ originData = {
 	size: decodeURIComponent('<% get_client_list_cache() %>').split("<").length-1,
 	customList: '<% get_cl_userdef_list() %>',
 	asusDevice: '<% get_asus_dev_list() %>',
-	fromDHCPLease: '',
+	fromDHCPLease: <% dhcpLeaseMacList(); %>,
 	staticList: decodeURIComponent('<% get_static_dhcp_list() %>').split("<"),
 	fromNetworkmapd: 'ajax',
 	//fromBWDPI: '',

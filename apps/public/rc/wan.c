@@ -38,69 +38,6 @@
 #include "usb_info.h"
 #endif
 
-int restart_dnsmasq(char *ifname, char *dns)
-{
-	char cmd[256];
-	char tmp[64];
-	char word[256], *next;
-	int unit;
-	char dns_attr[32], dns_value[MAXLEN_TCAPI_MSG];
-	int i;
-	int wan_primary = wan_primary_ifunit();
-	int wan_secondary = wan_secondary_ifunit();
-	int wan_pool[] = {wan_primary, wan_secondary, -1};	//wan_secondary=-1 if dualwan disable
-
-	killall_tk("dnsmasq");
-	
-	unlink("/etc/dnsmasq.conf");	//make sure no config file impact dnsmasq
-	snprintf(cmd, sizeof(cmd), "/userfs/bin/dnsmasq");
-
-#if 0
-	if (ifname)
-	{
-		snprintf(tmp, sizeof(tmp), " -i %s", ifname);
-		strncat(cmd, tmp, (sizeof(cmd) - strlen(cmd) -1));
-	}
-#endif
-
-	if (dns != NULL && strlen(dns) != 0)
-	{
-		foreach(word, dns, next)
-		{
-			snprintf(tmp, sizeof(tmp), " -S %s", word);
-			strncat(cmd, tmp, (sizeof(cmd) - strlen(cmd) -1));
-		}
-	}
-	else {
-		//check active wan dns
-		for(i = 0; unit = wan_pool[i], unit != -1; i++)
-		{
-			if(!is_wan_connect(unit))
-				continue;
-
-			snprintf(dns_attr, sizeof(dns_attr), "wan%d_dns", unit);
-			if(tcapi_get("Wanduck_Common", dns_attr, dns_value) != TCAPI_PROCESS_OK)
-			{
-				_dprintf("%s : get dns failed\n", __FUNCTION__);
-				continue;
-			}
-
-			if (strlen(dns_value))
-			{
-				foreach(word, dns_value, next)
-				{
-					snprintf(tmp, sizeof(tmp), " -S %s", word);
-					strncat(cmd, tmp, (sizeof(cmd) - strlen(cmd) -1));
-				}
-			}
-		}
-	}
-
-	_dprintf("%s : run (%s)\n", __FUNCTION__, cmd);
-	system(cmd);
-	return 0;
-}
-
 #define WAN0_ROUTE_TABLE 100
 #define WAN1_ROUTE_TABLE 200
 
@@ -1096,6 +1033,25 @@ stop_wan_if(int unit)
 }
 #endif /* RTCONFIG_USB_MODEM */
 
+int do_dns_detect()
+{
+	char *test_url = "www.google.com www.baidu.com www.yandex.com";
+	char word[64], *next;
+
+	foreach(word, test_url, next){
+		_dprintf("[%s(%d)] Try %s\n", __FUNCTION__, __LINE__, word);
+		if(gethostbyname(word) != NULL){
+			_dprintf("[%s(%d)]  %s -> OK.\n", __FUNCTION__, __LINE__, word);
+			nvram_set_int("link_internet", 2);
+			return 1;
+		}
+	}
+
+	_dprintf("[%s(%d)]  DNS Detect  -> Fail.\n", __FUNCTION__, __LINE__);
+	nvram_set_int("link_internet", 1);
+	
+	return 0;
+}
 
 void
 wan_up(char *wan_ifname)	// oleg patch, replace
@@ -1162,7 +1118,7 @@ wan_up(char *wan_ifname)	// oleg patch, replace
 	update_wan_state(prefix, WAN_STATE_CONNECTED, 0);
 
 	//restart dns
-	restart_dnsmasq(wan_ifname, NULL);
+	start_dnsmasq();
 
 	//restart firewall
 	tcapi_commit("Firewall");
@@ -1186,7 +1142,9 @@ wan_up(char *wan_ifname)	// oleg patch, replace
 	//Sync time?
 	tcapi_commit("Timezone");
 
-
+#ifdef RTCONFIG_OPENVPN
+	start_vpn_eas();
+#endif
 #ifdef RTCONFIG_VPNC
 	// check and start vpnc
 	if (tcapi_match("VPNC_Entry", "auto_conn", "1")) {
@@ -1196,6 +1154,12 @@ wan_up(char *wan_ifname)	// oleg patch, replace
 		system("/sbin/run_vpnc &");
 	}
 #endif
+#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
+	if (tcapi_match("PPTP_Entry", "pptpd_enable", "1")) {
+		stop_pptpd();
+		start_pptpd();
+	}
+#endif
 
 #ifdef RTCONFIG_TR069
 	tcapi_commit("TR069");
@@ -1203,6 +1167,8 @@ wan_up(char *wan_ifname)	// oleg patch, replace
 
 	//start/stop hw_nat according to setting
 	tcapi_commit("Misc");
+
+	do_dns_detect();
 
 	_dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
 }

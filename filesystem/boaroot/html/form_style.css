@@ -1649,7 +1649,16 @@ font-size:12px;
 	width:29px;
 	cursor: pointer;
 }
-
+/*Viz add 2014.10 for adsl diag status      start*/
+.linestatusdiag{
+	background-image:url(images/New_ui/DSL_diag.gif);
+	background-repeat:no-repeat;	
+	background-position:3px 2px;
+	height:29px;
+	width:29px;
+	cursor: pointer;
+}
+/*Viz add 2014.10 for adsl diag status      end*/
 .printstatuson{
 	background-image:url(/images/New_ui/printstatus.png);
 	background-repeat:no-repeat;	

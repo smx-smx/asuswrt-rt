@@ -17,6 +17,7 @@
 #define WEBDAV_PORT                 3569
 #define SKYDRIVER_PORT              3570
 #define SMB_PORT                    3571
+#define USB_PORT                    3572
 
 #define MAXDATASIZE                 500
 #define ASUSWEBSTORAGE_SYNCFOLDER   "MySyncFolder"
@@ -28,6 +29,7 @@
 #define WEBDAV              1
 #define SKYDRIVER           3
 #define SMBCLIENT           4
+#define USBCLIENT           5
 
 #define MY_IN_ALL_EVENTS	 (IN_MODIFY | IN_CLOSE_WRITE | IN_DELETE_SELF | IN_MOVE_SELF  \
                           | IN_OPEN | IN_MOVED_FROM	      \

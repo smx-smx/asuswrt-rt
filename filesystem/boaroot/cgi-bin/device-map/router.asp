@@ -69,10 +69,9 @@ function tabclickhandler(wl_unit){
 			redirect();
 		}
 		else{
-			document.form_band.wl_unit.value = wl_unit;
-			parent.showLoading(2);
-			setTimeout("redirect();", 2000);
+			document.form_band.wl_unit.value = wl_unit;			
 			document.form_band.submit();
+			setTimeout("redirect();", 1000);
 		}
 	}
 }
@@ -111,9 +110,7 @@ function TranslateWRTtoMTK(){
 }
 
 function doSave(){
-	var auth_mode = document.form.wl_auth_mode_x.value;
-	if(document.form.wl_wpa_psk.value == "Please type network key")
-		document.form.wl_wpa_psk.value = "";
+	var auth_mode = document.form.wl_auth_mode_x.value;	
 	if(validForm()){
 		document.form.wps_config_state.value = "1";
 		if((auth_mode == "shared" || auth_mode == "wpa" || auth_mode == "wpa2" || auth_mode == "wpawpa2" || auth_mode == "radius" ||
@@ -151,26 +148,34 @@ function doSave(){
 }
 
 function validForm(){
-var auth_mode = document.form.wl_auth_mode_x.value;
-if(!validate_string_ssid(document.form.wl_ssid))
-return false;
-if(document.form.wl_wep_x.value != "0")
-if(!validate_wlphrase('WLANConfig11b', 'wl_phrase_x', document.form.wl_phrase_x))
-return false;
-if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){ //2008.08.04 lock modified
-if(!validate_psk(document.form.wl_wpa_psk))
-return false;
+	var auth_mode = document.form.wl_auth_mode_x.value;
+	if(!validate_string_ssid(document.form.wl_ssid))
+		return false;
+	if(document.form.wl_wep_x.value != "0")
+		if(!validate_wlphrase('WLANConfig11b', 'wl_phrase_x', document.form.wl_phrase_x))
+			return false;
+	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){ //2008.08.04 lock modified
+		if(!validate_psk(document.form.wl_wpa_psk))
+			return false;
+		//confirm common string combination     #JS_common_passwd#
+                var is_common_string = check_common_string(document.form.wl_wpa_psk.value, "wpa_key");
+                if(is_common_string){
+                        if(confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
+                                document.form.wl_wpa_psk.focus();
+                                document.form.wl_wpa_psk.select();
+                                return false;   
+                        }       
+                }
+	}
+	else if(auth_mode == "wpa" || auth_mode == "wpa2" || auth_mode == "wpawpa2"){
 
-}
-else if(auth_mode == "wpa" || auth_mode == "wpa2" || auth_mode == "wpawpa2"){
-
-}
-else{
-var cur_wep_key = eval('document.form.wl_key'+document.form.wl_key.value);
-if(auth_mode != "radius" && !validate_wlkey(cur_wep_key))
-return false;
-}
-return true;
+	}
+	else{
+		var cur_wep_key = eval('document.form.wl_key'+document.form.wl_key.value);
+		if(auth_mode != "radius" && !validate_wlkey(cur_wep_key))
+			return false;
+	}
+	return true;
 }
 
 function change_key_des(){
@@ -248,6 +253,10 @@ function doLoad(){
 	wl_auth_mode_change(1);
 	check_state();
 	automode_hint();
+
+	document.getElementById("MAC").innerHTML = document.getElementById("MAC").innerHTML.toString().toUpperCase();
+	document.getElementById("BandMAC").innerHTML = document.getElementById("BandMAC").innerHTML.toString().toUpperCase();
+
 	if(band5g_support != -1){
 		document.getElementById("t0").style.display = "";
 		document.getElementById("t1").style.display = "";
@@ -261,20 +270,15 @@ function doLoad(){
 	document.getElementById("t1").className = <% tcWebApi_get("WLan_Common","wl_unit","s"); %> ? "tabclick_NW" : "tab_NW";
 }
 
-function clean_input(obj){
-	if(obj.value == "Please type network key")
-			obj.value = "";
-}
-
 </script>
 </head>
 <body class="statusbody" onLoad="doLoad()">
-<iframe name="hidden_frame2" id="hidden_frame2" width="0" height="0" frameborder="0"></iframe>
-<form method="post" name="form_band" action="/cgi-bin/device-map/router.asp" target="hidden_frame2">
+<iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
+<form method="post" name="form_band" action="/cgi-bin/device-map/router.asp" target="hidden_frame">
 <input type="hidden" name="wl_unit">
 <input type="hidden" name="editFlag" value="0">
 </form>
-<FORM METHOD="POST" ACTION="/cgi-bin/device-map/router.asp" name="form" target="hidden_frame2">
+<FORM METHOD="POST" ACTION="/cgi-bin/device-map/router.asp" name="form" target="hidden_frame">
 <input type="hidden" name="productid" value="<% tcWebApi_staticGet("SysInfo_Entry","ProductName","s") %>">
 <input type="hidden" name="wan_route_x" value="">
 <input type="hidden" name="wan_nat_x" value="1">
@@ -381,7 +385,7 @@ function clean_input(obj){
 <tr>
 <td style="padding:5px 10px 0px 10px; *padding:1px 10px 0px 10px;">
 <p class="formfonttitle_nwm" ><%tcWebApi_get("String_Entry","WPA-PSKKey","s")%></p>
-	<input type="text" name="wl_wpa_psk" maxlength="65" class="input_20_table" value="<% If tcWebApi_get("WLan_Entry","wpa_psk","h") <> "" then  tcWebApi_get("WLan_Entry","wpa_psk","s") else asp_Write("Please type network key") end if %>" onClick="clean_input(this)">
+	<input type="password" name="wl_wpa_psk" maxlength="65" class="input_20_table" value="<% If tcWebApi_get("WLan_Entry","wpa_psk","h") <> "" then tcWebApi_get("WLan_Entry","wpa_psk","s") end if %>" onBlur="switchType(this, false);" onFocus="switchType(this, true);">
 <img style="margin-top:5px; *margin-top:-10px;"src="/images/New_ui/networkmap/linetwo2.png">
 </td>
 </tr>
@@ -503,7 +507,7 @@ function clean_input(obj){
 	}
 </script>
 </p>
-<p style="padding-left:10px; margin-top:3px; *margin-top:-5px; margin-right:10px; background-color:#444f53; line-height:20px;" id="PINCode">
+<p style="padding-left:10px; margin-top:3px; *margin-top:-5px; margin-right:10px; background-color:#444f53; line-height:20px;" id="BandMAC">
 <script>
 	if("<% tcWebApi_get("WLan_Common","wl_unit","s"); %>" == "1")
 		document.write("<% tcWebApi_get("WLan_Common", "wl1_MacAddress", "s") %>");

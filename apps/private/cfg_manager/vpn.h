@@ -21,6 +21,8 @@ int vpnc_write(mxml_node_t *top, mxml_node_t *parant);
 
 #ifdef RTCONFIG_OPENVPN
 int openvpn_init(void);
+int openvpn_write(mxml_node_t *top, mxml_node_t *parant);
+int openvpn_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
 #endif
 
 #endif

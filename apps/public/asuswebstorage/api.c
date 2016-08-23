@@ -51,7 +51,8 @@ typedef struct server_capacity_tag
 
 server_capacity pre_cap;
 
-char *sid = "50001";
+char *sid = "83379331"; //2015.05.22 update 50001 -> 83379331
+char *VERSION = "1.0.0.4";
 Servicegateway sergate;
 extern Aaa aaa;
 extern char username[256];
@@ -88,6 +89,10 @@ extern int IsSyncError;
 extern char token_filename[256];
 extern char record_token_file[256];
 extern int no_completed;
+extern int pre_seq;
+extern Hb_SubNode *SyncNode;
+extern my_mutex_t wait_server_mutex;
+extern api_count_s api_count;
 
 typedef struct cmp_item
 {
@@ -1946,6 +1951,74 @@ int sendBrowseRequest(char *filename,char *url,char *postdata,char *cookie,
       return res;
 }
 
+void print_count_call_api()
+{
+    printf("**************\n");
+    printf("print count call api start\n");
+    printf("requestservicegateway=%d\n",api_count.requestservicegateway);
+    printf("acquiretoken=%d\n",api_count.acquiretoken);
+    printf("getinfo=%d\n",api_count.getinfo);
+    printf("getmysyncfolder=%d\n",api_count.getmysyncfolder);
+    printf("getpersonalsystemfolder=%d\n",api_count.getpersonalsystemfolder);
+    printf("getuserstate=%d\n",api_count.getuserstate);
+    printf("browse=%d\n",api_count.browse);
+    printf("profind=%d\n",api_count.propfind);
+    printf("create=%d\n",api_count.create);
+    printf("rename=%d\n",api_count.rename);
+    printf("remove=%d\n",api_count.remove);
+    printf("move=%d\n",api_count.move);
+    printf("getentryinfo=%d\n",api_count.getentryinfo);
+    printf("getchangeseq=%d\n",api_count.getchangeseq);
+    printf("initbinaryupload=%d\n",api_count.initbinaryupload);
+    printf("resumebinaryupload=%d\n",api_count.resumebinaryupload);
+    printf("finishbinaryupload=%d\n",api_count.finishbinaryupload);
+    printf("directdownload=%d\n",api_count.directdownload);
+    printf("**************\n");
+}
+
+int count_call_api(const char *url)
+{
+    if(strstr(url,"requestservicegateway"))
+        api_count.requestservicegateway++;
+    else if(strstr(url,"acquiretoken"))
+        api_count.acquiretoken++;
+    else if(strstr(url,"getinfo"))
+        api_count.getinfo++;
+    else if(strstr(url,"getmysyncfolder"))
+        api_count.getmysyncfolder++;
+    else if(strstr(url,"getpersonalsystemfolder"))
+        api_count.getpersonalsystemfolder++;
+    else if(strstr(url,"getuserstate"))
+        api_count.getuserstate++;
+    else if(strstr(url,"browse"))
+        api_count.browse++;
+    else if(strstr(url,"propfind"))
+        api_count.propfind++;
+    else if(strstr(url,"create"))
+        api_count.create++;
+    else if(strstr(url,"rename"))
+        api_count.rename++;
+    else if(strstr(url,"remove"))
+        api_count.remove++;
+    else if(strstr(url,"move"))
+        api_count.move++;
+    else if(strstr(url,"getentryinfo"))
+        api_count.getentryinfo++;
+    else if(strstr(url,"getchangeseq"))
+        api_count.getchangeseq++;
+    else if(strstr(url,"initbinaryupload"))
+        api_count.initbinaryupload++;
+    else if(strstr(url,"resumebinaryupload"))
+        api_count.resumebinaryupload++;
+    else if(strstr(url,"finishbinaryupload"))
+        api_count.finishbinaryupload++;
+    else if(strstr(url,"directdownload"))
+        api_count.directdownload++;
+
+    return 0;
+}
+
+
 
 int sendRequest(char *filename,char *url,char *postdata,char *cookie,char *header)
 {
@@ -1979,7 +2052,7 @@ int sendRequest(char *filename,char *url,char *postdata,char *cookie,char *heade
     }
     else
     {
-        snprintf(cookies,NORMALSIZE,"OMNISTORE_VER=1_0; path=/;sid=%s;",sid);
+        snprintf(cookies,NORMALSIZE,"OMNISTORE_VER=1_0; path=/;sid=%s;v=%s",sid,VERSION);
         curl_easy_setopt(curl,CURLOPT_COOKIE,cookies);
     }
 
@@ -2006,6 +2079,8 @@ int sendRequest(char *filename,char *url,char *postdata,char *cookie,char *heade
     {
         printf("error message is %s \n",err_message);
     }
+	 else
+        count_call_api(url);
 
     if(header)
         curl_slist_free_all(headers);
@@ -2024,7 +2099,9 @@ int getServiceGateway(char *username, char *password,Servicegateway *sg)
     memset(sg,0,sizeof(Servicegateway));
 
     //char *url = "https://sp.yostore.net/member/requestservicegateway/";
-    char *url = "https://portal.asuswebstorage.com/member/requestservicegateway/";
+    //char *url = "https://portal.asuswebstorage.com/member/requestservicegateway/";
+    char *url = "https://cloudsyncportal01.asuswebstorage.com/member/requestservicegateway/"; //20150602 magic changed
+
     char postdata[512];
 
     snprintf(postdata,512,"<requestservicegateway><userid>%s</userid><password>%s</password><language>zh_TW</language><service>1</service><time>2008/1/1</time></requestservicegateway>",username,password);
@@ -2098,7 +2175,7 @@ char *makeAuthorize()
     char *sha1_string = NULL;
 
     snprintf(header_signature_method,64,"%s","HMAC-SHA1");
-    snprintf(prekey,128,"%s","111C243AC3224439A5C619423B39F7AF");
+    snprintf(prekey,128,"%s","03805FDC4B594FDEA89183D2ADA82586"); //2015.5.22 111C243AC3224439A5C619423B39F7AF -> 03805FDC4B594FDEA89183D2ADA82586
 
     sec = time((time_t *)NULL);
     snprintf(header_timestamp,64,"%lu",sec);
@@ -2872,6 +2949,37 @@ int get_max_upload_filesize(char *username)
     return filesize;
 }
 
+int record_folder_id(Browse *br,int pid)
+{
+    int i,folderid;
+    Changeseq *cs = NULL;
+
+    if(pre_seq > 0)
+        return 0;
+
+    for(i=0;i<br->foldernumber;i++)
+    {
+       folderid = br->folderlist[i]->id;
+       printf("folderid=%d\n",folderid);
+       while( (cs = getChangeSeq(folderid)) == NULL)
+       {
+           enter_sleep_time(5,&wait_server_mutex);
+       }
+       if(cs->status != 0)
+       {
+          handle_error(cs->status,"get changeseq in record_folder_id");
+          my_free(cs);
+          return -1;
+       }
+       else
+       {
+            insert_node(pid,folderid,cs->changeseq);
+            my_free(cs);
+       }
+    }
+    return 0;
+}
+
 Browse *browseFolder(char *username,int id,int issibiling,int pageno)
 {
     int status;
@@ -2909,6 +3017,12 @@ Browse *browseFolder(char *username,int id,int issibiling,int pageno)
           my_free(browse);
           return NULL;
       }
+		 else
+    {
+        if(!upload_only)
+            record_folder_id(browse,id);
+        return browse;
+    }
 
       return browse;
 }
@@ -3037,9 +3151,24 @@ Createfolder *createFolder(char *username,int parentID,int isencrpted,char *name
         return NULL;
 
     }
-
-    del_sync_item("create_folder_fail",name,up_excep_fail);
-    return cf;
+    else
+    {
+        del_sync_item("create_folder_fail",name,up_excep_fail);
+        if(cf->status == 0)
+        {
+            Changeseq *cs = NULL;
+            int seq = 0;
+            while( (cs = getChangeSeq(cf->id)) == NULL)
+            {
+               enter_sleep_time(5,&wait_server_mutex);
+            }
+            if(cs->status == 0)
+                seq = cs->changeseq;
+            my_free(cs);
+            insert_node(parentID,cf->id,seq);
+        }
+        return cf;
+    }
 }
 
 Operateentry *renameEntry(char *username,int id,int isencrpted,char *newname,int isfolder)
@@ -3102,7 +3231,7 @@ Operateentry *renameEntry(char *username,int id,int isencrpted,char *newname,int
     return oe;
 }
 
-Moveentry *moveEntry(char *username,int id,char *name,int parentID,int isfolder)
+Moveentry *moveEntry(char *username,int id,char *name,int parentID,int isfolder,int pre_pid)
 {
     int status;
     char url[NORMALSIZE];
@@ -3168,11 +3297,17 @@ Moveentry *moveEntry(char *username,int id,char *name,int parentID,int isfolder)
         my_free(me);
         return NULL;
     }
-
-    return me;
+    else
+    {
+        if(isfolder)
+        {
+            move_node(pre_pid,id,parentID);
+        }
+        return me;
+    }
 }
 
-Operateentry *removeEntry(char *username,int id,int ischildonly,int isfolder)
+Operateentry *removeEntry(char *username,int id,int ischildonly,int isfolder,int pid)
 {
     int status;
     char url[NORMALSIZE];
@@ -3220,8 +3355,12 @@ Operateentry *removeEntry(char *username,int id,int ischildonly,int isfolder)
         return NULL;
 
     }
-
-    return oe;
+    else
+    {
+        if(isfolder)
+            del_node(pid,id);
+        return oe;
+    }
 }
 
 int updateEntryAttribute(char *username,int id,int parentID,int isencrpted,int isfolder)
@@ -3809,7 +3948,7 @@ Resumebinaryupload *resumeBinaryUpload(char *filename, Initbinaryupload *ibu)
 
 
 #if 1
-    snprintf(cookies,NORMALSIZE,"OMNISTORE_VER=1_0; path=/;sid=%s;",sid);
+    snprintf(cookies,NORMALSIZE,"OMNISTORE_VER=1_0; path=/;sid=%s;v=%s",sid,VERSION);
     snprintf(url,NORMALSIZE,"https://%s/webrelay/resumebinaryupload/?tk=%s&tx=%s&dis=%s"
             ,aaa.webrelay,aaa.token,ibu->transid,sid);
 
@@ -3877,6 +4016,8 @@ Resumebinaryupload *resumeBinaryUpload(char *filename, Initbinaryupload *ibu)
         curl_easy_cleanup(curl);
         return NULL;
     }
+    else
+        count_call_api(url);
 
     curl_easy_cleanup(curl);
 
@@ -4716,7 +4857,7 @@ int downloadFile(int fileID,char *filename,long long int size,int ismodify,Filea
         return -1;
     }
 
-    snprintf(cookies,NORMALSIZE,"OMNISTORE_VER=1_0; path=/;sid=%s;",sid);
+    snprintf(cookies,NORMALSIZE,"OMNISTORE_VER=1_0; path=/;sid=%s;v=%s",sid,VERSION);
     snprintf(url,NORMALSIZE,"https://%s/webrelay/directdownload/?tk=%s&fi=%d&pv=0&u=&of=&rn=&dis=%s"
             ,aaa.webrelay,aaa.token,fileID,sid);
     curl = curl_easy_init();
@@ -4755,6 +4896,8 @@ int downloadFile(int fileID,char *filename,long long int size,int ismodify,Filea
         my_free(temp_name);
         return -1;
     }
+    else
+        count_call_api(url);
 
 
     fclose(fd);
@@ -6012,7 +6155,7 @@ int handle_move_fail_code(int status,char *path,char *fullname,int parentID,char
         res_value = upload_entry(fullname,parentID,path);
         break;
     case S_NAME_REPEAT:
-        oe = removeEntry(username,entryID,0,isfolder);
+        oe = removeEntry(username,entryID,0,isfolder,parentID);
         if(oe == NULL)
             return -1;
         my_free(oe);

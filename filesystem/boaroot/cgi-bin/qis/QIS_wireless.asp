@@ -14,9 +14,11 @@
 <script>
 var w_Setting = "<%tcWebApi_get("SysInfo_Entry","w_Setting","s")%>";
 
+var wl0_ssid_orig = decodeURIComponent('<% tcWebApi_staticGet("WLan_Entry","wl0_ssid","s") %>');
+var wl1_ssid_orig = decodeURIComponent('<% tcWebApi_staticGet("WLan_Entry","wl1_ssid","s") %>');
 function QKWireless_load_body(){
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_wireless_webtitle","s")%>";
-	//parent.set_step("t3");
+	parent.set_step("t3");
 
 	if(band5g_support == -1){
 		$("wl_unit_field_1").style.display = "none";
@@ -39,6 +41,15 @@ function submitForm(){
 		document.form.wl1_auth_mode_x.value = "WPA2PSK";
 		if(!validate_psk(document.form.wl1_wpa_psk))
 			return false;
+		//confirm common string combination     #JS_common_passwd#
+                var is_common_string = check_common_string(document.form.wl1_wpa_psk.value, "wpa_key");
+                if(is_common_string){
+                        if(confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
+                                document.form.wl1_wpa_psk.focus();
+                                document.form.wl1_wpa_psk.select();
+                                return false;   
+                        }       
+                }
 	}
 	else
 		document.form.wl1_auth_mode_x.value = "OPEN";
@@ -47,6 +58,15 @@ function submitForm(){
 		document.form.wl0_auth_mode_x.value = "WPA2PSK";
 		if(!validate_psk(document.form.wl0_wpa_psk))
 			return false;
+		//confirm common string combination     #JS_common_passwd#
+                var is_common_string = check_common_string(document.form.wl0_wpa_psk.value, "wpa_key");
+                if(is_common_string){
+                        if(confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
+                                document.form.wl0_wpa_psk.focus();
+                                document.form.wl0_wpa_psk.select();
+                                return false;   
+                        }       
+                }
 	}
 	else
 		document.form.wl0_auth_mode_x.value = "OPEN";
@@ -57,9 +77,10 @@ function submitForm(){
 
 function Sync_2ghz(band){
 	if(band == 2){
-		if(document.form.sync_with_2ghz.checked == true){
-			document.form.wl1_ssid.value = document.form.wl0_ssid.value;
+		if(document.form.sync_with_2ghz.checked == true){			
 			document.form.wl1_wpa_psk.value = document.form.wl0_wpa_psk.value;
+			if(document.form.wl0_ssid.value != wl0_ssid_orig)
+					document.form.wl1_ssid.value = document.form.wl0_ssid.value.substring(0,29) + "_5G";
 		}
 	}
 	else

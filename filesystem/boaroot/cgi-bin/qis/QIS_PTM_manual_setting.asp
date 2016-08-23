@@ -18,6 +18,7 @@ var ISP_List_IPTV = [<% nvram_dump("ISP_PTM_List_IPTV") %>];
 var ru_idx_start = 0;
 var x_Setting = "<%tcWebApi_get("SysInfo_Entry","x_Setting","s")%>";
 var w_Setting = "<%tcWebApi_get("SysInfo_Entry","w_Setting","s")%>";
+var dslx_ginp = "<%tcWebApi_get("Adsl_Entry","dslx_ginp","s")%>";
 
 function $(){
 	var elements = new Array();
@@ -142,7 +143,7 @@ function showNomoISPServiceByIdx(idx) {
 		}
 	}
 	code +="</select>";
-	code +="<span id='STBPortMsg'> Default IPTV STB Port - LAN Port 1</span>";
+	code +="<span id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>";	/* untranslated */
 
 	if(first_element != 0) {
 		$("Service_tr").style.display="";
@@ -206,7 +207,7 @@ function showRussiaISPServiceByIdx(c, idx){
 			}
 		}
 		code +="</select>";
-		code +="<span id='STBPortMsg'> Default IPTV STB Port - LAN Port 1</span>";
+		code +="<span id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>";	/* untranslated */
 		$("Service").innerHTML = code;
 		ChgSVC(sel_idx);
 	}
@@ -231,7 +232,7 @@ function showRussiaISPService(c, o){
 			}
 		}
 		code +="</select>";
-		code +="<span id='STBPortMsg'> Default IPTV STB Port - LAN Port 1</span>";
+		code +="<span id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>";	/* untranslated */
 		$("Service").innerHTML = code;
 		ChgSVC(sel_idx);
 	}
@@ -325,6 +326,8 @@ function ShowPVC(idx) {
 }
 function ChgSVC(idx) {
 	if(ISP_List[idx][13] != "") {	//iptv idx
+		if(idx == "153") //HiNet (PPPoE) & VDSL+MOD
+			document.getElementById("STBPortMsg").innerHTML = "Please connect the MOD(STB) to LAN Port 1";
 		showhide("STBPortMsg", 1);
 	}
 	else {
@@ -333,19 +336,21 @@ function ChgSVC(idx) {
 }
 
 function QIS_menual_setting_load_body() {
+	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","Manual_Setting_btn","s")%>";
+	parent.set_step("t2");
+	
 	hidePVCInfo(1);
 	if(country_code=="")
 		country_code = "default";
 	showCountryList(country_code);
 	showAllList(country_code);
 }
-function QKfinish_load_body(){
-	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","Manual_Setting_btn","s")%>";
-}
+
 function submit_page(){
 	setIptvNumPvc();
 	document.form.submit();
 }
+
 function btnNext() {
 	var connection_type = 0;
 	if(document.form.country.value=='default'){
@@ -392,6 +397,35 @@ function btnNext() {
 		document.form.dsltmp_cfg_iptv_rmvlan.value = ISP_List[isp_idx][11];
 		document.form.dsltmp_cfg_iptv_mr.value = ISP_List[isp_idx][12];
 		document.form.dsltmp_cfg_iptv_idx.value = ISP_List[isp_idx][13];
+	}
+
+	//Specific setting
+	if( dslx_ginp != "on" &&
+		(
+		document.form.country.value=='Australia'
+		|| document.form.country.value=='United Kingdom'
+		|| document.form.country.value=='Germany'
+		)
+	){
+		document.form.dsltmp_set_ginp.value = "1";	//flag
+		document.form.dsltmp_cfg_ginp.value = "on";
+	}
+	if( document.form.dsltmp_cfg_country.value=='Thailand'
+		&& document.form.dsltmp_cfg_ispname.value=='3BB 15M/1.5M'
+	){
+		document.form.dsltmp_cfg_th3bb.value = "1";	//flag
+		document.form.dsltmp_transfer_mode.value = "ATM";
+		document.form.dsltmp_cfg_modulation.value = "ADSL2+";
+		document.form.dsltmp_cfg_annex.value = "ANNEX M";
+		document.form.dsltmp_cfg_vpi.value = ISP_List[isp_idx][6];
+		document.form.dsltmp_cfg_vci.value = ISP_List[isp_idx][7];
+		document.form.dsltmp_cfg_encap.value = ISP_List[isp_idx][9];
+	}
+	if( document.form.country.value=='Germany'
+		&& document.form.dsltmp_cfg_vdslprofile.value == "0"
+	) {
+		document.form.dsltmp_cfg_de17a.value = "1";	//flag
+		document.form.dsltmp_cfg_vdslprofile.value = "1";
 	}
 
 	if (connection_type==0) //PPPoE
@@ -449,6 +483,19 @@ function submit_detect(){
 <input type="hidden" name="dsltmp_cfg_iptv_enable" value="0">
 <input type="hidden" name="dsltmp_transfer_mode" value="PTM">
 <input type="hidden" name="dsltmp_wanTypeOption" value="">
+<input type="hidden" name="dsltmp_set_ginp" value="<%tcWebApi_Get("GUITemp_Entry0","dsltmp_set_ginp","s")%>">
+<input type="hidden" name="dsltmp_dsl_restart" value="<%tcWebApi_Get("GUITemp_Entry0","dsltmp_dsl_restart","s")%>">
+<input type="hidden" name="dsltmp_restart_waittime" value=0>
+<input type="hidden" name="dsltmp_cfg_ginp" value="off">
+<input type="hidden" name="dsltmp_cfg_th3bb" value="">
+<input type="hidden" name="dsltmp_cfg_vpi" value="">
+<input type="hidden" name="dsltmp_cfg_vci" value="">
+<input type="hidden" name="dsltmp_cfg_encap" value="">
+<input type="hidden" name="dsltmp_cfg_modulation" value="">
+<input type="hidden" name="dsltmp_cfg_annex" value="">
+<input type="hidden" name="dsltmp_cfg_de17a" value="">
+<input type="hidden" name="dsltmp_cfg_vdslprofile" value="<%tcWebApi_Get("Adsl_Entry","vdsl_profile","s")%>">
+
 <div class="QISmain">
 <div class="formfonttitle" style="padding:6 0 0 10;">
 	<div>

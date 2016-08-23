@@ -184,9 +184,10 @@ _download_package(){
 	tcapi set Apps_Entry apps_download_file "$target"
 	tcapi set Apps_Entry apps_download_percent 0
 	wget -c $wget_options $pkg_server/$pkg_file -O $target &
+	sleep 1
 	wget_pid=`pidof wget`
 	if [ -z "$wget_pid" ] || [ $wget_pid -lt 1 ]; then
-		rm -rf $target
+	rm -rf $target
 		sync
 		tcapi set Apps_Entry apps_state_errmsg "app_upgrade.sh:There is no running wget!"
 		tcapi set Apps_Entry apps_state_error 6

@@ -4810,7 +4810,13 @@ endif
 ifeq ($(strip $(PROFILE)), dsl-n14u)
 	cp $(APP_PUBLIC_DIR)/tools/tcpdump $(FILESYSTEM_DIR)/userfs/bin
 endif
+ifeq ($(strip $(PROFILE)), dsl-n14u-b1)
+	cp $(APP_PUBLIC_DIR)/tools/tcpdump $(FILESYSTEM_DIR)/userfs/bin
+endif
 ifeq ($(strip $(PROFILE)), dsl-n12u-c1)
+	cp $(APP_PUBLIC_DIR)/tools/tcpdump $(FILESYSTEM_DIR)/userfs/bin
+endif
+ifeq ($(strip $(PROFILE)), dsl-n12u-d1)
 	cp $(APP_PUBLIC_DIR)/tools/tcpdump $(FILESYSTEM_DIR)/userfs/bin
 endif
 ifeq ($(strip $(PROFILE)), dsl-n12u-c1_dodo)
@@ -5234,6 +5240,8 @@ endif
 #copy webs_update.sh and webs_upgrade.sh
 	cp $(APP_PRIVATE_DIR)/etc_script/webs_update.sh $(FILESYSTEM_DIR)/usr/script/webs_update.sh
 	cp $(APP_PRIVATE_DIR)/etc_script/webs_upgrade.sh $(FILESYSTEM_DIR)/usr/script/webs_upgrade.sh
+#copy webs_upgrade2.sh for AiCloud live update
+	cp $(APP_PRIVATE_DIR)/etc_script/webs_upgrade2.sh $(FILESYSTEM_DIR)/usr/script/webs_upgrade2.sh
 
 #copy public.pem
 ifneq ("$(wildcard $(APP_CFG_MANAGER_DIR)/public.pem)","")
@@ -5321,8 +5329,14 @@ else
 ifeq ($(PROFILE),dsl-n12e-c1)
 	sed -i 's/ZVMODELVZ/'DSL-N12E_C1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
 else
+ifeq ($(PROFILE),dsl-n10-d1)
+	sed -i 's/ZVMODELVZ/'DSL-N10_D1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
+else
 ifeq ($(PROFILE),dsl-n12u-c1)
 	sed -i 's/ZVMODELVZ/'DSL-N12U_C1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
+else
+ifeq ($(PROFILE),dsl-n12u-d1)
+	sed -i 's/ZVMODELVZ/'DSL-N12U_D1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
 else
 ifeq ($(PROFILE),dsl-n55u-c1)
 	sed -i 's/ZVMODELVZ/'DSL-N55U_C1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
@@ -5372,8 +5386,14 @@ else
 ifeq ($(PROFILE),dsl-n12e-c1)
 	sed -i 's/ZVMODELVZ/'DSL-N12E_C1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
 else
+ifeq ($(PROFILE),dsl-n10-d1)
+	sed -i 's/ZVMODELVZ/'DSL-N10_D1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
+else
 ifeq ($(PROFILE),dsl-n12u-c1)
 	sed -i 's/ZVMODELVZ/'DSL-N12U_C1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
+else
+ifeq ($(PROFILE),dsl-n12u-d1)
+	sed -i 's/ZVMODELVZ/'DSL-N12U_D1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
 else
 ifeq ($(PROFILE),dsl-n55u-c1)
 	sed -i 's/ZVMODELVZ/'DSL-N55U_C1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
@@ -5416,6 +5436,32 @@ endif
 endif
 
 ifeq ($(strip $(PROFILE)),dsl-n12e-c1)
+	#Remove USB related GUI.
+	rm -rf $(FILESYSTEM_DIR)/boaroot/cgi-bin/cloud_*
+	rm -rf $(FILESYSTEM_DIR)/boaroot/cgi-bin/Advanced_AiDisk_*
+	rm -rf $(FILESYSTEM_DIR)/boaroot/cgi-bin/aidisk
+	rm -f $(FILESYSTEM_DIR)/boaroot/cgi-bin/APP_Installation.asp
+	rm -f $(FILESYSTEM_DIR)/boaroot/cgi-bin/PrinterServer.asp
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/cloudsync
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/New_ui/PrinterServer.png
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/New_ui/mediaserver.png
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/New_ui/server.png
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/New_ui/modem.png
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/New_ui/downloadmaster.png
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/New_ui/Aidisk.png
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/New_ui/printstatus.png
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/New_ui/USBdisk.png
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/New_ui/usbstatus.png
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/New_ui/aidisk
+	rm -rf $(FILESYSTEM_DIR)/boaroot/html/images/New_ui/USBExt
+
+	#Remove the PPTP and L2TP related GUI.
+	rm -f $(FILESYSTEM_DIR)/boaroot/cgi-bin/Advanced_PPTP_Content.asp
+	rm -f $(FILESYSTEM_DIR)/boaroot/cgi-bin/Advanced_PPTPAdvanced_Content.asp
+	rm -f $(FILESYSTEM_DIR)/boaroot/cgi-bin/Advanced_VPNStatus.asp
+endif
+
+ifeq ($(strip $(PROFILE)),dsl-n10-d1)
 	#Remove USB related GUI.
 	rm -rf $(FILESYSTEM_DIR)/boaroot/cgi-bin/cloud_*
 	rm -rf $(FILESYSTEM_DIR)/boaroot/cgi-bin/Advanced_AiDisk_*
@@ -5771,6 +5817,14 @@ endif
 endif
 
 	ln -s /var/log/currLogFile $(FILESYSTEM_DIR)/boaroot/html/syslog.xlog
+ifneq ($(strip $(TCSUPPORT_DSL_LINE_DIAGNOSTIC)),)
+	ln -sf /tmp/TCC.log.gz $(FILESYSTEM_DIR)/boaroot/html/TCC.log.gz
+	ln -sf /tmp/TCC.log.a.gz $(FILESYSTEM_DIR)/boaroot/html/TCC.log.a.gz
+	ln -sf /tmp/TCC.log.b.gz $(FILESYSTEM_DIR)/boaroot/html/TCC.log.b.gz
+	ln -sf /tmp/TCC.log.c.gz $(FILESYSTEM_DIR)/boaroot/html/TCC.log.c.gz
+	ln -sf /tmp/TCC.log.d.gz $(FILESYSTEM_DIR)/boaroot/html/TCC.log.d.gz
+	ln -sf /tmp/TCC.log.e.gz $(FILESYSTEM_DIR)/boaroot/html/TCC.log.e.gz
+endif
 # ifneq ($(strip $(TCSUPPORT_SYSLOG_ENHANCE)),)
 	# ln -s /var/log/currLogFile $(FILESYSTEM_DIR)/boaroot/html/syslog.xlog
 # else

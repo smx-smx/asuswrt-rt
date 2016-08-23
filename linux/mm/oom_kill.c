@@ -364,7 +364,7 @@ static int oom_kill_process(struct task_struct *p, unsigned long points,
 //when out of memory,no need to kill process
 	if(auto_kill_process_flag)
 	{
-	//	printk("\r\noom_kill_process:no need to kill process when out of memory and drop cache!");
+		printk("\r\noom_kill_process:no need to kill process when out of memory and drop cache!");
 		drop_pagecache();
 		return 0;
 	}

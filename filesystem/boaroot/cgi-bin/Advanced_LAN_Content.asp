@@ -33,11 +33,12 @@ End If
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <link rel="stylesheet" type="text/css" href="/other.css">
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script language="JavaScript" type="text/javascript" src="/general.js"></script>
+<script language="JavaScript" type="text/javascript" src="/popup.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
@@ -47,10 +48,21 @@ wannm_obj= '<%tcWebApi_staticGet("DeviceInfo_PVC","WanSubMask","s")%>';
 
 var origin_lan_ip = '<%If tcWebApi_get("Lan_Entry","IP","h") <> "" then tcWebApi_get("Lan_Entry","IP","s") end if%>';
 
-function initial(){
+function initial(){	
 	final_flag = 1; // for the function in general.js
 	show_menu();
+	showLANIPList();
 }
+
+function showLANIPList(){	
+	if(clientList.length == 0){
+		setTimeout(function() {
+			genClientList();			
+			showLANIPList();
+		}, 500);
+		return false;
+	}
+}	
 
 function applyRule(){
 	if(validForm()){
@@ -59,6 +71,7 @@ function applyRule(){
 		setTimeout("hideLoading();", 23000);
 		setTimeout("dr_advise();", 23000);
 		setTimeout("redirect();", 26000);
+		originData.onlinelist_cache = "";
 		document.uiViewLanForm.submit();
 	}
 }
@@ -207,15 +220,21 @@ function changed_DHCP_IP_pool(){
 	gap=256-Number(nm[i]);
 	subnet_set = 256/gap;
 	for(j=1;j<=subnet_set;j++){
-	if(post_lan_ipaddr < 1*gap && post_lan_ipaddr == 1){ //Viz add to avoid default (1st) LAN ip in DHCP pool (start)2011.11
-	pool_start=2;
-	pool_end=1*gap-2;
-	break; //Viz add to avoid default (1st) LAN ip in DHCP pool (end)2011.11
-	}else if(post_lan_ipaddr < j*gap){
-	pool_start=(j-1)*gap+1;
-	pool_end=j*gap-2;
-	break;
-	}
+		if(post_lan_ipaddr < j*gap && post_lan_ipaddr == (j-1)*gap+1){	//Viz add to avoid default (1st) LAN ip in DHCP pool
+			pool_start=(j-1)*gap+2;
+			pool_end=j*gap-2;
+			break;
+		}
+		else if(post_lan_ipaddr < j*gap && post_lan_ipaddr == j*gap-2){    //Viz add to avoid default (last) LAN ip in DHCP pool
+			pool_start=(j-1)*gap+1;
+			pool_end=j*gap-3;
+			break;
+		}
+		else if(post_lan_ipaddr < j*gap){
+			pool_start=(j-1)*gap+1;
+			pool_end=j*gap-2;
+			break;						
+		}
 	}
 	break;
 	}

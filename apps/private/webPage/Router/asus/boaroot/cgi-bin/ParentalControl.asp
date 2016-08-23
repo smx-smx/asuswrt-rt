@@ -355,6 +355,7 @@ function showLANIPList(){
     document.form.MULTIFILTER_ENABLE.value = MULTIFILTER_ENABLE;
     document.form.MULTIFILTER_MAC.value = MULTIFILTER_MAC;
     document.form.MULTIFILTER_DEVICENAME.value = MULTIFILTER_DEVICENAME;
+    MULTIFILTER_MACFILTER_DAYTIME = Add_split_symbol(MULTIFILTER_MACFILTER_DAYTIME);
     document.form.MULTIFILTER_MACFILTER_DAYTIME.value = MULTIFILTER_MACFILTER_DAYTIME;
     document.form.MULTIFILTER_LANTOWAN_ENABLE.value = MULTIFILTER_LANTOWAN_ENABLE;
 		document.form.MULTIFILTER_LANTOWAN_DESC.value = MULTIFILTER_LANTOWAN_DESC;
@@ -366,6 +367,20 @@ function showLANIPList(){
 		document.form.editFlag.value = "1" ;
 		setTimeout('test_delay_redirect("/cgi-bin/ParentalControl.asp");', restart_time*1000);
 	}
+
+	function Add_split_symbol(list){
+		var newlist=list;
+		if(list.length>500){
+			var split_counts = Math.floor(list.length/500);
+			for(var i=split_counts;i>0;i--){
+				newlist = newlist.splice(i*500,0,"#");
+			}
+			return newlist;
+		}
+		else
+			return list;
+	}
+
 	function test_delay_redirect(next_url){
 		document.form.action = next_url;
 		document.form.target = "_parent";
@@ -732,25 +747,8 @@ function showLANIPList(){
 
 <body onload="initial();" onunload="unload_body();">
     <div id="TopBanner"></div>
-
     <div id="Loading" class="popup_bg"></div>
-
-    <div id="ParentalCtrlHelp" class="popup_bg" style="display:none;visibility:visible;">
-        <table cellpadding="5" cellspacing="0" id="loadingBlock" class="loadingBlock" align="center" style="margin:auto;margin-top:50px;">
-            <tbody>
-                <tr>
-                    <td><object width="640" height="360">
-                        <div onclick="document.body.style.overflow=&#39;auto&#39;;document.getElementById(&#39;ParentalCtrlHelp&#39;).style.display=&#39;none&#39;;">
-                            <span style="float:right;margin-bottom:5px;"><img align="right" title="Back" src="/images/backprev.png" onmouseover="this.src=&#39;/images/backprevclick.png&#39;" onmouseout="this.src=&#39;/images/backprev.png&#39;"></span>
-                        </div><param name="movie" value="http://www.youtube.com/v/IbsuvSjG0xM&amp;feature=player_embedded&amp;version=3">
-                        <param name="allowFullScreen" value="true">
-                        <param name="allowScriptAccess" value="always">
-                        <embed src="http://www.youtube.com/v/IbsuvSjG0xM&amp;feature=player_embedded&amp;version=3" type="application/x-shockwave-flash" allowfullscreen="true" allowscriptaccess="always" width="640" height="360">
-                    </object></td>
-                </tr>
-            </tbody>
-        </table>
-    </div><iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
+    <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
 
     <form method="post" name="form" action="/cgi-bin/ParentalControl.asp" target="hidden_frame">
     <input type="hidden" name="productid" value="<% tcWebApi_staticGet("SysInfo_Entry","ProductName","s") %>">
@@ -818,9 +816,6 @@ function showLANIPList(){
 																	<li><%tcWebApi_get("String_Entry","ParentalCtrl_Desc2","s")%></li>
 																	<li><%tcWebApi_get("String_Entry","ParentalCtrl_Desc3","s")%></li>
 																	<li><%tcWebApi_get("String_Entry","ParentalCtrl_Desc4","s")%></li>
-																	<li>
-																		<a target="_blank" style="cursor:pointer;text-decoration: underline;" href="http://www.youtube.com/v/IbsuvSjG0xM"><% tcWebApi_Get("String_Entry", "Video_Link1", "s") %></a>
-																	</li>
                                                                 </ol>
 																<ol style="color:#FC0;margin:-5px 0px 3px -18px;*margin-left:18px;"><%tcWebApi_get("String_Entry","ParentalCtrl_default","s")%></ol>
 

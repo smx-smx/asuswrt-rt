@@ -155,10 +155,6 @@ function initial(){
 	else{
 		setTimeout("update_appstate();", 2000);
 	}
-
-	if(nodm_support == -1){
-		addOnlineHelp($("faq2"), ["ASUSWRT", "download", "associated"]);
-	}
 }
 
 function calHeight(_trNum){
@@ -966,13 +962,10 @@ function reloadAPP(){
 								<a id="faq" href="http://www.asus.com/support/FAQ/1009773/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master FAQ</a>
 							</li>
 							<li style="margin-top:10px;">
-								<a id="faq2" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master Tool FAQ</a>
+								<a id="faq2" href="http://www.asus.com/support/faq/114002/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master Tool FAQ</a>
 							</li>
 							<li style="margin-top:10px;">
 								<a id="DMUtilityLink" href="http://dlcdnet.asus.com/pub/ASUS/wireless/ASUSWRT/DM2_2040.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><% tcWebApi_Get("String_Entry", "DM_Download_Tool", "s") %></a>
-							</li>
-							<li style="margin-top:10px;">
-								<a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="http://www.youtube.com/v/Em6Hddyytlw"><% tcWebApi_Get("String_Entry", "Video_Link1", "s") %></a>
 							</li>
 						</ul>
 					</td>

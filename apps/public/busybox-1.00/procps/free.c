@@ -67,6 +67,16 @@ extern int free_main(int argc, char **argv)
 	printf("%6s%13s%13s%13s%13s%13s\n", "", "total", "used", "free",
 			"shared", "buffers");
 
+#if 0
+	if (info.totalram > 65536)	//64M
+	{
+		printf("%6s%13ld%13ld%13ld%13ld%13ld\n", "Mem:", 
+				((info.totalram/2)-2048),
+				info.totalram-info.freeram, info.freeram,
+				info.sharedram, info.bufferram);
+	}
+#endif
+
 	printf("%6s%13ld%13ld%13ld%13ld%13ld\n", "Mem:", info.totalram,
 			info.totalram-info.freeram, info.freeram,
 			info.sharedram, info.bufferram);

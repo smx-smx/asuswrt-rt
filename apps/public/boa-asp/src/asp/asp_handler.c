@@ -39,6 +39,10 @@
 
 #include "asp_handler.h"	//javi
 #include "../../../networkmap/networkmap.h"
+#include <libutils.h>
+#ifdef RTCONFIG_OPENVPN
+#include "openvpn_options.h"
+#endif
 
 char SystemCmd[128];
 
@@ -57,14 +61,18 @@ char SystemCmd[128];
 //it shows debug messages on console.
 void con_dbgprintf (const char * format, ...)
 {
-	FILE *dbg = fopen("/dev/console", "w");
-	if(dbg)
-	{
-		va_list args;
-		va_start (args, format);
-		vfprintf (dbg, format, args);
-		va_end (args);
-		fclose(dbg);
+	FILE *f;
+	int nfd;
+	va_list args;
+	/* Don't let /dev/console block */
+	if((nfd = open("/dev/console", O_WRONLY | O_NONBLOCK)) > 0){
+		if((f = fdopen(nfd, "w")) != NULL){
+			va_start(args, format);
+			vfprintf(f, format, args);
+			va_end(args);
+			fclose(f);
+		}
+		close(nfd);
 	}
 }
 
@@ -104,6 +112,8 @@ static void tcWebApi_MatchThenWrite (asp_reent* reent, const asp_text* params,  
 static void tcWebApi_clean_get (asp_reent* reent, const asp_text* params,  asp_text* ret);
 static void get_post_parameter (asp_reent* reent, const asp_text* params, asp_text* ret);
 
+static void _webs_clean_write(char* buf);
+
 //Sam
 #ifdef RTCONFIG_USB
 inline int ishex(int x);
@@ -132,6 +142,10 @@ static void modify_aidisk_account (asp_reent* reent, const asp_text* params, asp
 #ifdef RTCONFIG_CLOUDSYNC
 static void cloud_status (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void UI_cloud_status (asp_reent* reent, const asp_text* params, asp_text* ret);
+static void UI_cloud_dropbox_status (asp_reent* reent, const asp_text* params, asp_text* ret);
+static void UI_cloud_ftpclient_status (asp_reent* reent, const asp_text* params, asp_text* ret);
+static void UI_cloud_sambaclient_status (asp_reent* reent, const asp_text* params, asp_text* ret);
+static void UI_cloud_usbclient_status (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void UI_rs_status (asp_reent* reent, const asp_text* params, asp_text* ret);
 #endif
 static void ej_webdavInfo(asp_reent* reent, const asp_text* params, asp_text* ret);
@@ -146,6 +160,12 @@ static void do_swap(asp_reent* reent, const asp_text* params, asp_text* ret);
 #endif
 #ifdef RTCONFIG_OPENVPN
 static void vpn_server_get_parameter(asp_reent* reent, const asp_text* params, asp_text* ret);
+static void ej_vpn_crt_server(asp_reent* reent, const asp_text* params, asp_text* ret);
+static void ej_vpn_crt_client(asp_reent* reent, const asp_text* params, asp_text* ret);
+static void do_vpnupload_cgi(asp_reent* reent, const asp_text* params, asp_text* ret);
+static void _save_openvpn_client_cert();
+static void _save_openvpn_server_tls();
+static void _save_openvpn_server_static();
 #endif
 
 static void qis_do_dsl_iptv (asp_reent* reent, const asp_text* params, asp_text* ret);
@@ -179,6 +199,12 @@ static void get_client_list_cache(asp_reent* reent, const asp_text* params, asp_
 static void get_asus_dev_list(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2014/12/03
 static void get_cl_userdef_list(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2014/12/04
 static void get_static_dhcp_list(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2014/12/30
+static void dhcpLeaseMacList(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2015/08/11
+#ifdef ASUS_DISK_UTILITY
+static void disk_scan(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2015/07/23
+static void disk_scan_result(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2015/07/23
+#endif
+static int get_nat_vserver_table(char *wp);	//Andy Chiu, 2016/03/08
 
 static void load_parameters_to_generic(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void load_parameters_from_generic(asp_reent* reent, const asp_text* params, asp_text* ret);
@@ -215,6 +241,7 @@ static void show_error_msg(const char *const msg_num);
 static void ej_memory_usage(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void ej_cpu_usage(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void factory_telnet(asp_reent* reent, const asp_text* params, asp_text* ret);
+static void set_factory_mode(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2015/11/02
 #ifdef RTCONFIG_SPECTRUM
 static void ej_spectrum(asp_reent* reent, const asp_text* params, asp_text* ret);//Ren
 #endif
@@ -223,7 +250,9 @@ static void clean_error_msg();
 static char *get_msg_from_dict(char *lang, const char *const msg_name);
 void not_ej_initial_folder_var_file();
 int dump_file(char *wp, char *filename);
+int clean_dump_file(char *wp, char *filename);
 void sys_script(char *name);
+int gen_modemlog(void);
 
 #ifdef TCSUPPORT_SYSLOG_ENHANCE
 void logmessage(char *logheader, char *fmt, ...);
@@ -256,6 +285,9 @@ extern	int	getString(const char *pkey, char *value);
 extern	int	initandparserfile(void);
 extern	void	closefp(void);
 extern	int	islangChanged(void);
+#endif
+#ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
+static void stop_dsl_diag(asp_reent* reent, const asp_text* params, asp_text* ret);
 #endif
 
 #define MAX_IF_NUM 4
@@ -297,7 +329,7 @@ int asp_handler(request * req)
 	int ret, i;
 	char nodename[15], username[129];
 
-	memset(username, 0, sizeof(username));	
+	memset(username, 0, sizeof(username));
 	//fprintf(stderr,"%s mothed:%d %s \n",__FUNCTION__,req->method,req->pathname);
 	//tcdbg_printf("**req->pathname: %s\n", req->pathname);
 	for(i = 0 ; i < 1; i++){
@@ -327,7 +359,7 @@ int asp_handler(request * req)
 #if defined(TCSUPPORT_WEBSERVER_SSL)
 	temp_req = req;
 	dontDoAsp = 0;
-#endif 
+#endif
 	fd_out = req->fd;
 	if(http_header() == -1)
 	{
@@ -365,7 +397,7 @@ int asp_handler(request * req)
 #if defined(TCSUPPORT_WEB_SAVE)
 		if(flag_save == 1){
 			flag_save = 0;
-			
+
 			tcapi_save();
 		}
 #endif
@@ -607,6 +639,21 @@ static void TcWebApi_execute (asp_reent* reent, int id, const asp_text* params, 
 }
 #endif
 
+static void _webs_clean_write(char* buf)
+{
+	char *c;
+	char wp[256];
+
+	for (c = buf; *c; c++) {
+		if (isprint(*c) &&
+			*c != '"' && *c != '&' && *c != '<' && *c != '>'
+			)
+			websWrite(wp, "%c", *c);
+		else
+			websWrite(wp, "&#%d", *c);
+	}
+}
+
 /* should be called before disable_other_wan */
 static void
 set_dsl_restart_flag (asp_reent* reent, const asp_text* params,  asp_text* ret)
@@ -617,7 +664,7 @@ set_dsl_restart_flag (asp_reent* reent, const asp_text* params,  asp_text* ret)
 	int do_restart = 1;
 
 	if(wanVCFlag && !strcmp(wanVCFlag, "3")) // apply wan
-	{	
+	{
 		tcapi_get("Wan_Common", "TransMode", transmode);
 		current_wanmode = getTransferMode();
 
@@ -627,7 +674,7 @@ set_dsl_restart_flag (asp_reent* reent, const asp_text* params,  asp_text* ret)
 				if (!strncmp(transmode, "ATM", 3))
 					do_restart = 0;
 				break;
-				
+
 			case TMode_VDSL:
 				if (!strncmp(transmode, "PTM", 3))
 					do_restart = 0;
@@ -636,11 +683,11 @@ set_dsl_restart_flag (asp_reent* reent, const asp_text* params,  asp_text* ret)
 
 		if (do_restart)
 		{
-			tcapi_set("GUITemp_Entry0", "do_dsl_restart", "1");
+			tcapi_set("GUITemp_Entry0", "dsltmp_dsl_restart", "1");
 		}
 		else
 		{
-			tcapi_set("GUITemp_Entry0", "do_dsl_restart", "0");
+			tcapi_set("GUITemp_Entry0", "dsltmp_dsl_restart", "0");
 		}
 	}
 }
@@ -678,35 +725,244 @@ ej_should_wan_pvc_do_commit (asp_reent* reent, const asp_text* params,  asp_text
 static void
 ej_should_dsl_do_commit (asp_reent* reent, const asp_text* params,  asp_text* ret)
 {
-	char do_restart[8] = {0};
+	char dsltmp_dsl_restart[8] = {0};
 
 	ret->str = "0";
 	ret->len = 1;
 
-	tcapi_get("GUITemp_Entry0", "do_dsl_restart", do_restart);
+	tcapi_get("GUITemp_Entry0", "dsltmp_dsl_restart", dsltmp_dsl_restart);
 
-	if (atoi(do_restart) == 1)
+	if (atoi(dsltmp_dsl_restart) == 1)
 	{
 		ret->str = "1";
+	}
+}
+
+static void
+qis_dsl_early_restart  (asp_reent* reent, const asp_text* params,  asp_text* ret)
+{
+	char *dsltmp_transfer_mode = get_param(g_var_post, "dsltmp_transfer_mode");
+	char lineState[32] = {0};
+	char DSLMode[32] = {0};
+	int do_restart = 0;
+	int r_val = 0;
+
+	tcapi_get("Info_Adsl", "lineState", lineState);
+	tcapi_get("Wan_Common", "DSLMode", DSLMode);
+
+	//cprintf("\n\n\n *****dsltmp_transfer_mode(%s),lineState(%s), xDSLmode(%s)*****\n\n\n", 
+	//	dsltmp_transfer_mode, lineState, DSLMode);
+
+	//only change between ATM and PTM
+	if ((dsltmp_transfer_mode != NULL) && (!strcmp(lineState, "up")))
+	{
+		if ((!strcmp(dsltmp_transfer_mode, "ATM") && !strcmp(DSLMode, "VDSL")) ||
+			(!strcmp(dsltmp_transfer_mode, "PTM") && !strcmp(DSLMode, "ADSL")))
+		{
+			if (!strcmp(dsltmp_transfer_mode, "PTM"))
+				tcapi_set("Wan_Common","DSLMode","VDSL");
+			else
+				tcapi_set("Wan_Common","DSLMode","ADSL");
+			do_restart = 1;
+		}
+	}
+	//enable g.inp case
+	if(tcapi_match("GUITemp_Entry0", "dsltmp_set_ginp", "1")) {
+		do_restart = 1;
+		tcapi_set("GUITemp_Entry0", "dsltmp_set_ginp", "0");
+	}
+	//Thailand 3BB case
+	if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_th3bb", "1")) {
+		do_restart = 1;
+		tcapi_set("GUITemp_Entry0", "dsltmp_cfg_th3bb", "0");
+	}
+	//Germany VDSL profile case
+	if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_de17a", "1")) {
+		do_restart = 1;
+		tcapi_set("GUITemp_Entry0", "dsltmp_cfg_de17a", "0");
+	}
+
+	if (do_restart == 1)
+	{
+		tcapi_set("GUITemp_Entry0", "dsltmp_dsl_early_restart", "1");
+		r_val = tcapi_commit("Adsl_Entry");
+		cprintf("commit Adsl_Entry return %d\n", r_val);
+	}
+	else
+	{
+		tcapi_set("GUITemp_Entry0", "dsltmp_dsl_early_restart", "0");
 	}
 }
 
 extern void http_update_allowed_client(void);
 static void update_http_clientlist(asp_reent* reent, const asp_text* params,  asp_text* ret)
 {
-	http_update_allowed_client(); 
+	http_update_allowed_client();
+}
+
+
+static void get_wl_channel_skiplist_5g(asp_reent* reent, const asp_text* params,  asp_text* ret)
+{
+	skip_type_t skip_type = SKIP_TYPE_NONE;
+	channel_list_t channel;
+
+	char tmp[512];
+	char countryCode[4]= {0};
+	char Channel_str[256]= {0};
+	char ProductName[32]= {0};
+	char BootLoaderVer[16]= {0};
+	char *c_country = countryCode;
+	int useDFS = 0;
+
+	tcapi_get("SysInfo_Entry", "ProductName", ProductName);
+	tcapi_get("SysInfo_Entry", "BootLoaderVer", BootLoaderVer);
+	tcapi_get("WLan_Common", "wl1_CountryCode", countryCode);	//5G
+	
+	useDFS = check_SupportDFS(ProductName, BootLoaderVer);	
+
+	if (check_EnableDFSforAPAC(ProductName, BootLoaderVer) &&
+		!strcasecmp(countryCode, REGION_APAC))
+		c_country = REGION_EU;
+
+	//skip channel according to bandwitdh limit
+	if (!strcasecmp(c_country, REGION_EU))
+	{
+		//gen skip list for 20Mhz
+		if (useDFS)
+			skip_type |= SKIP_TYPE_WEATHER;
+
+		bzero(tmp, sizeof(tmp));
+		getChannelList_Skip(skip_type, &channel);
+		convert_Channel2str(&channel, ",", Channel_str, sizeof(Channel_str));
+		websWrite(tmp, "\"20\": [%s], ", Channel_str);
+
+		//gen skip list for 40Mhz
+		skip_type= SKIP_TYPE_CE_BW40;
+		if (useDFS)
+			skip_type |= SKIP_TYPE_WEATHER_BW4080;
+
+		bzero(tmp, sizeof(tmp));
+		getChannelList_Skip(skip_type, &channel);
+		convert_Channel2str(&channel, ",", Channel_str, sizeof(Channel_str));
+		websWrite(tmp, "\"40\": [%s], ", Channel_str);
+
+		//gen skip list for 80Mhz
+		skip_type = SKIP_TYPE_CE_BW80;
+		if (useDFS)
+			skip_type |= SKIP_TYPE_WEATHER_BW4080;
+
+		bzero(tmp, sizeof(tmp));
+		getChannelList_Skip(skip_type, &channel);
+		convert_Channel2str(&channel, ",", Channel_str, sizeof(Channel_str));
+		websWrite(tmp, "\"80\": [%s]", Channel_str);
+	}
+	else if (!strcasecmp(c_country, REGION_APAC) ||
+		!strcasecmp(c_country, REGION_AU))
+	{
+		skip_type = SKIP_TYPE_SGAU_BW4080;
+		websWrite(tmp, "\"20\": [%s], ", Channel_str);
+
+		bzero(tmp, sizeof(tmp));
+		getChannelList_Skip(skip_type, &channel);
+		convert_Channel2str(&channel, ",", Channel_str, sizeof(Channel_str));
+		websWrite(tmp, "\"40\": [%s], ", Channel_str);
+		websWrite(tmp, "\"80\": [%s]", Channel_str);
+	}
+}
+
+
+static void get_wl_channel_list_5g(asp_reent* reent, const asp_text* params,  asp_text* ret)
+{
+	char countryCode[4] ={0};
+	char bandwidth_str[4]={0};
+	skip_type_t skip_type = SKIP_TYPE_NONE;
+	int bandwidth = 0;
+
+	region_condition_t condition;
+	channel_list_t channel;
+	char Channel_str[256] ={0};
+	char ProductName[32] ={0};
+	char BootLoaderVer[16] ={0};
+	int wifi_region;
+	int useDFS = 0;
+
+	tcapi_get("WLan_Common", "wl1_CountryCode", countryCode);	//5G
+	tcapi_get("WLan_Common", "wl1_HT_BW", bandwidth_str);	//5G
+	bandwidth =  atoi(bandwidth_str);
+
+	//skip channel according to bandwitdh limit
+#if 0
+	if (!strcasecmp(countryCode, "CE"))
+	{
+		if (bandwidth == 2)	//40Mhz
+		{
+			skip_type = SKIP_TYPE_CE_BW40;
+		}
+		else if (bandwidth == 1 || bandwidth == 3)	//80Mhz
+		{
+			skip_type = SKIP_TYPE_CE_BW80;
+		}
+	}
+	else if (!strcasecmp(countryCode, "SG") ||
+		!strcasecmp(countryCode, "AU"))
+	{
+		if (bandwidth >= 1 && bandwidth <=3)	//40Mhz or 80 Mhz
+		{
+			skip_type = SKIP_TYPE_SGAU_BW4080;
+		}
+	}
+#endif
+
+	//get country region
+	tcapi_get("SysInfo_Entry", "ProductName", ProductName);
+	tcapi_get("SysInfo_Entry", "BootLoaderVer", BootLoaderVer);
+
+	/* Mark DFS check code, currently dose not show DFS channel in GUI */
+	useDFS = check_SupportDFS(ProductName, BootLoaderVer);	
+	condition.EnableDFSforAPAC = check_EnableDFSforAPAC(ProductName, BootLoaderVer);
+	condition.UseCEforAPAC = check_UseCEforAPAC(ProductName);
+	condition.SupportDFS = useDFS;
+	
+	wifi_region = getCountryRegion5G(countryCode, &condition);
+
+	if (useDFS)
+		skip_type |= SKIP_TYPE_WEATHER;
+
+	getChannelList5G(wifi_region, &channel, skip_type);
+	convert_Channel2str(&channel, ",", Channel_str, sizeof(Channel_str));
+	ret->str = Channel_str;
+	ret->len = strlen(Channel_str);
+
+	asp_send_response (NULL, ret->str, ret->len);
 }
 
 static void
-set_dsl_apply_flag (asp_reent* reent, const asp_text* params,  asp_text* ret)
+ej_support_dfs (asp_reent* reent, const asp_text* params,  asp_text* ret)
 {
-	char *isApplyDSLSetting = get_param(g_var_post, "isApplyDSLSetting");
+	char ProductName[32];
+	char BootLoaderVer[16];
+	char CountryCode[8];
 
-	if(isApplyDSLSetting && !strcmp(isApplyDSLSetting, "1")) // apply DSL Setting page
+	ret->str = "0";
+	ret->len = 1;
+
+	bzero(ProductName, sizeof(ProductName));
+	bzero(BootLoaderVer, sizeof(BootLoaderVer));
+	bzero(CountryCode, sizeof(CountryCode));
+
+	//get country region
+	tcapi_get("SysInfo_Entry", "ProductName", ProductName);
+	tcapi_get("SysInfo_Entry", "BootLoaderVer", BootLoaderVer);
+	tcapi_get("WLan_Common", "CountryCode", CountryCode);	//only 5G support DFS
+
+	if (check_SupportDFS_by_Region(ProductName, BootLoaderVer, CountryCode) == 1)
 	{
-		tcapi_set("GUITemp_Entry0", "isApplyDSLSetting", "1");
+		ret->str = "1";
 	}
+
+	asp_send_response (NULL, ret->str, ret->len);
 }
+
 
 void init_asp_funcs(void)
 {
@@ -753,6 +1009,10 @@ void init_asp_funcs(void)
 #ifdef RTCONFIG_CLOUDSYNC
 	append_asp_func("cloud_status", cloud_status);
 	append_asp_func("UI_cloud_status", UI_cloud_status);
+	append_asp_func("UI_cloud_dropbox_status", UI_cloud_dropbox_status);
+	append_asp_func("UI_cloud_ftpclient_status", UI_cloud_ftpclient_status);
+	append_asp_func("UI_cloud_sambaclient_status", UI_cloud_sambaclient_status);
+	append_asp_func("UI_cloud_usbclient_status", UI_cloud_usbclient_status);
 	append_asp_func("UI_rs_status", UI_rs_status);
 #endif
 	append_asp_func("getWebdavInfo", ej_webdavInfo);
@@ -769,6 +1029,9 @@ void init_asp_funcs(void)
 #endif
 #ifdef RTCONFIG_OPENVPN
 	append_asp_func("vpn_server_get_parameter", vpn_server_get_parameter);
+	append_asp_func("vpn_crt_server", ej_vpn_crt_server);
+	append_asp_func("vpn_crt_client", ej_vpn_crt_client);
+	append_asp_func("vpnupload_cgi", do_vpnupload_cgi);
 #endif
 	append_asp_func("qis_do_dsl_iptv", qis_do_dsl_iptv);
 	append_asp_func("do_apply_cgi", do_apply_cgi);
@@ -794,7 +1057,7 @@ void init_asp_funcs(void)
 	append_asp_func ("get_DSL_WAN_list", get_DSL_WAN_list);
 	append_asp_func("WOL_Invoke", WOL_Invoke);  //Andy Chiu add 2014/10/13
 	append_asp_func("ClientList_Refresh", ClientList_Refresh);	//Andy Chiu
-	append_asp_func("ClientList_Update", ClientList_Update);	//Andy Chiu	
+	append_asp_func("ClientList_Update", ClientList_Update);	//Andy Chiu
 	append_asp_func("set_primary_pvc", set_primary_pvc);
 	append_asp_func("wl_sta_list_2g", wl_sta_list_2g);	//Andy Chiu, 2014/12/02
 	append_asp_func("wl_sta_list_5g", wl_sta_list_5g);	//Andy Chiu, 2014/12/02
@@ -802,8 +1065,12 @@ void init_asp_funcs(void)
 	append_asp_func("get_client_list_cache", get_client_list_cache);	//Andy Chiu, 2015/03/26
 	append_asp_func("get_asus_dev_list", get_asus_dev_list);	//Andy Chiu, 2014/12/03
 	append_asp_func("get_cl_userdef_list", get_cl_userdef_list);	//Andy Chiu, 2014/12/04
-	append_asp_func("get_static_dhcp_list", get_static_dhcp_list);	//Andy Chiu, 2014/12/30	
-
+	append_asp_func("get_static_dhcp_list", get_static_dhcp_list);	//Andy Chiu, 2014/12/30
+	append_asp_func("dhcpLeaseMacList", dhcpLeaseMacList);	//Andy Chiu, 2015/08/11	
+#ifdef ASUS_DISK_UTILITY
+	append_asp_func("disk_scan", disk_scan);	//Andy Chiu, 2015/07/22
+	append_asp_func("disk_scan_result", disk_scan_result);	//Andy Chiu, 2015/07/23
+#endif	
 	append_asp_func ("load_parameters_to_generic", load_parameters_to_generic);
 	append_asp_func ("load_parameters_from_generic", load_parameters_from_generic);
 	append_asp_func ("load_MBSSID_parameters_to_generic", load_MBSSID_parameters_to_generic);
@@ -827,10 +1094,12 @@ void init_asp_funcs(void)
 	append_asp_func ("memory_usage", ej_memory_usage); //Ren
 	append_asp_func ("cpu_usage", ej_cpu_usage); //Ren
 	append_asp_func ("factory_telnet", factory_telnet); //Ren
+	append_asp_func ("set_factory_mode", set_factory_mode);	//Andy Chiu, 2015/11/02
 #ifdef RTCONFIG_SPECTRUM
 	append_asp_func ("spectrum", ej_spectrum); //Ren
 #endif
 	append_asp_func ("check_acpw", ej_check_acpw); //Ren
+	append_asp_func ("gen_modemlog", gen_modemlog);
 
 #if defined(TCSUPPORT_IMPROVE_GUI_PERFM)
     append_asp_func ("tcWebApi_constSet", tcWebApi_constSet);
@@ -843,7 +1112,13 @@ void init_asp_funcs(void)
     append_asp_func ("set_dsl_restart_flag", set_dsl_restart_flag);
     append_asp_func ("should_dsl_do_commit", ej_should_dsl_do_commit);
     append_asp_func ("update_http_clientlist", update_http_clientlist);
-    append_asp_func ("set_dsl_apply_flag", set_dsl_apply_flag);
+    append_asp_func ("get_wl_channel_list_5g", get_wl_channel_list_5g);
+    append_asp_func ("get_wl_channel_skiplist_5g", get_wl_channel_skiplist_5g);
+    append_asp_func ("qis_dsl_early_restart", qis_dsl_early_restart);
+    append_asp_func ("support_dfs", ej_support_dfs);
+#endif
+#ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
+    append_asp_func ("stop_dsl_diag", stop_dsl_diag);
 #endif
 }
 
@@ -922,14 +1197,14 @@ loop_write:
 	wait_fd (fd_out);
 #if  defined(TCSUPPORT_WEBSERVER_SSL)
 	if(temp_req->ssl == NULL)
-#endif 
+#endif
 	{
 	res = write(fd_out,buffer,len);
 	}
 #if defined(TCSUPPORT_WEBSERVER_SSL)
 	else{
 		if(len <=0)
-			return 0; 
+			return 0;
 		res = boa_sslWrite(temp_req->ssl, buffer,len);
 		if(res<0)
 		{
@@ -1084,7 +1359,18 @@ tcWebApi_Set (asp_reent* reent, const asp_text* params,  asp_text* ret)
 	cprintf("set %s: %s=%s\n", node, attr, v_tmp);
 	if(v_tmp != NULL){
 		decode_uri(v_tmp);
-		r_val=tcapi_set(node, attr,v_tmp);
+		if(!strcmp(value, "pptpd_clientlist")
+			|| !strcmp(value, "pptpd_sr_rulelist")
+			|| !strcmp(value, "vpnc_clientlist")
+			|| !strcmp(value, "qos_rulelist")
+			|| !strcmp(value, "qos_bw_rulelist")
+			|| !strcmp(value, "MULTIFILTER_MACFILTER_DAYTIME")
+		) {
+			r_val = tcapi_set_list(value, v_tmp);
+		}
+		else {
+			r_val=tcapi_set(node, attr,v_tmp);
+		}
 	}
 	else{//If the value is not the name of an attribute, regard it as the value to be assigned
 		while(strlen(directSet[i]))
@@ -1196,7 +1482,7 @@ load_parameters_from_generic(asp_reent* reent, const asp_text* params, asp_text*
 }
 
 
-void 
+void
 load_MBSSID_parameters_to_generic(asp_reent* reent, const asp_text* params, asp_text* ret) {	//javi
 	struct tcapi_tuple *t;
 	char buf[160], freq[2], sub_unit[4], prefix[32], name[64];
@@ -1225,7 +1511,7 @@ load_MBSSID_parameters_to_generic(asp_reent* reent, const asp_text* params, asp_
 	}
 
 	if(! strcmp(sub_unit, "-1")){
-		//wait to 
+		//wait to
 	}
 	else{
 		sprintf(prefix, "wl%s.%s_", freq, sub_unit);
@@ -1244,7 +1530,7 @@ load_MBSSID_parameters_to_generic(asp_reent* reent, const asp_text* params, asp_
 	}
 }
 
-void 
+void
 load_MBSSID_parameters_from_generic(asp_reent* reent, const asp_text* params, asp_text* ret) {	//javi
 	struct tcapi_tuple *t;
 	char buf[160], freq[2], sub_unit[4], prefix[32], name[64];
@@ -1253,7 +1539,7 @@ load_MBSSID_parameters_from_generic(asp_reent* reent, const asp_text* params, as
 	memset(freq, 0, sizeof(freq));
 	tcapi_get("WLan_Common", "wl_unit", freq);
 	tcapi_get("WLan_Common", "wl_subunit", sub_unit);
-	sprintf(prefix, "wl%s.%s_", freq, sub_unit);	
+	sprintf(prefix, "wl%s.%s_", freq, sub_unit);
 
 	for (t = wlan_MBSSID_system_defaults; t->node; t++)
 	{
@@ -1329,7 +1615,7 @@ rfctime(const time_t *timep)
 	static char rfct[201];
 	struct tm tm;
 	char tmp[32], cmd[64];
-	
+
 	memset(rfct, 0, sizeof(rfct));
 	memset(tmp, 0, sizeof(tmp));
 	//it suppose to be convert after applying
@@ -1388,7 +1674,7 @@ void ej_uptime(asp_reent* reent, const asp_text* params, asp_text* ret) {
 	asp_send_response (NULL,buf,strlen(buf));
 }
 
-void 
+void
 wl_get_2G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) {
 	struct tcapi_tuple *t;
 	char word1[128], tmp[128];
@@ -1398,7 +1684,7 @@ wl_get_2G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	int i = 1, j = 0;
 	int str_length=0;
 	char ascii_tmp[256];
-	
+
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "[");
 
@@ -1408,7 +1694,7 @@ wl_get_2G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	for(i = 1; i < MAX_NO_MSSID;i++)	{
 		sprintf(tmp, "wl%d.%d", unit, i);
 		if(i > 1)
-			strcat(word1, " ");	
+			strcat(word1, " ");
 		strcat(word1, tmp);
 	}
 	snprintf(unitprefix, sizeof(unitprefix), "wl%d_", unit);
@@ -1417,7 +1703,7 @@ wl_get_2G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	//set wlX_vifnames .E
 
 	for(i = 1; i < MAX_NO_MSSID;i++)	{
-		if(i > 1) 
+		if(i > 1)
 			strcat(buf, ", ");
 
 		strcat(buf, "[\"");
@@ -1426,7 +1712,7 @@ wl_get_2G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 		for (t = wlan_MBSSID_system_defaults; t->node; t++)
 		{
 			if(j)
-				strcat(buf, "\", \"");				
+				strcat(buf, "\", \"");
 			j++;
 			memset(subunitprefix, 0, sizeof(subunitprefix));
 			sprintf(subunitprefix, "wl%d.%d_", unit, i);
@@ -1448,15 +1734,13 @@ wl_get_2G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 				/* each char expands to %XX at max */
 				str_length = strlen(tmp) * sizeof(char)*3 + sizeof(char);
 				char_all_to_ascii(ascii_tmp, tmp, str_length);
-				
+
 				strcat(buf, ascii_tmp);
 			}
 			else{
 				strcat(buf, tmp);
 			}
 
-			if(!strcmp(t->attribute, "expire_tmp"))	//expire_tmp is the last element of gn_array_2g() used by javi script
-				break;
 		}
 
 		strcat(buf, "\"]");
@@ -1464,11 +1748,13 @@ wl_get_2G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 
 	strcat(buf, "]");
 	asp_send_response (NULL,buf,strlen(buf));
-	//the example as the following:
-	// [["1", "ASUS_Guest1", "OPEN", "aes", "", "0", "1", "", "", "", "", "0", "off"], ["1", "ASUS_Guest2", "OPEN", "aes", "", "0", "1", "", "", "", "", "0", "off"], ["0", "ASUS_Guest3", "open", "aes", "", "0", "1", "", "", "", "", "0", "off"]]
+	/* The example as the following:
+	       [["0", "ASUS_Guest1", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]
+		["0", "ASUS_Guest2", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]
+		["0", "ASUS_Guest3", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]]  */
 }
 
-void 
+void
 wl_get_5G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) {
 	struct tcapi_tuple *t;
 	char word1[128], tmp[128];
@@ -1478,7 +1764,7 @@ wl_get_5G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	int i = 1, j = 0;
 	int str_length=0;
 	char ascii_tmp[256];
-	
+
 	memset(buf, 0, sizeof(buf));
 	sprintf(buf, "[");
 
@@ -1488,7 +1774,7 @@ wl_get_5G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	for(i = 1; i < MAX_NO_MSSID;i++)	{
 		sprintf(tmp, "wl%d.%d", unit, i);
 		if(i > 1)
-			strcat(word1, " ");	
+			strcat(word1, " ");
 		strcat(word1, tmp);
 	}
 	snprintf(unitprefix, sizeof(unitprefix), "wl%d_", unit);
@@ -1497,7 +1783,7 @@ wl_get_5G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	//set wlX_vifnames .E
 
 	for(i = 1; i < MAX_NO_MSSID;i++)	{
-		if(i > 1) 
+		if(i > 1)
 			strcat(buf, ", ");
 
 		strcat(buf, "[\"");
@@ -1506,7 +1792,7 @@ wl_get_5G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 		for (t = wlan_MBSSID_system_defaults; t->node; t++)
 		{
 			if(j)
-				strcat(buf, "\", \"");				
+				strcat(buf, "\", \"");
 			j++;
 			memset(subunitprefix, 0, sizeof(subunitprefix));
 			sprintf(subunitprefix, "wl%d.%d_", unit, i);
@@ -1528,15 +1814,13 @@ wl_get_5G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 				/* each char expands to %XX at max */
 				str_length = strlen(tmp) * sizeof(char)*3 + sizeof(char);
 				char_all_to_ascii(ascii_tmp, tmp, str_length);
-				
+
 				strcat(buf, ascii_tmp);
 			}
 			else{
 				strcat(buf, tmp);
 			}
 
-			if(!strcmp(t->attribute, "expire_tmp"))	//expire_tmp is the last element of gn_array_5g used by javi script
-				break;
 		}
 
 		strcat(buf, "\"]");
@@ -1544,8 +1828,10 @@ wl_get_5G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 
 	strcat(buf, "]");
 	asp_send_response (NULL,buf,strlen(buf));
-	//the example as the following:
-	// [["1", "ASUS_Guest1", "OPEN", "aes", "", "0", "1", "", "", "", "", "0", "off"], ["1", "ASUS_Guest2", "OPEN", "aes", "", "0", "1", "", "", "", "", "0", "off"], ["0", "ASUS_Guest3", "open", "aes", "", "0", "1", "", "", "", "", "0", "off"]]
+	/* The example as the following:
+		       [["0", "ASUS_5G_Guest1", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]
+			["0", "ASUS_5G_Guest2", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]
+			["0", "ASUS_5G_Guest3", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]]  */
 }
 
 void
@@ -1557,7 +1843,7 @@ auto_detection(asp_reent* reent, const asp_text* params, asp_text* ret) {
 	//return 0;
 }
 
-void 
+void
 wps_info(asp_reent* reent, const asp_text* params, asp_text* ret) {
 	char value[64], tmp[256], buf[1024];
 	char attri[64], prefix[8];
@@ -1663,7 +1949,7 @@ wps_info(asp_reent* reent, const asp_text* params, asp_text* ret) {
 	//return 0;
 }
 
-void 
+void
 wl_auth_list(asp_reent* reent, const asp_text* params, asp_text* ret) {
 	FILE* fp;
 	char buf[2056]={0};
@@ -1705,7 +1991,7 @@ int char_all_to_ascii(const char *output, const char *input, int outsize)
 	return dst - output;
 }
 
-void 
+void
 tcWebApi_char_to_ascii(asp_reent* reent, const asp_text* params, asp_text* ret) {
 	char *node,*attr,*show;
 	int r_val;
@@ -1713,7 +1999,7 @@ tcWebApi_char_to_ascii(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	static char val[1024];
 	char tmp[1024];
 	char *buf = tmp;
-	
+
 	node = (char*)asp_alloc(reent,params[0].len+1);
 	attr = (char*)asp_alloc(reent,params[1].len+1);
 	show = (char*)asp_alloc(reent,params[2].len+1);
@@ -1727,7 +2013,27 @@ tcWebApi_char_to_ascii(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	attr[params[1].len]='\0';
 	show[params[2].len]='\0';
 
-	r_val = tcapi_get(node, attr, val);
+	if(!strcmp(attr, "pptpd_clientlist")) {
+		r_val = tcapi_get_list(attr, val, sizeof(val));
+	}
+	else if(!strcmp(attr, "pptpd_sr_rulelist")) {
+		r_val = tcapi_get_list(attr, val, sizeof(val));
+	}
+	else if(!strcmp(node, "VPNC_Entry") && !strcmp(attr, "clientlist")) {
+		r_val = tcapi_get_list("vpnc_clientlist", val, sizeof(val));
+	}
+	else if(!strcmp(attr, "qos_rulelist")) {
+		r_val = tcapi_get_list(attr, val, sizeof(val));
+	}
+	else if(!strcmp(attr, "qos_bw_rulelist")) {
+		r_val = tcapi_get_list(attr, val, sizeof(val));
+	}
+	else if(!strcmp(attr, "MULTIFILTER_MACFILTER_DAYTIME")) {
+		r_val = tcapi_get_list(attr, val, sizeof(val));
+	}
+	else {
+		r_val = tcapi_get(node, attr, val);
+	}
 	if(r_val < 0){
 		strcpy(val,"");
 	}
@@ -1930,13 +2236,14 @@ void readATMData_MTK(void)
 				ATMData.tx = out;
 			}
 		}
-			
+
 		fclose(fp);
 	}
 	unlink("/tmp/atm_traffic");
 }
 
-void readPTMData_MTK(void)
+#if defined(TCSUPPORT_CPU_MT7510)
+void readPTMData_MTK_mt7510(void)
 {
 	FILE *fp = NULL;
 	char buf[256] = {0};
@@ -1960,15 +2267,47 @@ void readPTMData_MTK(void)
 				sscanf(buf, "%*[^=]= 0x%lx,%*[^=]= 0x%*x", &out);
 				PTMData[0].tx = out;
 			}
-
 		}
-		
+
+		fclose(fp);
+	}
+
+	unlink("/tmp/ptm_traffic");
+}
+#else
+void readPTMData_MTK(void)
+{
+	FILE *fp = NULL;
+	char buf[256] = {0};
+	unsigned long in;
+	unsigned long out;
+
+	system("cat /proc/tc3162/ptm_b0_stats > /tmp/ptm_traffic");
+
+	fp = fopen( "/tmp/ptm_traffic", "r" );
+	if (fp)
+	{
+		while (fgets(buf, sizeof(buf), fp))
+		{
+			if (!strncmp(buf, "inOctets", 8))
+			{
+				sscanf(buf, "%*[^=]= 0x%lx,%*[^=]= 0x%*x", &in);
+				PTMData[0].rx = in;
+			}
+			else if (strstr(buf, "outOctets"))
+			{
+				sscanf(buf, "%*[^=]= 0x%*x,%*[^=]= 0x%lx", &out);
+				PTMData[0].tx = out;
+			}
+		}
+
 		fclose(fp);
 	}
 
 	unlink("/tmp/ptm_traffic");
 }
 
+#endif
 
 #ifdef TCSUPPORT_WLAN_RT6856
 void readWiFiData_RT6856(void)
@@ -1981,7 +2320,7 @@ void readWiFiData_RT6856(void)
 	sprintf(cmd, "/userfs/bin/iwpriv show traffic > /dev/null" ); //must use its absolute path
 	system(cmd);
 	sleep(1);
-	
+
 	fp = fopen( "/tmp/wifi_traffic", "r" );
 	if( fp )
 	{
@@ -2008,7 +2347,7 @@ void readWiFiData_RT6856(void)
 					sscanf( ptr, "%llu%llu%llu%llu%llu", &Wireless5GData[0].tx, &Wireless5GData[1].tx, &Wireless5GData[2].tx, &Wireless5GData[3].tx, &Sum5GData.tx );
 			}
 		}
-		
+
 		fclose(fp);
 	}
 	else
@@ -2052,7 +2391,7 @@ static void parseWiFiData_MTK(netDev_t *data)
 				sscanf(buf, "%*[^=]= %llu", &(data->tx));
 			}
 		}
-			
+
 		fclose(fp);
 	}
 	unlink("/tmp/wifi_traffic");
@@ -2142,7 +2481,7 @@ void readWiredData_MTK_mt7510(void)
 			if (port_no >= 5)
 				break;
 		}
-			
+
 		fclose(fp);
 	}
 	unlink("/tmp/ether_switch_traffic");
@@ -2208,7 +2547,7 @@ void readWiredData_MTK(void)
 			if (port_no >= 5)
 				break;
 		}
-			
+
 		fclose(fp);
 	}
 	unlink("/tmp/ether_switch_traffic");
@@ -2251,7 +2590,7 @@ void readWiredData_RTK( void )
 		}
 		fclose(fp);
 	}
-	
+
 }
 
 void modifyTrafficData( void )
@@ -2262,8 +2601,6 @@ void modifyTrafficData( void )
 #endif
 
 #ifdef TCSUPPORT_WLAN_RT6856
-	WiredData.rx -= Sum2GData.rx - Sum5GData.rx;
-	WiredData.tx -= Sum2GData.tx - Sum5GData.tx;
 #else
 	Sum2GData.rx = Wireless2GData[0].rx + Wireless2GData[1].rx + Wireless2GData[2].rx + Wireless2GData[3].rx;
 	Sum2GData.tx = Wireless2GData[0].tx + Wireless2GData[1].tx + Wireless2GData[2].tx + Wireless2GData[3].tx;
@@ -2279,11 +2616,11 @@ static void tcWebApi_UpdateNetdev(asp_reent* reent, const asp_text* params, asp_
 
 	init_netdevData();
 
-	//read wired traffic 
+	//read wired traffic
 #if defined(TCSUPPORT_MTK_INTERNAL_ETHER_SWITCH) || defined(MT7530_SUPPORT)
 	#if defined(TCSUPPORT_CPU_MT7510)
 	readWiredData_MTK_mt7510();
-	#else	
+	#else
 	readWiredData_MTK();
 	#endif
 #else
@@ -2294,9 +2631,13 @@ static void tcWebApi_UpdateNetdev(asp_reent* reent, const asp_text* params, asp_
 	readATMData_MTK();
 
 	//read PTM traffic
+#if defined(TCSUPPORT_CPU_MT7510)	
+	readPTMData_MTK_mt7510();
+#else
 	readPTMData_MTK();
+#endif
 
-	//read wireless traffic 
+	//read wireless traffic
 #ifdef TCSUPPORT_WLAN_RT6856
 	readWiFiData_RT6856();
 #else
@@ -2311,14 +2652,14 @@ static void tcWebApi_UpdateNetdev(asp_reent* reent, const asp_text* params, asp_
 	websWrite( tmp, ",'%s':{rx:0x%llx,tx:0x%llx}\n", "WIRELESS0" , Sum2GData.rx, Sum2GData.tx );
 	websWrite( tmp, ",'%s':{rx:0x%llx,tx:0x%llx}\n", "WIRELESS1" , Sum5GData.rx, Sum5GData.tx );
 	websWrite( tmp, ",'%s':{rx:0x%llx,tx:0x%llx}\n", "BRIDGE" , BridgeData.rx, BridgeData.tx );
-	
+
 	//Paul add 2012/10/23
 	websWrite( tmp, ",'%s':{rx:0x%llx,tx:0x%llx}\n", "ATM" , ATMData.rx, ATMData.tx );
 	websWrite( tmp, ",'%s':{rx:0x%llx,tx:0x%llx}\n", "PTM0" , PTMData[0].rx, PTMData[0].tx );
 	websWrite( tmp, ",'%s':{rx:0x%llx,tx:0x%llx}\n", "PTM1" , PTMData[1].rx, PTMData[1].tx );
 	websWrite( tmp, ",'%s':{rx:0x%llx,tx:0x%llx}\n", "ETHERNETWAN" , EthernetWANData.rx, EthernetWANData.tx );
 	websWrite( tmp, "}" );
-		
+
 }
 
 static void tcWebApi_UpdateBandwidth(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -2359,11 +2700,15 @@ static void tcWebApi_UpdateBandwidth(asp_reent* reent, const asp_text* params, a
 	}
 	else
 	{
-		FILE *prt = fopen( "/dev/console", "w" );
-		if(prt)
-		{
-			fprintf( prt, "===>>file[%s] not exists!!!\n", name );
-			fclose(prt);
+		FILE *prt;
+		int nfd;
+		/* Don't let /dev/console block */
+		if((nfd = open("/dev/console", O_WRONLY | O_NONBLOCK)) > 0){
+			if((prt = fdopen(nfd, "w")) != NULL){
+				fprintf( prt, "===>>file[%s] not exists!!!\n", name );
+				fclose(prt);
+			}
+			close(nfd);
 		}
 	}
 	sleep(2);
@@ -2374,15 +2719,31 @@ static void tcWebApi_UpdateBandwidth(asp_reent* reent, const asp_text* params, a
 static void update_variables(asp_reent* reent, const asp_text* params, asp_text* ret)
 {
 	char cmd[256] = {0};
-	char *action_mode = get_param(g_var_post, "action_script");
+	char *action_mode = get_param(g_var_post, "action_mode");
+	char *action_script = get_param(g_var_post, "action_script");	//TODO: currently not support multiple service
+	char *argv_service[] = {"service", action_script, NULL};
+	int pid;
 
-	if( strstr(action_mode, "start_"))
+	if(!action_mode || !action_script)
+		return;
+
+	if(!strcmp(action_mode, "apply"))
 	{
-		//webs_update.sh or webs_upgrade.sh in "/usr/script"
-		sprintf(cmd, "/usr/script/%s.sh", action_mode+strlen("start_") );
-		//Andy Chiu, 2015/02/13. use eval to launch script for https
-		//system(cmd);
-		eval(cmd);
+		if(strlen(action_script))
+		{
+			if( strstr(action_script, "webs_"))
+			{
+				//webs_update.sh or webs_upgrade.sh in "/usr/script"
+				sprintf(cmd, "/usr/script/%s.sh", action_script+strlen("start_") );
+				//Andy Chiu, 2015/02/13. use eval to launch script for https
+				//system(cmd);
+				eval(cmd);
+			}
+			else
+			{
+				_eval(argv_service, NULL, 0, &pid);
+			}
+		}
 	}
 }
 //Ren.E
@@ -2391,15 +2752,22 @@ static void update_variables(asp_reent* reent, const asp_text* params, asp_text*
 static void show_message(asp_reent* reent, const asp_text* params, asp_text* ret)
 {
 	char *msg;
-	FILE *fp = fopen("/dev/console", "w");
+	FILE *fp;
+	int nfd;
+	/* Don't let /dev/console block */
+	if((nfd = open("/dev/console", O_WRONLY | O_NONBLOCK)) > 0){
+		if((fp = fdopen(nfd, "w")) != NULL){
 
-	msg = (char*)asp_alloc(reent,params[0].len+1);
-	memset(msg,0,params[0].len+1);
-	memcpy(msg,params[0].str,params[0].len);
+			msg = (char*)asp_alloc(reent,params[0].len+1);
+			memset(msg,0,params[0].len+1);
+			memcpy(msg,params[0].str,params[0].len);
 
-	fprintf(fp, "show_message::[%s]\n", msg );
+			fprintf(fp, "show_message::[%s]\n", msg );
 
-	fclose(fp);
+			fclose(fp);
+		}
+		close(nfd);
+	}
 }
 
 //usage:show_message2("MLDproxy", "wan_MLD0")
@@ -2407,20 +2775,27 @@ static void show_message(asp_reent* reent, const asp_text* params, asp_text* ret
 static void show_message2(asp_reent* reent, const asp_text* params, asp_text* ret)
 {
 	char *msg, *value, *v_tmp;
-	FILE *fp = fopen("/dev/console", "w");
+	FILE *fp;
+	int nfd;
+	/* Don't let /dev/console block */
+	if((nfd = open("/dev/console", O_WRONLY | O_NONBLOCK)) > 0){
+		if((fp = fdopen(nfd, "w")) != NULL){
 
-	msg = (char*)asp_alloc(reent,params[0].len+1);
-	value = (char*)asp_alloc(reent,params[1].len+1);
-	memset(msg,0,params[0].len+1);
-	memset(value,0,params[1].len+1);
-	memcpy(msg,params[0].str,params[0].len);
-	memcpy(value,params[1].str,params[0].len);
+			msg = (char*)asp_alloc(reent,params[0].len+1);
+			value = (char*)asp_alloc(reent,params[1].len+1);
+			memset(msg,0,params[0].len+1);
+			memset(value,0,params[1].len+1);
+			memcpy(msg,params[0].str,params[0].len);
+			memcpy(value,params[1].str,params[0].len);
 
-	v_tmp = get_param(g_var_post,value);//get_param on web page
+			v_tmp = get_param(g_var_post,value);//get_param on web page
 
-	fprintf(fp, "show_message2::[%s]=[%s]\n", msg, v_tmp );
+			fprintf(fp, "show_message2::[%s]=[%s]\n", msg, v_tmp );
 
-	fclose(fp);
+			fclose(fp);
+		}
+		close(nfd);
+	}
 }
 
 /**
@@ -2536,6 +2911,27 @@ static void factory_telnet(asp_reent* reent, const asp_text* params, asp_text* r
 	system("utelnetd -l /bin/login -d");
 }
 
+/*******************************************************************
+* NAME: set_factory_mode
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/11/02
+* DESCRIPTION: set factory mode for ATE.
+* INPUT:
+* OUTPUT: 
+* RETURN: 
+* NOTE:
+*******************************************************************/
+static void set_factory_mode(asp_reent* reent, const asp_text* params, asp_text* ret){
+#ifdef TCSUPPORT_MTK_INTERNAL_ETHER_SWITCH
+	//switch switch LED from hardware control to GPIO mode
+	system("echo 1 > /proc/tc3162/led_sw_hw2gpio");
+#endif
+	system("sys button disable");
+	printf("1\n");
+	system("echo 1 > /tmp/IsATEMode");
+}
+
+
 #ifdef RTCONFIG_SPECTRUM
 static void ej_spectrum(asp_reent* reent, const asp_text* params, asp_text* ret)
 {
@@ -2597,7 +2993,7 @@ static void ej_check_acpw(asp_reent* reent, const asp_text* params, asp_text* re
 static void
 tcWebApi_Get (asp_reent* reent, const asp_text* params,  asp_text* ret)
 {
-#if !defined(TCSUPPORT_CT) 
+#if !defined(TCSUPPORT_CT)
 #if defined(TCSUPPORT_GUI_STRING_CONFIG) || defined(TCSUPPORT_GENERAL_MULTILANGUAGE)
 #if defined(TCSUPPORT_GENERAL_MULTILANGUAGE)
 	static char val[MAX_VALUE];
@@ -2606,7 +3002,6 @@ tcWebApi_Get (asp_reent* reent, const asp_text* params,  asp_text* ret)
 #endif
 #endif
 
-
 	char *node,*attr,*show;
 #if  defined(TCSUPPORT_GUI_STRING_CONFIG) || defined(TCSUPPORT_GENERAL_MULTILANGUAGE)
 #if defined(TCSUPPORT_GENERAL_MULTILANGUAGE)
@@ -2614,9 +3009,9 @@ tcWebApi_Get (asp_reent* reent, const asp_text* params,  asp_text* ret)
 #else
 	char retVal[640];
 #endif
-#else 
+#else
 	char retVal[129];
-#endif 
+#endif
 	int r_val;
 
 	node = (char*)asp_alloc(reent,params[0].len+1);
@@ -2646,7 +3041,27 @@ tcWebApi_Get (asp_reent* reent, const asp_text* params,  asp_text* ret)
 		else
 #endif
 		{
-			r_val = tcapi_get(node, attr, val);
+			if(!strcmp(attr, "pptpd_clientlist")) {
+				r_val = tcapi_get_list(attr, val, sizeof(val));
+			}
+			else if(!strcmp(attr, "pptpd_sr_rulelist")) {
+				r_val = tcapi_get_list(attr, val, sizeof(val));
+			}
+			else if(!strcmp(node, "VPNC_Entry") && !strcmp(attr, "clientlist")) {
+				r_val = tcapi_get_list("vpnc_clientlist", val, sizeof(val));
+			}
+			else if(!strcmp(attr, "qos_rulelist")) {
+				r_val = tcapi_get_list(attr, val, sizeof(val));
+			}
+			else if(!strcmp(attr, "qos_bw_rulelist")) {
+				r_val = tcapi_get_list(attr, val, sizeof(val));
+			}
+			else if(!strcmp(attr, "MULTIFILTER_MACFILTER_DAYTIME")) {
+				r_val = tcapi_get_list(attr, val, sizeof(val));
+			}
+			else {
+				r_val = tcapi_get(node, attr, val);
+			}
 			if(r_val < 0){
 				strcpy(val,""); /* Paul modify 2013/2/7 */
 			}
@@ -2655,7 +3070,7 @@ tcWebApi_Get (asp_reent* reent, const asp_text* params,  asp_text* ret)
 		if(!strcmp(show,"s")){//show -> s
 #if defined(TCSUPPORT_GUI_STRING_CONFIG) || defined(TCSUPPORT_GENERAL_MULTILANGUAGE)
 			if(strcmp(node,"String_Entry"))          //not from String_Entry
-		    	{    		
+		    	{
 		    		strQuotConvertHTML(val,retVal);
 		    	}
 			else
@@ -2741,9 +3156,9 @@ tcWebApi_Commit (asp_reent* reent, const asp_text* params,  asp_text* ret)
 	int r_val;
  #if  defined(TCSUPPORT_WEB_SAVE)
     char bootType[16] = {0};
- #endif 
-		char tmp[32];	
-	 	char *tmp_web;	
+ #endif
+		char tmp[32];
+	 	char *tmp_web;
 		char currentWeb[64]={0};
 
     node = (char*)asp_alloc(reent,params[0].len+1);
@@ -2777,7 +3192,7 @@ tcWebApi_Commit (asp_reent* reent, const asp_text* params,  asp_text* ret)
 				//wait to do. javi
 				// if the commit from QIS_admin_pass.asp, we will not set x_Setting as 1.
 				tmp_web = get_param(g_var_post, "current_page");
-	
+
 				if(tmp_web == NULL){
 					printf("Can not get current_page!!!\n");
 				}
@@ -2785,7 +3200,7 @@ tcWebApi_Commit (asp_reent* reent, const asp_text* params,  asp_text* ret)
 					memcpy(currentWeb,tmp_web, sizeof(currentWeb));
 					printf("currentWeb = %s\n", currentWeb);	//javi
 				}
-	
+
 				if (strcmp(currentWeb, "QIS_admin_pass.asp") == 0){
 					printf("This Web is QIS_admin_pass.asp, so we not set x_Setting as 1\n");
 				}
@@ -2803,7 +3218,7 @@ tcWebApi_Commit (asp_reent* reent, const asp_text* params,  asp_text* ret)
 	if(atoi(bootType) != NO_BOOT)
 	     flag_save = 0;//If do system reboot or reset default, should not do save
     }
-#endif 
+#endif
 
 #ifdef TCSUPPORT_SYSLOG_ENHANCE
    	openlog("TCSysLog WEB", 0, LOG_LOCAL1);
@@ -3001,7 +3416,7 @@ tcWebApi_constSet (asp_reent* reent, const asp_text* params,  asp_text* ret)
 {
         char *node,*attr,*value;
         int r_val;
-        
+
         node = (char*)asp_alloc(reent,params[0].len+1);
         attr = (char*)asp_alloc(reent,params[1].len+1);
         value = (char*)asp_alloc(reent,params[2].len+1);
@@ -3022,7 +3437,7 @@ tcWebApi_constSet (asp_reent* reent, const asp_text* params,  asp_text* ret)
                 return;
         }
 	*/
-        
+
         r_val=tcapi_set(node, attr, value);
 }
 #endif
@@ -3057,7 +3472,7 @@ tcWebApi_staticGet (asp_reent* reent, const asp_text* params,  asp_text* ret)
         char *node,*attr,*show;
         char retVal[MAX_ATTRIBUTE_LEN];
         int r_val;
-        
+
         node = (char*)asp_alloc(reent,params[0].len+1);
         attr = (char*)asp_alloc(reent,params[1].len+1);
         show = (char*)asp_alloc(reent,params[2].len+1);
@@ -3809,13 +4224,13 @@ static void get_AiDisk_status (asp_reent* reent, const asp_text* params, asp_tex
 	char st_samba_mode[4];
 	char st_ftp_mode[4];
 	char st_webdav_mode[4];
-	
+
 	tcapi_get("Samba_Entry", "Active", enable_samba);
 	tcapi_get("Samba_Entry", "enable_ftp", enable_ftp);
 	tcapi_get("Samba_Entry", "st_samba_mode", st_samba_mode);
 	tcapi_get("Samba_Entry", "st_ftp_mode", st_ftp_mode);
 	tcapi_get("Samba_Entry", "st_webdav_mode", st_webdav_mode);
-	
+
 /*	websWrite(wp, "function get_cifs_status(){\n");
 	// websWrite(wp, "    return %d;\n", atoi(nvram_safe_get("samba_running")));
 	websWrite(wp, "    return %d;\n", atoi(nvram_safe_get("enable_samba")));
@@ -3859,7 +4274,7 @@ static void get_AiDisk_status (asp_reent* reent, const asp_text* params, asp_tex
 	asp_send_response(NULL, tmp, strlen(tmp));
 #ifdef RTCONFIG_WEBDAV_PENDING
 	// websWrite(wp, "function get_webdav_status(){\n");
-	
+
 	// websWrite(wp, "    return %d;\n", atoi(nvram_safe_get("enable_webdav")));
 	// websWrite(wp, "}\n\n");
 #endif
@@ -4025,7 +4440,7 @@ create_sharedfolder (asp_reent* reent, const asp_text* params, asp_text* ret) {
 		clean_error_msg();
 		return;// -1;
 	}
-	
+
 	// if (notify_rc_for_nas("restart_ftpsamba") != 0){
 		// show_error_msg("Action5");
 
@@ -4037,7 +4452,7 @@ create_sharedfolder (asp_reent* reent, const asp_text* params, asp_text* ret) {
 		// return -1;
 	// }
 	eval("/sbin/rc_call", "ftpsamba", "2");	//trigger ftp/samba restart
-	
+
 	// websWrite(wp, "<script>\n");
 	// websWrite(wp, "create_sharedfolder_success();\n");
 	// websWrite(wp, "</script>\n");
@@ -4110,7 +4525,7 @@ delete_sharedfolder (asp_reent* reent, const asp_text* params, asp_text* ret) {
 		asp_send_response(NULL, tmp, strlen(tmp));
 
 		clean_error_msg();
-		return;// -1;	
+		return;// -1;
 	}
 #if 0
 	if (del_folder(mount_path, folder) < 0){
@@ -4153,13 +4568,13 @@ inline int ishex(int x)
 		(x >= 'a' && x <= 'f')	||
 		(x >= 'A' && x <= 'F');
 }
- 
+
 int decode(const char *s, char *dec)
 {
 	char *o;
 	const char *end = s + strlen(s);
 	int c;
- 
+
 	for (o = dec; s <= end; o++) {
 		c = *s++;
 		if (c == '+') c = ' ';
@@ -4167,10 +4582,10 @@ int decode(const char *s, char *dec)
 					!ishex(*s++)	||
 					!sscanf(s - 2, "%2x", &c)))
 			return -1;
- 
+
 		if (dec) *o = c;
 	}
- 
+
 	return o - dec;
 }
 
@@ -4265,7 +4680,7 @@ modify_sharedfolder (asp_reent* reent, const asp_text* params, asp_text* ret) {
 		asp_send_response(NULL, tmp, strlen(tmp));
 
 		clean_error_msg();
-		return;// -1;	
+		return;// -1;
 	}
 #if 0
 	if (mod_folder(mount_path, folder, new_folder) < 0){
@@ -4665,10 +5080,41 @@ SET_AIDISK_STATUS_SUCCESS:
 	// websWrite(wp, "</script>\n");
 	sprintf(tmp, "<script>\nparent.resultOfSwitchAppStatus();\n</script>\n");
 	asp_send_response(NULL, tmp, strlen(tmp));
-	
+
 	tcapi_save();
 
 	return;// 0;
+}
+
+/*******************************************************************
+* NAME: _check_vars
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/06/25
+* DESCRIPTION: check the var files in all disks
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:
+*******************************************************************/
+static void
+_check_vars () {
+	disk_info_t *disks_info, *follow_disk;
+	partition_info_t *follow_partition;
+
+	disks_info = read_disk_data();
+	if (disks_info == NULL){
+		return ;
+	}
+
+	for (follow_disk = disks_info; follow_disk != NULL; follow_disk = follow_disk->next)
+		for (follow_partition = follow_disk->partitions; follow_partition != NULL; follow_partition = follow_partition->next)
+			if (follow_partition->mount_point != NULL && strlen(follow_partition->mount_point) > 0){
+				test_of_var_files(follow_partition->mount_point);
+			}
+
+	free_disk_data(&disks_info);
+
+	return ;
 }
 
 static void
@@ -4681,11 +5127,11 @@ set_share_mode (asp_reent* reent, const asp_text* params, asp_text* ret) {
 #ifdef RTCONFIG_WEBDAV_PENDING
 	tcapi_get("AiCloud_Entry", "st_webdav_mode", tmp);
 	int webdav_mode = atoi(tmp);
-#endif	
+#endif
 	char *dummyShareway = get_param(g_var_post, "dummyShareway");//websGetVar(wp, "dummyShareway", "");
 	char *protocol = get_param(g_var_post, "protocol");//websGetVar(wp, "protocol", "");
 	char *mode = get_param(g_var_post, "mode");//websGetVar(wp, "mode", "");
-	// int result;	
+	// int result;
 
 	if (dummyShareway && strlen(dummyShareway) > 0)
 		tcapi_set("Samba_Entry", "dummyShareway", dummyShareway);//nvram_set("dummyShareway", dummyShareway);
@@ -4801,6 +5247,9 @@ set_share_mode (asp_reent* reent, const asp_text* params, asp_text* ret) {
 		return;// -1;
 	}
 
+	//Andy Chiu, 2015/06/25
+	_check_vars();
+
 	tcapi_commit("Samba_Entry");//nvram_commit();
 	tcapi_save();
 
@@ -4886,7 +5335,7 @@ get_all_accounts (asp_reent* reent, const asp_text* params, asp_text* ret) {
 		printf("Failed to get the account list!\n");
 		return;// -1;
 	}
-	
+
 	first = 1;
 	for (i = 0; i < acc_num; ++i){
 		if (first == 1)
@@ -4958,7 +5407,7 @@ static void create_account (asp_reent* reent, const asp_text* params, asp_text* 
 		asp_send_response(NULL, tmp, strlen(tmp));
 
 		clean_error_msg();
-		return;// -1;	
+		return;// -1;
 	}
 #endif
 
@@ -5036,7 +5485,7 @@ static void delete_account (asp_reent* reent, const asp_text* params, asp_text* 
 		asp_send_response(NULL, tmp, strlen(tmp));
 
 		clean_error_msg();
-		return;// -1;	
+		return;// -1;
 	}
 #endif
 
@@ -5127,7 +5576,7 @@ static void modify_account (asp_reent* reent, const asp_text* params, asp_text* 
 		asp_send_response(NULL, tmp, strlen(tmp));
 
 		clean_error_msg();
-		return;// -1;	
+		return;// -1;
 	}
 #endif
 
@@ -5472,7 +5921,7 @@ set_account_permission (asp_reent* reent, const asp_text* params, asp_text* ret)
 		clean_error_msg();
 		return;// -1;
 	}
-	if (strcmp(protocol, "cifs") && strcmp(protocol, "ftp") && strcmp(protocol, "dms") 
+	if (strcmp(protocol, "cifs") && strcmp(protocol, "ftp") && strcmp(protocol, "dms")
 #ifdef RTCONFIG_WEBDAV_PENDING
 && strcmp(protocol, "webdav")
 #endif
@@ -5550,7 +5999,7 @@ set_account_permission (asp_reent* reent, const asp_text* params, asp_text* ret)
 			return;// -1;
 		}
 	}
-	else 
+	else
 #endif
 	// if (notify_rc_for_nas("restart_ftpsamba") != 0){
 		// show_error_msg("Action1");
@@ -5606,7 +6055,7 @@ get_printer_info (asp_reent* reent, const asp_text* params, asp_text* ret) {
 			strncpy(printer_array[port_num-1][2], value, 64);
 			tcapi_get("USB_Entry", strcat_r(prefix, "_serial", tmp), value);
 			strncpy(printer_array[port_num-1][3], value, 64);
-			
+
 			tcapi_get("USB_Entry", "u2ec_serial", value);
 			if(!strcmp(printer_array[port_num-1][3], value))
 			// if(!strcmp(printer_array[port_num-1][3], nvram_safe_get("u2ec_serial")))
@@ -5912,6 +6361,362 @@ void substr(char *dest, const char* src, unsigned int start, unsigned int cnt) {
 	dest[cnt] = 0;
 }
 
+static void UI_cloud_dropbox_status(asp_reent* reent, const asp_text* params, asp_text* ret){
+	FILE *fp = fopen("/tmp/smartsync/.logs/dropbox", "r");
+	char line[PATH_MAX], buf[PATH_MAX], dest[PATH_MAX];
+	int line_num;
+	char status[16], mounted_path[PATH_MAX], target_obj[PATH_MAX], error_msg[PATH_MAX], full_capa[PATH_MAX], used_capa[PATH_MAX], rule_num[PATH_MAX];
+	char wp[256] = {0};
+
+	if(fp == NULL){
+		websWrite(wp, "cloud_dropbox_status=\"WAITING\";\n"); //gauss change status fromm 'ERROR' to 'WAITING' 2014.11.4
+		websWrite(wp, "cloud_dropbox_obj=\"\";\n");
+		websWrite(wp, "cloud_dropbox_msg=\"\";\n");
+		websWrite(wp, "cloud_dropbox_fullcapa=\"\";\n");
+		websWrite(wp, "cloud_dropbox_usedcapa=\"\";\n");
+		websWrite(wp, "cloud_dropbox_rule_num=\"\";\n");
+		return 0;
+	}
+
+	memset(status, 0, 16);
+	memset(mounted_path, 0, PATH_MAX);
+	memset(target_obj, 0, PATH_MAX);
+	memset(error_msg, 0, PATH_MAX);
+	memset(full_capa, 0, PATH_MAX);
+	memset(used_capa, 0, PATH_MAX);
+	memset(rule_num, 0, PATH_MAX);
+
+	memset(line, 0, PATH_MAX);
+	line_num = 0;
+	while(fgets(line, PATH_MAX, fp)){
+		++line_num;
+		line[strlen(line)-1] = 0;
+
+		if(strstr(line, "STATUS") != NULL){
+			strncpy(status, convert_cloudsync_status(line), 16);
+		}
+		else if(strstr(line, "MOUNT_PATH") != NULL){
+			memset(buf, 0, PATH_MAX);
+			substr(dest, line, 11, PATH_MAX);
+			char_to_ascii(buf, dest);
+			strcpy(mounted_path, buf);
+		}
+		else if(strstr(line, "FILENAME") != NULL){
+			substr(dest, line, 9, PATH_MAX);
+			strcpy(target_obj, dest); // support Chinese
+		}
+		else if(strstr(line, "ERR_MSG") != NULL){
+			substr(dest, line, 8, PATH_MAX);
+			strcpy(error_msg, dest);
+		}
+		else if(strstr(line, "TOTAL_SPACE") != NULL){
+			substr(dest, line, 12, PATH_MAX);
+			strcpy(full_capa, dest);
+		}
+		else if(strstr(line, "USED_SPACE") != NULL){
+			substr(dest, line, 11, PATH_MAX);
+			strcpy(used_capa, dest);
+		}
+		else if(strstr(line, "RULENUM") != NULL){
+			substr(dest, line, 8, PATH_MAX);
+			strcpy(rule_num, dest);
+		}
+		
+		memset(line, 0, PATH_MAX);
+	}
+	fclose(fp);
+
+	if(!line_num){
+		websWrite(wp, "cloud_dropbox_status=\"ERROR\";\n");
+		websWrite(wp, "cloud_dropbox_obj=\"\";\n");
+		websWrite(wp, "cloud_dropbox_msg=\"\";\n");
+		websWrite(wp, "cloud_dropbox_fullcapa=\"\";\n");
+		websWrite(wp, "cloud_dropbox_usedcapa=\"\";\n");
+		websWrite(wp, "cloud_dropbox_rule_num=\"\";\n");
+	}
+	else{
+		websWrite(wp, "cloud_dropbox_status=\"%s\";\n", status);
+		websWrite(wp, "cloud_dropbox_obj=\"%s\";\n", target_obj);
+		if(!strcmp(status,"SYNC"))
+		   strncpy(error_msg,"Sync has been completed",PATH_MAX);
+		else if(!strcmp(status,"INITIAL"))
+		   strncpy(error_msg,"Verifying",PATH_MAX);		
+		websWrite(wp, "cloud_dropbox_msg=\"%s\";\n", error_msg);
+		websWrite(wp, "cloud_dropbox_fullcapa=\"%s\";\n", full_capa);
+		websWrite(wp, "cloud_dropbox_usedcapa=\"%s\";\n", used_capa);
+		websWrite(wp, "cloud_dropbox_rule_num=\"%s\";\n", rule_num);
+	}
+
+	return 0;
+}
+
+static void UI_cloud_ftpclient_status(asp_reent* reent, const asp_text* params, asp_text* ret){
+	FILE *fp = fopen("/tmp/smartsync/.logs/ftpclient", "r");
+	char line[PATH_MAX], buf[PATH_MAX], dest[PATH_MAX];
+	int line_num;
+	char status[16], mounted_path[PATH_MAX], target_obj[PATH_MAX], error_msg[PATH_MAX], full_capa[PATH_MAX], used_capa[PATH_MAX], rule_num[PATH_MAX];
+	char wp[256] = {0};
+
+	if(fp == NULL){
+		websWrite(wp, "cloud_ftpclient_status=\"WAITING\";\n"); //gauss change status fromm 'ERROR' to 'WAITING' 2014.11.4
+		websWrite(wp, "cloud_ftpclient_obj=\"\";\n");
+		websWrite(wp, "cloud_ftpclient_msg=\"\";\n");
+		websWrite(wp, "cloud_ftpclient_fullcapa=\"\";\n");
+		websWrite(wp, "cloud_ftpclient_usedcapa=\"\";\n");
+		websWrite(wp, "cloud_ftpclient_rule_num=\"\";\n");
+		return 0;
+	}
+
+	memset(status, 0, 16);
+	memset(mounted_path, 0, PATH_MAX);
+	memset(target_obj, 0, PATH_MAX);
+	memset(error_msg, 0, PATH_MAX);
+	memset(full_capa, 0, PATH_MAX);
+	memset(used_capa, 0, PATH_MAX);
+	memset(rule_num, 0, PATH_MAX);
+
+	memset(line, 0, PATH_MAX);
+	line_num = 0;
+	while(fgets(line, PATH_MAX, fp)){
+		++line_num;
+		line[strlen(line)-1] = 0;
+
+		if(strstr(line, "STATUS") != NULL){
+			strncpy(status, convert_cloudsync_status(line), 16);
+		}
+		else if(strstr(line, "MOUNT_PATH") != NULL){
+			memset(buf, 0, PATH_MAX);
+			substr(dest, line, 11, PATH_MAX);
+			char_to_ascii(buf, dest);
+			strcpy(mounted_path, buf);
+		}
+		else if(strstr(line, "FILENAME") != NULL){
+			substr(dest, line, 9, PATH_MAX);
+			strcpy(target_obj, dest); // support Chinese
+		}
+		else if(strstr(line, "ERR_MSG") != NULL){
+			substr(dest, line, 8, PATH_MAX);
+			strcpy(error_msg, dest);
+		}
+		else if(strstr(line, "TOTAL_SPACE") != NULL){
+			substr(dest, line, 12, PATH_MAX);
+			strcpy(full_capa, dest);
+		}
+		else if(strstr(line, "USED_SPACE") != NULL){
+			substr(dest, line, 11, PATH_MAX);
+			strcpy(used_capa, dest);
+		}
+		else if(strstr(line, "RULENUM") != NULL){
+			substr(dest, line, 8, PATH_MAX);
+			strcpy(rule_num, dest);
+		}
+		
+		memset(line, 0, PATH_MAX);
+	}
+	fclose(fp);
+
+	if(!line_num){
+		websWrite(wp, "cloud_ftpclient_status=\"ERROR\";\n");
+		websWrite(wp, "cloud_ftpclient_obj=\"\";\n");
+		websWrite(wp, "cloud_ftpclient_msg=\"\";\n");
+		websWrite(wp, "cloud_ftpclient_fullcapa=\"\";\n");
+		websWrite(wp, "cloud_ftpclient_usedcapa=\"\";\n");
+		websWrite(wp, "cloud_ftpclient_rule_num=\"\";\n");
+	}
+	else{
+		websWrite(wp, "cloud_ftpclient_status=\"%s\";\n", status);
+		websWrite(wp, "cloud_ftpclient_obj=\"%s\";\n", target_obj);
+		if(!strcmp(status,"SYNC"))
+		   strncpy(error_msg,"Sync has been completed",PATH_MAX);
+		else if(!strcmp(status,"INITIAL"))
+		   strncpy(error_msg,"Verifying",PATH_MAX);		
+		websWrite(wp, "cloud_ftpclient_msg=\"%s\";\n", error_msg);
+		websWrite(wp, "cloud_ftpclient_fullcapa=\"%s\";\n", full_capa);
+		websWrite(wp, "cloud_ftpclient_usedcapa=\"%s\";\n", used_capa);
+		websWrite(wp, "cloud_ftpclient_rule_num=\"%s\";\n", rule_num);
+	}
+
+	return 0;
+}
+
+static void UI_cloud_sambaclient_status(asp_reent* reent, const asp_text* params, asp_text* ret){
+	FILE *fp = fopen("/tmp/smartsync/.logs/sambaclient", "r");
+	char line[PATH_MAX], buf[PATH_MAX], dest[PATH_MAX];
+	int line_num;
+	char status[16], mounted_path[PATH_MAX], target_obj[PATH_MAX], error_msg[PATH_MAX], full_capa[PATH_MAX], used_capa[PATH_MAX], rule_num[PATH_MAX];
+	char wp[256] = {0};
+
+	if(fp == NULL){
+		websWrite(wp, "cloud_sambaclient_status=\"WAITING\";\n"); //gauss change status fromm 'ERROR' to 'WAITING' 2014.11.4
+		websWrite(wp, "cloud_sambaclient_obj=\"\";\n");
+		websWrite(wp, "cloud_sambaclient_msg=\"\";\n");
+		websWrite(wp, "cloud_sambaclient_fullcapa=\"\";\n");
+		websWrite(wp, "cloud_sambaclient_usedcapa=\"\";\n");
+		websWrite(wp, "cloud_sambaclient_rule_num=\"\";\n");
+		return 0;
+	}
+
+	memset(status, 0, 16);
+	memset(mounted_path, 0, PATH_MAX);
+	memset(target_obj, 0, PATH_MAX);
+	memset(error_msg, 0, PATH_MAX);
+	memset(full_capa, 0, PATH_MAX);
+	memset(used_capa, 0, PATH_MAX);
+	memset(rule_num, 0, PATH_MAX);
+
+	memset(line, 0, PATH_MAX);
+	line_num = 0;
+	while(fgets(line, PATH_MAX, fp)){
+		++line_num;
+		line[strlen(line)-1] = 0;
+
+		if(strstr(line, "STATUS") != NULL){
+			strncpy(status, convert_cloudsync_status(line), 16);
+		}
+		else if(strstr(line, "MOUNT_PATH") != NULL){
+			memset(buf, 0, PATH_MAX);
+			substr(dest, line, 11, PATH_MAX);
+			char_to_ascii(buf, dest);
+			strcpy(mounted_path, buf);
+		}
+		else if(strstr(line, "FILENAME") != NULL){
+			substr(dest, line, 9, PATH_MAX);
+			strcpy(target_obj, dest); // support Chinese
+		}
+		else if(strstr(line, "ERR_MSG") != NULL){
+			substr(dest, line, 8, PATH_MAX);
+			strcpy(error_msg, dest);
+		}
+		else if(strstr(line, "TOTAL_SPACE") != NULL){
+			substr(dest, line, 12, PATH_MAX);
+			strcpy(full_capa, dest);
+		}
+		else if(strstr(line, "USED_SPACE") != NULL){
+			substr(dest, line, 11, PATH_MAX);
+			strcpy(used_capa, dest);
+		}
+		else if(strstr(line, "RULENUM") != NULL){
+			substr(dest, line, 8, PATH_MAX);
+			strcpy(rule_num, dest);
+		}
+		
+		memset(line, 0, PATH_MAX);
+	}
+	fclose(fp);
+
+	if(!line_num){
+		websWrite(wp, "cloud_sambaclient_status=\"ERROR\";\n");
+		websWrite(wp, "cloud_sambaclient_obj=\"\";\n");
+		websWrite(wp, "cloud_sambaclient_msg=\"\";\n");
+		websWrite(wp, "cloud_sambaclient_fullcapa=\"\";\n");
+		websWrite(wp, "cloud_sambaclient_usedcapa=\"\";\n");
+		websWrite(wp, "cloud_sambaclient_rule_num=\"\";\n");
+	}
+	else{
+		websWrite(wp, "cloud_sambaclient_status=\"%s\";\n", status);
+		websWrite(wp, "cloud_sambaclient_obj=\"%s\";\n", target_obj);
+		if(!strcmp(status,"SYNC"))
+		   strncpy(error_msg,"Sync has been completed",PATH_MAX);
+		else if(!strcmp(status,"INITIAL"))
+		   strncpy(error_msg,"Verifying",PATH_MAX);		
+		websWrite(wp, "cloud_sambaclient_msg=\"%s\";\n", error_msg);
+		websWrite(wp, "cloud_sambaclient_fullcapa=\"%s\";\n", full_capa);
+		websWrite(wp, "cloud_sambaclient_usedcapa=\"%s\";\n", used_capa);
+		websWrite(wp, "cloud_sambaclient_rule_num=\"%s\";\n", rule_num);
+	}
+
+	return 0;
+}
+
+static void UI_cloud_usbclient_status(asp_reent* reent, const asp_text* params, asp_text* ret){
+	FILE *fp = fopen("/tmp/smartsync/.logs/usbclient", "r");
+	char line[PATH_MAX], buf[PATH_MAX], dest[PATH_MAX];
+	int line_num;
+	char status[16], mounted_path[PATH_MAX], target_obj[PATH_MAX], error_msg[PATH_MAX], full_capa[PATH_MAX], used_capa[PATH_MAX], rule_num[PATH_MAX];
+	char wp[256] = {0};
+
+	if(fp == NULL){
+		websWrite(wp, "cloud_usbclient_status=\"WAITING\";\n"); //gauss change status fromm 'ERROR' to 'WAITING' 2014.11.4
+		websWrite(wp, "cloud_usbclient_obj=\"\";\n");
+		websWrite(wp, "cloud_usbclient_msg=\"\";\n");
+		websWrite(wp, "cloud_usbclient_fullcapa=\"\";\n");
+		websWrite(wp, "cloud_usbclient_usedcapa=\"\";\n");
+		websWrite(wp, "cloud_usbclient_rule_num=\"\";\n");
+		return 0;
+	}
+
+	memset(status, 0, 16);
+	memset(mounted_path, 0, PATH_MAX);
+	memset(target_obj, 0, PATH_MAX);
+	memset(error_msg, 0, PATH_MAX);
+	memset(full_capa, 0, PATH_MAX);
+	memset(used_capa, 0, PATH_MAX);
+	memset(rule_num, 0, PATH_MAX);
+
+	memset(line, 0, PATH_MAX);
+	line_num = 0;
+	while(fgets(line, PATH_MAX, fp)){
+		++line_num;
+		line[strlen(line)-1] = 0;
+
+		if(strstr(line, "STATUS") != NULL){
+			strncpy(status, convert_cloudsync_status(line), 16);
+		}
+		else if(strstr(line, "MOUNT_PATH") != NULL){
+			memset(buf, 0, PATH_MAX);
+			substr(dest, line, 11, PATH_MAX);
+			char_to_ascii(buf, dest);
+			strcpy(mounted_path, buf);
+		}
+		else if(strstr(line, "FILENAME") != NULL){
+			substr(dest, line, 9, PATH_MAX);
+			strcpy(target_obj, dest); // support Chinese
+		}
+		else if(strstr(line, "ERR_MSG") != NULL){
+			substr(dest, line, 8, PATH_MAX);
+			strcpy(error_msg, dest);
+		}
+		else if(strstr(line, "TOTAL_SPACE") != NULL){
+			substr(dest, line, 12, PATH_MAX);
+			strcpy(full_capa, dest);
+		}
+		else if(strstr(line, "USED_SPACE") != NULL){
+			substr(dest, line, 11, PATH_MAX);
+			strcpy(used_capa, dest);
+		}
+		else if(strstr(line, "RULENUM") != NULL){
+			substr(dest, line, 8, PATH_MAX);
+			strcpy(rule_num, dest);
+		}
+		
+		memset(line, 0, PATH_MAX);
+	}
+	fclose(fp);
+
+	if(!line_num){
+		websWrite(wp, "cloud_usbclient_status=\"ERROR\";\n");
+		websWrite(wp, "cloud_usbclient_obj=\"\";\n");
+		websWrite(wp, "cloud_usbclient_msg=\"\";\n");
+		websWrite(wp, "cloud_usbclient_fullcapa=\"\";\n");
+		websWrite(wp, "cloud_usbclient_usedcapa=\"\";\n");
+		websWrite(wp, "cloud_usbclient_rule_num=\"\";\n");
+	}
+	else{
+		websWrite(wp, "cloud_usbclient_status=\"%s\";\n", status);
+		websWrite(wp, "cloud_usbclient_obj=\"%s\";\n", target_obj);
+		if(!strcmp(status,"SYNC"))
+		   strncpy(error_msg,"Sync has been completed",PATH_MAX);
+		else if(!strcmp(status,"INITIAL"))
+		   strncpy(error_msg,"Verifying",PATH_MAX);		
+		websWrite(wp, "cloud_usbclient_msg=\"%s\";\n", error_msg);
+		websWrite(wp, "cloud_usbclient_fullcapa=\"%s\";\n", full_capa);
+		websWrite(wp, "cloud_usbclient_usedcapa=\"%s\";\n", used_capa);
+		websWrite(wp, "cloud_usbclient_rule_num=\"%s\";\n", rule_num);
+	}
+
+	return 0;
+}
+
 static void UI_cloud_status (asp_reent* reent, const asp_text* params, asp_text* ret)
 {
 	FILE *fp = fopen("/tmp/smartsync/.logs/asuswebstorage", "r");
@@ -5934,7 +6739,7 @@ static void UI_cloud_status (asp_reent* reent, const asp_text* params, asp_text*
 	memset(target_obj, 0, PATH_MAX);
 	memset(error_msg, 0, PATH_MAX);
 	memset(full_capa, 0, PATH_MAX);
-	memset(used_capa, 0, PATH_MAX);	
+	memset(used_capa, 0, PATH_MAX);
 
 	memset(line, 0, PATH_MAX);
 	line_num = 0;
@@ -5968,7 +6773,7 @@ static void UI_cloud_status (asp_reent* reent, const asp_text* params, asp_text*
 			substr(dest, line, 11, PATH_MAX);
 			strcpy(used_capa, dest);
 		}
-		
+
 		memset(line, 0, PATH_MAX);
 	}
 	fclose(fp);
@@ -6254,7 +7059,7 @@ static void dms_info(asp_reent* reent, const asp_text* params, asp_text* ret){
 
 	strcpy(dms_status, "");
 
-	if(strlen(dms_dbcwd)) 
+	if(strlen(dms_dbcwd))
 	{
 		sprintf(dms_scanfile, "%s/scantag", dms_dbcwd);
 
@@ -6314,11 +7119,11 @@ static void show_error_msg(const char *const msg_num){
 
 	memset(msg_name, 0, 32);
 	sprintf(msg_name, "ALERT_OF_ERROR_%s", msg_num);
-	
+
 	tcapi_get("LanguageSwitch_Entry", "Type", str_type);
 	if (strlen(str_type))
 		nIndex = atoi(str_type);
-		
+
 	if(nIndex == 1) //English
 		sprintf(str_path, STRING_PATH, "EN");
 	else if(nIndex == 2) //Brazil
@@ -6359,10 +7164,10 @@ static void show_error_msg(const char *const msg_num){
 		sprintf(str_path, STRING_PATH, "UK");
 	else
 		sprintf(str_path, STRING_PATH, "EN");
-	
+
 	error_msg = get_msg_from_dict(str_path, msg_name);
 #ifdef TCSUPPORT_SYSLOG_ENHANCE
-	logmessage("asp_handler", "%s %s", msg_num, error_msg);	
+	logmessage("asp_handler", "%s %s", msg_num, error_msg);
 #endif
 	return;
 }
@@ -6370,10 +7175,10 @@ static void show_error_msg(const char *const msg_num){
 static void clean_error_msg(){
 	if (error_msg_console != NULL)
 		free(error_msg_console);
-	
+
 	if (error_msg != NULL)
 		free(error_msg);
-	
+
 	return;
 }
 
@@ -6383,30 +7188,30 @@ static char *get_msg_from_dict(char *lang_path, const char *const msg_name){
 	char dict_file[MAX_FILE_LENGTH], *dict_info;
 	char *follow_info, *follow_info_end, *target;
 	int len;
-	
+
 	memset(dict_file, 0, MAX_FILE_LENGTH);
 	sprintf(dict_file, "%s", lang_path);
-	
+
 	dict_info = read_whole_file(dict_file);
 	if (dict_info == NULL){
 		tcdbg_printf("No dictionary file, \"%s\".\n", dict_file);
 		return NULL;
 	}
-	
+
 	follow_info = strstr(dict_info, msg_name);
 	if (follow_info == NULL){
 		tcdbg_printf("No \"%s\" in the dictionary file.\n", msg_name);
 		free(dict_info);
 		return NULL;
 	}
-	
+
 	follow_info += strlen(msg_name)+strlen("=");
 	follow_info_end = follow_info;
 	while (*follow_info_end != 0 && *follow_info_end != '\n')
 		++follow_info_end;
-	
+
 	len = follow_info_end-follow_info;
-	
+
 	target = (char *)malloc(sizeof(char)*(len+1));
 	if (target == NULL){
 		tcdbg_printf("No memory \"target\".\n");
@@ -6416,7 +7221,7 @@ static char *get_msg_from_dict(char *lang_path, const char *const msg_name){
 	if (len > 0)
 		strncpy(target, follow_info, len);
 	target[len] = 0;
-	
+
 	free(dict_info);
 	return target;
 }
@@ -6543,54 +7348,108 @@ static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* re
 
 	if (!strcmp(action_mode, "apply")) {
 		char *rc_service = get_param(g_var_post, "rc_service");
-		if(!rc_service)
-			return;
+		char *action_script = get_param(g_var_post, "action_script");
 
-		if(!strcmp(rc_service, "enable_webdav")) {
-			char *ddns_enable_x = get_param(g_var_post, "ddns_enable_x");
-			char *ddns_server_x = get_param(g_var_post, "ddns_server_x");
-			char *ddns_hostname_x = get_param(g_var_post, "ddns_hostname_x");
-			char *enable_webdav = get_param(g_var_post, "enable_webdav");
-			char *webdav_aidisk = get_param(g_var_post, "webdav_aidisk");
-			char *webdav_proxy = get_param(g_var_post, "webdav_proxy");
-			char *st_webdav_mode = get_param(g_var_post, "st_webdav_mode");
+		if(rc_service) {
+			if(!strcmp(rc_service, "enable_webdav")) {
+				char *ddns_enable_x = get_param(g_var_post, "ddns_enable_x");
+				char *ddns_server_x = get_param(g_var_post, "ddns_server_x");
+				char *ddns_hostname_x = get_param(g_var_post, "ddns_hostname_x");
+				char *enable_webdav = get_param(g_var_post, "enable_webdav");
+				char *webdav_aidisk = get_param(g_var_post, "webdav_aidisk");
+				char *webdav_proxy = get_param(g_var_post, "webdav_proxy");
+				char *st_webdav_mode = get_param(g_var_post, "st_webdav_mode");
 
-			if(ddns_enable_x)
-				tcapi_set("Ddns_Entry", "Active", ddns_enable_x);
-			if(ddns_server_x)
-				tcapi_set("Ddns_Entry", "SERVERNAME", ddns_server_x);
-			if(ddns_hostname_x)
-				tcapi_set("Ddns_Entry", "MYHOST", ddns_hostname_x);
-			if(ddns_enable_x || ddns_server_x || ddns_hostname_x)
-				tcapi_commit("Ddns");
+				if(ddns_enable_x)
+					tcapi_set("Ddns_Entry", "Active", ddns_enable_x);
+				if(ddns_server_x)
+					tcapi_set("Ddns_Entry", "SERVERNAME", ddns_server_x);
+				if(ddns_hostname_x)
+					tcapi_set("Ddns_Entry", "MYHOST", ddns_hostname_x);
+				if(ddns_enable_x || ddns_server_x || ddns_hostname_x)
+					tcapi_commit("Ddns");
 
-			if(enable_webdav)
-				tcapi_set("AiCloud_Entry", "enable_webdav", enable_webdav);
-			if(webdav_aidisk)
-				tcapi_set("AiCloud_Entry", "webdav_aidisk", webdav_aidisk);
-			if(webdav_proxy)
-				tcapi_set("AiCloud_Entry", "webdav_proxy", webdav_proxy);
-			if(st_webdav_mode)
-				tcapi_set("AiCloud_Entry", "st_webdav_mode", st_webdav_mode);
-			if(enable_webdav || webdav_aidisk || webdav_proxy || st_webdav_mode)
-				system("/sbin/rc_call webdav 2 &");	//restart
+				if(enable_webdav)
+					tcapi_set("AiCloud_Entry", "enable_webdav", enable_webdav);
+				if(webdav_aidisk)
+					tcapi_set("AiCloud_Entry", "webdav_aidisk", webdav_aidisk);
+				if(webdav_proxy)
+					tcapi_set("AiCloud_Entry", "webdav_proxy", webdav_proxy);
+				if(st_webdav_mode)
+					tcapi_set("AiCloud_Entry", "st_webdav_mode", st_webdav_mode);
+				if(enable_webdav || webdav_aidisk || webdav_proxy || st_webdav_mode)
+					system("/sbin/rc_call webdav 2 &");	//restart
 
-			websWrite(wp, "MODIFIED\n");
-			websWrite(wp, "RUN SERVICE\n");
-			tcapi_save();
+				websWrite(wp, "MODIFIED\n");
+				websWrite(wp, "RUN SERVICE\n");
+				tcapi_save();
+			}
+			else if(!strcmp(rc_service, "restart_cloudsync")) {
+				char *enable_cloudsync = get_param(g_var_post, "enable_cloudsync");
+				char *cloud_sync = get_param(g_var_post, "cloud_sync");
+
+				if(enable_cloudsync)
+					tcapi_set("AiCloud_Entry", "enable_cloudsync", enable_cloudsync);
+				if(cloud_sync)
+					tcapi_set("AiCloud_Entry", "cloud_sync", cloud_sync);
+				if(enable_cloudsync || cloud_sync)
+					system("/sbin/rc_call cloudsync 2 &");	//restart
+
+				tcapi_save();
+			}
 		}
-		else if(!strcmp(rc_service, "restart_cloudsync")) {
-			char *enable_cloudsync = get_param(g_var_post, "enable_cloudsync");
-			char *cloud_sync = get_param(g_var_post, "cloud_sync");
 
-			if(enable_cloudsync)
-				tcapi_set("AiCloud_Entry", "enable_cloudsync", enable_cloudsync);
-			if(cloud_sync)
-				tcapi_set("AiCloud_Entry", "cloud_sync", cloud_sync);
-			if(enable_cloudsync || cloud_sync)
-				system("/sbin/rc_call cloudsync 2 &");	//restart
+		if(action_script) {
+			if(!strcmp(action_script, "saveNvram")) {
+				char *current_page = get_param(g_var_post, "current_page");
 
-			tcapi_save();
+				if(current_page) {
+#ifdef RTCONFIG_OPENVPN
+					if(!strcmp(current_page, "Advanced_VPN_OpenVPN.asp")) {
+						char *formname = get_param(g_var_post, "formname");
+
+						if(formname) {
+							if(!strcmp(formname, "openvpnTLSKeyForm")) {
+								_save_openvpn_server_tls();
+							}
+							else if(!strcmp(formname, "openvpnStaticKeyForm")) {
+								_save_openvpn_server_static();
+							}
+						}
+					}
+					else if(!strcmp(current_page, "Advanced_VPNClient_Content.asp")) {
+						char *formname = get_param(g_var_post, "formname");
+
+						if(formname) {
+							if(!strcmp(formname, "openvpnManualForm")) {
+								_save_openvpn_client_cert();
+							}
+						}
+					}
+#endif
+				}
+			}
+		}
+	}
+	else if (!strcmp(action_mode, "change_wan_pvc"))
+	{
+		char *wan_pvc = get_param(g_var_post, "wan_pvc");
+
+		if(wan_pvc) {
+			csprintf("set wan_pvc=[%s]\n", wan_pvc);
+			tcapi_set("WebCurSet_Entry", "wan_pvc", wan_pvc);
+			tcapi_set("WebCurSet_Entry", "dev_pvc", wan_pvc);
+
+			if(!strcmp(wan_pvc, "0"))
+				tcapi_set("Wan_Common", "TransMode", "ATM");
+			else if(!strcmp(wan_pvc, "8"))
+				tcapi_set("Wan_Common", "TransMode", "PTM");
+			else if(!strcmp(wan_pvc, "10"))
+				tcapi_set("Wan_Common", "TransMode", "Ethernet");
+			else if(!strcmp(wan_pvc, "11"))
+				tcapi_set("Wan_Common", "TransMode", "USB");
+			else if(!strcmp(wan_pvc, "12"))
+				tcapi_set("Wan_Common", "TransMode", "LAN");
 		}
 	}
 #ifdef RTCONFIG_DUALWAN
@@ -6615,6 +7474,8 @@ static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* re
 				tcapi_set("Wan_Common", "TransMode", "PTM");
 			else if(!strcmp(value, "10"))
 				tcapi_set("Wan_Common", "TransMode", "Ethernet");
+			else if(!strcmp(value, "11"))
+				tcapi_set("Wan_Common", "TransMode", "USB");
 			else if(!strcmp(value, "12"))
 				tcapi_set("Wan_Common", "TransMode", "LAN");
 		}
@@ -6897,7 +7758,6 @@ static void wanlink (asp_reent* reent, const asp_text* params, asp_text* ret)
 	char xgateway[18] = "0.0.0.0";
 	char xdns[32] = "0.0.0.0";
 	unsigned int xlease = 0, xexpires = 0;
-	char name[32] = {0};
 	char wp[256] = {0};
 
 	unit = wan_primary_ifunit();
@@ -6936,21 +7796,21 @@ static void wanlink (asp_reent* reent, const asp_text* params, asp_text* ret)
 	else if(wan_state == WAN_STATE_DISABLED){
 		status = 0;
 	}
-// DSLTODO, need a better integration	
+// DSLTODO, need a better integration
 #ifdef RTCONFIG_DSL
 	// if dualwan & enable lan port as wan
 	// it always report disconnected
 	//Some AUXSTATE is displayed for reference only
-	else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) { 
+	else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) {
 		status = 0;
 	}
 #else
 	//Some AUXSTATE is displayed for reference only
-	else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) { 
+	else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) {
 		status = 0;
 	}
 #endif
-	else if(wan_auxstate == WAN_AUXSTATE_NO_INTERNET_ACTIVITY&&(tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOINTERNET)) { 
+	else if(wan_auxstate == WAN_AUXSTATE_NO_INTERNET_ACTIVITY&&(tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOINTERNET)) {
 		status = 0;
 	}
 	else if(!strcmp(wan_proto, "pppoe")
@@ -7030,40 +7890,29 @@ static void wanlink (asp_reent* reent, const asp_text* params, asp_text* ret)
 	websWrite(wp, "function wanlink_expires() { return %d;}\n", expires);
 	websWrite(wp, "function is_private_subnet() { return '%d';}\n", is_private_subnet(ip));
 
+#if 0//Note: not support VPN + DHCP Connection currently
 	if (strcmp(wan_proto, "pppoe") == 0
 		//|| strcmp(wan_proto, "pptp") == 0
 		//|| strcmp(wan_proto, "l2tp") == 0
 		)
 	{
-		// int dhcpenable = nvram_get_int(strcat_r(prefix, "dhcpenable_x", tmp));
+		char node[MAXLEN_NODE_NAME];
 		int dhcpenable = 0;
-		sprintf(name, "Wan_PVC%d", unit);
-		tcapi_get(name, "PPPGETIP", tmp);
+		sprintf(node, "Wan_PVC%d", unit);
+		tcapi_get(node, "PPPGETIP", tmp);
 		dhcpenable = strcmp(tmp, "Dynamic") ? 0 : 1;
-#if 0
-		if (strcmp(wan_proto, "pppoe") == 0 &&
-		    dhcpenable && nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0"))
-			dhcpenable = 2;
-#endif
-
-		if (dhcpenable == 0)
-			xtype = "static";
-		else if (dhcpenable != 2 || strcmp(wan_proto, "pppoe") != 0)
-			xtype = "dhcp";
-		
-		tcapi_get(name, "WanIP", xip);
-		tcapi_get(name, "WanSubMask", xnetmask);
-		tcapi_get(name, "WanDefGW", xgateway);
-		tcapi_get(name, "DNSIP", xdns);
-		xlease = tcapi_get_int(name, "DhcpLeaseTime");
-		// xip = nvram_safe_get(strcat_r(prefix, "xipaddr", tmp));
-		// xnetmask = nvram_safe_get(strcat_r(prefix, "xnetmask", tmp));
-		// xgateway = nvram_safe_get(strcat_r(prefix, "xgateway", tmp));
-		// xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
+		xtype = (dhcpenable == 0) ? "static" :
+			(strcmp(wan_proto, "pppoe") == 0 && tcapi_match(node, "vpndhcp", "0")) ? "" : /* zeroconf */
+			"dhcp";
+		strncpy(xip, nvram_safe_get(strcat_r(prefix, "xipaddr", tmp)), sizeof(xip)-1);
+		strncpy(xnetmask, nvram_safe_get(strcat_r(prefix, "xnetmask", tmp)), sizeof(xnetmask)-1);
+		strncpy(xgateway, nvram_safe_get(strcat_r(prefix, "xgateway", tmp)), sizeof(xgateway)-1);
+		strncpy(xdns, nvram_safe_get(strcat_r(prefix, "xdns", tmp)), sizeof(xdns)-1);
+		xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
 		if (xlease > 0)
-			// xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
-			xexpires = tcapi_get_int(name, "DhcpExpiresTime") - uptime();
+			xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
 	}
+#endif
 
 	websWrite(wp, "function wanlink_xtype() { return '%s';}\n", xtype);
 	websWrite(wp, "function wanlink_xipaddr() { return '%s';}\n", xip);
@@ -7095,7 +7944,6 @@ static void first_wanlink (asp_reent* reent, const asp_text* params, asp_text* r
 	char xgateway[18] = "0.0.0.0";
 	char xdns[32] = "0.0.0.0";
 	unsigned int xlease = 0, xexpires = 0;
-	char name[32] = {0};
 	char wp[256] = {0};
 
 	unit = wan_primary_pvcunit();
@@ -7134,21 +7982,21 @@ static void first_wanlink (asp_reent* reent, const asp_text* params, asp_text* r
 	else if(wan_state == WAN_STATE_DISABLED){
 		status = 0;
 	}
-// DSLTODO, need a better integration	
+// DSLTODO, need a better integration
 #ifdef RTCONFIG_DSL
 	// if dualwan & enable lan port as wan
 	// it always report disconnected
 	//Some AUXSTATE is displayed for reference only
-	else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) { 
+	else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) {
 		status = 0;
 	}
 #else
 	//Some AUXSTATE is displayed for reference only
-	else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) { 
+	else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) {
 		status = 0;
 	}
 #endif
-	else if(wan_auxstate == WAN_AUXSTATE_NO_INTERNET_ACTIVITY&&(tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOINTERNET)) { 
+	else if(wan_auxstate == WAN_AUXSTATE_NO_INTERNET_ACTIVITY&&(tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOINTERNET)) {
 		status = 0;
 	}
 	else if(!strcmp(wan_proto, "pppoe")
@@ -7227,40 +8075,29 @@ static void first_wanlink (asp_reent* reent, const asp_text* params, asp_text* r
 	websWrite(wp, "function first_wanlink_lease() { return %d;}\n", lease);
 	websWrite(wp, "function first_wanlink_expires() { return %d;}\n", expires);
 
+#if 0//Note: not support VPN + DHCP Connection currently
 	if (strcmp(wan_proto, "pppoe") == 0
 		//|| strcmp(wan_proto, "pptp") == 0
 		//|| strcmp(wan_proto, "l2tp") == 0
 		)
 	{
-		// int dhcpenable = nvram_get_int(strcat_r(prefix, "dhcpenable_x", tmp));
+		char node[MAXLEN_NODE_NAME];
 		int dhcpenable = 0;
-		sprintf(name, "Wan_PVC%d", unit);
-		tcapi_get(name, "PPPGETIP", tmp);
+		sprintf(node, "Wan_PVC%d", unit);
+		tcapi_get(node, "PPPGETIP", tmp);
 		dhcpenable = strcmp(tmp, "Dynamic") ? 0 : 1;
-#if 0
-		if (strcmp(wan_proto, "pppoe") == 0 &&
-		    dhcpenable && nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0"))
-			dhcpenable = 2;
-#endif
-
-		if (dhcpenable == 0)
-			xtype = "static";
-		else if (dhcpenable != 2 || strcmp(wan_proto, "pppoe") != 0)
-			xtype = "dhcp";
-		
-		tcapi_get(name, "WanIP", xip);
-		tcapi_get(name, "WanSubMask", xnetmask);
-		tcapi_get(name, "WanDefGW", xgateway);
-		tcapi_get(name, "DNSIP", xdns);
-		xlease = tcapi_get_int(name, "DhcpLeaseTime");
-		// xip = nvram_safe_get(strcat_r(prefix, "xipaddr", tmp));
-		// xnetmask = nvram_safe_get(strcat_r(prefix, "xnetmask", tmp));
-		// xgateway = nvram_safe_get(strcat_r(prefix, "xgateway", tmp));
-		// xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
+		xtype = (dhcpenable == 0) ? "static" :
+			(strcmp(wan_proto, "pppoe") == 0 && tcapi_match(node, "vpndhcp", "0")) ? "" : /* zeroconf */
+			"dhcp";
+		strncpy(xip, nvram_safe_get(strcat_r(prefix, "xipaddr", tmp)), sizeof(xip)-1);
+		strncpy(xnetmask, nvram_safe_get(strcat_r(prefix, "xnetmask", tmp)), sizeof(xnetmask)-1);
+		strncpy(xgateway, nvram_safe_get(strcat_r(prefix, "xgateway", tmp)), sizeof(xgateway)-1);
+		strncpy(xdns, nvram_safe_get(strcat_r(prefix, "xdns", tmp)), sizeof(xdns)-1);
+		xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
 		if (xlease > 0)
-			// xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
-			xexpires = tcapi_get_int(name, "DhcpExpiresTime") - uptime();
+			xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
 	}
+#endif
 
 	websWrite(wp, "function first_wanlink_xtype() { return '%s';}\n", xtype);
 	websWrite(wp, "function first_wanlink_xipaddr() { return '%s';}\n", xip);
@@ -7294,7 +8131,6 @@ static void secondary_wanlink (asp_reent* reent, const asp_text* params, asp_tex
 	char xgateway[18] = "0.0.0.0";
 	char xdns[18] = "0.0.0.0";
 	unsigned int xlease = 0, xexpires = 0;
-	char name[32] = {0};
 
 	/* current unit */
 	unit = wan_secondary_pvcunit();
@@ -7423,40 +8259,35 @@ static void secondary_wanlink (asp_reent* reent, const asp_text* params, asp_tex
 	websWrite(wp, "function secondary_wanlink_expires() { return %d;}\n", expires);
 	websWrite(wp, "function is_private_subnet() { return %d;}\n", is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp))));
 
+#if 0//Note: not support VPN + DHCP Connection currently
 	if (strcmp(wan_proto, "pppoe") == 0
 			//|| strcmp(wan_proto, "pptp") == 0
 			//|| strcmp(wan_proto, "l2tp") == 0
 		)
 	{
+		char node[MAXLEN_NODE_NAME];
 		int dhcpenable = 0;
-		sprintf(name, "Wan_PVC%d", unit);
-		tcapi_get(name, "PPPGETIP", tmp);
+		sprintf(node, "Wan_PVC%d", unit);
+		tcapi_get(node, "PPPGETIP", tmp);
 		dhcpenable = strcmp(tmp, "Dynamic") ? 0 : 1;
-#if 0 /* TODO: tmporary change! remove after WEB UI support */
-		if (strcmp(wan_proto, "pppoe") == 0 &&
-		    dhcpenable && nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0"))
-			dhcpenable = 2;
-#endif /* TODO: tmporary change! remove after WEB UI support */
-
-		if (dhcpenable == 0)
-			xtype = "static";
-		else if (dhcpenable != 2 || strcmp(wan_proto, "pppoe") != 0)
-			xtype = "dhcp";
-
-		tcapi_get(name, "WanIP", xip);
-		tcapi_get(name, "WanSubMask", xnetmask);
-		tcapi_get(name, "WanDefGW", xgateway);
-		tcapi_get(name, "DNSIP", xdns);
-		xlease = tcapi_get_int(name, "DhcpLeaseTime");
+		xtype = (dhcpenable == 0) ? "static" :
+			(strcmp(wan_proto, "pppoe") == 0 && tcapi_match(node, "vpndhcp", "0")) ? "" : /* zeroconf */
+			"dhcp";
+		strncpy(xip, nvram_safe_get(strcat_r(prefix, "xipaddr", tmp)), sizeof(xip)-1);
+		strncpy(xnetmask, nvram_safe_get(strcat_r(prefix, "xnetmask", tmp)), sizeof(xnetmask)-1);
+		strncpy(xgateway, nvram_safe_get(strcat_r(prefix, "xgateway", tmp)), sizeof(xgateway)-1);
+		strncpy(xdns, nvram_safe_get(strcat_r(prefix, "xdns", tmp)), sizeof(xdns)-1);
+		xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
 		if (xlease > 0)
-			xexpires = tcapi_get_int(name, "DhcpExpiresTime") - uptime();
+			xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
 	}
+#endif
 
 	websWrite(wp, "function secondary_wanlink_xtype() { return '%s';}\n", xtype);
 	websWrite(wp, "function secondary_wanlink_xipaddr() { return '%s';}\n", xip);
 	websWrite(wp, "function secondary_wanlink_xnetmask() { return '%s';}\n", xnetmask);
 	websWrite(wp, "function secondary_wanlink_xgateway() { return '%s';}\n", xgateway);
-	websWrite(wp, "function secondary_wanlink_xdns() { return '%s';}\n", nvram_safe_get(strcat_r(prefix, "xdns", tmp)));
+	websWrite(wp, "function secondary_wanlink_xdns() { return '%s';}\n", xdns);
 	websWrite(wp, "function secondary_wanlink_xlease() { return %d;}\n", xlease);
 	websWrite(wp, "function secondary_wanlink_xexpires() { return %d;}\n", xexpires);
 #else
@@ -7539,7 +8370,7 @@ static void setting_lan (asp_reent* reent, const asp_text* params, asp_text* ret
 	// char tmp_lan[100], prefix_lan[] = "lanXXXXXXXXXX_";
 	int unit;
 	// char tmp_wan[100], prefix_wan[] = "wanXXXXXXXXXX_";
-	char prefix_wan[32] = {0};
+	char tmp_wanip[32], tmp_wanmask[32];
 	char wp[4] = {0};
 
 	// snprintf(prefix_lan, sizeof(prefix_lan), "lan_");
@@ -7559,7 +8390,7 @@ static void setting_lan (asp_reent* reent, const asp_text* params, asp_text* ret
 	lan_subnet = lan_ip_num&lan_mask_num;
 dbg("http: get lan_subnet=%x!\n", lan_subnet);
 
-#ifdef RTCONFIG_DUALWAN
+#if 0 /* don't care about secondary WAN in error redirect page, and must consider DSL and USB WAN. */
 	for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
 		if(unit != wan_primary_ifunit()
 				&& !nvram_match("wans_mode", "lb")
@@ -7582,17 +8413,18 @@ dbg("http: Can't get the WAN's unit!\n");
 	unit = wan_primary_ifunit();
 #endif
 	// wan_prefix(unit, prefix_wan);
-	sprintf(prefix_wan, "DeviceInfo_PVC%d", unit);
 
 	memset(wan_ipaddr_t, 0, sizeof(wan_ipaddr_t));
 	// strcpy(wan_ipaddr_t, nvram_safe_get(strcat_r(prefix_lan, "ipaddr", tmp_wan)));
-	tcapi_get(prefix_wan, "WanIP", wan_ipaddr_t);
+	sprintf(tmp_wanip, "wan%d_ipaddr", unit);
+	tcapi_get("Wanduck_Common", tmp_wanip, wan_ipaddr_t);
 	memset(&addr, 0, sizeof(addr));
 	wan_ip_num = ntohl(inet_aton(wan_ipaddr_t, &addr));
 	wan_ip_num = ntohl(addr.s_addr);
 	memset(wan_netmask_t, 0, sizeof(wan_netmask_t));
 	// strcpy(wan_netmask_t, nvram_safe_get(strcat_r(prefix_lan, "netmask", tmp_wan)));
-	tcapi_get(prefix_wan, "WanSubMask", wan_netmask_t);
+	sprintf(tmp_wanmask, "wan%d_netmask", unit);
+	tcapi_get("Wanduck_Common", tmp_wanmask, wan_netmask_t);
 	memset(&addr, 0, sizeof(addr));
 	wan_mask_num = ntohl(inet_aton(wan_netmask_t, &addr));
 	wan_mask_num = ntohl(addr.s_addr);
@@ -7610,8 +8442,16 @@ dbg("http: The subnets of WAN and LAN aren't the same already.!\n");
 	else
 		new_lan_ip_num = lan_ip_num+(~lan_mask_num)+1;
 
-	new_dhcp_start_num = new_lan_ip_num+1;
-	new_dhcp_end_num = new_lan_ip_num+(~inet_network(lan_netmask_t))-2;
+	/* To prevent Lan IP: 192.168.1.254, then new dhcp start to 192.168.1.255. (~lan_mask_num)-1 like 254 */
+	if((new_lan_ip_num&(~lan_mask_num)) == ((~lan_mask_num)-1)) {
+		new_dhcp_start_num = (new_lan_ip_num&lan_mask_num) + 2; /* prevent x.x.x.1 for router */
+		new_dhcp_end_num = (new_lan_ip_num&lan_mask_num) + (~lan_mask_num)-2;
+		dbg("http: get new_lan_ip_num&(~lan_mask_num)=%x!\n", (new_lan_ip_num&(~lan_mask_num)));
+	}
+	else {
+		new_dhcp_start_num = new_lan_ip_num+1;
+		new_dhcp_end_num = (new_lan_ip_num|(~inet_network(lan_netmask_t)))-1;
+	}
 dbg("%u, %u, %u.\n", new_lan_ip_num, new_dhcp_start_num, new_dhcp_end_num);
 	memset(&addr, 0, sizeof(addr));
 	addr.s_addr = htonl(new_lan_ip_num);
@@ -7660,7 +8500,7 @@ static void login_state_hook (asp_reent* reent, const asp_text* params, asp_text
 	const int VALUELEN = 18;
 	char buffer[MAX], values[6][VALUELEN];
 	char wp[256] = {0};
-	
+
 	// ip = getpeerip(wp);
 	//csprintf("ip = %u\n",ip);
 
@@ -7670,7 +8510,7 @@ static void login_state_hook (asp_reent* reent, const asp_text* params, asp_text
 	strcpy(ip_str, reent->server_env->remote_ip_addr);
 //	time(&now);
 	now = uptime();
-	
+
 	// login_ip = (unsigned int)atoll(nvram_safe_get("login_ip"));
 	// login_ip_addr.s_addr = login_ip;
 	memset(login_ip_str, 0, sizeof(login_ip_str));
@@ -7684,12 +8524,12 @@ static void login_state_hook (asp_reent* reent, const asp_text* params, asp_text
 	login_timestamp = strtoul(buffer, NULL, 10);
 	// login_port = (unsigned int)atol(nvram_safe_get("login_port"));
 	// login_port = (unsigned int)server_port;
-	
+
 	FILE *fp = fopen("/proc/net/arp", "r");
 	if (fp){
 		memset(buffer, 0, MAX);
 		memset(values, 0, 6*VALUELEN);
-		
+
 		while (fgets(buffer, MAX, fp)){
 			if (strstr(buffer, "br0") && !strstr(buffer, "00:00:00:00:00:00")){
 				if (sscanf(buffer, "%s%s%s%s%s%s", values[0], values[1], values[2], values[3], values[4], values[5]) == 6){
@@ -7697,23 +8537,23 @@ static void login_state_hook (asp_reent* reent, const asp_text* params, asp_text
 						break;
 					}
 				}
-				
+
 				memset(values, 0, 6*VALUELEN);
 			}
-			
+
 			memset(buffer, 0, MAX);
 		}
-		
+
 		fclose(fp);
 	}
-	
+
 	// if (ip != 0 && login_ip == ip && login_port != 0 && login_port == http_port) {
 	if (!strcmp(ip_str, login_ip_str) ) {
 		websWrite(wp, "function is_logined() { return 1; }\n");
 		websWrite(wp, "function login_ip_dec() { return '%u'; }\n", login_ip);
 		websWrite(wp, "function login_ip_str() { return '%s'; }\n", login_ip_str);
 		websWrite(wp, "function login_ip_str_now() { return '%s'; }\n", ip_str);
-		
+
 		if (values[3] != NULL)
 			websWrite(wp, "function login_mac_str() { return '%s'; }\n", values[3]);
 		else
@@ -7724,14 +8564,14 @@ static void login_state_hook (asp_reent* reent, const asp_text* params, asp_text
 	else{
 		websWrite(wp, "function is_logined() { return 0; }\n");
 		websWrite(wp, "function login_ip_dec() { return '%u'; }\n", login_ip);
-		
+
 		if ((unsigned long)(now-login_timestamp) > 60)	//one minitues
 			websWrite(wp, "function login_ip_str() { return '0.0.0.0'; }\n");
 		else
 			websWrite(wp, "function login_ip_str() { return '%s'; }\n", login_ip_str);
-		
+
 		websWrite(wp, "function login_ip_str_now() { return '%s'; }\n", ip_str);
-		
+
 		if (values[3] != NULL)
 			websWrite(wp, "function login_mac_str() { return '%s'; }\n", values[3]);
 		else
@@ -7804,7 +8644,7 @@ static void secondary_ajax_wanstate (asp_reent* reent, const asp_text* params, a
 static void stop_service (asp_reent* reent, const asp_text* params, asp_text* ret) {
 	killall_tk("clean_cache.sh");
 	sleep(1);
-	
+
 	kill_pidfile_s("/var/run/cfg_manager_pid", SIGUSR2);
 	sleep(1);
 #ifdef RTCONFIG_USB
@@ -7926,6 +8766,13 @@ static void dump_fb_fail_content( void )
 	tcapi_get_string("Adsl_Entry", "adsl_rx_agc", tmp_val);
 	sprintf(buf, "Rx AGC(ADSL): %s\n", tmp_val);
 	asp_send_response(NULL, buf, strlen(buf));
+
+#ifdef TCSUPPORT_CPU_MT7510
+	memset(tmp_val, 0, sizeof(tmp_val));
+	tcapi_get_string("Adsl_Entry", "dslx_adsl_esnp", tmp_val);
+	sprintf(buf, "ESNP - Enhanced Sudden Noise Protection(ADSL): %s\n", tmp_val);
+	asp_send_response(NULL, buf, strlen(buf));
+#endif /* TCSUPPORT_CPU_MT7510 */
 
 #ifdef TCSUPPORT_WAN_PTM
 	memset(tmp_val, 0, sizeof(tmp_val));
@@ -8056,7 +8903,7 @@ static void dump_fb_fail_content( void )
 		sprintf(buf, "Monitor line stability: %s\n", tmp_val);
 	}
 	asp_send_response(NULL, buf, strlen(buf));
-	
+
 	memset(tmp_val, 0, sizeof(tmp_val));
 	tcapi_get_string("WebCurSet_Entry", "dslup_counter", tmp_val);
 	sprintf(buf, " / %s\n", tmp_val);
@@ -8088,6 +8935,11 @@ static void dump_fb_fail_content( void )
 		asp_send_response(NULL, buf, strlen(buf));
 
 		memset(tmp_val, 0, sizeof(tmp_val));
+		tcapi_get_string("Info_Adsl", "CurrentProfiles", tmp_val);
+		sprintf(buf, "Current Profile: %s\n", tmp_val);
+		asp_send_response(NULL, buf, strlen(buf));
+
+		memset(tmp_val, 0, sizeof(tmp_val));
 		tcapi_get_string("Info_Adsl", "SNRMarginDown", tmp_val);
 		sprintf(buf, "SNR Down: %s\n", tmp_val);
 		asp_send_response(NULL, buf, strlen(buf));
@@ -8108,20 +8960,28 @@ static void dump_fb_fail_content( void )
 		asp_send_response(NULL, buf, strlen(buf));
 
 		memset(tmp_val, 0, sizeof(tmp_val));
-		tcapi_get_string("Info_Adsl", "WanListMode", tmp_val);
-		if( strcmp(tmp_val, "0") == 0)
-		{
-			sprintf(tmp_val, "Interleaved");
-		}
-		else if( strcmp(tmp_val, "1") == 0)
-		{
-			sprintf(tmp_val, "FastPath");
-		}
-		else
-		{
-			sprintf(tmp_val, "N/A");
-		}
-		sprintf(buf, "Path Mode: %s\n", tmp_val);
+		tcapi_get_string("Info_Adsl", "TCM", tmp_val);
+		sprintf(buf, "TCM: %s\n", tmp_val);
+		asp_send_response(NULL, buf, strlen(buf));
+
+		memset(tmp_val, 0, sizeof(tmp_val));
+		tcapi_get_string("Info_Adsl", "PathModeDown", tmp_val);
+		sprintf(buf, "Path Mode Down: %s\n", tmp_val);
+		asp_send_response(NULL, buf, strlen(buf));
+
+		memset(tmp_val, 0, sizeof(tmp_val));
+		tcapi_get_string("Info_Adsl", "InterleaveDepthDown", tmp_val);
+		sprintf(buf, "Interleave Depth Down: %s\n", tmp_val);
+		asp_send_response(NULL, buf, strlen(buf));
+
+		memset(tmp_val, 0, sizeof(tmp_val));
+		tcapi_get_string("Info_Adsl", "PathModeUp", tmp_val);
+		sprintf(buf, "Path Mode Up: %s\n", tmp_val);
+		asp_send_response(NULL, buf, strlen(buf));
+
+		memset(tmp_val, 0, sizeof(tmp_val));
+		tcapi_get_string("Info_Adsl", "InterleaveDepthUp", tmp_val);
+		sprintf(buf, "Interleave Depth Up: %s\n", tmp_val);
 		asp_send_response(NULL, buf, strlen(buf));
 
 		memset(tmp_val, 0, sizeof(tmp_val));
@@ -8359,11 +9219,21 @@ static void ej_dump(asp_reent* reent, const asp_text* params, asp_text* ret) {
 		sprintf(filename, "/etc/ISP_PTM_List_IPTV.txt");
 		dump_file(wp, filename);
 	}
+	else if (strcmp(file, "iptable.log")==0)
+	{
+		get_nat_vserver_table(wp);
+	}
 #ifdef RTCONFIG_OPENVPN
 	else if(!strncmp(file, "vpn_crt_", 8)) {
 		sprintf(filename, "/%s/%s", OVPN_FS_PATH, file);
 		if(f_exists(filename))
-			dump_file(wp, filename);
+			clean_dump_file(wp, filename);
+	}
+	else if(!strcmp(file, "openvpn_connected")){
+		int unit = tcapi_get_int("WebCurSet_Entry","openvpn_id") - SERVER_IF_START;
+		parse_openvpn_status(unit);
+		sprintf(filename, "/etc/openvpn/server%d/client_status", unit);
+		dump_file(wp, filename);
 	}
 #endif
 	else {
@@ -8396,6 +9266,21 @@ void sys_script(char *name) {
      }
 }
 
+int gen_modemlog(void)
+{
+	char value[8] = {0};
+	char cmd[128] = {0};
+
+	tcapi_get("PushMail_Entry", "PM_attach_modemlog", value);
+
+	if( strcmp(value, "1") == 0 )
+	{
+		sprintf(cmd, "/usr/script/3ginfo.sh > %s", "/tmp/xdsl/modemlog.txt");
+		system(cmd);
+	}
+	return 0;
+}
+
 int dump_file(char *wp, char *filename) {
 	FILE *fp;
 	char buf[MAX_LINE_SIZE];
@@ -8406,6 +9291,22 @@ int dump_file(char *wp, char *filename) {
 
 	while (fgets(buf, MAX_LINE_SIZE, fp)!=NULL)
 		asp_send_response(NULL, buf, strlen(buf));
+
+	fclose(fp);
+
+	return 0;
+}
+
+int clean_dump_file(char *wp, char *filename) {
+	FILE *fp;
+	char buf[MAX_LINE_SIZE];
+
+	fp = fopen(filename, "r");
+	if (fp==NULL)
+		return -1;
+
+	while (fgets(buf, MAX_LINE_SIZE, fp)!=NULL)
+		_webs_clean_write(buf);
 
 	fclose(fp);
 
@@ -8510,14 +9411,14 @@ static void NetworkToolsNetstat(asp_reent* reent, const asp_text* params, asp_te
 	else
 		return;
 
-	if (strchr(NetOption, '&') || strchr(NetOption, ';') || strchr(NetOption, '%') 
+	if (strchr(NetOption, '&') || strchr(NetOption, ';') || strchr(NetOption, '%')
 		|| strchr(NetOption, '|') || strchr(NetOption, '\n') || strchr(NetOption, '\r'))
 		return;
 
-	if (strchr(ResolveName, '&') || strchr(ResolveName, ';') || strchr(ResolveName, '%') 
+	if (strchr(ResolveName, '&') || strchr(ResolveName, ';') || strchr(ResolveName, '%')
 		|| strchr(ResolveName, '|') || strchr(ResolveName, '\n') || strchr(ResolveName, '\r'))
 		return;
-	
+
 	if((MAX_LINE_SIZE - strlen(cmd) - 1) > strlen(NetOption) + 1) {
 		strcat(cmd, NetOption);
 		strcat(cmd, " ");
@@ -8557,11 +9458,11 @@ static void NetworkToolsAnalysis(asp_reent* reent, const asp_text* params, asp_t
 	)
 		return;
 
-	if (strchr(destIP, '&') || strchr(destIP, ';') || strchr(destIP, '%') 
+	if (strchr(destIP, '&') || strchr(destIP, ';') || strchr(destIP, '%')
 		|| strchr(destIP, '|') || strchr(destIP, '\n') || strchr(destIP, '\r'))
 		return;
 
-	if (strchr(pingCNT, '&') || strchr(pingCNT, ';') || strchr(pingCNT, '%') 
+	if (strchr(pingCNT, '&') || strchr(pingCNT, ';') || strchr(pingCNT, '%')
 		|| strchr(pingCNT, '|') || strchr(pingCNT, '\n') || strchr(pingCNT, '\r'))
 		return;
 
@@ -8579,7 +9480,7 @@ static void NetworkToolsAnalysis(asp_reent* reent, const asp_text* params, asp_t
 
 		//Andy Chiu, 2015/06/01.
 		unlink("/tmp/nettool.log");
-		sprintf(cmd, "%s -o %s ",  cmd, "/tmp/nettool.log");		
+		sprintf(cmd, "%s -o %s ",  cmd, "/tmp/nettool.log");
 	}
 
 	if((MAX_LINE_SIZE - strlen(cmd) - 1) > strlen(destIP)) {
@@ -8703,9 +9604,9 @@ static void get_DSL_WAN_list(asp_reent* reent, const asp_text* params, asp_text*
 * AUTHOR: Andy Chiu
 * CREATE DATE: 2014/10/08
 * DESCRIPTION: invoke wake-on-lan function
-* INPUT:  
-* OUTPUT:  
-* RETURN:  
+* INPUT:
+* OUTPUT:
+* RETURN:
 * NOTE:
 *******************************************************************/
 static void WOL_Invoke(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -8731,9 +9632,9 @@ const char cl_cache_path[] = "/var/tmp/cl_cache";
 * AUTHOR: Andy Chiu
 * CREATE DATE: 2014/10/23
 * DESCRIPTION: refresh the client list
-* INPUT:  
-* OUTPUT:  
-* RETURN:  
+* INPUT:
+* OUTPUT:
+* RETURN:
 * NOTE:
 *******************************************************************/
 static void ClientList_Refresh(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -8741,7 +9642,7 @@ static void ClientList_Refresh(asp_reent* reent, const asp_text* params, asp_tex
 	char tmp[128];
 	unlink(cl_cache_path);
 	tcapi_set("ClientList_Common", "cache_size", "0");
-	
+
 	//check networkmap
 	if(access("/var/run/networkmap.pid", F_OK))	//	networkmap is not running
 	{
@@ -8752,7 +9653,7 @@ static void ClientList_Refresh(asp_reent* reent, const asp_text* params, asp_tex
 	{
 		//send signal to networkmap to do refresh
 		sprintf(tmp, "killall -%d networkmap", SIGUSR1);
-		system(tmp);		
+		system(tmp);
 	}
 }
 
@@ -8761,9 +9662,9 @@ static void ClientList_Refresh(asp_reent* reent, const asp_text* params, asp_tex
 * AUTHOR: Andy Chiu
 * CREATE DATE: 2015/03/26
 * DESCRIPTION: update the client list
-* INPUT:  
-* OUTPUT:  
-* RETURN:  
+* INPUT:
+* OUTPUT:
+* RETURN:
 * NOTE:
 *******************************************************************/
 static void ClientList_Update(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -8779,7 +9680,7 @@ static void ClientList_Update(asp_reent* reent, const asp_text* params, asp_text
 	{
 		//send signal to networkmap to do refresh
 		sprintf(tmp, "killall -%d networkmap", SIGUSR1);
-		system(tmp);		
+		system(tmp);
 	}
 }
 
@@ -8788,9 +9689,9 @@ static void ClientList_Update(asp_reent* reent, const asp_text* params, asp_text
 * AUTHOR: Renjie Lee
 * CREATE DATE: 2014/11/05
 * DESCRIPTION: set dev_pvc to current primary wan unit
-* INPUT:  
-* OUTPUT:  
-* RETURN:  
+* INPUT:
+* OUTPUT:
+* RETURN:
 * NOTE:
 *******************************************************************/
 static void set_primary_pvc(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -8807,10 +9708,10 @@ static void set_primary_pvc(asp_reent* reent, const asp_text* params, asp_text* 
 * NAME: wl_sta_list_2g
 * AUTHOR: Andy Chiu
 * CREATE DATE: 2014/12/03
-* DESCRIPTION: get the 2g wifi station list 
-* INPUT:  
-* OUTPUT:  
-* RETURN:  
+* DESCRIPTION: get the 2g wifi station list
+* INPUT:
+* OUTPUT:
+* RETURN:
 * NOTE:
 *******************************************************************/
 static void wl_sta_list_2g(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -8836,13 +9737,13 @@ static void wl_sta_list_2g(asp_reent* reent, const asp_text* params, asp_text* r
 
 /*******************************************************************
 * NAME: wl_sta_list_2g
-* AUTHOR: 
+* AUTHOR:
 Andy Chiu
 * CREATE DATE: 2014/12/03
-* DESCRIPTION: get the 5g wifi station list 
-* INPUT:  
-* OUTPUT:  
-* RETURN:  
+* DESCRIPTION: get the 5g wifi station list
+* INPUT:
+* OUTPUT:
+* RETURN:
 * NOTE:
 *******************************************************************/
 static void wl_sta_list_5g(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -8870,9 +9771,9 @@ static void wl_sta_list_5g(asp_reent* reent, const asp_text* params, asp_text* r
 * AUTHOR: Andy Chiu
 * CREATE DATE: 2014/12/03
 * DESCRIPTION: get client list
-* INPUT:  
-* OUTPUT:  
-* RETURN:  
+* INPUT:
+* OUTPUT:
+* RETURN:
 * NOTE:
 *******************************************************************/
 static void get_client_list(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -8915,7 +9816,7 @@ static void get_client_list(asp_reent* reent, const asp_text* params, asp_text* 
 		file_unlock(lock);
 		return;
 	}
-	
+
 	tcapi_get("ClientList_Common", "scan", output_buf);
 	if(!(atoi(output_buf)))
 		fp = fopen(cl_cache_path, "w");
@@ -8974,9 +9875,9 @@ static void get_client_list(asp_reent* reent, const asp_text* params, asp_text* 
 * AUTHOR: Andy Chiu
 * CREATE DATE: 2014/12/03
 * DESCRIPTION: get client list cache
-* INPUT:  
-* OUTPUT:  
-* RETURN:  
+* INPUT:
+* OUTPUT:
+* RETURN:
 * NOTE:
 *******************************************************************/
 static void get_client_list_cache(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -9001,9 +9902,9 @@ static void get_client_list_cache(asp_reent* reent, const asp_text* params, asp_
 * AUTHOR: Andy Chiu
 * CREATE DATE: 2014/12/03
 * DESCRIPTION: get asus devices list
-* INPUT:  
-* OUTPUT:  
-* RETURN:  
+* INPUT:
+* OUTPUT:
+* RETURN:
 * NOTE:
 *******************************************************************/
 static void get_asus_dev_list(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -9028,9 +9929,9 @@ static void get_asus_dev_list(asp_reent* reent, const asp_text* params, asp_text
 * AUTHOR: Andy Chiu
 * CREATE DATE: 2014/12/03
 * DESCRIPTION: get user defined item of client list
-* INPUT:  
-* OUTPUT:  
-* RETURN:  
+* INPUT:
+* OUTPUT:
+* RETURN:
 * NOTE:
 *******************************************************************/
 static void get_cl_userdef_list(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -9042,7 +9943,7 @@ static void get_cl_userdef_list(asp_reent* reent, const asp_text* params, asp_te
 	memset(buf, 0, sizeof(buf));
 	tcapi_get("UserDefCL_Common", "size", buf);
 	count = atoi(buf);
-	
+
 	if(count > 0)
 	{
 		//count the valid number of attributes
@@ -9054,10 +9955,10 @@ static void get_cl_userdef_list(asp_reent* reent, const asp_text* params, asp_te
 			memset(tmp, 0, sizeof(tmp));
 			if(!tcapi_get("UserDefCL_Entry", attr, tmp))
 				websWrite(buf, "%s", tmp);
-			
+
 		}
 	}
-	
+
 }
 
 /*******************************************************************
@@ -9065,9 +9966,9 @@ static void get_cl_userdef_list(asp_reent* reent, const asp_text* params, asp_te
 * AUTHOR: Andy Chiu
 * CREATE DATE: 2014/12/30
 * DESCRIPTION: get static ip of dhcp list
-* INPUT:  
-* OUTPUT:  
-* RETURN:  
+* INPUT:
+* OUTPUT:
+* RETURN:
 * NOTE:
 *******************************************************************/
 static void get_static_dhcp_list(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -9080,7 +9981,7 @@ static void get_static_dhcp_list(asp_reent* reent, const asp_text* params, asp_t
 	memset(buf, 0, sizeof(buf));
 	tcapi_get("Dhcpd", "MaxStaticNum", buf);
 	max = atoi(buf);
-	
+
 	if(max > 0)
 	{
 		for(i = 0; i < max; ++i)
@@ -9093,11 +9994,62 @@ static void get_static_dhcp_list(asp_reent* reent, const asp_text* params, asp_t
 				if(i)
 					websWrite(buf, "<");
 				websWrite(buf, "%s>%s", ip, mac);
-			}			
+			}
 		}
-	}	
+	}
 }
 
+/*******************************************************************
+* NAME: dhcpLeaseMacList
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/08/11
+* DESCRIPTION: get dhcp lease mac list
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:
+*******************************************************************/
+static void dhcpLeaseMacList(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char buf[256]={0},mac[17], ip[16],expire[10], hostname[32];
+	char wp[1024];
+	char *str;
+
+	
+	FILE *fp = fopen("/etc/udhcp_lease", "r");
+	if(fp)
+	{
+		websWrite(wp, "[");
+		while (fgets(buf, 256, fp)){
+			memset(mac, 0, sizeof(mac));
+			memset(ip, 0, sizeof(ip));
+			memset(expire, 0, sizeof(expire));
+			memset(hostname, 0, sizeof(hostname));
+			sscanf(buf, "%s %s %s %s",mac, ip, expire, hostname);
+
+			// Get the whole hostname including space
+			if(strlen(hostname)) {
+				str = strstr(buf, hostname);
+				if(str && (*(str+strlen(str)-1) == 0x0a || *(str+strlen(str)-1) == 0x0d)){
+					*(str+strlen(str)-1)=0x0;
+					snprintf(hostname, sizeof(hostname), "%s", str);
+				}
+				char_to_ascii_safe(buf, hostname, strlen(hostname));
+				websWrite(wp,"['%s', '%s'],", mac, buf);
+			}
+			else
+			{
+				//error record in buf ex. [00:00:00:00:00:00 192.168.1.108 3935]
+			}
+		}
+		fclose(fp);
+		websWrite(wp, "['','']]");
+	}
+	else
+	{
+		websWrite(wp, "[['', '']]");
+	}
+}
 /*******************************************************************
 * NAME: tcWebApi_MatchThenWrite
 * AUTHOR: Sam Wen
@@ -9180,4 +10132,621 @@ static void vpn_server_get_parameter(asp_reent* reent, const asp_text* params, a
 {
 	tcapi_set("WebCurSet_Entry", "openvpn_id", "21");
 }
+
+static void ej_vpn_crt_server(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char buf[4000];
+	char name[32];
+	int idx = 0;
+	char wp[256] = {0};
+
+	for (idx = 1; idx <= MAX_OVPN_SERVER; idx++) {
+		//ca
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		sprintf(name, "vpn_crt_server%d_ca", idx);
+		get_parsed_crt(name, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		//crt
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		sprintf(name, "vpn_crt_server%d_crt", idx);
+		get_parsed_crt(name, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		//key
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		sprintf(name, "vpn_crt_server%d_key", idx);
+		get_parsed_crt(name, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		//dh
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		sprintf(name, "vpn_crt_server%d_dh", idx);
+		get_parsed_crt(name, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		//static
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		sprintf(name, "vpn_crt_server%d_static", idx);
+		get_parsed_crt(name, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		//crl
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		sprintf(name, "vpn_crt_server%d_crl", idx);
+		get_parsed_crt(name, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		websWrite(wp, "\n");
+	}
+}
+
+static void ej_vpn_crt_client(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char buf[4000];
+	char name[32];
+	int idx = 0;
+	char wp[256] = {0};
+
+	for (idx = 1; idx <= MAX_OVPN_CLIENT; idx++) {
+		//ca
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		sprintf(name, "vpn_crt_client%d_ca", idx);
+		get_parsed_crt(name, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		//crt
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		sprintf(name, "vpn_crt_client%d_crt", idx);
+		get_parsed_crt(name, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		//key
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		sprintf(name, "vpn_crt_client%d_key", idx);
+		get_parsed_crt(name, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		//static
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		sprintf(name, "vpn_crt_client%d_static", idx);
+		get_parsed_crt(name, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		//crl
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		sprintf(name, "vpn_crt_client%d_crl", idx);
+		get_parsed_crt(name, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		websWrite(wp, "\n");
+	}
+}
+
+static void do_vpnupload_cgi(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char *filetype = get_param(g_var_post, "vpn_upload_type");
+	char *vpn_upload_unit = get_param(g_var_post, "vpn_upload_unit");
+	char *bfilename = get_param(g_var_post, "bfilename");
+	char *bdata_start = get_param(g_var_post, "bdata_start");
+	char *bdata_end = get_param(g_var_post, "bdata_end");
+	long unit, data_start, data_end, data_len;
+	FILE* fpSrc = NULL;
+	FILE* fpDst = NULL;
+	char filepath[128];
+	char buf[4096];
+	char node[MAXLEN_NODE_NAME];
+	char attr[MAXLEN_ATTR_NAME];
+	int state;
+
+	if(!filetype || !vpn_upload_unit || !bfilename || !bdata_start || !bdata_end)
+		return;
+
+	unit = strtol(vpn_upload_unit, NULL, 10);
+	data_start = strtol(bdata_start, NULL, 10);
+	data_end = strtol(bdata_end, NULL, 10);
+	if(data_end > data_start)
+		data_len = data_end - data_start + 1;
+	else
+		return;
+
+	_dprintf("upload file: %s\nsize: %ld, type: %s, unit: %ld\n", bfilename, data_len, filetype, unit);
+
+	fpSrc = fopen("/tmp/boa-temp", "rb");
+	if (fpSrc==NULL) goto err;
+	snprintf(filepath, sizeof(filepath), "/tmp/%s", bfilename);
+	fpDst = fopen(filepath, "wb");
+	if (fpDst==NULL) goto err;
+	if(fseek(fpSrc, data_start, SEEK_SET)) goto err;
+	while (data_len > 0)
+	{
+		if (data_len > sizeof(buf))
+		{
+			fread(buf, 1, sizeof(buf), fpSrc);
+			fwrite(buf, 1, sizeof(buf), fpDst);
+			data_len -= sizeof(buf);
+		}
+		else
+		{
+			fread(buf, 1, data_len, fpSrc);
+			fwrite(buf, 1, data_len, fpDst);
+			data_len = 0;
+		}
+	}
+	fclose(fpSrc);
+	fclose(fpDst);
+
+	if(1) {
+		sprintf(node, "OpenVPN_Entry%ld", unit+CLIENT_IF_START);
+		if(!strcmp(filetype, "ovpn")) {
+			reset_client_setting(unit);
+			state = read_config_file(filepath, unit);
+			tcapi_set_int("OpenVPN_Common", "vpn_upload_state", state);
+			tcapi_save();
+		}
+		else if(!strcmp(filetype, "ca")) {
+			sprintf(attr, "vpn_crt_client%ld_ca", unit);
+			set_crt_parsed(attr, filepath);
+			state = tcapi_get_int("OpenVPN_Common", "vpn_upload_state");
+			tcapi_set_int("OpenVPN_Common", "vpn_upload_state", state & (~VPN_UPLOAD_NEED_CA_CERT));
+		}
+		else if(!strcmp(filetype, "cert")) {
+			sprintf(attr, "vpn_crt_client%ld_crt", unit);
+			set_crt_parsed(attr, filepath);
+			state = tcapi_get_int("OpenVPN_Common", "vpn_upload_state");
+			tcapi_set_int("OpenVPN_Common", "vpn_upload_state", state & (~VPN_UPLOAD_NEED_CERT));
+		}
+		else if(!strcmp(filetype, "key")) {
+			sprintf(attr, "vpn_crt_client%ld_key", unit);
+			set_crt_parsed(attr, filepath);
+			state = tcapi_get_int("OpenVPN_Common", "vpn_upload_state");
+			tcapi_set_int("OpenVPN_Common", "vpn_upload_state", state & (~VPN_UPLOAD_NEED_KEY));
+		}
+		else if(!strcmp(filetype, "static")) {
+			sprintf(attr, "vpn_crt_client%ld_static", unit);
+			set_crt_parsed(attr, filepath);
+			state = tcapi_get_int("OpenVPN_Common", "vpn_upload_state");
+			tcapi_set_int("OpenVPN_Common", "vpn_upload_state", state & (~VPN_UPLOAD_NEED_STATIC));
+		}
+		else if(!strcmp(filetype, "ccrl")) {
+			sprintf(attr, "vpn_crt_client%ld_crl", unit);
+			set_crt_parsed(attr, filepath);
+			state = tcapi_get_int("OpenVPN_Common", "vpn_upload_state");
+			tcapi_set_int("OpenVPN_Common", "vpn_upload_state", state & (~VPN_UPLOAD_NEED_CRL));
+		}
+		else if(!strcmp(filetype, "scrl")) {
+			sprintf(attr, "vpn_crt_server%ld_crl", unit);
+			set_crt_parsed(attr, filepath);
+		}
+	}
+
+	unlink(filepath);
+
+	return;
+
+err:
+	if (fpSrc)
+		fclose(fpSrc);
+	if (fpDst)
+		fclose(fpDst);
+
+}
+
+static void _save_openvpn_client_cert()
+{
+	char *vpn_client_unit = get_param(g_var_post, "vpn_client_unit");
+	char *vpn_crt_client_ca = get_param(g_var_post, "vpn_crt_client_ca");
+	char *vpn_crt_client_crt = get_param(g_var_post, "vpn_crt_client_crt");
+	char *vpn_crt_client_key = get_param(g_var_post, "vpn_crt_client_key");
+	char *vpn_crt_client_static = get_param(g_var_post, "vpn_crt_client_static");
+	char *vpn_crt_client_crl = get_param(g_var_post, "vpn_crt_client_crl");
+	int unit;
+	char name[32] = {0};
+	char file_path[64] = {0};
+	FILE *fp;
+
+	if(!vpn_client_unit
+		|| !vpn_crt_client_ca
+		|| !vpn_crt_client_crt
+		|| !vpn_crt_client_key
+		|| !vpn_crt_client_static
+		|| !vpn_crt_client_crl)
+		return;
+
+	unit = atoi(vpn_client_unit);
+	decode_uri(vpn_crt_client_ca);
+	decode_uri(vpn_crt_client_crt);
+	decode_uri(vpn_crt_client_key);
+	decode_uri(vpn_crt_client_static);
+	decode_uri(vpn_crt_client_crl);
+
+	if(unit >= 1 && unit <= MAX_OVPN_CLIENT) {
+		//ca
+		snprintf(name, sizeof(name), "vpn_crt_client%d_ca", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_client_ca, strlen(vpn_crt_client_ca), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+		//crt
+		snprintf(name, sizeof(name), "vpn_crt_client%d_crt", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_client_crt, strlen(vpn_crt_client_crt), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+		//key
+		snprintf(name, sizeof(name), "vpn_crt_client%d_key", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_client_key, strlen(vpn_crt_client_key), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+		//static
+		snprintf(name, sizeof(name), "vpn_crt_client%d_static", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_client_static, strlen(vpn_crt_client_static), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+		//crl
+		snprintf(name, sizeof(name), "vpn_crt_client%d_crl", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_client_crl, strlen(vpn_crt_client_crl), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+	}
+}
+
+static void _save_openvpn_server_tls()
+{
+	//NOTE: only support one server. UI fixed vpn_crt_server1_xxx currently
+	char *vpn_server_unit = "1";//get_param(g_var_post, "vpn_server_unit");
+	char *vpn_crt_server1_ca = get_param(g_var_post, "vpn_crt_server1_ca");
+	char *vpn_crt_server1_crt = get_param(g_var_post, "vpn_crt_server1_crt");
+	char *vpn_crt_server1_key = get_param(g_var_post, "vpn_crt_server1_key");
+	char *vpn_crt_server1_dh = get_param(g_var_post, "vpn_crt_server1_dh");
+	char *vpn_crt_server1_static = get_param(g_var_post, "vpn_crt_server1_static");
+	char *vpn_crt_server1_crl = get_param(g_var_post, "vpn_crt_server1_crl");
+	int unit;
+	char name[32] = {0};
+	char file_path[64] = {0};
+	FILE *fp;
+
+	if(!vpn_server_unit
+		|| !vpn_crt_server1_ca
+		|| !vpn_crt_server1_crt
+		|| !vpn_crt_server1_key
+		|| !vpn_crt_server1_dh
+		|| !vpn_crt_server1_static
+		|| !vpn_crt_server1_crl)
+		return;
+
+	unit = atoi(vpn_server_unit);
+	decode_uri(vpn_crt_server1_ca);
+	decode_uri(vpn_crt_server1_crt);
+	decode_uri(vpn_crt_server1_key);
+	decode_uri(vpn_crt_server1_dh);
+	decode_uri(vpn_crt_server1_static);
+	decode_uri(vpn_crt_server1_crl);
+
+	if(unit >= 1 && unit <= MAX_OVPN_SERVER) {
+		//ca
+		snprintf(name, sizeof(name), "vpn_crt_server%d_ca", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_server1_ca, strlen(vpn_crt_server1_ca), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+		//crt
+		snprintf(name, sizeof(name), "vpn_crt_server%d_crt", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_server1_crt, strlen(vpn_crt_server1_crt), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+		//key
+		snprintf(name, sizeof(name), "vpn_crt_server%d_key", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_server1_key, strlen(vpn_crt_server1_key), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+		//dh
+		snprintf(name, sizeof(name), "vpn_crt_server%d_dh", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_server1_dh, strlen(vpn_crt_server1_dh), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+		//static
+		snprintf(name, sizeof(name), "vpn_crt_server%d_static", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_server1_static, strlen(vpn_crt_server1_static), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+		//crl
+		snprintf(name, sizeof(name), "vpn_crt_server%d_crl", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_server1_crl, strlen(vpn_crt_server1_crl), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+	}
+}
+
+static void _save_openvpn_server_static()
+{
+	//NOTE: only support one server. UI fixed vpn_crt_server1_xxx currently
+	char *vpn_server_unit = "1";//get_param(g_var_post, "vpn_server_unit");
+	char *vpn_crt_server1_static = get_param(g_var_post, "vpn_crt_server1_static");
+	int unit;
+	char name[32] = {0};
+	char file_path[64] = {0};
+	FILE *fp;
+
+	if(!vpn_server_unit
+		|| !vpn_crt_server1_static
+	)
+		return;
+
+	unit = atoi(vpn_server_unit);
+	decode_uri(vpn_crt_server1_static);
+	if(unit >= 1 && unit <= MAX_OVPN_SERVER) {
+		//static
+		snprintf(name, sizeof(name), "vpn_crt_server%d_static", unit);
+		snprintf(file_path, sizeof(file_path), "/tmp/%s", name);
+		fp = fopen(file_path, "w");
+		if(fp) {
+			fwrite(vpn_crt_server1_static, strlen(vpn_crt_server1_static), sizeof(char), fp);
+			fclose(fp);
+			chmod(file_path, S_IRUSR|S_IWUSR);
+			set_crt_parsed(name, file_path);
+		}
+		unlink(file_path);
+	}
+}
 #endif
+
+#ifdef ASUS_DISK_UTILITY
+/*******************************************************************
+* NAME: disk_scan
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/07/22
+* DESCRIPTION: do disk scan manually
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:
+*******************************************************************/
+static void disk_scan(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	FILE *fp;
+	char buf[64], cmd[128];
+
+	if(access("/var/run/disk_monitor.pid", F_OK))
+	{
+		//diskmon is not exist, launch it
+		system("/sbin/disk_monitor &");
+		sleep(1);
+	}
+	
+	//check diskmon pid
+	fp = fopen("/var/run/disk_monitor.pid", "r");
+	if(fp)
+	{
+		memset(buf, 0, sizeof(buf));
+		fread(buf, 1, 64, fp);
+		fclose(fp);
+	}
+	else
+		return;
+
+	if(buf[0] != '\0')
+	{
+		sprintf(cmd, "kill -SIGUSR2 %s", buf);
+		system(cmd);
+	}
+		
+}
+
+/*******************************************************************
+* NAME: disk_scan_result
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/07/23
+* DESCRIPTION: get the result of disk scaning manually
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:
+*******************************************************************/
+static void disk_scan_result(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	FILE *fp;
+	char buf[64], buf2[1024], wp[1024];
+
+	//get usb port id
+	memset(buf, 0, sizeof(buf));
+	tcapi_get("USB_Entry", "scan_port", buf);
+
+	//get the disk name
+	sprintf(buf2, "usb_path%s_fs_path0", buf);
+	tcapi_get("USB_Entry", buf2, buf);
+
+	//open the result file
+	sprintf(buf2, "/tmp/fsck_ret/%s", buf);
+	fp = fopen(buf2, "r");
+	if(fp)
+	{
+		while(fgets(buf2, 1024, fp))
+		{
+			websWrite(wp, buf2);
+		}
+		fclose(fp);
+	}
+}
+#endif
+#ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
+static void stop_dsl_diag(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	if(tcapi_match("DslDiag_Entry", "dslx_diag_enable", "1") && tcapi_match("DslDiag_Entry", "dslx_diag_state", "1")) {
+		tcapi_set("DslDiag_Entry", "dslx_diag_enable", "0");
+		tcapi_set("DslDiag_Entry", "dslx_diag_state", "5");
+		tcapi_commit("DslDiag");
+	}
+}
+#endif
+
+static int get_nat_vserver_table(char *wp)
+{
+	FILE *fp;
+	char *nat_argv[] = {"iptables", "-t", "nat", "-nxL", NULL};
+	char line[256], tmp[256];
+	char target[16], proto[16];
+	char src[sizeof("255.255.255.255")];
+	char dst[sizeof("255.255.255.255")];
+	char *range, *host, *port, *ptr, *val;
+	int ret = 0;
+
+	/* dump nat table including VSERVER and VUPNP chains */
+	_eval(nat_argv, ">/tmp/vserver.log", 10, NULL);
+
+	websWrite(wp, "Source          Destination     Proto. Port range  Redirect to     Local port\n");
+	/*	 255.255.255.255 other  65535:65535 255.255.255.255 65535:65535 */
+
+	fp = fopen("/tmp/vserver.log", "r");
+	if (fp == NULL)
+		return ret;
+
+	while (fgets(line, sizeof(line), fp) != NULL)
+	{
+		dbgprintf("%s: %s\n", __FUNCTION__, line);
+
+		tmp[0] = '\0';
+		if (sscanf(line,
+		    "%15s%*[ \t]"		// target
+		    "%15s%*[ \t]"		// prot
+		    "%*s%*[ \t]"		// opt
+		    "%15[^/]/%*d%*[ \t]"	// source
+		    "%15[^/]/%*d%*[ \t]"	// destination
+		    "%255[^\n]",		// options
+		    target, proto, src, dst, tmp) < 4) continue;
+
+		/* TODO: add port trigger, portmap, etc support */
+		if (strcmp(target, "DNAT") != 0)
+			continue;
+
+		/* uppercase proto */
+		for (ptr = proto; *ptr; ptr++)
+			*ptr = toupper(*ptr);
+#ifdef NATSRC_SUPPORT
+		/* parse source */
+		if (strcmp(src, "0.0.0.0") == 0)
+			strcpy(src, "ALL");
+#endif
+		/* parse destination */
+		if (strcmp(dst, "0.0.0.0") == 0)
+			strcpy(dst, "ALL");
+
+		/* parse options */
+		port = host = range = "";
+		ptr = tmp;
+		while ((val = strsep(&ptr, " ")) != NULL) {
+			if (strncmp(val, "dpt:", 4) == 0)
+				range = val + 4;
+			else if (strncmp(val, "dpts:", 5) == 0)
+				range = val + 5;
+			else if (strncmp(val, "to:", 3) == 0) {
+				port = host = val + 3;
+				strsep(&port, ":");
+			}
+		}
+
+		websWrite(wp, 
+			"%-15s %-15s %-6s %-11s %-15s %-11s\n",
+			src, dst, proto, range, host, port ? : range);
+	}
+	fclose(fp);
+	unlink("/tmp/vserver.log");
+
+	return ret;
+}

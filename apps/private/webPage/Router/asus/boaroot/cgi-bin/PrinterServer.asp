@@ -145,14 +145,14 @@ function showMethod(flag1, flag2){
 				<div class="">
 				<ul class="">
 					<li>
-						<a id="faq1" href="#" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","asus_ez_print_share","s")%></span>&nbsp;&nbsp;
-						<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FC0"">Download Now!</a>
+						<a id="faq1" href="#" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","asus_ez_print_share","s")%> FAQ</a>&nbsp;&nbsp;
+						<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FC0">Download Now!</a>
 					</li>
 					<li style="margin-top:10px;">
-						<a id="faq2" href="#" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Use LPR protocol to sharing printing FAQ (Windows)</a>&nbsp;&nbsp;
+						<a id="faq2" href="#" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","LPR_print_share","s")%> FAQ (Windows)</a>&nbsp;&nbsp;
 					</li>
 					<li style="margin-top:10px;">
-						<a id="faq3" href="#" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Use LPR protocol to sharing printing FAQ (MAC)</a>&nbsp;&nbsp;
+						<a id="faq3" href="#" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","LPR_print_share","s")%> FAQ (MAC)</a>&nbsp;&nbsp;
 					</li>
 				</ul>
 				</div>

@@ -19,6 +19,13 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <syslog.h>
+#define PTM_GINP_WR	1
+#ifdef PTM_GINP_WR
+#include <sys/stat.h>
+#include <fcntl.h>
+#define F_GINP_START	"/tmp/ginp_start"
+#define F_GINP_RCV		"/tmp/ginp_rcv"
+#endif
 /* Override ENABLE_FEATURE_PIDFILE - ifupdown needs our pidfile to always exist */
 #define WANT_PIDFILE 1
 #include "common.h"
@@ -1649,6 +1656,15 @@ int udhcpc_main(int argc UNUSED_PARAM, char **argv)
 			/* Must be a DHCPOFFER */
 			if (*message == DHCPOFFER) {
 				uint8_t *temp;
+#ifdef PTM_GINP_WR
+				struct stat st;
+				int chkwan = 0;
+				chkwan = (stat(F_GINP_START, &st) == 0) && (!S_ISDIR(st.st_mode));
+				if(chkwan){
+					creat(F_GINP_RCV, O_CREAT|O_TRUNC|S_IRUSR|S_IWUSR);
+					chkwan = 0;
+				}
+#endif
 
 /* What exactly is server's IP? There are several values.
  * Example DHCP offer captured with tchdump:

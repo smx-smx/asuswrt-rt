@@ -75,6 +75,8 @@ extern int IsSyncError;
 int loop_max;
 int usleep_time;
 extern int IsNetworkUnlink;
+extern Hb_SubNode *SyncNode;
+extern my_mutex_t wait_server_mutex;
 
 #ifdef IPKG
 extern int disk_change;
@@ -946,7 +948,59 @@ void add_server_action_list(char *action,char *fullname,struct sync_item *head)
 
 }
 
-int del_all_items(char *dir)
+
+int my_remove_dir(const char *dir,Browse *br,int pid,int rec)
+{
+    printf("enter my_remove_dir,dir=%s,pid=%d,rec=%d\n",dir,pid,rec);
+    int i=0,id=-1;
+
+    if(remove(dir) ==  -1)
+        return -1;
+
+    if(!rec)
+        return 0;
+
+    Hb_SubNode *p1 = NULL,*pnode = NULL;
+    pnode = get_parent_node(pid,SyncNode);
+    if(pnode == NULL)
+    {
+        handle_error(99,"get_parent_node fail in my_remove_dir\n");
+        return 0;
+     }
+
+    p1 = pnode->Child;
+    if(p1 == NULL)
+        return 0;
+    if(br->foldernumber == 0)
+    {
+        id = p1->id;
+    }
+    else
+    {
+        while(p1 != NULL)
+        {
+            for(i=0;i<br->foldernumber;i++)
+            {
+                if(p1->id == br->folderlist[i]->id)
+                    break;
+            }
+            if(i == br->foldernumber) //not find
+            {
+                id = p1->id;
+                break;
+            }
+            p1 = p1->NextBrother;
+        }
+    }
+    printf("id=%d\n",id);
+
+    if(id >0)
+        remove_node(pnode,id);
+
+   // del_node()
+}
+
+int del_all_items(char *dir,int pid,Browse *br,int rec)
 {
     if(test_if_file_up_excep_fail(dir))
         return 0;
@@ -980,7 +1034,7 @@ int del_all_items(char *dir)
 
         if( test_if_dir(fullname) == 1 )
         {
-            del_all_items(fullname);
+            del_all_items(fullname,pid,br,0);
         }
         else
         {
@@ -1003,7 +1057,8 @@ int del_all_items(char *dir)
     }
     closedir(pDir);
 
-    if(remove(dir) == -1)
+    //if(remove(dir) == -1)
+    if(my_remove_dir(dir,br,pid,rec) == -1)
     {
         snprintf(error_message,NORMALSIZE,"remove %s fail \n",dir);
         handle_error(S_REMOVE_LOCAL_FAIL,error_message);
@@ -1962,7 +2017,7 @@ int sync_local_add_file(char *parentfolder,Local *local,int i,int entryID)
     return 0;
 }
 
-int find_diff_item(char *parentfolder,Browse *browse,Local *local,int isupload,int isfolder)
+int find_diff_item(char *parentfolder,Browse *browse,Local *local,int isupload,int isfolder,int pid)
 {
     if(exit_loop == 1)
         return 0;
@@ -2256,7 +2311,7 @@ int find_diff_item(char *parentfolder,Browse *browse,Local *local,int isupload,i
                             {
                                 printf("remove folder %s \n",fullname);
 
-                                if(del_all_items(fullname) == -1)
+                                if(del_all_items(fullname,pid,browse,1) == -1)
                                 {
                                     fail_flag = 1;
                                 }
@@ -2269,7 +2324,7 @@ int find_diff_item(char *parentfolder,Browse *browse,Local *local,int isupload,i
 #if SYSTEM_LOG
                             write_system_log("remove folder",fullname);
 #endif
-                            if(del_all_items(fullname) == -1)
+                            if(del_all_items(fullname,pid,browse,1) == -1)
                             {
                                 fail_flag = 1;
                             }
@@ -2370,6 +2425,12 @@ int find_diff_item(char *parentfolder,Browse *browse,Local *local,int isupload,i
                         else
                         {
                             add_server_action_list("createfolder",fullname,from_server_sync_head);
+
+                            if(pre_seq > 0)
+                            {
+                                browse->folderlist[i]->ischangeseq = 1;
+                                insert_node(pid,browse->folderlist[i]->id,0);
+                            }
     #if SYSTEM_LOG
                             write_system_log("createfolder",filename);
     #endif
@@ -2381,6 +2442,7 @@ int find_diff_item(char *parentfolder,Browse *browse,Local *local,int isupload,i
                     else if(status == 1)
                     {
                         browse->folderlist[i]->isdeleted = 1;
+                        del_node(pid,browse->folderlist[i]->id);
                     }
 
                 }
@@ -2450,15 +2512,15 @@ int syncItem(char *parentfolder,int parentid,Browse *browse,Local *local,char *u
     {
     	isfolder = 0;
 
-    	file_status = find_diff_item(parentfolder,browse,local,0,isfolder);
+        file_status = find_diff_item(parentfolder,browse,local,0,isfolder,parentid);
 
-    	file_res = find_diff_item(parentfolder,browse,local,1,isfolder);
+        file_res = find_diff_item(parentfolder,browse,local,1,isfolder,parentid);
 
     	isfolder = 1;
 
-    	folder_status = find_diff_item(parentfolder,browse,local,0,isfolder);
+        folder_status = find_diff_item(parentfolder,browse,local,0,isfolder,parentid);
 
-    	folder_res = find_diff_item(parentfolder,browse,local,1,isfolder);
+        folder_res = find_diff_item(parentfolder,browse,local,1,isfolder,parentid);
     }
     else
     {
@@ -2466,12 +2528,12 @@ int syncItem(char *parentfolder,int parentid,Browse *browse,Local *local,char *u
         if(browse->filenumber < local->filenum ) //server del files
         {
             isupload = 1;
-            file_status = find_diff_item(parentfolder,browse,local,isupload,isfolder);
+            file_status = find_diff_item(parentfolder,browse,local,isupload,isfolder,parentid);
         }
         else if(browse->filenumber > local->filenum) //server upload files
         {
             isupload = 0;
-            file_status = find_diff_item(parentfolder,browse,local,isupload,isfolder);
+            file_status = find_diff_item(parentfolder,browse,local,isupload,isfolder,parentid);
         }
         else                                        //server rename files
         {
@@ -2492,9 +2554,9 @@ int syncItem(char *parentfolder,int parentid,Browse *browse,Local *local,char *u
 
             return 0;
 #endif
-            file_status = find_diff_item(parentfolder,browse,local,0,isfolder);
+            file_status = find_diff_item(parentfolder,browse,local,0,isfolder,parentid);
 
-            file_res = find_diff_item(parentfolder,browse,local,1,isfolder);
+            file_res = find_diff_item(parentfolder,browse,local,1,isfolder,parentid);
         }
 
         /*sync folder*/
@@ -2502,17 +2564,17 @@ int syncItem(char *parentfolder,int parentid,Browse *browse,Local *local,char *u
         if(browse->foldernumber < local->foldernum ) //upload files to server
         {
             isupload = 1;
-            folder_status = find_diff_item(parentfolder,browse,local,isupload,isfolder);
+            folder_status = find_diff_item(parentfolder,browse,local,isupload,isfolder,parentid);
         }
         else if(browse->foldernumber > local->foldernum)
         {
             isupload = 0;
-            folder_status = find_diff_item(parentfolder,browse,local,isupload,isfolder);
+            folder_status = find_diff_item(parentfolder,browse,local,isupload,isfolder,parentid);
         }
         else
         {
-            folder_status = find_diff_item(parentfolder,browse,local,0,isfolder);
-            folder_res = find_diff_item(parentfolder,browse,local,1,isfolder);
+            folder_status = find_diff_item(parentfolder,browse,local,0,isfolder,parentid);
+            folder_res = find_diff_item(parentfolder,browse,local,1,isfolder,parentid);
         }
     }
 
@@ -2925,6 +2987,11 @@ int syncServerAllItem(char *username,int parentid,char *localpath)
        res = mySync(username,node->id,node->path,&node_stack_link);
        if(res == -1)
            fail_flag = 1;
+		 else
+        {
+           if(pre_seq >0 && node->seq != -10 )
+               update_seq(node->id,node->seq,SyncNode);
+        }
        my_free(node->path);
        my_free(node);
    }
@@ -2987,6 +3054,48 @@ int print_server_struct_size(Browse *br,Local *local)
    return 0;
 }
 
+int is_folder_change(int id,Hb_SubNode **pnode,int *current_seq)
+{
+    //printf("enter check_change\n");
+    Changeseq *cs = NULL;
+    Hb_SubNode *fnode = NULL;
+    int seq =0;
+
+    //printf("name=%s,id=%d\n",name,id);
+
+    while( (cs = getChangeSeq(id)) == NULL)
+    {
+       enter_sleep_time(5,&wait_server_mutex);
+    }
+
+    if(cs->status != 0)
+    {
+        my_free(cs);
+        return 1;
+    }
+    else
+    {
+       seq = cs->changeseq;
+       my_free(cs);
+    }
+    //printf("name=%s,id=%d,seq=%d\n",name,id,cs->changeseq);
+
+    fnode = get_parent_node(id,SyncNode);
+    if(fnode == NULL)
+        return 1;
+    printf("cur_seq=%d,pre_seq=%d\n",seq,fnode->seq);
+    if(fnode->seq == seq)
+        return 0;
+    else
+    {
+        //fnode->seq = seq;
+        *pnode = fnode;
+        *current_seq = seq;
+        return 1;
+    }
+}
+
+
 int mySync(char *username,int parentid,char *localpath,NodeStack **head)
 {
     //printf("mySync function start,localpath=%s\n",localpath);
@@ -3005,6 +3114,9 @@ int mySync(char *username,int parentid,char *localpath,NodeStack **head)
     char foldername[256];
     int loop;
     int i;
+    Hb_SubNode *subnode = NULL;
+    int seq;
+    int change_status = 0;
 
     memset(&local,0,sizeof(Local));
 
@@ -3100,6 +3212,18 @@ int mySync(char *username,int parentid,char *localpath,NodeStack **head)
         {
             id = (br->folderlist)[i]->id;
         }
+		  
+       if(pre_seq > 0)
+       {
+            subnode = NULL;
+            seq = -10;
+            change_status = is_folder_change(id,&subnode,&seq);
+            if( change_status== 0 && br->folderlist[i]->ischangeseq != 1)
+            {
+                printf("no change\n");
+                continue;
+            }
+        }
 
         FolderNode *node = (FolderNode *)calloc(1,sizeof(FolderNode));
         node->path = (char *)calloc(1,strlen(path)+1);
@@ -3107,6 +3231,7 @@ int mySync(char *username,int parentid,char *localpath,NodeStack **head)
         strcpy(node->path,path);
         //printf("node_path is %s\n",node->path);
         node->id = id;
+        node->seq = seq;
         push_node(node,head);
     }
 
@@ -5748,4 +5873,269 @@ int LoadFileIntoBuffer(const char* szFileName, char** pBuffer, int* pBufferLengt
 
     return 0;
 }
+
+/*save cloud all folders id and seqnum*/
+Hb_SubNode *create_node(int id,int seq)
+{
+    Hb_SubNode *node = NULL;
+    node = (Hb_SubNode *)malloc(sizeof (Hb_SubNode));
+    if(node == NULL)
+    {
+        printf("create memory error!\n");
+        return NULL;
+    }
+
+    node->Child = NULL;
+    node->NextBrother = NULL;
+    node->id = id;
+    node->seq = seq;
+
+    return node;
+}
+
+Hb_SubNode *get_parent_node(int pid,Hb_SubNode *node)
+{
+    //printf("enter get_parent_node,node_id=%d\n",node->id);
+    Hb_SubNode *p1 = NULL ,*p2 = NULL;
+
+    if(node == NULL)
+        return NULL;
+
+    //printf("node_id=%d,id=%d\n",node->id,pid);
+    if(node->id == pid)
+    {
+        //printf("find id=%d\n",id);
+        return node;
+    }
+    else
+    {
+        if(node->Child!= NULL)
+            p1 = get_parent_node(pid,node->Child);
+
+        if(node->NextBrother != NULL)
+            p2 = get_parent_node(pid,node->NextBrother);
+
+        if(p1 != NULL)
+            return p1;
+        else
+            if(p2 != NULL)
+                return p2;
+        else
+            return NULL;
+    }
+}
+
+Hb_SubNode *find_node(Hb_SubNode *pnode,int id)
+{
+    Hb_SubNode *p1 = NULL;
+
+    p1 = pnode->Child;
+    while(p1 != NULL)
+    {
+        printf("p1->id=%d,id=%d\n",p1->id,id);
+        if(p1->id == id)
+        {
+            return p1;
+        }
+        p1 = p1->NextBrother;
+    }
+    return NULL;
+}
+
+int update_seq(int id,int seq,Hb_SubNode *node)
+{
+    Hb_SubNode *p = NULL;
+    p = get_parent_node(id,node);
+    if(p == NULL)
+        return -1;
+    p->seq = seq;
+    return 0;
+}
+
+int remove_node(Hb_SubNode *pnode,int id)
+{
+    Hb_SubNode *p1 = NULL,*p2 = NULL;
+
+    if(pnode->Child != NULL)
+    {
+
+        p1 = pnode->Child;
+        printf("remove_node:node->id=%d,id=%d\n",p1->id,id);
+        while(p1 != NULL)
+        {
+            if(p1->id == id)
+                break;
+            p2 = p1;
+            p1 = p1->NextBrother;
+        }
+
+        if(p1 != NULL) // find
+        {
+            if(p1->id == pnode->Child->id)
+                pnode->Child = p1->NextBrother;
+            else
+            {
+                p2->NextBrother = p1->NextBrother;
+            }
+            p1->NextBrother = NULL;
+            free_node(p1);
+        }
+    }
+
+   print_all_nodes(SyncNode);
+    return 0;
+}
+
+int del_node(int pid,int id)
+{
+    Hb_SubNode *pnode = NULL;
+    pnode = get_parent_node(pid,SyncNode);
+    if(pnode == NULL)
+        return -1;
+
+    remove_node(pnode,id);
+
+    return 0;
+}
+
+Hb_SubNode *move_from_node(int pid,int id)
+{
+    Hb_SubNode *p1 = NULL,*p2 = NULL,*pnode = NULL;
+    pnode = get_parent_node(pid,SyncNode);
+    if(pnode == NULL)
+    {
+        handle_error(99,"get node fail in move_from_node");
+        return NULL;
+     }
+
+    if(pnode->Child == NULL)
+    {
+        handle_error(99,"no child in move_from_node");
+        return NULL;
+    }
+    else
+    {
+        p1 = pnode->Child;
+        while(p1 != NULL)
+        {
+            if(p1->id == id)
+                break;
+            p2 = p1;
+            p1 = p1->NextBrother;
+        }
+
+        if(p1 != NULL) // find
+        {
+            if(p1 == pnode->Child)
+                pnode->Child = p1->NextBrother;
+            else
+            {
+                p2->NextBrother = p1->NextBrother;
+            }
+        }
+    }
+
+    return p1;
+}
+
+int move_to_node(int pid,Hb_SubNode *node)
+{
+    Hb_SubNode *pnode = NULL,*p1 = NULL,*p2;
+    pnode = get_parent_node(pid,SyncNode);
+    if(pnode == NULL)
+        return -1;
+
+    p1 = find_node(pnode,node->id);
+    if(p1 != NULL)
+    {
+        free_node(node);
+    }
+    else
+    {
+        p2 = pnode->Child;
+        pnode->Child = node;
+        node->NextBrother = p2;
+    }   
+
+    return 0;
+}
+
+int move_node(int move_from_pid,int id,int move_to_pid)
+{
+    Hb_SubNode *pnode = NULL;
+    pnode = move_from_node(move_from_pid,id);
+    if(pnode == NULL)
+    {
+        handle_error(99,"move from node fail");
+        return -1;
+    }
+
+    move_to_node(move_to_pid,pnode);
+}
+
+int add_node(int id,int seq,Hb_SubNode *pnode)
+{
+    printf("enter add_node,id=%d,seq=%d\n",id,seq);
+    Hb_SubNode *p1 = NULL,*tempnode = NULL;
+
+    tempnode = create_node(id,seq);
+    if(tempnode == NULL)
+    {
+        handle_error(99,"malloc fail in add_node");
+        return -1;
+     }
+
+    if(find_node(pnode,id) == NULL)
+    {
+        printf("not find\n");
+        p1 = pnode->Child;
+        pnode->Child = tempnode;
+        tempnode->NextBrother = p1;
+    }
+
+    //printf("add_node end\n");
+    //if(pre_seq >0)
+        print_all_nodes(SyncNode);
+    return 0;
+}
+
+int insert_node(int pid,int id,int seq)
+{
+    Hb_SubNode *pnode = NULL;
+    pnode = get_parent_node(pid,SyncNode);
+    if(pnode == NULL)
+    {
+        handle_error(99,"get node fail in insert_node");
+        return -1;
+     }
+    add_node(id,seq,pnode);
+}
+
+void free_node(Hb_SubNode *node)
+{
+    if(node != NULL)
+    {
+        //printf("free tree node\n");
+        if(node->NextBrother != NULL)
+            free_node(node->NextBrother);
+        if(node->Child != NULL)
+            free_node(node->Child);
+        free(node);
+    }
+}
+
+void print_all_nodes(Hb_SubNode *node)
+{
+    if(node != NULL)
+    {
+        printf("id=%d,seq=%d\n",node->id,node->seq);
+
+        if(node->NextBrother != NULL)
+            print_all_nodes(node->NextBrother);
+
+        if(node->Child != NULL)
+            print_all_nodes(node->Child);
+    }
+}
+
 

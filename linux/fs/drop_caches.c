@@ -11,8 +11,11 @@
 
 /* A global variable is a bit ugly, but it keeps the code simple */
 int sysctl_drop_caches;
-
+#if defined(TCSUPPORT_MEMORY_CONTROL) || defined(TCSUPPORT_CT)	//Andy Chiu, 2015/11/03. sync from  2.6.36
+void drop_pagecache_sb(struct super_block *sb)
+#else
 static void drop_pagecache_sb(struct super_block *sb)
+#endif
 {
 	struct inode *inode;
 

@@ -326,16 +326,11 @@ start_demand_ppp(int unit, int wait)
 int
 start_pppoe_relay(char *wan_if)
 {
-	char *pppoerelay_argv[] = {"/usr/sbin/pppoe-relay",
-		"-C", "br0",
-		"-S", wan_if,
-		"-F", NULL};
-	pid_t pid;
 	int ret = 0;
 
 	killall_tk("pppoe-relay");
-	if (nvram_get_int("fw_pt_pppoerelay"))
-		ret = _eval(pppoerelay_argv, NULL, 0, &pid);
+	if (tcapi_get_int("Firewall_Entry", "fw_pt_pppoerelay"))
+		ret = eval("/userfs/bin/pppoe-relay", "-C", "br0", "-S", wan_if);
 
 	return ret;
 }

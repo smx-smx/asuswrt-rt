@@ -239,6 +239,11 @@ char *get_mime_type(char *filename)
 		return CFG_TYPE;
     }
 #endif
+#ifdef RTCONFIG_OPENVPN
+	if(strcmp(extension,"ovpn") == 0){
+		return "config/ovpn";
+    }
+#endif
 
     return default_type;
 }

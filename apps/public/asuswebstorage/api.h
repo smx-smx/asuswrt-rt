@@ -182,8 +182,8 @@ Propfind *checkEntryExisted(char *username,int parentID,char *filename,char *typ
 Createfolder *createFolder(char *username,int parentID,int isencrpted,char *name);
 
 Operateentry *renameEntry(char *username,int id,int isencrpted,char *newname,int isfolder);
-Moveentry *moveEntry(char *username,int id,char *name,int parentID,int isfolder);
-Operateentry *removeEntry(char *username,int id,int ischildonly,int isfolder);
+Moveentry *moveEntry(char *username,int id,char *name,int parentID,int isfolder,int pre_pid);
+Operateentry *removeEntry(char *username,int id,int ischildonly,int isfolder,int pid);
 int updateEntryAttribute(char *username,int id,int parentID,int isencrpted,int isfolder);
 
 Getentryinfo *getEntryInfo(int isfolder,int entryid);
@@ -243,5 +243,8 @@ int StrToHex(char *src,int len);
 
 int IsEntryDeletedFromServer(int fileID,int isfolder);
 int obtain_token_from_file(const char *filename,Aaa *aaa);
+
+int count_call_api(const char *url);
+void print_count_call_api();
 #endif
 

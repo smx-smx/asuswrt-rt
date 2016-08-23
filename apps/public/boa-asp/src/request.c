@@ -46,6 +46,10 @@ int flag_save = 0;
 #define SUB_NODE_NAME "Entry"
 #endif
 
+#ifdef RTCONFIG_PROTECTION_SERVER
+#include <shared.h>
+#endif
+
 restrict_client_t restrict_client;
 
 typedef struct cgibin_exception_file
@@ -81,7 +85,6 @@ static request*  newest_request = NULL;
 extern int ssl_pending_requests;
 extern SSL_CTX *ssl_ctx;
 #endif
-
 
 request *new_request(void)
 {
@@ -1096,7 +1099,6 @@ int passURL(char * url)
 	return -1;
 }
 
-
 int http_authorize(request *req)
 {
 	s_param **var,**auth;
@@ -1184,12 +1186,23 @@ int http_authorize(request *req)
 					#ifdef BOA_DEBUG
 					fprintf(stderr,"check_validate  %d err\n",level);
 					#endif
-					free_param(auth);
-					free_param(var);
 #ifdef TCSUPPORT_SYSLOG_ENHANCE
 					openlog("TCSysLog WEB", 0, LOG_LOCAL2);
+				#if 0 //Disable it to avoid some user's concern. If you want to track login attack, you can enable it on beta firmware.
+					syslog(LOG_INFO, "WEB login failed![%s][%s][%s]\n", auth[0]->name, auth[0]->value, req->remote_ip_addr);
+				#else
 					syslog(LOG_INFO, "WEB login failed!\n");
+				#endif
 					closelog();
+#endif
+					free_param(auth);
+					free_param(var);
+#ifdef RTCONFIG_PROTECTION_SERVER
+					struct state_report web;
+					strcpy(web.ip_addr, req->remote_ip_addr);
+					web.loginType = PROTECTION_SERVICE_WEB;
+					strcpy(web.note, "From BOA, LOGIN FAIL");
+					send_socket(web);
 #endif
 					return -1;
 				}
@@ -1682,7 +1695,15 @@ int process_header_end(request * req)
 		send_r_forbidden(req);
 		return 0;
 	}
-
+#ifdef RTCONFIG_PROTECTION_SERVER		
+		/* Carlos 2015/11/10, if keep login fail, block login page */
+		char en_web_pt[4];
+		ret = tcapi_get("Vram_Entry", "enable_web_protection", en_web_pt);
+		if(!strcmp(en_web_pt, "1")) {
+			send_r_forbidden_login(req);
+			return 0;
+		}
+#endif
 		/* Paul add start 2013/1/3, only allow single user to be logged in, and unlock if not accessed again in 60 seconds. */
 		char *uptime = file2str("/proc/uptime");
 		char cur_temp_ip[32];

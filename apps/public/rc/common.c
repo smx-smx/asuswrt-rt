@@ -64,6 +64,12 @@ int pppstatus(void)
 	else return WAN_STOPPED_REASON_NONE;
 }
 
+void usage_exit(const char *cmd, const char *help)
+{
+	fprintf(stderr, "Usage: %s %s\n", cmd, help);
+	exit(1);
+}
+
 void logmessage(char *logheader, char *fmt, ...)
 {
 	va_list args;

@@ -1,0 +1,26 @@
+CC = g++
+CFLAGS = -g -D_FILE_OFFSET_BITS=64 -D_PC -I/usr/local/include -I/usr/local/libiconv/include
+#CFLAGS += 
+#LDFLAGS = -L/usr/local/curl/lib  -L/usr/local/libiconv/lib
+#LDFLAGS = -L/usr/local/libiconv/lib
+LDFLAGS = -L/usr/local/libiconv/lib -liconv
+LIBS = -lpthread -lcurl
+
+
+objects=ftpclient.o api.o list.o
+all : ftpclient
+ftpclient.o:ftpclient.cc
+	$(CC) $^ -c $(CFLAGS) $(LDFLAGS) $(LIBS)
+api.o:api.cc
+	$(CC) $^ -c $(CFLAGS) $(LDFLAGS) $(LIBS)
+list.o:list.cc
+	$(CC) $^ -c $(CFLAGS) $(LDFLAGS) $(LIBS)
+#tellenc.o:tellenc.cc
+	#$(CC) $^ -c $(CFLAGS) $(LDFLAGS) $(LIBS)
+ftpclient : $(objects)
+	#$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@ $^
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS) $(LIBS)
+
+.PHONY : clean
+clean:
+	rm -rf ftpclient $(objects)

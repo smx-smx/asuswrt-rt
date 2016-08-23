@@ -8,7 +8,7 @@
 static	int	hashsize[] = {2531, 2743, 3137, 3529};//array of prime numbers
 static	int	m;
 static	SParser	s_parse;
-static	char	str_attrname[32] = {0};
+static	char	str_attrname[MAX_KEY] = {0};
 static	int	init_flag = 0;
 static	FILE	*fpl = NULL;//global file pointer
 /************internal method************/

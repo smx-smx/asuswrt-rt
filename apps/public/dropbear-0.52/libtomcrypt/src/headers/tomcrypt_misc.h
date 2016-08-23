@@ -1,10 +1,12 @@
 /* ---- BASE64 Routines ---- */
 #ifdef BASE64
+#ifndef RTCONFIG_PROTECTION_SERVER
 int base64_encode(const unsigned char *in,  unsigned long len, 
                         unsigned char *out, unsigned long *outlen);
 
 int base64_decode(const unsigned char *in,  unsigned long len, 
                         unsigned char *out, unsigned long *outlen);
+#endif
 #endif
 
 /* ---- MEM routines ---- */

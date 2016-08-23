@@ -38,6 +38,14 @@ static char const RCSID[] =
 
 #include <signal.h>
 
+#define PTM_GINP_WR	1
+#ifdef PTM_GINP_WR
+#include <sys/stat.h>
+#include <fcntl.h>
+#define F_GINP_START	"/tmp/ginp_start"
+#define F_GINP_RCV		"/tmp/ginp_rcv"
+#endif
+
 /**********************************************************************
 *%FUNCTION: parseForHostUniq
 *%ARGUMENTS:
@@ -282,6 +290,11 @@ waitForPADO(PPPoEConnection *conn, int timeout)
     struct timeval tv;
     PPPoEPacket packet;
     int len;
+#ifdef PTM_GINP_WR
+	struct stat st;
+	int chkwan = 0;
+	chkwan = (stat(F_GINP_START, &st) == 0) && (!S_ISDIR(st.st_mode));
+#endif
 
     struct PacketCriteria pc;
     pc.conn          = conn;
@@ -329,6 +342,12 @@ waitForPADO(PPPoEConnection *conn, int timeout)
 	if (!packetIsForMe(conn, &packet)) continue;
 
 	if (packet.code == CODE_PADO) {
+#ifdef PTM_GINP_WR
+		if(chkwan){
+			creat(F_GINP_RCV, O_CREAT|O_TRUNC|S_IRUSR|S_IWUSR);
+		}
+#endif
+
 	    if (NOT_UNICAST(packet.ethHdr.h_source)) {
 		error("Ignoring PADO packet from non-unicast MAC address");
 		continue;

@@ -12,6 +12,7 @@ If Request_Form("SaveFirewall") = "1" Then
 	TCWebApi_set("Firewall_Entry","fw_pt_ipsec","fw_pt_ipsec")
 	TCWebApi_set("Firewall_Entry","fw_pt_rtsp","fw_pt_rtsp")
 	TCWebApi_set("Firewall_Entry","fw_pt_pppoerelay","fw_pt_pppoerelay")
+	update_variables()
 
 	tcWebApi_commit("Firewall_Entry")
 End If
@@ -86,7 +87,7 @@ function redirect(){
 <input type="hidden" name="modified" value="0">
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_wait" value="5">
-<input type="hidden" name="action_script" value="restart_firewall;restart_pppoe_relay">
+<input type="hidden" name="action_script" value="restart_pppoe_relay">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="EN">
 <input type="hidden" name="firmver" value="<% tcWebApi_staticGet("DeviceInfo","FwVer","s") %>">
 <input type="hidden" name="wl_ssid" value="IBIZA_2.4G">

@@ -68,8 +68,8 @@ RANLIB=mips-linux-ranlib
 STRIP=mips-linux-strip
 INSTALL=install
 CPPFLAGS=
-CFLAGS=-I. -I$(srcdir) -I$(srcdir)/libtomcrypt/src/headers/ $(CPPFLAGS) -Os -W -Wall
-LIBS=$(LTC) $(LTM) -lutil  -lcrypt -L ../lib -ltcapi
+CFLAGS=-I. -I$(srcdir) -I$(srcdir)/libtomcrypt/src/headers/ -I$(APP_SHARED_DIR) $(CPPFLAGS) -Os -W -Wall
+LIBS=$(LTC) $(LTM) -lutil  -lcrypt -L ../lib -ltcapi -L$(APP_SHARED_DIR) -lshared
 LDFLAGS=
 
 EXEEXT=

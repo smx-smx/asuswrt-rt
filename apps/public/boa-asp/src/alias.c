@@ -25,7 +25,7 @@
 
 #include "boa.h"
 #include "../../lib/libtcapi.h"
-
+#include "shared.h"
 
 static alias *alias_hashtable[ALIAS_HASHTABLE_SIZE];
 
@@ -282,7 +282,18 @@ int translate_uri(request * req)
                 sprintf(req->request_uri, "/cgi-bin/test_version.cgi");
 	}
 #endif 
-
+#ifdef RTCONFIG_OPENVPN
+	if( strstr(req->request_uri, "client.ovpn") )
+	{
+		req->pathname = strdup("/etc/openvpn/server1/client.ovpn");
+		if (!req->pathname) {
+			send_r_error(req);
+			WARN("unable to strdup buffer onto req->pathname");
+			return 0;
+		}
+		return 1;
+	}
+#endif
     uri_len = strlen(req->request_uri);
 
     current = find_alias(req->request_uri, uri_len);
@@ -467,7 +478,6 @@ int init_script_alias(request * req, alias * current1, int uri_len)
     /* copies the "real" path + the non-alias portion of the
        uri to pathname.
      */
-
     if (uri_len - current1->fake_len + current1->real_len >
         MAX_HEADER_LENGTH) {
         log_error_doc(req);

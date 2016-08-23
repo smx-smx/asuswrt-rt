@@ -195,15 +195,26 @@
 #define ADSL_SETANNEX_CMD "wan ghs set annex"
 #define ADSL_ATTR_DLA	"dslx_dla_enable"
 
+#ifdef TCSUPPORT_CPU_MT7510
+#define ADSL_ATTR_ESNP	"dslx_adsl_esnp" //Enhanced Sudden Noise Protection for ADSL
+#endif
+
 #ifdef TCSUPPORT_WAN_PTM
 #define VDSL_ATTR_TARGETSNRM	"vdsl_snrm_offset"
 #define VDSL_ATTR_TXGAINOFF	"vdsl_tx_gain_off" //tx power cut off
 #define VDSL_ATTR_RXAGC	"vdsl_rx_agc" //rx agc gain
 #define VDSL_ATTR_UPBO	"vdsl_upbo" //upstream power back off
-#define VDSL_ATTR_ESNP	"dslx_vdsl_esnp" //Enhanced Sudden Noise Protection
+#define VDSL_ATTR_ESNP	"dslx_vdsl_esnp" //Enhanced Sudden Noise Protection for VDSL
 #define VDSL_ATTR_BITSWAP	"dslx_vdsl_bitswap"
 #define VDSL_ATTR_GVECTOR "dslx_vdsl_vectoring"
 #define VDSL_ATTR_NONSTD_GVECTOR	"dslx_vdsl_nonstd_vectoring"
+#endif /* TCSUPPORT_WAN_PTM */
+
+#ifdef TCSUPPORT_WAN_PTM
+#define VDSL_PROFILE_30A_MULTI 0
+#define VDSL_PROFILE_17A_MULTI 1
+#define VDSL_PROFILE_12A_MULTI 2
+#define VDSL_PROFILE_8A_MULTI 3
 #endif /* TCSUPPORT_WAN_PTM */
 
 #define DSLX_TESTLAB "dslx_testlab"
@@ -314,6 +325,17 @@ int
 PushMail_verify(mxml_node_t *node);
 int
 PushMail_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
+
+#ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
+int
+dslDiag_boot(mxml_node_t *top);
+int
+dslDiag_init(void);
+int
+dslDiag_write(mxml_node_t *top, mxml_node_t *parant);
+int
+dslDiag_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
+#endif
 
 #ifdef CWMP
 #define 	CWMP_ACTIVE				"Active"
@@ -712,3 +734,9 @@ void siproxd_start(mxml_node_t *top);
 #endif /*ndef PURE_BRIDGE*/
 #endif
 
+typedef enum
+{
+	TRANS_Mode_ADSL = 0,
+	TRANS_Mode_VDSL = 1,
+	TRANS_Mode_ETHWAN = 2
+}TRANS_Mode;

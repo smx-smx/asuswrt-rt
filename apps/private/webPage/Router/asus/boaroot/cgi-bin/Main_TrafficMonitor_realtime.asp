@@ -223,9 +223,9 @@ function switchPage(page){
           				</td>
         			</tr>
         			<tr>
-          				<td height="30" align="left" valign="middle" >
-							<div class="formfontcontent"><p class="formfontcontent"><%tcWebApi_get("String_Entry","traffic_monitor_desc2","s")%></p></div>
-							<div class="formfontcontent"><p class="formfontcontent"><a id="faq0" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;"><% tcWebApi_Get("String_Entry", "traffic_monitor", "s") %> FAQ</a></p></div>
+          				<td height="30" align="left" valign="middle">
+						<div class="formfontcontent"><p class="formfontcontent"><%tcWebApi_get("String_Entry","traffic_monitor_desc2","s")%></p></div>
+						<div class="formfontcontent"><p class="formfontcontent"><a id="faq0" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;"><% tcWebApi_Get("String_Entry", "traffic_monitor", "s") %> FAQ</a></p></div>
           				</td>
         			</tr>
         			<tr>

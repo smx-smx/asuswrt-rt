@@ -22,21 +22,55 @@
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <style>
-	.Bar_container{
+.Bar_container{
 	width:85%;
 	height:21px;
 	border:2px inset #999;
 	margin:0 auto;
+	margin-top:20px \9;
 	background-color:#FFFFFF;
 	z-index:100;
-	}
-	#proceeding_img_text{
-	position:absolute; z-index:101; font-size:11px; color:#000000; margin-left:110px; line-height:21px;
-	}
-	#proceeding_img{
+}
+#proceeding_img_text{
+	position:absolute; 
+	z-index:101; 
+	font-size:11px; 
+	color:#000000; 
+	margin-left:110px; 
+	line-height:21px;
+}
+#proceeding_img{
 	height:21px;
 	background:#C0D1D3 url(/images/proceeding_img.gif);
-	}
+}
+.button_helplink{
+	font-weight: bolder;
+	text-shadow: 1px 1px 0px black;
+	text-align: center;
+	vertical-align: middle;
+  background: transparent url(/images/New_ui/contentbt_normal.png) no-repeat scroll center top;
+  _background: transparent url(/images/New_ui/contentbt_normal_ie6.png) no-repeat scroll center top;
+  border:0;
+  color: #FFFFFF;
+	height:33px;
+	width:122px;
+	font-family:Verdana;
+	font-size:12px;
+  overflow:visible;
+	cursor:pointer;
+	outline: none; /* for Firefox */
+ 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+ 	white-space:normal;
+}
+.button_helplink:hover{
+	font-weight: bolder;
+	background:url(/images/New_ui/contentbt_over.png) no-repeat scroll center top;
+	height:33px;
+ 	width:122px;
+	cursor:pointer;
+	outline: none; /* for Firefox */
+ 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+}
 </style>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
@@ -61,74 +95,85 @@ var webs_state_info = '<% tcWebApi_get("WebCustom_Entry", "webs_state_info", "s"
 var webs_state_reboot = '<% tcWebApi_get("WebCustom_Entry", "webs_state_reboot", "s" ) %>';
 
 var exist_firmver="<% tcWebApi_staticGet("DeviceInfo","FwVer","s") %>";
-
+var dead = 0;
 function detect_firmware(){
 
 	$j.ajax({
-    		url: '/cgi-bin/detect_firmware.asp',
+    		url: '/detect_firmware.asp',
     		dataType: 'script',
 
     		error: function(xhr){
-    				setTimeout("detect_firmware();", 1000);
-    		},
+    						dead++;
+								if(dead < 30)
+									setTimeout("detect_firmware();", 1000);
+								else{
+									document.getElementById('update_scan').style.display="none";
+									document.getElementById('update_states').innerHTML="<%tcWebApi_get("String_Entry","connect_failed","s")%>";	
+								}	
+    					 },
 
     		success: function(){
 
       			if(webs_state_update==0){
       					setTimeout("detect_firmware();", 1000);
       			}else{
-      					if(webs_state_error==1 && webs_state_info==""){
-      						document.getElementById('update_scan').style.display="none";
-									document.getElementById('update_states').innerHTML="<%tcWebApi_get("String_Entry","connect_failed","s")%>";
-      						return;
-      					}
-      					else if(webs_state_error==1 && webs_state_info != ""){
-      						document.getElementById('update_scan').style.display="none";
-      						document.getElementById('update_states').innerHTML="<%tcWebApi_get("String_Entry","FIRM_fail_desc","s")%>";
-      						return;
-      					}
-      					else{
-      						var Latest_firmver = webs_state_info;
-	      					if(Latest_firmver.length > 0){	//match model FW
-	      						Latest_firm = parseInt(Latest_firmver);
-      							current_firm = parseInt(exist_firmver.replace(/[.]/gi,""));
-      							if(current_firm < Latest_firm){
-								document.getElementById('update_scan').style.display="none";												
-								if(webs_state_reboot > 0)
-									var confirm_content = "<%tcWebApi_get("String_Entry","exist_new","s")%>\n\nAfter firmware updated, please press the reset button more than five seconds to reset the (modem) router in order to avoid some compatibility issues.\n\nDo not power off <%tcWebApi_get("String_Entry","Web_Title2","s")%> while upgrade in progress.";
-								else
-									var confirm_content = "<%tcWebApi_get("String_Entry","exist_new","s")%>\n\nDo not power off <%tcWebApi_get("String_Entry","Web_Title2","s")%> while upgrade in progress.";
+      				if(webs_state_error==1 && webs_state_info==""){
+      					document.getElementById('update_scan').style.display="none";
+								document.getElementById('update_states').innerHTML="<%tcWebApi_get("String_Entry","connect_failed","s")%>";
+								return;
+      				}
+      				else if(webs_state_error==1 && webs_state_info != ""){
+      					document.getElementById('update_scan').style.display="none";
+      					document.getElementById('update_states').innerHTML="<%tcWebApi_get("String_Entry","FIRM_fail_desc","s")%>";
+      					return;
+      				}
+      				else{
+      					var Latest_firmver = webs_state_info;	//#FW1106_86-g09787df
+	      				if(Latest_firmver.length > 0){	//model matched	      						
+									var Latest_firm_buildno = parseInt(Latest_firmver);
+									var current_firm_buildno = parseInt(exist_firmver.replace(/[.]/gi,""));
+																				
+      						if(current_firm_buildno < Latest_firm_buildno  ||
+      								(current_firm_buildno == Latest_firm_buildno))			
+      						{
+										document.getElementById('update_scan').style.display="none";
+										if(webs_state_reboot > 0)
+											var confirm_content = "<%tcWebApi_get("String_Entry","exist_new","s")%>\n\nAfter firmware updated, please press the reset button more than five seconds to reset the (modem) router in order to avoid some compatibility issues.\n\nDo not power off <%tcWebApi_get("String_Entry","Web_Title2","s")%> while upgrade in progress.";
+										else
+											var confirm_content = "<%tcWebApi_get("String_Entry","exist_new","s")%>\n\nDo not power off <%tcWebApi_get("String_Entry","Web_Title2","s")%> while upgrade in progress.";
 													
-								if(confirm(confirm_content)){
-	
-									document.start_update.action_mode.value="apply";
-									document.start_update.action_script.value="start_webs_upgrade";
-									document.start_update.live_upgrade_flag.value="1";
-									document.start_update.DOWNLOAD_HEADER_TYPE.value="1";
-									startDownloading();
-									document.start_update.submit();
+										if(confirm(confirm_content)){
+											document.start_update.action_mode.value="apply";
+											document.start_update.action_script.value="start_webs_upgrade";
+											document.start_update.live_upgrade_flag.value="1";
+											document.start_update.DOWNLOAD_HEADER_TYPE.value="1";
+											startDownloading();
+											document.start_update.submit();
+											
+											return;
+										}
+										else{
+											document.getElementById('update_scan').style.display="none";
+											document.getElementById('update_states').innerHTML="";
+										} 									
+									}
+									else{												
+
+										document.getElementById('update_states').innerHTML="<%tcWebApi_get("String_Entry","is_latest","s")%>";
+										document.getElementById('update_scan').style.display="none";
+									}
+      					}
+	      				else{		//miss-match model FW
+      							
+									document.getElementById('update_scan').style.display="none";
+									document.getElementById('update_states').innerHTML="<%tcWebApi_get("String_Entry","unavailable_update","s")%>.";
+									
 									return;
 								}
-								else{
-									document.getElementById('update_scan').style.display="none";
-									document.getElementById('update_states').innerHTML="";
-								} 									
 							}
-							else{												
-								document.getElementById('update_states').innerHTML="<%tcWebApi_get("String_Entry","is_latest","s")%>";
-								document.getElementById('update_scan').style.display="none";
-    							}
-      						}
-	      					else{		//miss-match model FW
-      							
-							document.getElementById('update_scan').style.display="none";
-							document.getElementById('update_states').innerHTML="<%tcWebApi_get("String_Entry","unavailable_update","s")%>.";
-							return;
 						}
 					}
-			}
-  		}
-  	});
+  });
 }
 
 function detect_update(){	
@@ -150,12 +195,23 @@ function detect_update(){
 	}
 }
 
+var helplink = "";
 function initial(){
 	show_menu();
-	if(live_update_support == -1)
+		
+	if(live_update_support == -1 || HTTPS_support == -1){
 		document.getElementById("update").style.display = "none";
-	else if('<% tcWebApi_get("WebCustom_Entry", "webs_state_update", "s" ) %>' != '')
-		detect_firmware();
+		document.getElementById("linkpage_div").style.display = "";
+		document.getElementById("linkpage").style.display = "";
+		helplink = get_helplink();
+		document.getElementById("linkpage").href = helplink;
+	} 
+	else{
+		document.getElementById("update").style.display = "";
+		document.getElementById("linkpage_div").style.display = "none";
+		if('<% tcWebApi_get("WebCustom_Entry", "webs_state_update", "s" ) %>' != '')
+			detect_firmware("initial");
+	}	
 }
 
 function redirect(){
@@ -452,8 +508,9 @@ function LoadingProgress(seconds){
 			</tr>
 			<tr>
 				<th><%tcWebApi_get("String_Entry","FW_item2","s")%></th>
-				<td><%If tcWebApi_get("DeviceInfo","FwVer","h") <> "" Then tcWebApi_staticGet("DeviceInfo","FwVer","s") end if%>
-						<input type="button" id="update" name="update" class="button_gen" onclick="detect_update();" value="<%tcWebApi_get("String_Entry","liveupdate","s")%>" />
+				<td><div style="height:33px;margin-top:5px;"><%If tcWebApi_get("DeviceInfo","FwVer","h") <> "" Then tcWebApi_staticGet("DeviceInfo","FwVer","s") end if%></div>
+						<input type="button" id="update" name="update" class="button_gen" style="margin-left:150px;margin-top:-38px;display:none;" onclick="detect_update();" value="<%tcWebApi_get("String_Entry","liveupdate","s")%>" />
+						<div id="linkpage_div" class="button_helplink" style="margin-left:150px;margin-top:-38px;display:none;"><a id="linkpage" target="_blank"><div style="padding-top:5px;"><%tcWebApi_get("String_Entry","liveupdate","s")%></div></a></div>
 						<div id="check_states">
 							<span id="update_states"></span>
 							<img id="update_scan" style="display:none;" src="/images/InternetScan.gif" />

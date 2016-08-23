@@ -127,20 +127,16 @@ void start_pptpd(void)
 	int pid = getpid();
 	_dprintf("start_pptpd: getpid= %d\n", pid);
 
-	//if(getpid() != 1) {
-		//notify_rc("start_pptpd");
-		//return;
-	//}
-
 	if (!tcapi_match(VPN_DATA, "pptpd_enable", "1")) {
 		return;
 	}
+
 	// cprintf("stop vpn modules\n");
 	// stop_vpn_modules ();
 
 	// Create directory for use by pptpd daemon and its supporting files
 	mkdir("/tmp/pptpd", 0744);
-	cprintf("open options file\n");
+
 	// Create options file that will be unique to pptpd to avoid interference
 	// with pppoe and pptp
 	fp = fopen("/tmp/pptpd/options.pptpd", "w");
@@ -150,17 +146,6 @@ void start_pptpd(void)
 		fprintf(fp, "plugin radius.so\nplugin radattr.so\n"
 			"radius-config-file /tmp/pptpd/radius/radiusclient.conf\n");
 
-	//cprintf("check if wan_wins = zero\n");
-	//int nowins = 0;
-
-	//if (nvram_match("wan_wins", "0.0.0.0")) {
-		//nvram_set("wan_wins", "");
-		//nowins = 1;
-	//}
-	//if (strlen(nvram_safe_get("wan_wins")) == 0)
-		//nowins = 1;
-
-	cprintf("write config\n");
 	fprintf(fp, "lock\n"
 		"name *\n"
 		"proxyarp\n"
@@ -194,20 +179,24 @@ void start_pptpd(void)
 		tcapi_get_int(VPN_DATA, "pptpd_mtu"),
 		tcapi_get_int(VPN_DATA, "pptpd_mru"));
 
+	tcapi_get("Lan_Entry0", "IP", lan_ipaddr);
+
 	//WINS Server
-	//if (!nowins) {
-		//fprintf(fp, "ms-wins %s\n", nvram_safe_get("wan_wins"));
-	//}
+	int wins_count = 0;
+	if (tcapi_match(VPN_DATA, "pptpd_ms_network", "1"))
+		wins_count += fprintf(fp, "ms-wins %s\n", lan_ipaddr) > 0 ? 1 : 0;
+
 	memset(buf, 0, sizeof(buf));
 	tcapi_get(VPN_DATA, "pptpd_wins1", buf);
 	if(strlen(buf)) {
-		fprintf(fp, "ms-wins %s\n", buf);
+		wins_count += fprintf(fp,"ms-wins %s\n", buf) > 0 ? 1 : 0;
 	}
 	memset(buf, 0, sizeof(buf));
 	tcapi_get(VPN_DATA, "pptpd_wins2", buf);
-	if(strlen(buf)) {
-		fprintf(fp, "ms-wins %s\n", buf);
+	if(strlen(buf) && (wins_count < 2)) {
+		wins_count += fprintf(fp,"ms-wins %s\n", buf) > 0 ? 1 : 0;
 	}
+
 	//DNS Server
 	memset(buf, 0, sizeof(buf));
 	tcapi_get(VPN_DATA, "pptpd_dns1", buf);
@@ -221,7 +210,6 @@ void start_pptpd(void)
 		fprintf(fp, "ms-dns %s\n", buf);
 		manual_dns=1;
 	}
-	tcapi_get("Lan_Entry0", "IP", lan_ipaddr);
 	if(!manual_dns && strcmp(lan_ipaddr, ""))
 		fprintf(fp, "ms-dns %s\n", lan_ipaddr);
 
@@ -278,12 +266,18 @@ void start_pptpd(void)
 
 	// Create pptpd.conf options file for pptpd daemon
 	fp = fopen("/tmp/pptpd/pptpd.conf", "w");
+
 	memset(buf, 0, sizeof(buf));
-	fprintf(fp, "bcrelay %s\n", tcapi_get_string(VPN_DATA, "pptpd_broadcast", buf));
-	memset(buf, 0, sizeof(buf));
+	tcapi_get(VPN_DATA, "pptpd_clients", buf);
 	fprintf(fp, "localip %s\n"
-		"remoteip %s\n", lan_ipaddr,
-		tcapi_get_string(VPN_DATA, "pptpd_clients", buf));
+		"remoteip %s\n", lan_ipaddr, buf);
+
+	memset(buf, 0, sizeof(buf));
+	tcapi_get(VPN_DATA, "pptpd_broadcast", buf);
+	if ( strcmp(buf, "") && strcmp(buf,"disable") && strcmp(buf,"0")) {
+		fprintf(fp, "bcrelay %s,%s\n",
+			"br0", "ppp2[0-9].*");
+	}
 	fclose(fp);
 
 	// Create ip-up and ip-down scripts that are unique to pptpd to avoid
@@ -311,6 +305,33 @@ void start_pptpd(void)
 		"iptables -I INPUT -i $1 -j ACCEPT\n" "iptables -I FORWARD -i $1 -j ACCEPT\n"
 		"iptables -t nat -I PREROUTING -i $1 -p udp -m udp --sport 9 -j DNAT --to-destination %s "	// rule for wake on lan over pptp tunnel
 		"%s\n", bcast, buf);
+
+	//Add static route for vpn client
+	char nv[MAXLEN_TCAPI_MSG], *nvp, *b;
+	char *pptpd_client, *vpn_network, *vpn_netmask;
+	int i;
+	char listname[MAXLEN_ATTR_NAME] = {0};
+
+	for(i = 0; i < 16; i++)
+	{
+		memset(nv, 0, sizeof(nv));
+		if(i)
+			sprintf(listname, "pptpd_sr_rulelist%d", i);
+		else
+			sprintf(listname, "pptpd_sr_rulelist");
+		if( tcapi_get(VPN_DATA, listname, nv) == TCAPI_PROCESS_OK) {
+			nvp = nv;
+			while ((b = strsep(&nvp, "<")) != NULL) {
+				if((vstrsep(b, ">", &pptpd_client, &vpn_network, &vpn_netmask)!=3)) continue;
+				if(strlen(pptpd_client)==0||strlen(vpn_network)==0||strlen(vpn_netmask)==0) continue;
+				fprintf(fp, "if[ \"$PEERNAME\" == \"%s\" ] then;\n", pptpd_client);
+				fprintf(fp, "route del -net %s netmask %s\n", vpn_network, vpn_netmask);
+				fprintf(fp, "route add -net %s netmask %s dev $1\n", vpn_network, vpn_netmask);
+				fprintf(fp, "fi\n");
+			}
+		}
+	}
+
 	fclose(fp);
 	memset(buf, 0, sizeof(buf));
 	tcapi_get(VPN_DATA, "pptpd_ipdown_script", buf);

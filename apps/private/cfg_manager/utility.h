@@ -265,6 +265,7 @@ extern const char *ipv6_router_address(struct in6_addr *in6addr);
 #define ipv6_enabled()	(0)
 #endif
 
+extern int EZgetAttrValue_UpdateType(char *node1, char *node2, char *attribute,char *buf, int buflen);
 extern int EZgetAttrValue(char *node1, char *node2, char *attribute,char *buf);
 extern int EZsetAttrValue(char *node1, char *node2, char *attribute,char *buf);
 extern int EZgetAttrValue2(char *node1, char *node2, char *node3, char *attribute,char *buf);
@@ -314,6 +315,7 @@ extern int host_addrtypes(const char *name, int af); //Ren
 extern int ipt_addr_compact(const char *s, int af, int strict); //Ren
 extern int run_app_script2(const char *pkg_name, const char *pkg_action); //Ren
 extern char *trimWS(char *str);
+extern char *trimWS_L(char *str);
 extern char *trimNL(char *str);
 int wan_primary_ifunit(void);
 int wan_secondary_ifunit(void);
@@ -336,5 +338,7 @@ int is_wan_connect(int unit);
 extern int _ifconfig(const char *name, int flags, const char *addr, const char *netmask, const char *dstaddr);
 #define ifconfig(name, flags, addr, netmask) _ifconfig(name, flags, addr, netmask, NULL)
 #define IFUP (IFF_UP | IFF_RUNNING | IFF_BROADCAST | IFF_MULTICAST)
+
+extern void reset_switch_phy();
 
 #endif

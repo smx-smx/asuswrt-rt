@@ -1,11 +1,16 @@
 #CROSS=mips-linux-gnu-
 #CC	= $(CROSS)gcc
 CFLAGS 	= -g -O2 -Wall -I. -I../ -I../../../libdisk/
-CFLAGS+= -DTRENDCHIP 
+CFLAGS+= -DTRENDCHIP
 
 ifneq ($(TC_CFLAGS), )
-        CFLAGS+=$(TC_CFLAGS)
+CFLAGS+=$(TC_CFLAGS)
 endif
+CFLAGS += -I$(APP_TCAPILIB_DIR)
+CFLAGS += -I$(APP_MSSL_DIR)
+CFLAGS += -I$(APP_SHARED_DIR)
+CFLAGS += -I$(APP_OPENSSL_DIR)/OPSSL/include
+CFLAGS += -I$(LIB_UTILS_DIR)
 
 ifneq ($(TCSUPPORT_WEBSERVER_SSL), )
 CFLAGS += -I../../../matrixssl-1-8
@@ -14,6 +19,9 @@ endif
 LDFLAGS = -mips32r2 -G0 -msoft-float -O2 -fshort-wchar
 
 SRC = grammar.c gb-lex.c asp.c asp_handler.c http-get-utils.c parsers.c
+ifneq ($(RTCONFIG_OPENVPN), )
+SRC += openvpn_options.c
+endif
 OBJS = $(patsubst %.c, %.o, $(SRC))
 
 

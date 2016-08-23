@@ -120,7 +120,7 @@ var _responseLen;
 var noChange = 0;
 function checkCmdRet(){
 	$j.ajax({
-		url: 'cmdRet_check.asp',
+		url: 'cmdRet_check.asp?hash=' + Math.random().toString(),
 		dataType: 'html',
 		
 		error: function(xhr){

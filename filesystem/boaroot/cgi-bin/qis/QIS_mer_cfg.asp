@@ -33,7 +33,7 @@ if (encap_val == "vc") encap_str = "VC-Mux";
 
 function QKfinish_load_body(){
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_all_title","s")%>";
-	//parent.set_step("t3");
+	parent.set_step("t2");
 
 	if(encap_val == "vc")
 		document.form.dsltmp_cfg_encap.value = "1";
@@ -236,6 +236,11 @@ function showISPList(country){
 
 function ChgSVC(idx) {
 	if(ISP_List[idx][13] != "") {	//iptv idx
+		if(wan_type == "ATM" && (idx == "610" || idx == "610")) //610:HiNet (0, 33, PPPoE)&ADSL+MOD  ; 612:HiNet (0, 34, PPPoE)&ADSL+MOD
+			document.getElementById("STBPortMsg").innerHTML = "Please connect the MOD(STB) to LAN Port 1";
+		else if(wan_type == "PTM" && idx == "153") //HiNet (PPPoE) & VDSL+MOD
+			document.getElementById("STBPortMsg").innerHTML = "Please connect the MOD(STB) to LAN Port 1";
+			
 		showhide("STBPortMsg", 1);
 	}
 	else {
@@ -379,7 +384,7 @@ function setIptvNumPvc() {
 				<label for="specialisp">
 					<span class="QISGeneralFont" style="margin-left:0px;font-style:normal;color:#66CCFF;font-size:12px;font-weight:bolder;"><%tcWebApi_get("String_Entry","PPPC_x_HostNameForISP_sn","s")%> ( IPTV Service )</span>
 				</label>
-				<span class="stb_msg" id='STBPortMsg'> Default IPTV STB Port - LAN Port 1</span>
+				<span class="stb_msg" id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>	<!-- untranslated -->
 			</td>
 		</tr>	
 </table>	

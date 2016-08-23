@@ -193,7 +193,9 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 #define safe_getenv(s) (getenv(s) ? : "")
 
 //#define dbg(fmt, args...) do { FILE *fp = fopen("/dev/console", "w"); if (fp) { fprintf(fp, fmt, ## args); fclose(fp); } } while (0)
-#define dbg(fmt, args...) do { FILE *fp = fopen("/dev/console", "w"); if (fp) { fprintf(fp, fmt, ## args); fclose(fp); } else fprintf(stderr, fmt, ## args); } while (0)
+//#define dbg(fmt, args...) do { FILE *fp = fopen("/dev/console", "w"); if (fp) { fprintf(fp, fmt, ## args); fclose(fp); } else fprintf(stderr, fmt, ## args); } while (0)
+/* Don't let /dev/console block */
+#define dbg(fmt, args...) do { FILE *fp; int nfd; if((nfd = open("/dev/console", O_WRONLY | O_NONBLOCK)) > 0){ if((fp = fdopen(nfd, "w")) != NULL) { fprintf(fp, fmt, ## args); fclose(fp); } else fprintf(stderr, fmt, ## args); close(nfd); } } while (0)
 #define dbG(fmt, args...) dbg("%s(0x%04x): " fmt , __FUNCTION__ , __LINE__, ## args)
 extern void cprintf(const char *format, ...);
 

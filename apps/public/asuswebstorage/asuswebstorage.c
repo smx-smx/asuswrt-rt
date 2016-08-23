@@ -96,6 +96,7 @@ int download_only = 0;
 s_tree *s_link = NULL;
 Hb_TreeNode *DirRootNode = NULL;
 Server_TreeNode  *SRootNode = NULL;
+Hb_SubNode *SyncNode;
 //char uploadfile_path[NORMALSIZE];
 //char downloadfile_path[NORMALSIZE];
 int server_space_full = 0;
@@ -112,6 +113,7 @@ int has_local_socket = 0 ;
 int is_server_running = 0;
 int IsAccountFrozen = 0;
 int IsSyncError = 0;
+api_count_s api_count;
 //int IsSleep;
 int loop_max;
 int usleep_time;
@@ -343,11 +345,14 @@ void *SyncServer()
                     write_system_log("sync server","start");
 #endif
                     is_server_running = 1;
+						  if(pre_seq == -10)
+                        SyncNode = create_node(MySyncFolder,-10);
                     status = syncServerAllItem(username,MySyncFolder,sync_path);
                     is_server_running = 0 ;                  
                     write_finish_log();
 
 //#ifdef DEBUG
+                    print_all_nodes(SyncNode);
                     printf("#### sync server end#####\n");
 //#endif
 
@@ -356,6 +361,8 @@ void *SyncServer()
 #endif
                     if(status == -1)
                     {
+                        if(pre_seq == -10)
+                            free_node(SyncNode);
                         sync_fail = 1;
                         enter_sleep_time(1000*100,NULL);
                     }
@@ -363,6 +370,8 @@ void *SyncServer()
                     {
                         sync_fail = 0;
                     }
+
+                    print_count_call_api();
                 }
 
                 if(sync_fail != 1)
@@ -382,7 +391,7 @@ void *SyncServer()
         }
         server_sync = 0;
         //write_system_log("SyncServer","end");
-        enter_sleep_time(5,&wait_server_mutex);
+        enter_sleep_time(30,&wait_server_mutex);
     }
 
     printf("stop asuswebstorage server sync\n");
@@ -1292,7 +1301,7 @@ int perform_socket_cmd(Socket_cmd *scmd)
                 return 0;
             }
 
-            oe = removeEntry(username,entry_ID,ischildonly,isfolder);
+            oe = removeEntry(username,entry_ID,ischildonly,isfolder,parent_ID);
 
 #if TREE_NODE_ENABLE
             snprintf(fullname,NORMALSIZE,"%s/%s",path,filename);
@@ -1422,7 +1431,7 @@ int perform_socket_cmd(Socket_cmd *scmd)
                 sleep(30);
                 printf("move start\n");
 #endif
-                me = moveEntry(username,entry_ID,oldname,parent_ID,isfolder);
+                me = moveEntry(username,entry_ID,oldname,parent_ID,isfolder,pre_parent_ID);
 
                 if(NULL == me)
                 {

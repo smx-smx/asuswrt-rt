@@ -58,6 +58,7 @@ var wansbstate = -1;
 var wanauxstate = -1;
 var old_link_internet = -1;
 
+var wans_cap = '<% tcWebApi_Get("Dualwan_Entry", "wans_cap", "s") %>';
 var wans_dualwan = '<% tcWebApi_Get("Dualwan_Entry", "wans_dualwan", "s") %>';
 var pri_if = wans_dualwan.split(" ")[0];
 var sec_if = wans_dualwan.split(" ")[1];
@@ -67,6 +68,10 @@ var wans_mode = '<%tcWebApi_Get("Dualwan_Entry", "wans_mode", "s")%>';
 var loadBalance_Ratio = '<%tcWebApi_Get("Dualwan_Entry", "wans_lb_ratio", "s")%>';
 
 var wan_unit = '<% tcWebApi_Get("WebCurSet_Entry", "wan_unit", "s") %>';
+if('<% tcWebApi_Get("Wan_PVC", "Active", "s") %>' == 'Yes')
+	var wan_enable = 1;
+else
+	var wan_enable = 0;
 
 function add_lanport_number(if_name)
 {
@@ -118,7 +123,7 @@ function initial(){
 			$("dualwan_row_main").style.display = "";
 			// DSLTODO, need ajax to update failover status
 			$('dualwan_mode_ctrl').style.display = "";
-			//$('wan_enable_button').style.display = "none";
+			$('wan_enable_button').style.display = "none";
 
 			if(wans_mode == "lb"){
 				//document.getElementById("wansMode").value = 1;
@@ -150,8 +155,8 @@ function initial(){
                 else
                         document.getElementById("DSL_tab").style.display = "none";
 		if ((wanlink_type() == "dhcp" || wanlink_xtype() == "dhcp") && wans_dualwan.split(" ")[0]!="usb") {
-			$("dualwan_row_main").style.display = "";
-			showtext($j("#dualwan_current")[0], pri_if);			
+			document.getElementById('primary_lease_ctrl').style.display = "";
+			document.getElementById('primary_expires_ctrl').style.display = "";
 		}
 	}
 
@@ -162,20 +167,20 @@ function initial(){
 		if(dualWAN_support){
 			if(dsl_support && wans_dualwan.split(" ")[0] == "usb" && parent.document.form.dual_wan_flag.value == 0){
 				$("goDualWANSetting").style.display = "none";
-				//$("dualwan_enable_button").style.display = "none";
+				$("dualwan_enable_button").style.display = "none";
 			}
 			else if(parent.document.form.dual_wan_flag.value == 0){
 				$("goDualWANSetting").style.display = "none";
-				//$("dualwan_enable_button").style.display = "";
+				$("dualwan_enable_button").style.display = "";
 			}
 			else{
 				$("goDualWANSetting").style.display = "";
-				//$("dualwan_enable_button").style.display = "none";
+				$("dualwan_enable_button").style.display = "none";
 			}
 		}
 		else{
 			$("goDualWANSetting").style.display = "none";
-			//$("dualwan_enable_button").style.display = "none";
+			$("dualwan_enable_button").style.display = "none";
 		}
 
 	}
@@ -303,8 +308,7 @@ function loadBalance_form(lb_unit){
 
 function failover_form(fo_unit, primary_if, secondary_if){	
 	if(fo_unit == 0){
-		//have_lease = (first_wanlink_type() == "dhcp" || first_wanlink_xtype() == "dhcp");
-		have_lease = (first_wanlink_type() == "dhcp");
+		have_lease = (first_wanlink_type() == "dhcp" || first_wanlink_xtype() == "dhcp");
 		showtext($j("#dualwan_current")[0], primary_if);
 		if(primary_if == "DSL")
 			document.getElementById("DSL_tab").style.display = "";
@@ -325,8 +329,7 @@ function failover_form(fo_unit, primary_if, secondary_if){
 		$('secondary_expires_ctrl').style.display = "none";
 	}
 	else{
-		//have_lease = (secondary_wanlink_type() == "dhcp" || secondary_wanlink_xtype() == "dhcp");
-		have_lease = (secondary_wanlink_type() == "dhcp");
+		have_lease = (secondary_wanlink_type() == "dhcp" || secondary_wanlink_xtype() == "dhcp");
 		showtext($j("#dualwan_current")[0], secondary_if);
 		if(secondary_if == "DSL")
 			document.getElementById("DSL_tab").style.display = "";
@@ -349,7 +352,6 @@ function failover_form(fo_unit, primary_if, secondary_if){
 }
 
 function update_all_ip(wanip, wannetmask, wandns, wangateway, unit){
-	//alert("wanip="+wanip+", wannetmask="+wannetmask+", wandns="+wandns+", wangateway="+wangateway+", unit="+unit);
 	var dnsArray = wandns.split(" ");
 	if(unit == 0){
 		showtext($j("#WANIP")[0], wanip);
@@ -359,16 +361,12 @@ function update_all_ip(wanip, wannetmask, wandns, wangateway, unit){
 		showtext($j("#gateway")[0], wangateway);
 		if(parent.wans_flag){
 			if (first_wanlink_type() == "dhcp") {
-				$('primary_lease_ctrl').style.display = (have_lease) ? "" : "none";
-				$('primary_expires_ctrl').style.display = (have_lease) ? "" : "none";
 				showtext($j("#lease")[0], format_time(first_lease, "Renewing..."));
 				showtext($j("#expires")[0], format_time(first_expires, "Expired"));
 			}
 		}
 		else{		
 			if (wanlink_type() == "dhcp") {
-				$('primary_lease_ctrl').style.display = "";
-				$('primary_expires_ctrl').style.display = "";
 				showtext($j("#lease")[0], format_time(wan_lease, "Renewing..."));
 				showtext($j("#expires")[0], format_time(wan_expires, "Expired"));
 			}
@@ -576,16 +574,15 @@ function tabclickhandler(unit){
 
 <body class="statusbody" onload="initial();">
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
-<form method="post" name="internetForm" id="form" action="/start_apply2.htm">
-<input type="hidden" name="current_page" value="/index.asp">
-<input type="hidden" name="next_page" value="/index.asp">
+<form method="post" name="internetForm" id="form" action="/cgi-bin/start_apply.asp">
+<input type="hidden" name="current_page" value="index.asp">
+<input type="hidden" name="next_page" value="index.asp">
 <input type="hidden" name="flag" value="Internet">
 <input type="hidden" name="action_mode" value="apply">
-<input type="hidden" name="action_script" value="restart_wan_if">
+<input type="hidden" name="action_script" value="">
 <input type="hidden" name="action_wait" value="5">
-<input type="hidden" name="wans_dualwan" value="<% nvram_get("wans_dualwan"); %>">
-<input type="hidden" name="wan_unit" value="<% tcWebApi_Get("WebCurSet_Entry", "wan_unit", "s") %>">
-<input type="hidden" name="dslx_link_enable" value="" disabled>
+<input type="hidden" name="wans_dualwan" value="<% tcWebApi_Get("Dualwan_Entry","wans_dualwan","s") %>">
+<input type="hidden" name="wan_active" value="<% tcWebApi_Get("Wan_PVC","Active","s") %>">
 <table id="DSL_tab" border="0" cellpadding="0" cellspacing="0" style="display:none;">
 <tr>
 	<td>
@@ -605,32 +602,26 @@ function tabclickhandler(unit){
 </tr>
 </table>
 <table width="95%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="table1px" id="rt_table">
-<!--
+
 	<tr id="wan_enable_button">
 		<td height="50" style="padding:10px 15px 0px 15px;">
-			<p class="formfonttitle_nwm" style="float:left;width:98px;"><#menu5_3_1#></p>
+			<p class="formfonttitle_nwm" style="float:left;width:98px;"><%tcWebApi_Get("String_Entry","menu5_3_1","s")%></p>
 			<div class="left" style="width:94px; float:right;" id="radio_wan_enable"></div>
 			<div class="clear"></div>
 			<script type="text/javascript">
-				$j('#radio_wan_enable').iphoneSwitch('',
+				$j('#radio_wan_enable').iphoneSwitch(wan_enable,
 					function() {
-						document.internetForm.wan_enable.value = "1";
-						if (dsl_support) {
-							document.internetForm.dslx_link_enable.value = "1";
-							document.internetForm.dslx_link_enable.disabled = false;
-						}
+						document.internetForm.wan_active.value = "Yes";
+						document.internetForm.flag.value = "wan_enable";
 						parent.showLoading();
-						document.internetForm.submit();	
+						document.internetForm.submit();
 						return true;
 					},
 					function() {
-						document.internetForm.wan_enable.value = "0";
-						if (dsl_support) {
-							document.internetForm.dslx_link_enable.value = "0";
-							document.internetForm.dslx_link_enable.disabled = false;
-						}
+						document.internetForm.wan_active.value = "No";
+						document.internetForm.flag.value = "wan_enable";
 						parent.showLoading();
-						document.internetForm.submit();	
+						document.internetForm.submit();
 						return true;
 					}
 				);
@@ -641,28 +632,21 @@ function tabclickhandler(unit){
 
 	<tr id="dualwan_enable_button">
 		<td height="50" style="padding:10px 15px 0px 15px;">
-			<p class="formfonttitle_nwm" style="float:left;width:98px;"><#dualwan_enable#></p>
+			<p class="formfonttitle_nwm" style="float:left;width:98px;"><%tcWebApi_Get("String_Entry","dualwan_enable","s")%></p>
 			<div class="left" style="width:94px; float:right;" id="radio_dualwan_enable"></div>
 			<div class="clear"></div>
 			<script type="text/javascript">
 				$j('#radio_dualwan_enable').iphoneSwitch(parent.wans_flag, 
 					function() {
-						if(wans_dualwan.split(" ")[0] == "usb")
-							document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" wan";
-						else
-							document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" usb";
-						document.internetForm.action_wait.value = '';
-						document.internetForm.action_script.value = "reboot";
+						document.internetForm.wans_dualwan.value = wans_cap.split(" ")[0] + " " + wans_cap.split(" ")[1];
+						document.internetForm.flag.value = "dualwan";
 						parent.showLoading();
 						document.internetForm.submit();
 						return true;
 					},
 					function() {
 						document.internetForm.wans_dualwan.value = wans_dualwan.split(" ")[0]+" none";
-						document.internetForm.wan_unit.value = 0;
-						document.internetForm.action_wait.value = '';
-						document.internetForm.action_script.value = "reboot";
-						document.internetForm.wans_mode.value = "fo";
+						document.internetForm.flag.value = "dualwan";
 						parent.showLoading();
 						document.internetForm.submit();
 						return true;
@@ -672,7 +656,7 @@ function tabclickhandler(unit){
 			<img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
 		</td>
 	</tr>
--->
+
 	<tr id=dualwan_row_main style="display:none">
 		<td style="padding:5px 10px 5px 15px;">
 			<p class="formfonttitle_nwm">WAN Port</p>
@@ -833,15 +817,14 @@ function tabclickhandler(unit){
 	<tr id="goDualWANSetting">
 		<td height="50" style="padding:10px 15px 0px 15px;">
 			<p class="formfonttitle_nwm" style="float:left;width:116px;">Dual WAN setting</p>
-			<input type="button" class="button_gen_long" onclick="goToDualWAN();" value="<%tcWebApi_Get("String_Entry", "btn_go", "s")%>" style="margin-top:-10px;">
+			<input type="button" class="button_gen_long" onclick="goToDualWAN();" value="<%tcWebApi_Get("String_Entry", "btn_go", "s")%>" style="position:absolute;right:25px;margin-top:-10px;margin-left:115px;">
 			<img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
 		</td>
 	</tr>
 	<tr id="goSetting" style="display:none">
-		<td height="50" style="padding:10px 15px 0px 15px;">
+		<td height="30" style="padding:10px 15px 0px 15px;">
 			<p class="formfonttitle_nwm" style="float:left;width:116px;"><%tcWebApi_Get("String_Entry", "btn_to_WAN", "s")%></p>
-			<input type="button" class="button_gen_long" onclick="goToWAN();" value="<%tcWebApi_Get("String_Entry", "btn_go", "s")%>" style="margin-top:-10px;">
-			<img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
+			<input type="button" class="button_gen_long" onclick="goToWAN();" value="<%tcWebApi_Get("String_Entry", "btn_go", "s")%>" style="position:absolute;right:25px;margin-top:-10px;margin-left:115px;">
 		</td>
 	</tr>
 

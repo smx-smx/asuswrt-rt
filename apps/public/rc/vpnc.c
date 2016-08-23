@@ -451,6 +451,7 @@ int update_resolv_conf(char *dns)
 
 int vpnc_restart_dnsmasq(char *ifname, int vpnc_conn)
 {
+#if 0
 	char wan_dns[128];
 
 	memset(wan_dns, 0, sizeof(wan_dns));
@@ -463,7 +464,9 @@ int vpnc_restart_dnsmasq(char *ifname, int vpnc_conn)
 	{
 		restart_dnsmasq(NULL, NULL);
 	}
-
+#else
+	start_dnsmasq();
+#endif
 	return 0;
 }
 

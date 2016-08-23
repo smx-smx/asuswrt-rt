@@ -6,8 +6,8 @@
 #define	SUCCESS		1
 #define	FAILURE			0
 #define	DUPLICATE		-1
-#define	MAX_KEY			32
-#define	MAX_VALUE		580
+#define	MAX_KEY			64
+#define	MAX_VALUE		1964
 #define	MAX_STREAM	MAX_KEY+MAX_VALUE+4
 #define	PATH_LENGTH	32
 
@@ -28,7 +28,7 @@ typedef struct _SParser{
 static	int	hashsize[] = {2531, 2743, 3137, 3529};//array of prime numbers
 static	int	m;
 static	SParser	s_parse;
-static	char	str_attrname[32] = {0};
+static	char	str_attrname[MAX_KEY] = {0};
 static	int	init_flag = 0;
 /************internal method************/
 static	uint	hash(uint k);

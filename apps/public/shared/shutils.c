@@ -409,19 +409,21 @@ void cprintf(const char *format, ...)
 {
 	FILE *fp = NULL;
 	va_list args;
-
+	int nfd;
+	/* Don't let /dev/console block */
 	//if(dbg == 1)
-		fp = fopen("/dev/console", "w");
+		if((nfd = open("/dev/console", O_WRONLY | O_NONBLOCK)) > 0){
 	//else if(dbg == 2)
-		//fp = fopen("/tmp/cprintf.log", "w");
-
-	if(fp)
-	{
-		va_start (args, format);
-		vfprintf (fp, format, args);
-		va_end (args);
-		fclose(fp);
-	}
+		//if((nfd = open("/tmp/cprintf.log", O_WRONLY | O_NONBLOCK)) > 0){
+			if((fp = fdopen(nfd, "w")) != NULL)
+			{
+				va_start (args, format);
+				vfprintf (fp, format, args);
+				va_end (args);
+				fclose(fp);
+			}
+			close(nfd);
+		}
 }
 
 

@@ -173,6 +173,9 @@ int send_action(int type,char *content)
     case 4:
         port = SMB_PORT;
         break;
+    case 5:
+        port = USB_PORT;
+        break;
     default:
         break;
     }
@@ -588,6 +591,9 @@ void handle_event (queue_entry_t event,int fd)
         break;
     case 4:
         type = SMBCLIENT;
+        break;
+    case 5:
+        type = USBCLIENT;
         break;
     default:
         break;

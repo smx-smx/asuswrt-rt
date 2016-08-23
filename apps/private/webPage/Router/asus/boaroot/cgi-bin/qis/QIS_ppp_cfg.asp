@@ -13,6 +13,34 @@
 <script type="text/Javascript" src="/form.js"></script>
 <script type="text/javascript" src="/jquery.js"></script>
 <script type="text/Javascript" src="/jstz.min.js"></script>
+<style>
+#DE_ISP_note{
+	font-size:12px;
+	font-family:Arial, Helvetica, sans-serif;
+	text-align:left;
+	margin-left:75px;	
+	margin-top:-10px;
+}
+.isp_note_title{
+	color:#FFCC00;
+}
+.isp_note{	
+	margin-top:5px;
+	line-height:100%;
+}
+.account_format{
+	margin-top:5px;
+	margin-left:30px;
+}
+.num2{
+	color:#569AC7;
+	font-weight: bold;
+}
+.num1{
+	color:#CCFF00;
+	font-weight: bold;
+}
+</style>
 <script type="text/javascript">
 
 var $j = jQuery.noConflict();
@@ -23,7 +51,6 @@ var RAW_ISP_List = [<% nvram_dump("ISP_List") %>];
 var RAW_ISP_List_IPTV = [<% nvram_dump("ISP_List_IPTV") %>];
 var RAW_ISP_PTM_List = [<% nvram_dump("ISP_PTM_List") %>];
 var RAW_ISP_PTM_List_IPTV = [<% nvram_dump("ISP_PTM_List_IPTV") %>];
-
 var detect_status = "<% tcWebApi_get("AutoPVC_Common","dsltmp_autodet_state","s") %>";
 var prctl_str = "";
 var gvt_note = "";
@@ -43,13 +70,13 @@ var is_Custom = "<% tcWebApi_get("SysInfo_Entry", "Customer", "s") %>";
 
 function QKfinish_load_body(){
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_all_title","s")%>";
+	parent.set_step("t2");
 
 	if(is_Custom.toUpperCase() == "POL"){
 				document.form.dsltmp_cfg_pppoe_username.value = "<% tcWebApi_get("Wan_PVC0","USERNAME", "s") %>";
 				document.form.dsltmp_cfg_pppoe_passwd.value = "<% tcWebApi_get("Wan_PVC0","PASSWORD", "s") %>";
 	}	
-
-	//parent.set_step("t3");
+	
 	if(detect_status == "pppoe")
 		document.form.dsltmp_cfg_prctl.value = "0";
 	else
@@ -105,6 +132,32 @@ function QKfinish_load_body(){
 		showhide("iptv_manual_setting", 0);
 	}
 	showhide("STBPortMsg", 0);
+	
+	DE_ISP_note_detect();
+}
+
+function DE_ISP_note_detect(){
+	if(wan_type == "ATM" && vpi_val == "1" && vci_val == "32" && prctl_str == "PPPoE" && encap_str == "LLC"){
+		//ATM, VPI: 1/ VCI: 32/ Protocol: PPPoE/ Encap: LLC 
+		document.getElementById("DE_ISP_note").style.display="";
+		document.getElementById("DE_ISP_title1").style.display="";
+		document.getElementById("Deutsche_Telekom").style.display="";
+		document.getElementById("Deutsche_1n1_ATM").style.display="";
+		document.getElementById("DE_ISP_title2").style.display="none";
+		document.getElementById("Deutsche_NetCologne").style.display="none";
+			
+	}
+	else if(wan_type == "ATM" && vpi_val == "8" && vci_val == "35" && prctl_str == "PPPoE" && encap_str == "LLC"){
+		//ATM, VPI: 8/ VCI: 35/ Protocol: PPPoE/ Encap: LLC	
+		document.getElementById("DE_ISP_note").style.display="";
+		document.getElementById("DE_ISP_title1").style.display="none";
+		document.getElementById("Deutsche_Telekom").style.display="none";
+		document.getElementById("Deutsche_1n1_ATM").style.display="none";
+		document.getElementById("DE_ISP_title2").style.display="";
+		document.getElementById("Deutsche_NetCologne").style.display="";
+	}
+	else
+		document.getElementById("DE_ISP_note").style.display="none";
 }
 
 function submitForm(){
@@ -292,6 +345,11 @@ function showISPList(country){
 function ChgSVC(idx) {
 	if(idx == "default")	return;
 	if(ISP_List[idx][13] != "") {	//iptv idx
+		if(wan_type == "ATM" && (idx == "610" || idx == "610")) //610:HiNet (0, 33, PPPoE)&ADSL+MOD  ; 612:HiNet (0, 34, PPPoE)&ADSL+MOD
+			document.getElementById("STBPortMsg").innerHTML = "Please connect the MOD(STB) to LAN Port 1";
+		else if(wan_type == "PTM" && idx == "153") //HiNet (PPPoE) & VDSL+MOD
+			document.getElementById("STBPortMsg").innerHTML = "Please connect the MOD(STB) to LAN Port 1";
+			
 		showhide("STBPortMsg", 1);
 	}
 	else {
@@ -385,7 +443,7 @@ function setIptvNumPvc() {
 	</tr>
 </table>
 </div>
-<br><br>
+<br>
 <div>
 <table id="tblsetting_2" class="QISform" width="400" border="0" align="center" cellpadding="3" cellspacing="0">
 	<tr>
@@ -416,7 +474,26 @@ function setIptvNumPvc() {
 <%end if%>
 </table>
 </div>
-<br/>
+<br>
+	<div id="DE_ISP_note" style="display:none;">
+	<div id="DE_ISP_title1" style="display:none;"><span class="isp_note_title">Notice (specifically for Germany ISP Telekom / 1&1):</span><br> Bitte geben Sie diese Zugangsdaten in folgendem Format ein.</div>
+		<div class="isp_note" id="Deutsche_Telekom" style="display:none;">
+			Für Telekom ADSL und VDSL Anschlüsse<br>
+			Bei einer 12-stelligen Zugangsnummer (Neue Zugangsdaten):<br>
+			<div class="account_format">Anschlusskennung<span class="num1">Zugangsnummer</span><span class="num2">Mitbenutzernummer</span>@t-online.de</div><br>
+			Bei einer Zugangsnummer mit weniger als 12 Stellen (Alte Zugangsdaten):<br>
+			<div class="account_format">Anschlusskennung<span class="num1">Zugangsnummer</span>#<span class="num2">Mitbenutzernummer</span>@t-online.de</div><br>
+		</div>			
+		<div class="isp_note" id="Deutsche_1n1_ATM" style="display:none;">
+			Bei einem 1&1 ADSL Anschluss:<br>
+			<div class="account_format">1und1/<span class="num1">benutzername</span>@online.de (1&1 Internetzugangs-Kennung)</div>
+		</div>
+		<div id="DE_ISP_title2" style="display:none;"><span class="isp_note_title">Notice (specifically for Germany ISP NetCologne):</span><br> Bitte geben Sie diese Zugangsdaten in folgendem Format ein.</div>
+		<div class="isp_note" id="Deutsche_NetCologne" style="display:none;">
+			<div class="account_format">nc-<span class="num1">username</span>@netcologne.de</div>
+		</div>
+	</div>
+	<br>
 <div>
 <table id="iptv_manual_setting" width="92%" border="0" align="left" cellpadding="3" cellspacing="0" style="margin-left:8%;">
 		<tr id="specialISP_tr">
@@ -425,7 +502,7 @@ function setIptvNumPvc() {
 				<label for="specialisp">
 					<span class="QISGeneralFont" style="margin-left:0px;font-style:normal;color:#66CCFF;font-size:12px;font-weight:bolder;"><%tcWebApi_get("String_Entry","PPPC_x_HostNameForISP_sn","s")%> ( IPTV Service )</span>
 				</label>
-				<span class="stb_msg" id='STBPortMsg'> Default IPTV STB Port - LAN Port 1</span>
+				<span class="stb_msg" id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>	<!-- untranslated -->
 			</td>
 		</tr>	
 </table>	

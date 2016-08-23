@@ -326,7 +326,6 @@ End If
 
 If Request_Form("wanSaveFlag")="1" Then
 	If should_dsl_do_commit()="1" Then
-		set_dsl_apply_flag()
 		tcWebApi_commit("Adsl_Entry")
 	End If
 End If
@@ -590,12 +589,6 @@ function initial(){
 		showhide("div_8021q", 0);
 	}
 
-	<%if tcWebApi_get("Wan_Common","TransMode","h") = "Ethernet" then%>
-	showhide("div_8021q", 0);
-	<%elseif tcWebApi_get("Wan_Common","TransMode","h") = "LAN" then%>
-	showhide("div_8021q", 0);
-	<%end if%>
-
 	<%if tcWebApi_get("Wan_Common","TransMode","h") = "ATM" then%>
 		doQos();
 		showhide("SummaryTable", 1);
@@ -794,7 +787,6 @@ function applyRule(){
 	if(validForm()){
 		form.wanSaveFlag.value = 1;
 		form.wanVCFlag.value = 3;
-		form.isApplyDSLSetting.value = 1; //for set_dsl_apply_flag()
 
 <%if tcWebApi_get("WebCustom_Entry","isMultiSerSupported","h") = "Yes" then%>
 		if(form.wan_dot1q.value == "Yes")
@@ -1192,13 +1184,13 @@ function validForm(){
                 var alert_str = validate_hostname(document.form.wan_hostname);
 
                 if(alert_str != ""){
-                        showtext($("alert_msg1"), alert_str);
-                        $("alert_msg1").style.display = "";
+                        showtext(document.getElementById("alert_msg1"), alert_str);
+                        document.getElementById("alert_msg1").style.display = "";
                         document.form.wan_hostname.focus();
                         document.form.wan_hostname.select();
                         return false;
                 }else{
-                        $("alert_msg1").style.display = "none";
+                        document.getElementById("alert_msg1").style.display = "none";
 	        }
 		document.form.wan_hostname.value = trim(document.form.wan_hostname.value);
 	}
@@ -1209,6 +1201,15 @@ function validForm(){
 				document.form.wan_hwaddr_x.focus();
 			return false;
 		}
+	}
+
+	if(document.form.wan_dot1q.value == "Yes"){
+		if(!validate_number_range(document.form.wan_vid, 1, 4094))
+			return false;
+		<%if tcWebApi_get("WebCustom_Entry","isdot1pSupport","h") = "Yes" then %>
+		if(!validate_number_range(document.form.wan_dot1p, 0, 7))
+			return false;
+		<%end if%>
 	}
 
 	return true;
@@ -1647,38 +1648,18 @@ function doConTypeChange() {
 }
 
 function doEncapChange() {
-// removed. BridgeInterface is designed for pppoe-relay
-/*	with (document.form){
+	with (document.form){
 		switch(wanTypeOption.selectedIndex) {
-			case 0:	//dynamic
-				if((0 == wan_Encap0.selectedIndex) || (1 == wan_Encap0.selectedIndex)){
-					showhide("wan_BridgeInterface", 1);
-				}
-				else{
-					showhide("wan_BridgeInterface", 0);
-				}
-				break;
-			case 1:	//static
-				if((0 == wan_Encap1.selectedIndex) || (1 == wan_Encap1.selectedIndex)){
-					showhide("wan_BridgeInterface", 1);
-				}
-				else{
-					showhide("wan_BridgeInterface", 0);
-				}
-				break;
 			case 2:	//pppoa, pppoe
 				if((0 == wan_Encap2.selectedIndex) || (1 == wan_Encap2.selectedIndex)){
-					showhide("wan_BridgeInterface", 1);
+					showhide("wan_ISPRequirement", 1);
 				}
 				else{
-					showhide("wan_BridgeInterface", 0);
+					showhide("wan_ISPRequirement", 0);
 				}
 				break;
-			case 3:	//bridge mode
-				showhide("wan_BridgeInterface", 0);
-				break;
 		}
-	}*/
+	}
 	return;
 }
 
@@ -1825,17 +1806,17 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 		childsel.setAttribute("id","check_mac");
 		childsel.style.color="#FFCC00";
 		obj.parentNode.appendChild(childsel);
-		$("check_mac").innerHTML="<% tcWebApi_get("String_Entry","LHC_MnlDHCPMacaddr_id","s") %>";
+		document.getElementById("check_mac").innerHTML="<% tcWebApi_get("String_Entry","LHC_MnlDHCPMacaddr_id","s") %>";
 		return false;
 	}else if(flag ==2){
 		var childsel=document.createElement("div");
 		childsel.setAttribute("id","check_mac");
 		childsel.style.color="#FFCC00";
 		obj.parentNode.appendChild(childsel);
-		$("check_mac").innerHTML="<% tcWebApi_get("String_Entry","IPC_x_illegal_mac","s") %>";
+		document.getElementById("check_mac").innerHTML="<% tcWebApi_get("String_Entry","IPC_x_illegal_mac","s") %>";
 		return false;
 	}else{
-		$("check_mac") ? $("check_mac").style.display="none" : true;
+		document.getElementById("check_mac") ? document.getElementById("check_mac").style.display="none" : true;
 		return true;
 	}
 }
@@ -1876,7 +1857,6 @@ function Do_confirm_password(){
 <INPUT TYPE="HIDDEN" NAME="wanBarrierFlag" VALUE="0"/>
 <INPUT TYPE="HIDDEN" NAME="ptm_VC" VALUE="8"/>
 <INPUT TYPE="HIDDEN" NAME="wanVCFlag" VALUE="0"/>
-<INPUT TYPE="HIDDEN" NAME="isApplyDSLSetting" VALUE="0"/>
 <INPUT TYPE="HIDDEN" NAME="service_num_flag" VALUE="0"/>
 <INPUT type="HIDDEN" NAME="isDSLITESupported" value="<% if tcWebApi_get("Info_Ether","isDSLITESupported","h") = "Yes" then asp_write("1") else asp_write("0") end if %>">
 <INPUT type="HIDDEN" NAME="is8021xsupport" value="<% if tcWebApi_get("Info_Ether","is8021xsupport","h") = "Yes" then asp_write("1") else asp_write("0") end if %>">
@@ -2179,14 +2159,14 @@ function Do_confirm_password(){
 						<tr>
 							<th><%tcWebApi_get("String_Entry","WANVLANIDText","s")%></th>
 							<td align="left">
-								<input type="text" name="wan_vid" maxlength="4" class="input_6_table" value=<%if tcWebApi_get("Wan_PVC","VLANID","h") <> "" then tcWebApi_get("Wan_PVC","VLANID","s") else asp_Write("0") end if%> > ( 0 ~ 4095 )
+								<input type="text" name="wan_vid" maxlength="4" class="input_6_table" onkeypress="return is_number(this,event)" value=<%if tcWebApi_get("Wan_PVC","VLANID","h") <> "" then tcWebApi_get("Wan_PVC","VLANID","s") else asp_Write("0") end if%> > ( 1 ~ 4094 )
 							</td>
 						</tr>
 					<%if tcWebApi_get("WebCustom_Entry","isdot1pSupport","h") = "Yes" then %>
 						<tr>
 							<th>802.1P</th>
 							<td align="left">
-								<input type="text" name="wan_dot1p" maxlength="4" class="input_6_table" value=<%if tcWebApi_get("Wan_PVC","DOT1P","h") <> "" then tcWebApi_get("Wan_PVC","DOT1P","s") else asp_Write("0") end if%> > ( 0 ~ 7 )
+								<input type="text" name="wan_dot1p" maxlength="4" class="input_6_table" onkeypress="return is_number(this,event)" value=<%if tcWebApi_get("Wan_PVC","DOT1P","h") <> "" then tcWebApi_get("Wan_PVC","DOT1P","s") else asp_Write("0") end if%> > ( 0 ~ 7 )
 							</td>
 						</tr>
 					<%end if%>
@@ -2555,14 +2535,13 @@ function Do_confirm_password(){
 						<tr>
 							<th><%tcWebApi_get("String_Entry","Connectiontype","s")%></th>
 							<td align="left">
-								<INPUT TYPE="RADIO" NAME="wan_ConnectSelect" class="input" VALUE="Connect_Keep_Alive" onClick="WANChkIdleTimeT();" <%if tcWebApi_get("Wan_PVC","CONNECTION","h") = "Connect_Keep_Alive" then asp_Write("checked") elseif tcWebApi_get("Wan_PVC","CONNECTION","h") = "" then asp_Write("checked") end if%> ><%tcWebApi_get("String_Entry","WANConnectioncCommText","s")%>
+								<INPUT TYPE="RADIO" NAME="wan_ConnectSelect" class="input" VALUE="Connect_Keep_Alive" onClick="WANChkIdleTimeT();" <%if tcWebApi_get("Wan_PVC","CONNECTION","h") = "Connect_Keep_Alive" then asp_Write("checked") elseif tcWebApi_get("Wan_PVC","CONNECTION","h") = "Connect_Manually" then asp_Write("checked") elseif tcWebApi_get("Wan_PVC","CONNECTION","h") = "" then asp_Write("checked") end if%> ><%tcWebApi_get("String_Entry","WANConnectioncCommText","s")%>
 								<br/>
 								<div id="connondemand_info">
 								<INPUT TYPE="RADIO" NAME="wan_ConnectSelect" class="input" VALUE="Connect_on_Demand"   <%if tcWebApi_get("Wan_PVC","CONNECTION","h") = "Connect_on_Demand" then asp_Write("checked") end if%> onClick="WANChkIdleTimeT();"><%tcWebApi_get("String_Entry","WANConnectioncComm1Text","s")%>
 								<INPUT TYPE="TEXT" NAME="wan_IdleTimeT" MAXLENGTH="3" class="input_6_table" onkeypress="return is_number(this,event)" VALUE=<% if tcWebApi_get("Wan_PVC","CLOSEIFIDLE","h") = "" then asp_Write("0") else tcWebApi_get("Wan_PVC","CLOSEIFIDLE","s") end if%> ><%tcWebApi_get("String_Entry","WANConnectioncComm2Text","s")%>
 								<br/>
 								</div><!--end div id="connondemand_info"-->
-								<INPUT TYPE="RADIO" NAME="wan_ConnectSelect" class="input" VALUE="Connect_Manually"  <%if tcWebApi_get("Wan_PVC","CONNECTION","h") = "Connect_Manually" then asp_Write("checked")  end if%> onClick="WANChkIdleTimeT();"><%tcWebApi_get("String_Entry","WANConnectSelectText","s")%>
 							</td>
 						</tr>
 						<tr>

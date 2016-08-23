@@ -185,7 +185,7 @@ function check_system_ready(){
 		$("#proceeding_img_text")[0].innerHTML = "<%tcWebApi_get("String_Entry","Main_alert_proceeding_desc3","s")%>";
 		$("#proceeding_action")[0].innerHTML = "<%tcWebApi_get("String_Entry","APS_action_renew_success","s")%>";
 
-		setTimeout("parent.location = \"http://"+new_lan_ip+"/cgi-bin/QIS_wizard.asp?flag=detect\"", 2*1000);
+		setTimeout("parent.location = \"http://"+new_lan_ip+"/cgi-bin/index.asp\"", 2*1000);
 	}
 }
 
@@ -218,9 +218,16 @@ function detect_router(){
 }
 
 function get_new_lanip(){
+	var MAX_SUBNET = 3232300800;
+	var MIN_LAN_IP = 3232235521;
 	var reverse_mask_num = ~(inet_aton(current_mask));
-	var current_lanip_num = inet_aton(current_lanip);
-	var new_lanip_num = current_lanip_num+reverse_mask_num+1;
+	var current_lanip_num = inet_aton(current_lanip);	
+	var lan_subnet = current_lanip_num+reverse_mask_num;
+	
+	if(lan_subnet >= MAX_SUBNET)
+		var new_lanip_num = MIN_LAN_IP;
+	else
+		var new_lanip_num = lan_subnet+1;	
 
 	return inet_ntoa(new_lanip_num);
 }

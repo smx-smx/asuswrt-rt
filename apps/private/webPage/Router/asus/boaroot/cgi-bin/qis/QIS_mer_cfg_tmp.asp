@@ -101,7 +101,7 @@ if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
 
 function QKfinish_load_body(){
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_all_title","s")%>";
-	//parent.set_step("t3");
+	parent.set_step("t2");
 	document.form.x_DHCPClient[0].checked = 0;
 	document.form.x_DHCPClient[1].checked = 1;
 	document.form.wan_dnsenable_x[0].checked = 0;

@@ -39,6 +39,9 @@
 #include "service.h"
 #include "auth.h"
 #include "runopts.h"
+#ifdef RTCONFIG_PROTECTION_SERVER
+#include <shared.h>
+#endif
 
 static void svr_remoteclosed();
 
@@ -143,6 +146,22 @@ void svr_dropbear_exit(int exitcode, const char* format, va_list param) {
 		snprintf(fmtbuf, sizeof(fmtbuf), 
 				"exit before auth: %s", format);
 	}
+#ifdef RTCONFIG_PROTECTION_SERVER
+		struct state_report ssh;
+		char info[64];
+		char *addrport;
+		char *addr;
+		char *token, *ptr;
+		strncpy(info, svr_ses.addrstring, sizeof(info));
+		addrport = strrchr(info, ':');
+		*addrport = '\0';
+		addr = strrchr(info, ':');
+		token = strtok_r(addr, ":", &ptr);
+		strcpy(ssh.ip_addr, token);
+		ssh.loginType = PROTECTION_SERVICE_SSH;
+		strcpy(ssh.note, "From dropbear , LOGIN FAIL");
+		send_socket(ssh);
+#endif
 
 	_dropbear_log(LOG_INFO, fmtbuf, param);
 

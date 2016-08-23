@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <linux/fs.h>
 #include "shutils.h"
+#include <libutils.h>
 #ifdef RTCONFIG_USB
 #include "usb_info.h"
 #endif
@@ -98,65 +99,79 @@ void clean_wanduck_state(int unit)
 	cprintf("[%s]End...\n", __FUNCTION__);
 }
 
+static int SupportCountrySelect()
+{
+	char ProductName[32];
+	char TerritoryCode[8];
+
+	bzero(ProductName, sizeof(ProductName));
+	bzero(TerritoryCode, sizeof(TerritoryCode));
+
+	tcapi_get("SysInfo_Entry", "ProductName", ProductName);
+	tcapi_get("SysInfo_Entry", "TerritoryCode", TerritoryCode);
+
+	return check_SupportCountrySelect(ProductName, TerritoryCode);
+}
+
 int init_nvram(void)
 {
 	int model = get_model();
+#ifdef RTCONFIG_OPENVPN
+	char node[MAXLEN_NODE_NAME] = {0};
+	int i;
+#endif
 
 	tcapi_set(SYSINFO, "rc_support", "");
 
 	/* Paul modify 2013/6/5 */
 	switch (model) {
 	case MODEL_DSLN16U:
-		f_write_string("/proc/sys/vm/min_free_kbytes", "4096", 0, 0);
 		nvram_set("ehci_ports", "1-1 1-2");
 		nvram_set("ohci_ports", "2-1 2-2");
 		add_rc_support("2.4G update usbX2 modem rawifi dsl wifi_hw_sw ipv6 PARENTAL2 printer mssid no5gmssid appbase pwrctrl iptv wds HTTPS");
 		break;
 	case MODEL_DSLN55UC1:
 	case MODEL_DSLN55UD1:
-		f_write_string("/proc/sys/vm/min_free_kbytes", "4096", 0, 0);
 		nvram_set("ehci_ports", "1-1 1-2");
 		nvram_set("ohci_ports", "2-1 2-2");
 		add_rc_support("2.4G 5G update usbX2 modem rawifi dsl wifi_hw_sw ipv6 PARENTAL2 printer mssid appbase pwrctrl iptv wds HTTPS");
 		break;
 	case MODEL_DSLN66U:
-		f_write_string("/proc/sys/vm/min_free_kbytes", "4096", 0, 0);
 		nvram_set("ehci_ports", "1-2 1-1");
 		nvram_set("ohci_ports", "2-2 2-1");
 		add_rc_support("2.4G 5G update usbX2 modem rawifi dsl wifi_hw_sw ipv6 PARENTAL2 printer mssid appnet pwrctrl iptv wds HTTPS");
 		break;
 	case MODEL_DSLN10C1:
+	case MODEL_DSLN10D1:
 	case MODEL_DSLN10PC1:
 	case MODEL_DSLN12EC1:
-		add_rc_support("2.4G update rawifi dsl wifi_hw_sw ipv6 PARENTAL2 mssid no5gmssid pwrctrl iptv wds HTTPS");
+		add_rc_support("2.4G rawifi dsl wifi_hw_sw ipv6 PARENTAL2 mssid no5gmssid pwrctrl iptv wds HTTPS");
 		break;
 	case MODEL_DSLN12UC1:
+	case MODEL_DSLN12UD1:
 	case MODEL_DSLN14U:
-		f_write_string("/proc/sys/vm/min_free_kbytes", "4096", 0, 0);
+	case MODEL_DSLN14UB1:
 		nvram_set("ehci_ports", "1-1");
 		nvram_set("ohci_ports", "2-1");
 		add_rc_support("2.4G update usbX1 modem rawifi dsl wifi_hw_sw ipv6 PARENTAL2 printer mssid no5gmssid appnet pwrctrl iptv wds HTTPS");
 		break;
 	case MODEL_DSLAC56U:
-		f_write_string("/proc/sys/vm/min_free_kbytes", "14336", 0, 0);
 		nvram_set("ehci_ports", "1-1 1-2");
 		nvram_set("ohci_ports", "2-1 2-2");
 		add_rc_support("2.4G 5G 11AC update usbX2 rawifi dsl wifi_hw_sw ipv6 PARENTAL2 printer mssid appbase pwrctrl iptv wds HTTPS");
 		break;
 	case MODEL_DSLN17U:
-		f_write_string("/proc/sys/vm/min_free_kbytes", "7168", 0, 0);
 		nvram_set("ehci_ports", "1-1 1-2");
 		nvram_set("ohci_ports", "2-1 2-2");
 		add_rc_support("2.4G update usbX2 rawifi dsl wifi_hw_sw ipv6 PARENTAL2 printer mssid appbase pwrctrl iptv wds HTTPS");
 		break;
 	case MODEL_DSLAC52U:
-		f_write_string("/proc/sys/vm/min_free_kbytes", "14336", 0, 0);
+	case MODEL_DSLAC55U:
 		nvram_set("ehci_ports", "1-1");
 		nvram_set("ohci_ports", "2-1");
 		add_rc_support("2.4G 5G 11AC update usbX1 rawifi dsl wifi_hw_sw ipv6 PARENTAL2 printer mssid appbase pwrctrl iptv wds HTTPS");
 		break;
 	case MODEL_DSLN16:
-		f_write_string("/proc/sys/vm/min_free_kbytes", "4096", 0, 0);
 		add_rc_support("2.4G update rawifi dsl wifi_hw_sw ipv6 PARENTAL2 mssid pwrctrl iptv wds HTTPS");
 		break;
 
@@ -166,6 +181,10 @@ int init_nvram(void)
 	add_rc_support("feedback");
 	add_rc_support("telnet");
 	add_rc_support("WPS_reset");
+#ifdef TCSUPPORT_SSH
+	// Carlos Add SSH 2015/07/23
+	add_rc_support("ssh");
+#endif
 
 #ifdef RTCONFIG_USER_LOW_RSSI
 	add_rc_support("user_low_rssi");
@@ -183,8 +202,8 @@ int init_nvram(void)
 #if defined(RTCONFIG_VPNC)
 	add_rc_support("vpnc");
 #endif
-#ifdef MTK_CRYPTO_DRIVER
-	add_rc_support("hwcrypto");
+#ifdef TCSUPPORT_VPN
+	add_rc_support("tcipsec");
 #endif
 #ifdef RTCONFIG_SPECTRUM
 	add_rc_support("spectrum");
@@ -206,6 +225,37 @@ int init_nvram(void)
 	add_rc_support("tr069");
 #endif
 
+//Carlos add cloudsync config trigger GUI display support items.
+//2015/09/17
+#ifdef RTCONFIG_CLOUDSYNC
+	tcapi_set(CLOUD_DATA, "ss_support", "");
+#ifdef RTCONFIG_WEBSTORAGE
+	add_ss_support("asuswebstorage");
+#endif
+#ifdef RTCONFIG_WEBDAV
+	add_ss_support("webdav");
+#endif
+#ifdef RTCONFIG_DROPBOX_CLIENT
+	add_ss_support("dropbox");
+#endif
+#ifdef RTCONFIG_FTP_CLIENT
+	add_ss_support("ftp");
+#endif
+#ifdef RTCONFIG_SAMBA_CLIENT
+	add_ss_support("samba");
+#endif
+#ifdef RTCONFIG_USB_CLIENT
+	add_ss_support("usb");
+#endif
+#endif
+
+#ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
+	add_rc_support("dsl_diag");
+#endif
+
+	if (SupportCountrySelect())
+		add_rc_support("loclist");
+
 	tcapi_set(APPS_DATA, "apps_ipkg_server", "http://nw-dlcdnet.asus.com/asusware/mipsbig/stable");
 	tcapi_set(APPS_DATA, "apps_dev", "");
 	tcapi_set(APPS_DATA, "apps_mounted_path", "");
@@ -225,7 +275,124 @@ int init_nvram(void)
 	#endif /* TCSUPPORT_USB_3G_DONGLE */
 #endif /* RTCONFIG_DUALWAN */
 
+#ifdef RTCONFIG_OPENVPN
+	//clear state, could be moved to temp node
+	for (i = 1; i <= MAX_OVPN_SERVER; i++) {
+		sprintf(node, "OpenVPN_Entry%d", i+SERVER_IF_START);
+		tcapi_set(node, "state", "0");
+		tcapi_set(node, "errno", "0");
+	}
+	for (i = 1; i <= MAX_OVPN_CLIENT; i++) {
+		sprintf(node, "OpenVPN_Entry%d", i+CLIENT_IF_START);
+		tcapi_set(node, "state", "0");
+		tcapi_set(node, "errno", "0");
+	}
+	tcapi_set("OpenVPN_Common", "vpn_upload_state", "");
+#endif
+
+	tcapi_save();	//Andy Chiu, 2015/07/14
 	return 0;
+}
+
+static void init_mem(void)
+{
+	int model = get_model();
+	int min_free_kbytes = 0;
+	int skbmgr_driver_max_skb = 0;	//sk buffer for whole system
+	int skbmgr_limit = 0;		// sk buffer for DSL/Switch driver
+	int skbmgr_4k_limit = 0;	// sk buffer for WiFi driver limit
+	char strtmp[16] = {0};
+
+	switch (model) {
+	case MODEL_DSLN16U:	//128M 2.4G WiFi, USB
+		min_free_kbytes = 4096;
+		skbmgr_driver_max_skb = 6144;
+		skbmgr_limit = 4096;	
+		skbmgr_4k_limit = 1024;
+		break;
+	case MODEL_DSLN55UC1:	//128M 2.4G  + 5G WiFi, USB
+	case MODEL_DSLN55UD1:
+		min_free_kbytes = 4096;
+		skbmgr_driver_max_skb = 6144;
+		skbmgr_limit = 4096;	
+		skbmgr_4k_limit = 1536;
+		break;
+	case MODEL_DSLN66U:	//64M USB, 64M on  2.4G  + 5G WiFi
+		min_free_kbytes = 4096;
+		skbmgr_driver_max_skb = 3072;
+		skbmgr_limit = 2048;	
+		skbmgr_4k_limit = 256;
+		break;
+	case MODEL_DSLN10C1:	//32M 2.4G WiFi, No USB
+	case MODEL_DSLN10PC1:
+	case MODEL_DSLN12EC1:
+	case MODEL_DSLN10D1:
+		skbmgr_driver_max_skb = 2340;
+		skbmgr_limit = 1536;	
+		skbmgr_4k_limit = 512;
+		break;
+	case MODEL_DSLN12UC1:	//64M 2.4G WiFi, USB
+	case MODEL_DSLN12UD1:
+	case MODEL_DSLN14U:
+	case MODEL_DSLN14UB1:
+		min_free_kbytes = 4096;
+		skbmgr_driver_max_skb = 4096;
+		skbmgr_limit = 3072;	
+		skbmgr_4k_limit = 512;
+		break;
+	case MODEL_DSLAC56U:	//256M 2.4G  + 5G AC WiFi, USB
+		min_free_kbytes = 14336;
+		skbmgr_driver_max_skb = 10240;
+		skbmgr_limit = 6144;	
+		skbmgr_4k_limit = 2048;
+		break;
+	case MODEL_DSLN17U:	//128M 2.4G, USB
+		min_free_kbytes = 7168;
+		skbmgr_driver_max_skb = 6144;
+		skbmgr_limit = 4096;	
+		skbmgr_4k_limit = 1024;
+		break;
+	case MODEL_DSLAC52U:	//128M 2.4G  + 5G AC WiFi, USB
+	case MODEL_DSLAC55U:
+		min_free_kbytes = 7168;
+		skbmgr_driver_max_skb = 7168;
+		skbmgr_limit = 4096;	
+		skbmgr_4k_limit = 2048;
+		break;
+	case MODEL_DSLN16:		//64M 2.4G WiFi, No USB
+		skbmgr_driver_max_skb = 6144;
+		skbmgr_limit = 4096;	
+		skbmgr_4k_limit = 1024;
+		break;
+	}
+
+	if (min_free_kbytes > 0)
+	{
+		memset(strtmp, 0, sizeof(strtmp));
+		snprintf(strtmp, sizeof(strtmp), "%d", min_free_kbytes);
+		f_write_string("/proc/sys/vm/min_free_kbytes", strtmp, 0, 0);
+	}
+
+	if (skbmgr_driver_max_skb > 0)
+	{
+		memset(strtmp, 0, sizeof(strtmp));
+		snprintf(strtmp, sizeof(strtmp), "%d", skbmgr_driver_max_skb);
+		f_write_string("/proc/net/skbmgr_driver_max_skb", strtmp, 0, 0);
+	}
+
+	if (skbmgr_limit > 0)
+	{
+		memset(strtmp, 0, sizeof(strtmp));
+		snprintf(strtmp, sizeof(strtmp), "%d", skbmgr_limit);
+		f_write_string("/proc/net/skbmgr_limit", strtmp, 0, 0);
+	}
+
+	if (skbmgr_4k_limit > 0)
+	{
+		memset(strtmp, 0, sizeof(strtmp));
+		snprintf(strtmp, sizeof(strtmp), "%d", skbmgr_4k_limit);
+		f_write_string("/proc/net/skbmgr_4k_limit", strtmp, 0, 0);
+	}
 }
 
 static void sysinit(void)
@@ -240,6 +407,8 @@ static void sysinit(void)
 	eval("hotplug2", "--coldplug");
 	start_hotplug2();
 #endif
+	setup_passwd();
+	init_mem();
 	init_nvram();  // for system indepent part after getting model	
 
 #ifdef RTCONFIG_SHP

@@ -46,7 +46,7 @@ if [ ! -f "$CONF_FILE" ]; then
 fi
 
 link_internet=`tcapi get Wanduck_Common link_internet`
-if [ "$link_internet" != "1" ]; then
+if [ "$link_internet" != "2" ]; then
 	exit 1
 fi
 

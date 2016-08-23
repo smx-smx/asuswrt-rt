@@ -144,7 +144,7 @@ function showNomoISPServiceByIdx(idx) {
 		}
 	}
 	code +="</select>";
-	code +="<span id='STBPortMsg'> Default IPTV STB Port - LAN Port 1</span>";
+	code +="<span id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>";	/* untranslated */
 
 	if(first_element != 0) {
 		$("Service_tr").style.display="";
@@ -211,7 +211,7 @@ function showRussiaISPServiceByIdx(c, idx){
 			}
 		}
 		code +="</select>";
-		code +="<span id='STBPortMsg'> Default IPTV STB Port - LAN Port 1</span>";
+		code +="<span id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>";	/* untranslated */
 		$("Service").innerHTML = code;
 		ChgSVC(sel_idx);
 	}
@@ -237,7 +237,7 @@ function showRussiaISPService(c, o){
 			}
 		}
 		code +="</select>";
-		code +="<span id='STBPortMsg'> Default IPTV STB Port - LAN Port 1</span>";
+		code +="<span id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>";	/* untranslated */
 		$("Service").innerHTML = code;
 		ChgSVC(sel_idx);
 	}
@@ -335,6 +335,8 @@ function ShowPVC(idx) {
 
 function ChgSVC(idx) {
 	if(ISP_List[idx][13] != "") {	//iptv idx
+		if(idx == "610" || idx == "610") //610:HiNet (0, 33, PPPoE)&ADSL+MOD  ; 612:HiNet (0, 34, PPPoE)&ADSL+MOD
+			document.getElementById("STBPortMsg").innerHTML = "Please connect the MOD(STB) to LAN Port 1";
 		showhide("STBPortMsg", 1);
 	}
 	else {
@@ -343,15 +345,14 @@ function ChgSVC(idx) {
 }
 
 function QIS_menual_setting_load_body() {
+	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","Manual_Setting_btn","s")%>";
+	parent.set_step("t2");
+	
 	hidePVCInfo(1);
 	if(country_code=="")
 		country_code = "default";
 	showCountryList(country_code);
 	showAllList(country_code);
-}
-
-function QKfinish_load_body(){
-	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","Manual_Setting_btn","s")%>";
 }
 
 function submit_page(){
@@ -449,6 +450,15 @@ function btnNext() {
 		document.form.dsltmp_cfg_iptv_idx.value = ISP_List[isp_idx][13];
 	}
 
+	//Specific setting
+	if( document.form.dsltmp_cfg_country.value=='Thailand'
+		&& document.form.dsltmp_cfg_ispname.value=='3BB 15M/1.5M'
+	){
+		document.form.dsltmp_cfg_th3bb.value = "1";
+		document.form.dsltmp_cfg_modulation.value = "ADSL2+";
+		document.form.dsltmp_cfg_annex.value = "ANNEX M";
+	}
+
 	if (connection_type==0 || connection_type==1) //PPPoE, PPPoA
 	{
 		document.form.next_page.value = "QIS_ppp_cfg_tmp.asp";
@@ -507,6 +517,9 @@ function submit_detect(){
 <input type="hidden" name="dsltmp_cfg_iptv_enable" value="0">
 <input type="hidden" name="dsltmp_transfer_mode" value="ATM">
 <input type="hidden" name="dsltmp_wanTypeOption" value="">
+<input type="hidden" name="dsltmp_cfg_th3bb" value="">
+<input type="hidden" name="dsltmp_cfg_modulation" value="">
+<input type="hidden" name="dsltmp_cfg_annex" value="">
 <div class="QISmain">
 <div class="formfonttitle" style="padding:6 0 0 10;">
 	<div>

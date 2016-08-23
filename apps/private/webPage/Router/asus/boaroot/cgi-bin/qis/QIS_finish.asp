@@ -28,6 +28,8 @@ var auth_mode = '<% tcWebApi_get("GUITemp_Entry0","dsltmp_cfg_wl1_auth_mode_x","
 var reIP = '<%If tcWebApi_get("Lan_Entry","IP","h") <> "" then tcWebApi_get("Lan_Entry","IP","s") end if%>';
 var band5g_support = "<% tcWebApi_get("SysInfo_Entry", "rc_support", "s") %>".search("5G");
 var transfer_mode = "<% tcWebApi_get("GUITemp_Entry0","dsltmp_transfer_mode","s") %>";
+var dsltmp_dsl_restart = "<%tcWebApi_get("GUITemp_Entry0","dsltmp_dsl_restart","s")%>";
+var dsltmp_dsl_early_restart = "<%tcWebApi_get("GUITemp_Entry0","dsltmp_dsl_early_restart","s")%>";
 var with_wan_setting = "<% tcWebApi_get("GUITemp_Entry0","with_wan_setting","s") %>";
 var model_name = "<%tcWebApi_get("String_Entry","Web_Title2","s")%>";
 
@@ -96,8 +98,9 @@ if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
 
 function QKfinish_load_body(){
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_all_title","s")%>";
-	//parent.set_step("t3");
+	parent.set_step("t3");
 	parent.$("LoadingBar").style.visibility = 'hidden';
+	parent.document.getElementById("btn_gotoindex").style.visibility = "hidden";
 
 	$("#ssid_2_item")[0].innerHTML = "<% tcWebApi_Get("String_Entry", "QIS_finish_wireless_item1", "s") %>";
 	$("#ssid_2")[0].innerHTML = handle_show_str("<% tcWebApi_get("GUITemp_Entry0","dsltmp_cfg_wl0_ssid","s"); %>");
@@ -239,6 +242,15 @@ function goHome(){
 	if(model_name == "DSL-N66U")
 		wait_time += 5;
 
+	if(dsltmp_dsl_restart == "1")
+	{
+		wait_time += 60;
+	}
+	else if(dsltmp_dsl_early_restart == "1")
+	{
+		wait_time += 30;
+	}
+
 	parent.showLoading(wait_time);
 	setTimeout("redirect();", wait_time*1000);
 	document.redirectForm.submit();
@@ -305,6 +317,8 @@ else
 <input type="hidden" name="dsltmp_cfg_iptv_num_pvc" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_num_pvc","s") %>">
 <input type="hidden" name="dsltmp_cfg_iptv_pvclist" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist","s") %>">
 <input type="hidden" name="dsltmp_cfg_iptv_enable" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_enable","s") %>">
+<!-- dsl -->
+<input type="hidden" name="dsltmp_cfg_ginp" value="<%tcWebApi_Get("GUITemp_Entry0","dsltmp_cfg_ginp","s")%>">
 
 <!-- default value -->
 <INPUT TYPE="hidden" NAME="value_empty" value="">

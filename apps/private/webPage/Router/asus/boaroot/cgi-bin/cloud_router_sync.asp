@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="/images/favicon.png">
 <link rel="icon" href="/images/favicon.png">
-<title>ASUS <% tcWebApi_Get("SysInfo_Entry","ProductName","s") %> <% tcWebApi_Get("SysInfo_Entry","ProductTitle","s") %> - AiCloud</title>
+<title>ASUS <% tcWebApi_Get("SysInfo_Entry","ProductName","s") %> <% tcWebApi_Get("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%></title>
 <link rel="stylesheet" type="text/css" href="/index_style.css"> 
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script type="text/javascript" src="/md5.js"></script>
@@ -20,7 +20,6 @@
 <script type="text/javascript" src="/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
-<script type="text/javascript" src="/aidisk/AiDisk_folder_tree.js"></script>
 <script language="JavaScript" type="text/javascript" src="/md5.js"></script>
 <style type="text/css">
 /* folder tree */
@@ -713,12 +712,12 @@ function show_captcha_style(captcha){		// captcha display style
 		for(i=0;i<4;i++){
 			graph_content += '<img style="height:30px;" src="/images/cloudsync/captcha/'+captcha[i]+'.jpg">';
 		}
-		$('invite_captcha').innerHTML = "Security code: "+graph_content;
+		$('invite_captcha').innerHTML = "<% tcWebApi_Get("String_Entry","routerSync_Security_code","s") %>: "+graph_content;
 	}
 	else if( $('captcha_rule').value == 0)
-		$('invite_captcha').innerHTML = "Security code: None";
+		$('invite_captcha').innerHTML = "<% tcWebApi_Get("String_Entry","routerSync_Security_code","s") %>: None";
 	else
-		$('invite_captcha').innerHTML = "Security code: "+captcha;
+		$('invite_captcha').innerHTML = "<% tcWebApi_Get("String_Entry","routerSync_Security_code","s") %>: "+captcha;
 }
 
 function close_invitation_block(){	
@@ -908,7 +907,7 @@ function show_view_info(obj_id){
 	
 	$('invite_rule').innerHTML = "Sync rule: "+sync_rule_desc;
 	$('invite_share').innerHTML = "http://router.asus.com/"+share_link_hashed;	
-	$('invite_captcha').innerHTML = "Security code: "+ router_synclist_captcha[j];
+	$('invite_captcha').innerHTML = "<% tcWebApi_Get("String_Entry","routerSync_Security_code","s") %>: "+ router_synclist_captcha[j];
 	$('invite_captcha').innerHTML += "<br><br>We strongly suggest you giving this code separately to your friends.";
 	$("mailto").innerHTML = appendMailTo();
 	cal_panel_block('invitation_block'); 
@@ -986,9 +985,9 @@ function check_aicloud(){
 	}
 }
 var hint_string = "";
-hint_string += "<b>Two way sync:</b> Two way sync refers to the inviter and invitee will sync up all files in the sync folder they had chosen. All files sync folders will be free to be accessed by both.<br>";
-hint_string += "<b>Server to client:</b> Server to client refers to the invitee could download files in the sync folder from the inviter only, the invitee have no permission to upload files to the inviter.<br>";
-hint_string += "<b>Client to server:</b> Client to server refers to the invitee could upload files in the sync folder to the inviter only, the invitee have no permission to access files in sync folder of the inviter.";
+hint_string += "<% tcWebApi_Get("String_Entry", "routerSync_rule_both", "s") %><br><br>";
+hint_string += "<% tcWebApi_Get("String_Entry", "routerSync_rule_StoC", "s") %><br><br>";
+hint_string += "<% tcWebApi_Get("String_Entry", "routerSync_rule_CtoS", "s") %>";
 </script>
 </head>
 
@@ -1023,19 +1022,20 @@ hint_string += "<b>Client to server:</b> Client to server refers to the invitee 
 <!--div id="DM_mask" class="mask_bg"></div-->
 <div id="invitation_block" class="panel_folder" >
 	<table><tr><td>
-		<div class="machineName" style="width:200px;font-family:Microsoft JhengHei;font-size:12pt;font-weight:bolder; margin-top:20px;margin-left:30px;">Invitation</div>
-	</td></tr></table>
+		<div class="machineName" style="width:200px;font-family:Microsoft JhengHei;font-size:12pt;font-weight:bolder; margin-top:20px;margin-left:30px;"><% tcWebApi_Get("String_Entry", "Invitation", "s") %></div>
+		</td></tr>
+	</table>
 	<div style="overflow:auto;margin-top:0px;height:350px;">
 		<table style="padding:20px;margin-left:10px;word-break:break-all;" >
 			<tr >
 				<td >
-					<div  >Hi, lets share our files with smart sync!</div>				
+					<div><% tcWebApi_Get("String_Entry", "sync_router_Invit_desc1", "s") %></div>				
 				</td>
 			</tr>
 			<tr>
 				<td>
 					<div id="invite_desc" style="margin-top:10px;"></div>
-					<div>Sync path:
+					<div><% tcWebApi_Get("String_Entry", "sync_router_Invit_desc3", "s") %>:
 						<span id="invite_path" style="text-decoration:underline;"></span>
 					</div>
 					<div id="invite_rule"></div>
@@ -1043,7 +1043,7 @@ hint_string += "<b>Client to server:</b> Client to server refers to the invitee 
 			</tr>
 			<tr>
 				<td>
-					<div style="margin-top:10px;">Please connect your device to ASUS router through WiFi or ethernet and click the link below to reconfirm this invitation.</div>
+					<div style="margin-top:10px;width:440px;"><% tcWebApi_Get("String_Entry", "sync_router_Invit_desc5", "s") %></div>
 				</td>
 			</tr>
 			<tr>
@@ -1095,7 +1095,7 @@ hint_string += "<b>Client to server:</b> Client to server refers to the invitee 
 					<tbody>
 					<tr>
 						<td>
-							<a href="cloud_main.asp"><div class="tab"><span>AiCloud</span></div></a>
+							<a href="cloud_main.asp"><div class="tab"><span><%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%></span></div></a>
 						</td>
 						<td>
 							<a href="cloud_sync.asp"><div class="tab"><span><% tcWebApi_Get("String_Entry","smart_sync","s") %></span></div></a>
@@ -1135,12 +1135,12 @@ hint_string += "<b>Client to server:</b> Client to server refers to the invitee 
 									<td>&nbsp;&nbsp;</td>
 									<td>
 										<div style="padding:10px;width:95%;font-style:italic;font-size:14px;word-break:break-all;">
-											Smart Sync let you to sync your cloud disk with other AiCloud account, fill the forms below then generate an invitation to your friend.<br>
-											1. Fill the invitation form as below.<br>
-											2. Select a way to get a security code.<br>
-											3. Click "Generate" to get a invitation.<br>
-											4. Copy the contents of invitation and mail to your friends.<br>
-											<span class="formfontdesc" id="wan_ip_hide2" style="color:#FFCC00;display:none;margin-left:0px;">5. You might not use smart sync with your friends due to ISP firewall issue, please contact your ISP. For advanced users, please enter a specific "Host name" below to use smart sync with your friends.</span>
+										<% tcWebApi_Get("String_Entry","sync_router_desc0","s") %><br>
+										1. <% tcWebApi_Get("String_Entry","sync_router_desc1","s") %><br>
+										2. <% tcWebApi_Get("String_Entry","sync_router_desc2","s") %><br>
+										3. <% tcWebApi_Get("String_Entry","sync_router_desc3","s") %><br>
+										4. <% tcWebApi_Get("String_Entry","sync_router_desc4","s") %><br>
+										<span class="formfontdesc" id="wan_ip_hide2" style="color:#FFCC00;display:none;margin-left:0px;">5. <% tcWebApi_Get("String_Entry","sync_router_desc5","s") %></span>									
 										</div>
 									</td>
 								</tr>
@@ -1152,7 +1152,7 @@ hint_string += "<b>Client to server:</b> Client to server refers to the invitee 
 								<table>
 									<tr>
 										<td>
-											<div style="margin-left:15px;margin-top:3px;">Invitation Generator</div>
+											<div style="margin-left:15px;margin-top:3px;"><% tcWebApi_Get("String_Entry","sync_router_Invitation", "s") %></div>
 										</td>
 									</tr>
 								</table>
@@ -1161,13 +1161,13 @@ hint_string += "<b>Client to server:</b> Client to server refers to the invitee 
 								<img src="images/New_ui/midup_bg.png" width="751px;">
 								<table  width="736px" height="200px;" style="text-align:left;margin-left:15px;position:absolute;margin-top:-130px;*margin-left:-740px;*margin-top:0px;">
 									<tr style="height:40px;">
-										<th width="25%">Description</th>
+										<th width="25%"><% tcWebApi_Get("String_Entry","IPC_autofwDesc_in","s") %></th>
 										<td>
 											<input name="router_sync_desc" type="text" class="input_32_table" style="height:25px;font-size:13px;"  value="My new sync">
 										</td>
 									</tr>
 									<tr id="host_name_tr">
-										<th width="25%">Host Name</th>
+										<th width="25%"><% tcWebApi_Get("String_Entry","LHC_x_DDNSHostNames_in","s") %></th>
 										<td>
 											<select id="protocol_type" class="input_option" style="height:27px;">
 												<option value="0">Http</option>
@@ -1179,23 +1179,23 @@ hint_string += "<b>Client to server:</b> Client to server refers to the invitee 
 									</tr>
 									<tr style="height:40px;">
 										<th>
-											<div style="margin-top:5px;">Local sync folder</div>
+											<div style="margin-top:5px;"><% tcWebApi_Get("String_Entry","sync_router_localfolder","s") %></div>
 										</th>
 										<td>
 											<input type="text" id="PATH" class="input_25_table" style="height: 25px;" name="cloud_dir" value="" >
-											<input name="button" type="button" class="button_gen_short" onclick="get_disk_tree();" value="Browser"/>
+											<input name="button" type="button" class="button_gen_short" onclick="get_disk_tree();" value="<% tcWebApi_Get("String_Entry","Cloudsync_browser_folder","s") %>"/>
 											<div id="noUSB" style="color:#FC0;display:none;margin-left:3px;font-size:12px;line-height:140%;"><% tcWebApi_Get("String_Entry", "no_usb_found", "s") %></div>
 										</td>
 									</tr>
 									<tr style="height:40px;">
 										<th>
-											<div style="margin-top:5px;">Sync rule</div>
+											<div style="margin-top:5px;"><% tcWebApi_Get("String_Entry", "Cloudsync_Rule", "s") %></div>
 										</th>
 										<td>										
 											<select name="router_sync_rule" class="input_option" style="height:27px;">
-												<option value="0">Two way sync</option>
-												<option value="1">Host to client</option>
-												<option value="2">Client to host</option>
+												<option value="0"><% tcWebApi_Get("String_Entry","routerSync_ruleBoth","s") %></option>
+												<option value="1"><% tcWebApi_Get("String_Entry","routerSync_ruleStoC","s") %></option>
+												<option value="2"><% tcWebApi_Get("String_Entry","routerSync_ruleCtoS","s") %></option>
 											</select>
 											<span>											
 												<img align="center" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png" onclick="overlib(hint_string)" onmouseout="return nd();">
@@ -1203,13 +1203,13 @@ hint_string += "<b>Client to server:</b> Client to server refers to the invitee 
 										</td>				
 									</tr>
 									<tr style="height:40px;">
-										<th>Security code</th>
+										<th><% tcWebApi_Get("String_Entry","routerSync_Security_code","s") %></th>
 										<td>
 											<div >
 												<select id="captcha_rule" class="input_option" onchange="captcha_style()" style="height:27px;">
-													<option value="0"><%tcWebApi_get("String_Entry","checkbox_No","s")%>ne</option>
-													<option value="1">Manual assign</option>
-													<option value="2">Auto generate</option>
+													<option value="0"><%tcWebApi_get("String_Entry","checkbox_No","s")%></option>
+													<option value="1"><%tcWebApi_get("String_Entry","Manual_Setting_assign","s")%></option>
+													<option value="2"><%tcWebApi_get("String_Entry","sync_router_generate","s")%></option>
 												</select>
 												<span id="captcha_input" style="display:none;">											
 													<input id="captcha_inputfield" type="text" class="input_6_table" style="margin-left:10px;" maxlength="4" value="" onclick=""  onkeypress="return is_number(this,event);">
@@ -1220,7 +1220,7 @@ hint_string += "<b>Client to server:</b> Client to server refers to the invitee 
 									<tr style="height:40px;">
 										<td colspan="2">
 											<div style="text-align:center;margin-top:10px;margin-bottom:10px;">
-												<input  type="button" id="applyButton" class="button_gen" value="Generate" onclick="domain_name_select();">
+												<input  type="button" id="applyButton" class="button_gen" value="<%tcWebApi_get("String_Entry","CTL_Generate","s")%>" onclick="domain_name_select();">
 												<img id="update_scan" style="display:none;" src="/images/InternetScan.gif" />
 											</div>
 										</td>
@@ -1245,15 +1245,15 @@ hint_string += "<b>Client to server:</b> Client to server refers to the invitee 
    					<table width="99%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" id="cloudlistTable" style="margin-top:20px;">
 	  					<thead>
 							<tr>
-								<td colspan="6" id="cloud_synclist">Sync List</td>
+								<td colspan="6" id="cloud_synclist"><% tcWebApi_Get("String_Entry","sync_router_list","s") %></td>
 							</tr>
 	  					</thead>		  
     					<tr>
-							<th width="10%">Provider</th>
-							<th width="25%">Description</a></th>
-							<th width="10%">Sync Rule</a></th>
-							<th width="30%">Local Sync Folder</th>
-							<th width="15%">Invitation</th>
+							<th width="10%"><% tcWebApi_Get("String_Entry","Provider","s") %></th>
+							<th width="25%"><% tcWebApi_Get("String_Entry","IPC_autofwDesc_in","s") %></a></th>
+							<th width="10%"><% tcWebApi_Get("String_Entry","sync_router_Invit_desc4","s") %></a></th>
+							<th width="30%"><% tcWebApi_Get("String_Entry","sync_router_localfolder","s") %></th>
+							<th width="15%"><% tcWebApi_Get("String_Entry", "Invitation", "s") %></th>
 							<th width="10%"><% tcWebApi_Get("String_Entry", "CTL_del", "s") %></th>
     					</tr>
 					</table>
@@ -1262,7 +1262,7 @@ hint_string += "<b>Client to server:</b> Client to server refers to the invitee 
 
 
 	  				<div class="apply_gen" id="creatBtn" style="margin-top:30px;">
-							<input name="applybutton" id="applybutton" type="button" class="button_gen" onclick="location.href='cloud_syslog.asp'" value="Check log" style="word-wrap:break-word;word-break:normal;">
+							<input name="applybutton" id="applybutton" type="button" class="button_gen" onclick="location.href='cloud_syslog.asp'" value="<% tcWebApi_Get("String_Entry", "CTL_check_log", "s") %>" style="word-wrap:break-word;word-break:normal;">
 							<!--img id="update_scan" style="display:none;" src="images/InternetScan.gif" /-->
 	  				</div>
 					</div>

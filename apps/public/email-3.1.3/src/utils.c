@@ -351,10 +351,15 @@ getFirstEmail(void)
 void
 properExit(int sig)
 {
+	FILE *fp = NULL;
 	if (sig != 0 && global_msg) {
 		deadLetter();
 	}
 	dsbDestroy(global_msg);
+
+	if(sig == ERROR) {
+		fatal("properExit: sig == ERROR\n");
+	}
 
 	/* Free lists */
 	if (Mopts.attach) {
@@ -374,6 +379,17 @@ properExit(int sig)
 	}
 
 	dhDestroy(table);
+	fp = fopen(EMAIL_LOG_FILE, "r");
+	if( fp != NULL ){
+		printf("Something wrong in Push Mail service and indicate the fb_state as 2!!!\n");
+		system("tcapi set PushMail_Entry fb_state 2");
+		fclose(fp);
+	}
+	else{
+		printf("Push Mail service success and indicate the fb_state as 1!!!\n");
+		system("tcapi set PushMail_Entry fb_state 1");
+		system("rm -f /tmp/xdslissuestracking");
+	}
 	exit(sig);
 }
 

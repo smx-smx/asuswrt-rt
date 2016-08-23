@@ -2310,15 +2310,15 @@ EXPORT_SYMBOL(skbmgr_recycling_callback);
 //use for wifi driver, size 3840 is accord to wifi driver RX_BUFFER_AGGRESIZE.
 #define SKBMGR_4K_RX_BUF_LEN 			SKB_WITH_OVERHEAD(4096)
 #define SKBMGR_4K_DEF_HOT_LIST_LEN		128
+
 #ifdef MT7592
-#define SKBMGR_4K_LIMIT					4096
+int skbmgr_4k_limit = 1024;
 #else
-#define SKBMGR_4K_LIMIT					512
+int skbmgr_4k_limit = 512;
 #endif
 
 int skbmgr_4k_max_alloc_no = 0;
 int skbmgr_4k_alloc_fail = 0;
-//int skbmgr_limit = SKBMGR_4K_LIMIT; 
 int skbmgr_4k_hot_list_len = SKBMGR_4K_DEF_HOT_LIST_LEN;
 int skbmgr_4k_max_list_len = 0;
 EXPORT_SYMBOL(skbmgr_4k_max_alloc_no);
@@ -2403,7 +2403,7 @@ struct sk_buff *skbmgr_alloc_skb4k(void)
 	}
 
 try_normal:
-	if ((atomic_read(&skbmgr_4k_alloc_no) < SKBMGR_4K_LIMIT)) {
+	if ((atomic_read(&skbmgr_4k_alloc_no) < skbmgr_4k_limit)) {
 		skb = alloc_skb(SKBMGR_4K_RX_BUF_LEN , GFP_ATOMIC|__GFP_NOWARN);
 		if (likely(skb)) {
 			skb->skb_recycling_callback = skbmgr_4k_recycling_callback;
@@ -2707,6 +2707,45 @@ static int driver_max_skb_write(struct file *file, const char __user * buffer,
 /*add end*/
 #endif
 
+static int limit_4k_read(char *page, char **start, off_t offset,
+			int count, int *eof, void *data)
+{
+	char *out = page;
+	int len;
+
+	out += sprintf(out, "%d\n", skbmgr_4k_limit);
+
+	len = out - page;
+	len -= offset;
+	if (len < count) {
+		*eof = 1;
+		if (len <= 0)
+			return 0;
+	} else
+		len = count;
+
+	*start = page + offset;
+	return len;
+}
+
+static int limit_4k_write(struct file *file, const char __user * buffer,
+			     unsigned long count, void *data)
+{
+	char buf[64];
+	int val;
+
+	if (count > 64)
+		return -EINVAL;
+
+	if (copy_from_user(buf, buffer, count))
+		return -EFAULT;
+
+	val = simple_strtoul(buf, NULL, 10);
+
+	skbmgr_4k_limit = val;
+	return count;
+}
+
 static int limit_read(char *page, char **start, off_t offset,
 			int count, int *eof, void *data)
 {
@@ -2767,7 +2806,7 @@ static int skbmgr_info_read(char *page, char **start, off_t offset,
 	out += sprintf(out, "skbmgr_alloc_fail = %d\n", skbmgr_alloc_fail);
 	out += sprintf(out, "skbmgr_alloc_no = %d\n", atomic_read(&skbmgr_alloc_no));
 	out += sprintf(out, "skbmgr_max_list_len = %d\n", skbmgr_max_list_len);
-	out += sprintf(out, "skbmgr_4k_limit = %d\n", SKBMGR_4K_LIMIT);
+	out += sprintf(out, "skbmgr_4k_limit = %d\n", skbmgr_4k_limit);
 	out += sprintf(out, "skbmgr_4k_max_alloc_no = %d\n", skbmgr_4k_max_alloc_no);
 	out += sprintf(out, "skbmgr_4k_alloc_fail = %d\n", skbmgr_4k_alloc_fail);
 	out += sprintf(out, "skbmgr_4k_alloc_no = %d\n", atomic_read(&skbmgr_4k_alloc_no));
@@ -2815,6 +2854,90 @@ static int skbmgr_info_read(char *page, char **start, off_t offset,
 	return len;
 }
 
+#if defined(TCSUPPORT_MEMORY_CONTROL) || defined(TCSUPPORT_CT)
+int auto_clear_cache_flag = 0;
+int auto_kill_process_flag = 0;
+static int auto_clear_cache_read(char *page, char **start, off_t offset,
+			    int count, int *eof, void *data)
+{
+	char *out = page;
+	int len;
+
+	out += sprintf(out, "%d\n", auto_clear_cache_flag);
+
+	len = out - page;
+	len -= offset;
+	if (len < count) {
+		*eof = 1;
+		if (len <= 0)
+			return 0;
+	} else
+		len = count;
+
+	*start = page + offset;
+	return len;
+}
+
+static int auto_clear_cache_write(struct file *file, const char __user * buffer,
+			     unsigned long count, void *data)
+{
+	char buf[64];
+	int val;
+
+	if (count > 64)
+		return -EINVAL;
+
+	if (copy_from_user(buf, buffer, count))
+		return -EFAULT;
+
+	val = simple_strtoul(buf, NULL, 10);
+
+	auto_clear_cache_flag = val;
+
+	return count;
+}
+
+static int auto_kill_process_read(char *page, char **start, off_t offset,
+			    int count, int *eof, void *data)
+{
+	char *out = page;
+	int len;
+
+	out += sprintf(out, "%d\n", auto_kill_process_flag);
+
+	len = out - page;
+	len -= offset;
+	if (len < count) {
+		*eof = 1;
+		if (len <= 0)
+			return 0;
+	} else
+		len = count;
+
+	*start = page + offset;
+	return len;
+}
+
+static int auto_kill_process_write(struct file *file, const char __user * buffer,
+			     unsigned long count, void *data)
+{
+	char buf[64];
+	int val;
+
+	if (count > 64)
+		return -EINVAL;
+
+	if (copy_from_user(buf, buffer, count))
+		return -EFAULT;
+
+	val = simple_strtoul(buf, NULL, 10);
+
+	auto_kill_process_flag = val;
+
+	return count;
+}
+#endif
+
 static int register_proc_skbmgr(void)
 {
 	struct proc_dir_entry *p;
@@ -2839,6 +2962,14 @@ static int register_proc_skbmgr(void)
 	p->read_proc = limit_read;
 	p->write_proc = limit_write;
 
+	p = create_proc_entry("skbmgr_4k_limit", 0644, proc_net);
+	if (!p) 
+		return 0;
+
+	p->owner = THIS_MODULE;
+	p->read_proc = limit_4k_read;
+	p->write_proc = limit_4k_write;
+
 #if defined(CONFIG_CPU_TC3162) || defined(CONFIG_MIPS_TC3262)	
 	p = create_proc_entry("skbmgr_driver_max_skb", 0644, proc_net);
 	if (!p) 
@@ -2847,6 +2978,22 @@ static int register_proc_skbmgr(void)
 	p->owner = THIS_MODULE;
 	p->read_proc = driver_max_skb_read;
 	p->write_proc = driver_max_skb_write;
+#endif
+
+#if defined(TCSUPPORT_MEMORY_CONTROL) || defined(TCSUPPORT_CT)
+	p = create_proc_entry("auto_clear_cache", 0644, proc_net);
+	if (!p) 
+		return 0;
+
+	p->read_proc = auto_clear_cache_read;
+	p->write_proc = auto_clear_cache_write;
+
+	p = create_proc_entry("auto_kill_process", 0644, proc_net);
+	if (!p) 
+		return 0;
+
+	p->read_proc = auto_kill_process_read;
+	p->write_proc = auto_kill_process_write;
 #endif
 	return 1;
 }
@@ -2858,6 +3005,10 @@ static void unregister_proc_skbmgr(void)
 	remove_proc_entry("skbmgr_limit", proc_net);
 #if defined(CONFIG_CPU_TC3162) || defined(CONFIG_MIPS_TC3262)	
 	remove_proc_entry("skbmgr_driver_max_skb", proc_net);
+#endif
+#if defined(TCSUPPORT_MEMORY_CONTROL) || defined(TCSUPPORT_CT)
+	remove_proc_entry("auto_clear_cache", proc_net);
+	remove_proc_entry("auto_kill_process", proc_net);
 #endif
 }
 

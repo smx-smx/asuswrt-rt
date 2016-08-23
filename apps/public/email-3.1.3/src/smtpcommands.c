@@ -70,17 +70,6 @@ smtpGetErr(void)
 static void
 smtpSetErr(const char *buf)
 {
-	FILE *fp;
-	fp = fopen("/tmp/email_error_message", "a+b");
-	if( fp == NULL ){
-	    printf("open file error!!\n");
-	    return -1;
-	}
-
-	fputs(buf,fp);
-	fputs("\n",fp);
-	fclose(fp);
-
 	if (!errorstr) {
 		errorstr = DSB_NEW;
 	}
@@ -99,6 +88,7 @@ static int
 readResponse(dsocket *sd, dstrbuf *buf)
 {
 	int retval=ERROR;
+	int read_size = 0;
 	dstrbuf *tmpbuf = DSB_NEW;
 	struct timeval tv;
 	fd_set rfds;
@@ -116,9 +106,14 @@ readResponse(dsocket *sd, dstrbuf *buf)
 	if (FD_ISSET(dnetGetSock(sd), &rfds)) {
 		do {
 			dsbClear(tmpbuf);
-			dnetReadline(sd, tmpbuf);
+			read_size = dnetReadline(sd, tmpbuf);
 			if (dnetErr(sd)) {
 				smtpSetErr("Lost connection with SMTP server");
+				retval = ERROR;
+				break;
+			}
+			if(read_size == 0) {	//Sam, 2014/11/24
+				smtpSetErr("Read socket but no data");
 				retval = ERROR;
 				break;
 			}
@@ -127,8 +122,7 @@ readResponse(dsocket *sd, dstrbuf *buf)
 		/* The last line of a response has a space in the 4th column */
 		} while (tmpbuf->str[3] != ' ');
 	} else {
-		//smtpSetErr("Timeout(10) while trying to read from SMTP server");
-		printf("Timeout(10) while trying to read from SMTP server");
+		smtpSetErr("Timeout(10) while trying to read from SMTP server");
 		retval = ERROR;
 	}
 
@@ -794,10 +788,17 @@ smtpSendData(dsocket *sd, const char *data, size_t len)
 	assert(sd != NULL);
 
 	/* Write the data to the socket. */
-	dnetWrite(sd, data, len);
+	retval = dnetWrite(sd, data, len);
 	if (dnetErr(sd)) {
 		smtpSetErr("Error writing to socket.");
 		retval = ERROR;
+	}
+	if(retval <=0) {	//Sam, 2014/11/24
+		smtpSetErr("Write data unsuccessfully.");
+		retval = ERROR;
+	}
+	else {
+		retval = SUCCESS;
 	}
 	return retval;
 }

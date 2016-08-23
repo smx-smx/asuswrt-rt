@@ -252,6 +252,14 @@
 #define VIRSERVEXT_PATH 	"/etc/nat_pvc%d_%d/vserver%d"
 #endif
 
+#define SINGLE_SKU_PATH_2G "/etc/Wireless/RT2860AP/SingleSKU.dat"
+#define SINGLE_SKU_PATH_5G "/etc/Wireless/RT2860AP_AC/SingleSKU.dat"
+#define SINGLE_SKU_PATH_2G_CE "/etc/Wireless/RT2860AP/SingleSKU_CE.dat"
+#define SINGLE_SKU_PATH_2G_AU "/etc/Wireless/RT2860AP/SingleSKU_AU.dat"
+#define SINGLE_SKU_PATH_2G_SG "/etc/Wireless/RT2860AP/SingleSKU_SG.dat"
+#define SINGLE_SKU_PATH_5G_CE "/etc/Wireless/RT2860AP_AC/SingleSKU_CE.dat"
+#define SINGLE_SKU_PATH_5G_AU "/etc/Wireless/RT2860AP_AC/SingleSKU_AU.dat"
+#define SINGLE_SKU_PATH_5G_SG "/etc/Wireless/RT2860AP_AC/SingleSKU_SG.dat"
 
 #define SHIFT_INDEX 64//32
 #define ATTR_INDEX	0
@@ -457,7 +465,7 @@ struct PRE_SYS_STATE{
 #ifdef TCSUPPORT_CPU_TC3162
 #define CACHE_TIME_OUT 1 	//sec
 #else
-#define CACHE_TIME_OUT 0.2 	//sec
+#define CACHE_TIME_OUT 3 	//sec, 0.2->3
 #endif
 typedef struct node_cache_s{
 	char nodeName[MAXLEN_NODE_NAME];
@@ -506,6 +514,8 @@ typedef struct log_record_s{
 #define IPTABLES_LOG_FILE "/tmp/iptables_save.txt"
 #define SYNC_LOG_FILE "/tmp/sync_log.txt"
 #define SNR_LOG_FILE "/tmp/snr_crc_log.txt"
+#define CREATE_STRIP_PSINFO_SCRIPT "/usr/script/Create_Strip_psInfo.sh"
+#define DO_STRIP_PSINFO "/tmp/StripsInfo.sh"
 
 #define LOG_CRC_SNR_PERIOD 30
 #define LOG_MAX_ENTRY 6000

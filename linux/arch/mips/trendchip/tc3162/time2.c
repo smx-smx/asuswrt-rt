@@ -433,7 +433,7 @@ void __init tc3162_time_init(void)
 	if (isRT63165 || isRT63365) {
 		/* enable CPU external timer */
 		clocksource_mips.read = cputmr_hpt_read;
-		mips_hpt_frequency = CPUTMR_CLK * 1000000;
+		mips_hpt_frequency = CPUTMR_CLK;
 
 		mips_timer_ack = cputmr_timer_ack;
 		/* Calculate cache parameters.  */

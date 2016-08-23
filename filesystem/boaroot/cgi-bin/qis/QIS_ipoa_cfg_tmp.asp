@@ -10,7 +10,8 @@
 <link rel="stylesheet" type="text/css" href="/qis/qis_style.css">
 <script type="text/Javascript" src="/state.js"></script>
 <script type="text/Javascript" src="/general.js"></script>
-<script type="text/Javascript" src="/form.js"></script>
+<script type="text/JavaScript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
 <style>
 span{
 border:0px solid #FFFFFF;
@@ -101,12 +102,7 @@ if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
 
 function QKfinish_load_body(){
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_all_title","s")%>";
-	//parent.set_step("t3");
-	IPinputCtrl(document.form.dsl_ipaddr, 1);
-	IPinputCtrl(document.form.dsl_netmask, 1);
-	IPinputCtrl(document.form.dsl_gateway, 1);
-	IPinputCtrl(document.form.dsl_dns1_x, 1);
-	IPinputCtrl(document.form.dsl_dns2_x, 1);
+	parent.set_step("t2");
 
 	if(transfer_mode == "ATM")
 		document.form.prev_page.value = "/cgi-bin/qis/QIS_manual_setting.asp";
@@ -114,14 +110,8 @@ function QKfinish_load_body(){
 		document.form.prev_page.value = "/cgi-bin/qis/QIS_PTM_manual_setting.asp";
 
 	if (country_str == "France" && ispname_str == "Free Degroupe"){
-				document.form.dsl_dns1_x1.value = "212";
-				document.form.dsl_dns1_x2.value = "27";
-				document.form.dsl_dns1_x3.value = "40";
-				document.form.dsl_dns1_x4.value = "240";
-				document.form.dsl_dns2_x1.value = "212";
-				document.form.dsl_dns2_x2.value = "27";
-				document.form.dsl_dns2_x3.value = "40";
-				document.form.dsl_dns2_x4.value = "241";
+				document.form.dsl_dns1_x.value = "212.27.40.240";
+				document.form.dsl_dns2_x.value = "212.27.40.241";
 	}
 }
 
@@ -133,33 +123,9 @@ function validate_ip(){
 	return true;
 }
 
-function validate_dns(){
-	return true;
-}
-
-function get_result_of_all_IP(){
-	combineIP("dsl_ipaddr");
-	combineIP("dsl_netmask");
-	combineIP("dsl_gateway");
-	combineIP("dsl_dns1_x");
-	combineIP("dsl_dns2_x");
-}
-
-function remove_red_field(){
-	$("dsl_ipaddr_div").style.border = "2px inset #F4F4F4";
-	$("dsl_netmask_div").style.border = "2px inset #F4F4F4";
-	$("dsl_gateway_div").style.border = "2px inset #F4F4F4";
-	$("dsl_dns1_x_div").style.border = "2px inset #F4F4F4";
-	$("dsl_dns2_x_div").style.border = "2px inset #F4F4F4";
-}
-
 function submitForm(){
-	remove_red_field();
-	get_result_of_all_IP();
-	if(!validate_ip())
-		return;
-	if(!validate_dns())
-		return;
+	if(validForm()){		
+
 	document.getElementById("dsltmp_cfg_ipaddr").value = document.getElementById("dsl_ipaddr").value;
 	document.getElementById("dsltmp_cfg_netmask").value = document.getElementById("dsl_netmask").value;
 	document.getElementById("dsltmp_cfg_gateway").value = document.getElementById("dsl_gateway").value;
@@ -174,6 +140,85 @@ function submitForm(){
 
 	document.form.next_page.value = "/cgi-bin/qis/QIS_wireless.asp";
 	document.form.submit();
+	
+	}
+	
+}
+
+function validForm(){
+	// test if LAN IP is a private IP.
+	var A_class_start = inet_network("10.0.0.0");
+	var A_class_end = inet_network("10.255.255.255");
+	var B_class_start = inet_network("172.16.0.0");
+	var B_class_end = inet_network("172.31.255.255");
+	var C_class_start = inet_network("192.168.0.0");
+	var C_class_end = inet_network("192.168.255.255");
+	
+	var ip_obj = document.form.dsl_ipaddr;
+	var ip_num = inet_network(ip_obj.value);
+	var ip_class = "";	
+	
+	if(ip_num > A_class_start && ip_num < A_class_end)
+		ip_class = 'A';
+	else if(ip_num > B_class_start && ip_num < B_class_end)
+		ip_class = 'B';
+	else if(ip_num > C_class_start && ip_num < C_class_end)
+		ip_class = 'C';
+	else{
+		alert(ip_obj.value+" <#JS_validip#>");
+		ip_obj.value = "";
+		ip_obj.focus();
+		ip_obj.select();
+		return false;
+	}
+	
+	// test if netmask is valid.
+	var netmask_obj = document.form.dsl_netmask;
+	var netmask_num = inet_network(netmask_obj.value);
+	var netmask_reverse_num = ~netmask_num;
+	var default_netmask = "";
+	var wrong_netmask = 0;
+
+	if(netmask_num < 0) wrong_netmask = 1;	
+
+	if(ip_class == 'A')
+		default_netmask = "255.0.0.0";
+	else if(ip_class == 'B')
+		default_netmask = "255.255.0.0";
+	else
+		default_netmask = "255.255.255.0";
+	
+	var test_num = netmask_reverse_num;
+	while(test_num != 0){
+		if((test_num+1)%2 == 0)
+			test_num = (test_num+1)/2-1;
+		else{
+			wrong_netmask = 1;
+			break;
+		}
+	}
+	if(wrong_netmask == 1){
+		alert(netmask_obj.value+" <#JS_validip#>");
+		netmask_obj.value = default_netmask;
+		netmask_obj.focus();
+		netmask_obj.select();
+		return false;
+	}
+	
+	if(!validate_ip())
+			return false;
+	
+	var subnet_head = getSubnet(ip_obj.value, netmask_obj.value, "head");
+	var subnet_end = getSubnet(ip_obj.value, netmask_obj.value, "end");
+	
+	if(ip_num == subnet_head || ip_num == subnet_end){
+		alert(ip_obj.value+" <#JS_validip#>");
+		ip_obj.value = "";
+		ip_obj.focus();
+		ip_obj.select();
+		return false;
+	}
+	return true;
 }
 
 </script>
@@ -245,36 +290,7 @@ function submitForm(){
 <%tcWebApi_get("String_Entry","IPC_ExternalIPAddress_in","s")%>
 </th>
 <td class="QISformtd">
-<input type="hidden" id="dsl_ipaddr" name="dsl_ipaddr" value="" maxlength="15" onkeypress="return is_ipaddr(this);" onkeyup="change_ipaddr(this);" title="WAN IP">
-<div class="IPaddr" id="dsl_ipaddr_div">
-<input maxlength="3" tabindex="1"
-name="dsl_ipaddr1";
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3"
-id="dsl_ipaddr2"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3"
-name="dsl_ipaddr4";
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />
-</div>
+<input type="text" id="dsl_ipaddr" name="dsl_ipaddr" tabindex="1" class="input_15_table" value="" maxlength="15" onkeypress="return is_ipaddr(this);" title="WAN IP" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 <tr>
@@ -282,38 +298,7 @@ autocomplete="off" />
 <%tcWebApi_get("String_Entry","IPC_x_ExternalSubnetMask_in","s")%>
 </th>
 <td class="QISformtd">
-<input type="hidden" id="dsl_netmask" name="dsl_netmask" value="" maxlength="15" title="WAN Subnet Mask">
-<div class="IPaddr" id="dsl_netmask_div">
-<input maxlength="3" tabindex="2"
-name="dsl_netmask1"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3" name="dsl_netmask4"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />
-</div>
+<input type="text" id="dsl_netmask" name="dsl_netmask" tabindex="2" class="input_15_table" value="" onkeypress="return is_ipaddr(this);" maxlength="15" title="WAN Subnet Mask" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 <tr>
@@ -321,37 +306,7 @@ autocomplete="off" />
 <%tcWebApi_get("String_Entry","IPC_x_ExternalGateway_in","s")%>
 </th>
 <td class="QISformtd">
-<input type="hidden" id="dsl_gateway" name="dsl_gateway" value="" maxlength="15" onkeypress="return is_ipaddr(this);" onkeyup="return change_ipaddr(this);" class="input">
-<div class="IPaddr" id="dsl_gateway_div">
-<input maxlength="3" tabindex="3"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3" name="dsl_gateway4"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />
-</div>
+<input type="text" id="dsl_gateway" name="dsl_gateway" tabindex="3" class="input_15_table" value="" maxlength="15" onkeypress="return is_ipaddr(this);" class="input" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 </table>
@@ -368,37 +323,7 @@ autocomplete="off" />
 <%tcWebApi_get("String_Entry","IPC_x_DNSServer1_in","s")%>:
 </th>
 <td class="QISformtd">
-<input type="hidden" id="dsl_dns1_x" name="dsl_dns1_x" value="" onkeypress="return is_ipaddr(this);" onkeyup="return change_ipaddr(this);" maxlength="15">
-<div class="IPaddr" id="dsl_dns1_x_div">
-<input maxlength="3" tabindex="4" name="dsl_dns1_x1"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3" name="dsl_dns1_x2"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3" name="dsl_dns1_x3"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3" name="dsl_dns1_x4"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />
-</div>
+<input type="text" id="dsl_dns1_x" name="dsl_dns1_x" tabindex="4" class="input_15_table" value="" onkeypress="return is_ipaddr(this);" maxlength="15" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 <tr>
@@ -406,37 +331,7 @@ autocomplete="off" />
 <%tcWebApi_get("String_Entry","IPC_x_DNSServer2_in","s")%>:
 </th>
 <td class="QISformtd">
-<input type="hidden" id="dsl_dns2_x" name="dsl_dns2_x" value="" maxlength="15" onkeypress="return is_ipaddr(this);" onkeyup="return change_ipaddr(this);">
-<div class="IPaddr" id="dsl_dns2_x_div">
-<input maxlength="3" tabindex="5" name="dsl_dns2_x1"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3" name="dsl_dns2_x2"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3" name="dsl_dns2_x3"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />.
-<input maxlength="3" name="dsl_dns2_x4"
-onkeypress="return checkIP(this,event);"
-onkeyup="return checkWord(this,event);"
-onblur="validateIP(this);"
-onpaste="return !clipboardData.getData('text').match(/\D/)"
-ondragenter="return false"
-autocomplete="off" />
-</div>
+<input type="text" id="dsl_dns2_x" name="dsl_dns2_x" tabindex="5" class="input_15_table" value="" maxlength="15" onkeypress="return is_ipaddr(this);" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 </table>
@@ -447,7 +342,7 @@ autocomplete="off" />
 
 <div class="apply_gen" style="margin-top:30px">
 <input type="button" id="prevButton" value="<% tcWebApi_Get("String_Entry", "Manual_Setting_btn", "s") %>" tabindex="7" onclick="gotoprev(document.form);" class="button_gen_long">
-<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" tabindex="6" onclick="submitForm();" class="button_gen">
+<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" tabindex="6" onclick="submitForm();" class="button_gen_long">
 </div>
 </div>
 </form>

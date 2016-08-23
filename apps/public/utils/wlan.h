@@ -1,4 +1,14 @@
 
+//defined by country code selection function		
+#define COUNTRY_APAC	"AA"
+#define COUNTRY_EU	"EU"
+#define COUNTRY_AU	"AU"
+
+//Wifi Region code
+#define REGION_APAC	"SG"
+#define REGION_EU		"DE"
+#define REGION_AU		"AU"
+
 typedef enum skip_type {
 	SKIP_TYPE_NONE = 0x0,
 	SKIP_TYPE_WEATHER = 0x1,
@@ -6,6 +16,8 @@ typedef enum skip_type {
 	SKIP_TYPE_CE_BW40 = 0x4,
 	SKIP_TYPE_CE_BW80 = 0x8,
 	SKIP_TYPE_SGAU_BW4080 = 0x10,
+	SKIP_TYPE_2G_LOWPOWER = 0x20,
+	SKIP_TYPE_5G_LOWPOWER = 0x40,
 }skip_type_t;
 
 typedef struct channel_list {
@@ -28,6 +40,7 @@ typedef struct region_condition {
 int check_UseCEforAPAC(const char *ProductName);
 int check_SupportDFS(const char *ProductName, const char *BootLoaderVer);
 int check_EnableDFSforAPAC(const char *ProductName, const char *BootLoaderVer);
+int check_SupportDFS_by_Region(const char *ProductName, const char *BootLoaderVer, const char *CountryCode);
 int check_SupportCountrySelect(const char *ProductName, const char *TerritoryCode);
 
 int getChannelList2G(int region, channel_list_t *channel);
@@ -42,5 +55,5 @@ int convert_Channel2str(channel_list_t *channel, const char *delim, char *buf, i
 
 int get_RegionCode_by_Country(const char *Country, char *buf, int buflen);
 
-
+int Get_wifi_channel(int band);
 

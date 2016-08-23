@@ -5,14 +5,6 @@
 choice
 	prompt "CPU Type"
 	
-config TCSUPPORT_CPU_MT7510
-	bool "TCSUPPORT_CPU_MT7510 Support"
-	select WAN_ATM
-	select WAN_PTM
-	select WAN_ETHER
-	help
-	      CPU MT7510 support
-
 config TCSUPPORT_CPU_RT63365
 	bool "TCSUPPORT_CPU_RT63365 Support"
 	select WAN_ATM
@@ -35,6 +27,16 @@ config TCSUPPORT_CPU_RT65168
 	select WAN_ETHER
 	help
 	      CPU RT65168 support
+
+config TCSUPPORT_CPU_MT7510
+	bool "TCSUPPORT_CPU_MT7510 Support"
+	select WAN_ATM
+	select WAN_PTM
+	select WAN_ETHER
+	select WAN_ETHER_LAN
+	help
+	      CPU MT7510 support
+
 endchoice
 
 choice
@@ -58,11 +60,6 @@ choice
 	prompt "SDK Config Selected"
 	depends on TCSUPPORT_2_6_36_KERNEL
 	default TCSUPPORT_2_6_36_KERNEL_v7_3_94_4
-
-config TCSUPPORT_2_6_36_KERNEL_v7_3_83_0
-	bool "2.6.36 Kernel in SDK v7.3.83.0"
-	help
-	      SDK v7.3.83.0 kernel 2.6.36
 
 config TCSUPPORT_2_6_36_KERNEL_v7_3_94_4
 	bool "2.6.36 Kernel in SDK v7.3.94.4"
@@ -805,10 +802,18 @@ config TCSUPPORT_NAND_BMT
 		  
 config TCSUPPORT_SQUASHFS_ADD_YAFFS
 	bool "NAND YAFFS2 File system Support"	
-	depends TCSUPPORT_NAND_BMT && (TCSUPPORT_CPU_MT7510 || TCSUPPORT_CPU_MT7520)
+	depends (TCSUPPORT_NAND_BMT && (TCSUPPORT_CPU_MT7510 || TCSUPPORT_CPU_MT7520)) || (TCSUPPORT_CPU_RT63368 && TCSUPPORT_KERNEL)
 	help
-		  Nand Flash Badblock Management Table			
+		  use yaffs2 for writeable filesystem area
 			
+config TCSUPPORT_YAFFS_BLOCK
+	int "Block number of which yaffs2 cover"
+	default "0"
+	depends on TCSUPPORT_SQUASHFS_ADD_YAFFS
+	help
+		This controls the amount of flash blocks for yaffs2.
+		set 0 for a default value
+
 config TCSUPPORT_RA_HWNAT
 	depends TCSUPPORT_CPU_RT63365 || TCSUPPORT_CPU_RT63368 || TCSUPPORT_CPU_MT7510 || TCSUPPORT_CPU_MT7520
 	bool "TCSUPPORT_RA_HWNAT Support"
@@ -910,6 +915,12 @@ config TCSUPPORT_SIM_CONTROLLER
 	bool "TCSUPPORT_SIM_CONTROLLER"
 	help
 	      Support SIM Controller
+
+config TCSUPPORT_MT7530_HWLED
+	depends TCSUPPORT_CPU_RT65168 || TCSUPPORT_CPU_RT63368 || TCSUPPORT_CPU_MT7510 || TCSUPPORT_CPU_MT7520
+	bool "TCSUPPORT_MT7530_HWLED"
+	help
+	      Support MT7530 Hardware LED controller
 endmenu
 
 menu "Common Feature"
@@ -984,28 +995,74 @@ config TCSUPPORT_PON_VLAN_FILTER
 		xPON VLAN FILTER support
 endmenu
 
-menu "ASUS Feature"
+
+menu "ASUS Add"
 
 choice
-prompt "ASUS_APP"
+prompt "USB Application"
 config ASUS_APP_PREINSTALLED
+	depends TCSUPPORT_USBHOST
 	bool "pre-installed "
 	help
 		ASUS apps pre-installed in firmware
 config	ASUS_APP_NETINSTALLED
+	depends TCSUPPORT_USBHOST
 	bool "install from internet"
 	help
 		ASUS apps download from internet
 endchoice
-config ASUS_WEBDAV
-	bool "ASUS_WEBDAV"
-	help
-		AiCloud support
+
 config ASUS_CLOUDSYNC
+	depends TCSUPPORT_USBHOST
 	bool "ASUS_CLOUDSYNC"
+	default y
 	help
 		AiCloud sync
+
+config ASUS_WEBSTORAGE
+	depends TCSUPPORT_USBHOST && ASUS_CLOUDSYNC
+	bool "ASUS_WEBSTORAGE"
+	default y
+	help
+		Asuswebstorage
+
+config ASUS_WEBDAV
+	depends TCSUPPORT_USBHOST && ASUS_CLOUDSYNC
+	bool "ASUS_WEBDAV"
+	default y
+	help
+		AiCloud support
+
+config ASUS_SAMBA_CLIENT
+	depends TCSUPPORT_USBHOST && ASUS_CLOUDSYNC
+	bool "ASUS_SAMBA_CLIENT"
+	default y
+	help
+		Samba client
+
+config ASUS_FTP_CLIENT
+	depends TCSUPPORT_USBHOST && ASUS_CLOUDSYNC
+	bool "ASUS_FTP_CLIENT"
+	default y
+	help
+		FTP client
+
+config ASUS_USB_CLIENT
+	depends TCSUPPORT_USBHOST && ASUS_CLOUDSYNC
+	bool "ASUS_USB_CLIENT"
+	default n
+	help
+		Usb to Usb sync
+
+config ASUS_DROPBOX_CLIENT
+	depends TCSUPPORT_USBHOST && ASUS_CLOUDSYNC
+	bool "ASUS_DROPBOX_CLIENT"
+	default y
+	help
+		Dropbox client
+
 config ASUS_MEDIA_SERVER
+	depends TCSUPPORT_USBHOST
 	bool "ASUS_MEDIA_SERVER"
 	help
 		Media Server
@@ -1014,6 +1071,7 @@ config ASUS_SHP
 	help
 		short path
 config ASUS_SWAP_FILE
+	depends TCSUPPORT_USBHOST
 	bool "ASUS_SWAP_FILE"
 	help
 		swap file in usb disk
@@ -1042,6 +1100,12 @@ config ASUS_DUALWAN
 	bool "ASUS_DUALWAN"
 	help
 		Dual Wan support.
+
+config ASUS_PROTECTION_SERVER
+	default y
+	bool "ASUS_PROTECTION_SERVER"
+	help
+		Protection server support web/firewall/email
 
 config ASUSSUPPORT_EMAIL
 	bool "ASUSSUPPORT_EMAIL Support"
@@ -1073,12 +1137,62 @@ config ASUS_CFGMGR_RESTART
 	help
 	   When cfg_manager is stuck or gone, restart it.
 
+config ASUS_DISK_UTILITY
+	depends TCSUPPORT_USBHOST
+	bool "Disk Utility Support"
+	help
+		Support disk utility function
+
+config TCSUPPORT_ADD_JFFS
+	bool "TCSUPPORT_ADD_JFFS Support"
+	help
+		add one mtd for JFFS2 between tclinux and reserve area
+
+config TCSUPPORT_JFFS_BLOCK
+	int "Block number of which jffs2 cover"
+	default "0"
+	depends on TCSUPPORT_ADD_JFFS
+	help
+		This controls the amount of flash blocks for jffs2.
+		set 0 for a default value
+
 config ASUS_OPENVPN
 	bool "OpenVPN Support"
 	default n
 	depends TCSUPPORT_ADD_JFFS || TCSUPPORT_SQUASHFS_ADD_YAFFS
 	help
 	   OpenVPN Support
+
+config TCSUPPORT_ARPSTORM
+	bool "TCSUPPORT_ARPSTORM"
+	help
+		Enable run-in mode for arpstorm.
+
+config TCSUPORT_CLEAN_CACHE
+	bool "TCSUPORT_CLEAN_CACHE"
+	help
+		Enable drop cache.
+
+config TCSUPPORT_EDCCA
+	bool "TCSUPPORT_EDCCA"
+	help
+		Enable EDCCA for CE adaptive certificate
+
+config TCSUPPORT_IPSEC
+	default n
+	bool "TCSUPPORT_IPSEC Support"
+	help
+		IPSEC support
+
+config TCSUPPORT_REBOOT_SCHEDULE
+	bool "TCSUPPORT_REBOOT_SCHEDULE"
+	help
+		Support to schedule the reboot time.
+
+config TCSUPPORT_DSL_LINE_DIAGNOSTIC
+	bool "TCSUPPORT_DSL_LINE_DIAGNOSTIC"
+	help
+		Support DSL Line Diagnostic on Feedback GUI.
 
 endmenu
 
@@ -1092,6 +1206,13 @@ config TCSUPPORT_IPV6_ENHANCEMENT
 	bool "TCSUPPORT_IPV6_Enhancement"
 	help
 	      TC IPv6 enhancement ipv6 kernel
+
+config TCSUPPORT_ODHCP6C
+	default n
+	depends TCSUPPORT_IPV6
+	bool "TCSUPPORT_ODHCP6C"
+	help
+	      IPv6 DHCP Client
 
 config TCSUPPORT_DSLITE
 	default n
@@ -1542,19 +1663,6 @@ config TCSUPPORT_NOTDEFAULTROMFILEAREA
 	depends on TCSUPPORT_BACKUPROMFILE
 	help
 	     not support default romfile function
-
-config TCSUPPORT_ADD_JFFS
-	bool "TCSUPPORT_ADD_JFFS Support"
-	help
-		add one mtd for JFFS2 between tclinux and reserve area
-
-config TCSUPPORT_JFFS_BLOCK
-	int "Block number of which jffs2 cover"
-	default "0"
-	depends on TCSUPPORT_ADD_JFFS
-	help
-		This controls the amount of flash blocks for jffs2.
-		set 0 for a default value
 
 config TCSUPPORT_CT_2PWIFI
 	bool "TCSUPPORT_CT_2PWIFI Support"
@@ -2033,20 +2141,6 @@ config TCSUPPORT_WPS_BTN_NEWSPEC
 	help
 		If wps button is pressed, all states are freed and a new negotiation begins.
 		
-config TCSUPPORT_ARPSTORM
-	bool "TCSUPPORT_ARPSTORM"
-	help
-		Enable run-in mode for arpstorm.
-
-config TCSUPORT_CLEAN_CACHE
-	bool "TCSUPORT_CLEAN_CACHE"
-	help
-		Enable drop cache.
-
-config TCSUPPORT_EDCCA
-	bool "TCSUPPORT_EDCCA"
-	help
-		Enable EDCCA for CE adaptive certificate
 
 menu "Ethernet Port Mapping to Switch Port"
 	depends TCSUPPORT_CPU_RT63368 || TCSUPPORT_CPU_RT63365 || TCSUPPORT_CPU_MT7510 || TCSUPPORT_CPU_MT7520

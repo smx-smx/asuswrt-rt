@@ -9,7 +9,11 @@
 #include <rtstate.h>
 #include "tcutils.h"
 #include <sys/ioctl.h>
-
+#ifdef RTCONFIG_PROTECTION_SERVER
+#include <fcntl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
 /* keyword for rc_support 	*/
 /* ipv6 mssid update parental 	*/
 
@@ -33,6 +37,30 @@ void add_rc_support(char *feature)
 	} else
 		nvram_set("rc_support", feature);
 }
+
+/* keyword for ss_support 	*/
+#ifdef RTCONFIG_CLOUDSYNC
+void add_ss_support(char *feature)
+{
+	char *sssupport = nvram_safe_get("ss_support");
+	char *features;
+
+	if (!(feature && *feature))
+		return;
+
+	if (*sssupport) {
+		features = malloc(strlen(sssupport) + strlen(feature) + 2);
+		if (features == NULL) {
+			_dprintf("add_ss_support fail\n");
+			return;
+		}
+		sprintf(features, "%s %s", sssupport, feature);
+		nvram_set("ss_support", features);
+		free(features);
+	} else
+		nvram_set("ss_support", feature);
+}
+#endif
 
 int is_wan_connect(int unit){
 	char tmp[100], prefix[]="wanXXXXXX_";
@@ -135,13 +163,11 @@ int get_wan_unit(char *ifname)
 // Get physical wan ifname of working connection
 char *get_wanx_ifname(int unit)
 {
-	char *wan_ifname;
-	char tmp[100], prefix[]="wanXXXXXXXXXX_";
-	
-	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-	wan_ifname=nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+	char attribute[MAXLEN_ATTR_NAME];
 
-	return wan_ifname;
+	snprintf(attribute, sizeof(attribute), "wan%d_ifname", unit);
+
+	return nvram_safe_get(attribute);
 }
 
 // Get wan ifname of working connection
@@ -946,3 +972,95 @@ int set_lanwan_if(int from, int to)
 	close(fd);
 	return 0;
 }
+
+/*
+* Function     : send_socket
+* Purpose      : create socket send login fail info to protection_server record
+* Input        : struct state_report
+* Ouput        : none
+* Describe     : none
+* Provider     : Carlos
+*/
+#ifdef RTCONFIG_PROTECTION_SERVER
+int send_socket(struct state_report report)
+{
+	int sockfd,portno,n,flags,select_ret,error=0;
+        struct sockaddr_in serv_addr;
+	fd_set write_fds,read_fds;
+	struct timeval tv;
+	socklen_t len;
+
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        if( sockfd < 0 )
+        {
+                _dprintf("[%s:(%d)] ERROR opening socket.\n", __FUNCTION__, __LINE__);
+                return 0;
+        }
+        bzero((char *) &serv_addr, sizeof(serv_addr));
+        portno = LOCAL_SOCKET_PORT;
+        serv_addr.sin_family = AF_INET;
+        if(!inet_aton("127.0.0.1",&serv_addr.sin_addr))
+        {
+                return 0;
+        }
+        serv_addr.sin_port = htons(portno);
+	/*  timeout protection  */	
+	flags = fcntl(sockfd, F_GETFL, 0);
+	fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+	/*			*/
+	if( connect(sockfd,&serv_addr,sizeof(serv_addr)) < 0 )
+	{
+		if(errno != EINPROGRESS)
+		{
+			close(sockfd);
+			_dprintf("[%s:(%d)] ERROR connecting:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
+			return 0;
+		}
+	}
+
+	/*  timeout protection  */	
+	FD_ZERO(&write_fds);
+	FD_SET(sockfd, &write_fds);
+
+	read_fds= write_fds;
+	tv.tv_sec = 5;
+	tv.tv_usec = 0;	
+	
+	select_ret = select(sockfd + 1, &write_fds, &read_fds, NULL, &tv);
+	if( select_ret == 0 || select_ret==-1 )
+	{
+		close(sockfd);
+		errno = ETIMEDOUT;
+		_dprintf("[%s:(%d)] ERROR %s.\n", __FUNCTION__, __LINE__, strerror(errno));
+		return 0;
+	}
+	if (FD_ISSET(sockfd, &write_fds) || FD_ISSET(sockfd, &read_fds))
+	{
+		len=sizeof(errno);
+		if(getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len)<0)
+		{
+			_dprintf("[%s:(%d)] ERROR %s.\n", __FUNCTION__, __LINE__, strerror(errno));
+			return 0;
+		}else
+		{
+			if(error!=0)
+			{
+				_dprintf("[%s:(%d)] ERROR connecting:%s.\n", __FUNCTION__, __LINE__, strerror(error));
+				return 0;
+			}	
+		}
+	}else
+	{
+		_dprintf("[%s:(%d)] ERROR socket fd not set.\n", __FUNCTION__, __LINE__);
+		return 0;
+	}
+	
+	n=write(sockfd,&report,sizeof(report));
+	if( n < 0 )
+	{
+		_dprintf("[%s:(%d)] ERROR writing:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
+		return 0;
+	}
+	
+}
+#endif

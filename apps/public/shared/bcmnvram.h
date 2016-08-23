@@ -98,6 +98,8 @@ static inline char *tcapi_x_get(char *flag){
 		ret = tcapi_get(SAMBA_DATA, flag, str);
 	else if(!strncmp(flag, "webdav_", 7))
 		ret = tcapi_get(WEBDAV_DATA, flag, str);
+	else if(!strncmp(flag, "ss_support", 10))
+		ret = tcapi_get(CLOUD_DATA, flag, str);
 #endif /* RTCONFIG_USB */
 
 	if(ret == 0 && str[0] != 0)
@@ -197,6 +199,8 @@ static inline int tcapi_x_set(char *flag, char *value){
 		ret = tcapi_set(SAMBA_DATA, flag, value);
 	else if(!strncmp(flag, "webdav_", 7))
 		ret = tcapi_set(WEBDAV_DATA, flag, value);
+	else if(!strncmp(flag, "ss_support", 10))
+		ret = tcapi_set(CLOUD_DATA, flag, value);
 #endif
 
 	return ret;

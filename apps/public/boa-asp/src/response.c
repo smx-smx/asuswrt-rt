@@ -288,6 +288,16 @@ void send_r_cannot_login(request * req)
 void send_r_unauthorized(request * req, char *realm_name)
 {	
 		
+#ifdef RTCONFIG_PROTECTION_SERVER
+	/* Carlos 2015/11/10, if keep login fail, block login page */
+	char en_web_pt[4];
+	tcapi_get("Vram_Entry", "enable_web_protection", en_web_pt);
+	if(!strcmp(en_web_pt, "1")) {
+		send_r_forbidden_login(req);
+		return 0;
+	}
+#endif
+
     SQUASH_KA(req);
     
     req->response_status = R_UNAUTHORIZED;
@@ -335,7 +345,59 @@ void send_r_unauthorized(request * req, char *realm_name)
     }
     req_flush(req);
 }
+#ifdef RTCONFIG_PROTECTION_SERVER
+/* Carlos add start 2015/11/10 */
+void send_r_forbidden_login(request * req)
+{
+	char time[4];
+	char retry[4];
+	memset(time, 0, 4);
+	memset(retry, 0, 4);
+	tcapi_get("Vram_Entry", "protection_validity_time", time);
+	tcapi_get("Vram_Entry", "protection_retry", retry);
 
+    SQUASH_KA(req);
+    req->response_status = R_FORBIDDEN;
+    if (!req->simple) {
+        req_write(req, "HTTP/1.0 403 Forbidden\r\n");
+        print_http_headers(req);
+        req_write(req, "Content-Type: " HTML "\r\n\r\n"); /* terminate header */
+    }
+    if (req->method != M_HEAD) {
+        req_write(req,
+									"<html><head>\n"
+									"<title>ASUS Wireless Modem Router Web Manager</title>\n"
+									"<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>\n"
+									"<meta HTTP-EQUIV='Pragma' CONTENT='no-cache'>\n"
+									"<meta HTTP-EQUIV='Expires' CONTENT='-1'>\n"
+									"<style type='text/css'>\n"
+									".Desc{\n"
+									"text-shadow: 0px 1px 0px white;\n"
+									"font-weight: bolder;\n"
+									"font-size: 22px;\n"
+									"font-family:Segoe UI, Arial, sans-serif;\n"
+									"color: #000;\n"
+									"line-height: 40px;\n"
+									"text-align: left;\n"
+									"}\n"
+									"</style>\n"
+									"</head>\n"
+									"<body style='text-align:center;background: #DDD'>\n"
+									"<div style='margin-top:100px;width:50%;margin-left:25%'>\n"
+									"<div class='Desc'>You have entered an incorrect username or password ");
+	req_write(req, retry);
+        req_write(req,
+									" times.</div>"
+									"<div class='Desc'>Please try again after ");
+	req_write(req, time);
+	req_write(req,							" seconds.\n</div>\n"
+									"</div>\n"
+									"</body></html>\n");
+    }
+    req_flush(req);
+}
+/* Carlos add end 2015/11/10 */
+#endif
 /* R_FORBIDDEN: 403 */
 void send_r_forbidden(request * req)
 {

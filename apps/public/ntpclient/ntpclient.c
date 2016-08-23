@@ -154,6 +154,7 @@ void udp_handle(int usd, char *data, int data_len, struct sockaddr *sa_source, i
 	struct timeval udp_arrival;
 	struct ntptime udp_arrival_ntp;
 
+fprintf(stderr, "UDP_handle: %d\n", data_len);
 #ifdef _PRECISION_SIOCGSTAMP
 	if ( ioctl(usd, SIOCGSTAMP, &udp_arrival) < 0 ) {
 		perror("ioctl-SIOCGSTAMP");
@@ -303,6 +304,7 @@ void setup_receive(int usd, unsigned int interface, short port)
 	sa_rcvr.sin_family=AF_INET;
 	sa_rcvr.sin_addr.s_addr=htonl(interface);
 	sa_rcvr.sin_port=htons(port);
+fprintf(stderr, "setup_receive:: bind...\n");
 	if(bind(usd,(struct sockaddr *) &sa_rcvr,sizeof(sa_rcvr)) == -1) {
 		fprintf(stderr,"could not bind to udp port %d\n",port);
 		perror("bind");
@@ -318,6 +320,7 @@ void setup_transmit(int usd, char *host, short port)
 	sa_dest.sin_family=AF_INET;
 	stuff_net_addr(&(sa_dest.sin_addr),host);
 	sa_dest.sin_port=htons(port);
+fprintf(stderr, "setup_transmit:: connect...\n\n");
 	if (connect(usd,(struct sockaddr *)&sa_dest,sizeof(sa_dest))==-1)
 		{perror("connect");exit(1);}
 }
@@ -352,19 +355,23 @@ int primary_loop(int usd, int num_probes, int cycle_time)
 			}	
 			continue;
 		}
+		fprintf(stderr,"send packet OK!\n");
 		pack_len=recvfrom(usd,incoming,sizeof(incoming),0,
 		                  &sa_xmit,&sa_xmit_len);
+		fprintf(stderr, "Recvfrom pack_len= %d, incoming= %d\n", pack_len, sizeof(incoming));
 		if (pack_len<0) {
 			perror("recvfrom");
 		} else if (pack_len>0 && pack_len<sizeof(incoming)){
+			fprintf(stderr,"call udp_handle\n");
 			udp_handle(usd,incoming,pack_len,&sa_xmit,sa_xmit_len);
 			return 0;
 		} else {
-			printf("Ooops.  pack_len=%d\n",pack_len);
+			fprintf(stderr,"Ooops.  pack_len=%d\n",pack_len);
 			fflush(stdout);
 		}
 		if (probes_sent >= num_probes && num_probes != 0) break;
 	}
+
 	return -1;
 }
 
@@ -510,20 +517,21 @@ int main(int argc, char *argv[]) {
 		if (!primary_loop(usd, probe_count, cycle_time)) {
 			close(usd);
 			res=0; //barry add 20031009 BCM
-#if !defined(TCSUPPORT_CT)
-			tcapi_commit("Timezone_Entry_Success");
-#endif
 			break;
 		}
 		else{
 			res=1; //barry add 20031009 BCM
-#if !defined(TCSUPPORT_CT)
-			tcapi_commit("Timezone_Entry_Fail");
-#endif
 		}
-
 		close(usd);
 	}
+#if !defined(TCSUPPORT_CT)
+	if (res == 0) {
+		tcapi_commit("Timezone_Entry_Success");
+	}
+	else {
+		tcapi_commit("Timezone_Entry_Fail");
+	}
+#endif
 	
 	return res;
 }

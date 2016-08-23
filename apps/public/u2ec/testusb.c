@@ -185,54 +185,48 @@ int print_device(struct usb_device *dev, int level)
 		if (dev->descriptor.iManufacturer) 
 		{
 			ret = usb_get_string_simple(udev, dev->descriptor.iManufacturer, string, sizeof(string));
-      			if (ret > 0)
+			if (ret > 0)
 			{
 				snprintf(description, sizeof(description), "%s - ", string);
 				strcpy(str_mfg, string);
-				// nvram_set("u2ec_mfg", str_mfg);
 				tcapi_set("USB_Entry", "u2ec_mfg", str_mfg);
 			}
 			else
 			{
 				snprintf(description, sizeof(description), "%04X - ", dev->descriptor.idVendor);
 				sprintf(str_mfg, "USB Vendor %04X", dev->descriptor.idVendor);
-				// nvram_set("u2ec_mfg", str_mfg);
 				tcapi_set("USB_Entry", "u2ec_mfg", str_mfg);
 			}
-    		}
-    		else
+		}
+		else
 		{
-      			snprintf(description, sizeof(description), "%04X - ", dev->descriptor.idVendor);
+			snprintf(description, sizeof(description), "%04X - ", dev->descriptor.idVendor);
 			sprintf(str_mfg, "USB Vendor %04X", dev->descriptor.idVendor);
-			// nvram_set("u2ec_mfg", str_mfg);
 			tcapi_set("USB_Entry", "u2ec_mfg", str_mfg);
 		}
 
-    		if (dev->descriptor.iProduct) 
-    		{
-      			ret = usb_get_string_simple(udev, dev->descriptor.iProduct, string, sizeof(string));
-      			if (ret > 0)
-      			{
+		if (dev->descriptor.iProduct)
+		{
+			ret = usb_get_string_simple(udev, dev->descriptor.iProduct, string, sizeof(string));
+			if (ret > 0)
+			{
 				snprintf(description + strlen(description), sizeof(description) - strlen(description), "%s", string);
 				strcpy(str_product, string);
-				// nvram_set("u2ec_device", str_product);
 				tcapi_set("USB_Entry", "u2ec_device", str_product);
 			}
 			else
 			{
 				snprintf(description + strlen(description), sizeof(description) - strlen(description), "%04X", dev->descriptor.idProduct);
 				sprintf(str_product, "USB Device %04x:%04x", dev->descriptor.idVendor, dev->descriptor.idProduct);
-				// nvram_set("u2ec_device", str_product);
 				tcapi_set("USB_Entry", "u2ec_device", str_product);
 			}
 		}
 		else
 		{
-      			snprintf(description + strlen(description), sizeof(description) - strlen(description), "%04X", dev->descriptor.idProduct);
-      			sprintf(str_product, "USB Device %04x:%04x", dev->descriptor.idVendor, dev->descriptor.idProduct);
-      			// nvram_set("u2ec_device", str_product);
+			snprintf(description + strlen(description), sizeof(description) - strlen(description), "%04X", dev->descriptor.idProduct);
+			sprintf(str_product, "USB Device %04x:%04x", dev->descriptor.idVendor, dev->descriptor.idProduct);
 			tcapi_set("USB_Entry", "u2ec_device", str_product);
-      		}
+		}
 
 	} 
 	else
@@ -248,11 +242,9 @@ int print_device(struct usb_device *dev, int level)
 			if (ret > 0)
 			{
 				PDEBUG("%.*s  - Serial Number    : %s\n", level * 2, "                    ", string);
-				// nvram_set("u2ec_serial", string);
 				tcapi_set("USB_Entry", "u2ec_serial", string);
 			}
 			else
-				// nvram_set("u2ec_serial", "");
 				tcapi_set("USB_Entry", "u2ec_serial", "");
     		}
 
@@ -260,7 +252,6 @@ int print_device(struct usb_device *dev, int level)
 	}
 
 	sprintf(str_vidpid, "%04x%04x", dev->descriptor.idVendor, dev->descriptor.idProduct);
-	// nvram_set("u2ec_vidpid", str_vidpid);
 	tcapi_set("USB_Entry", "u2ec_vidpid", str_vidpid);
 
 	PDEBUG("%.*s  - Length	   : %2d%s\n", level * 2, "                    ", dev->descriptor.bLength, dev->descriptor.bLength == USB_DT_DEVICE_SIZE ? "" : " (!!!)");
@@ -398,10 +389,6 @@ RETRY:
 	}
 
 	dev = NULL;
-	// nvram_set("u2ec_device", "");
-	// nvram_set("u2ec_serial", "");
-	// nvram_set("u2ec_vidpid", "");
-	// nvram_set("u2ec_mfg", "");
 	tcapi_set("USB_Entry", "u2ec_device", "");
 	tcapi_set("USB_Entry", "u2ec_serial", "");
 	tcapi_set("USB_Entry", "u2ec_vidpid", "");

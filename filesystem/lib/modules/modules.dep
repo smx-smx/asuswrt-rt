@@ -48,6 +48,8 @@
 
 /lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebt_mark.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
 
+/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebt_mark_m.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
+
 /lib/modules/2.6.22.15/kernel/net/ipv4/netfilter/nf_nat_rtsp.ko:	/lib/modules/2.6.22.15/kernel/net/netfilter/nf_conntrack_rtsp.ko
 
 /lib/modules/usbhost/usbserial.ko:	/lib/modules/usbhost/usbcore.ko
@@ -69,6 +71,8 @@
 /lib/modules/tcledctrl.ko:	/lib/modules/rtl8367b.ko
 
 /lib/modules/usbhost/ohci-hcd.ko:	/lib/modules/usbhost/usbcore.ko
+
+/lib/modules/2.6.22.15/kernel/drivers/net/tun.ko:	
 
 /lib/modules/tcvlantag.ko:	/lib/modules/module_sel.ko
 
@@ -147,10 +151,10 @@
 
 /lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebt_ip6.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
 
+/lib/modules/usbhost/usbcore.ko:	
+
 /lib/modules/usbhost/ext3.ko:	/lib/modules/usbhost/mbcache.ko \
 	/lib/modules/usbhost/jbd.ko
-
-/lib/modules/usbhost/usbcore.ko:	
 
 /lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebt_ftos.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
 

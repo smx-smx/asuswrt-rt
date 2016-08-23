@@ -16,6 +16,24 @@ var isJsonChanged = function(objNew, objOld){
     return false;
 };
 
+var ipState = new Array();
+ipState["Static"] =  "<%tcWebApi_get("String_Entry","BOP_ctype_title5","s")%>";
+ipState["DHCP"] =  "<%tcWebApi_get("String_Entry","BOP_ctype_title1","s")%>";
+ipState["Manual"] =  "MAC-IP Binding";
+ipState["OffLine"] =  "Client is disconnected";
+
+
+/* get client info form dhcp lease log */
+var leaseArray = {
+	hostname: [],
+	mac: []
+};
+
+var retHostName = function(_mac){
+	return leaseArray.hostname[leaseArray.mac.indexOf(_mac.toUpperCase())] || _mac;
+}
+/* end */
+
 var networkmap_fullscan = '<%tcWebApi_get("ClientList_Common","scan","s")%>';	/*1: scan, 0: done*/
 
 var originDataTmp;
@@ -25,7 +43,7 @@ var originData = {
 	size: decodeURIComponent('<% get_client_list_cache() %>').split("<").length-1,
 	customList: '<% get_cl_userdef_list() %>',
 	asusDevice: '<% get_asus_dev_list() %>',
-	fromDHCPLease: '',
+	fromDHCPLease: <% dhcpLeaseMacList(); %>,	//Viz add but not exist yet
 	staticList: decodeURIComponent('<% get_static_dhcp_list() %>').replace(/&#62/g, ">").replace(/&#60/g, "<").split('<'),
 	fromNetworkmapd: '',
 	//fromBWDPI: '',
@@ -72,13 +90,24 @@ var setClientAttr = function(){
 	this.isASUS = false;
 	this.isLogin = false;
 	this.isOnline = false;
-	this.isStaticIP = false;
+	this.ipMethod = "Static";
 }
 
 var Login_ip_str = '<% tcWebApi_get("WebCurSet_Entry","login_ip_tmp","s"); %>';
 var clientList = new Array(0);
 var ClientRow = new Array(0);
 function genClientList(){
+	
+	leaseArray = {hostname: [], mac: []};	
+	for(var i = 0; i < originData.fromDHCPLease.length; i += 1) {		
+		var dhcpMac = originData.fromDHCPLease[i][0].toUpperCase();
+		var dhcpName = decodeURIComponent(originData.fromDHCPLease[i][1]);
+		if(dhcpMac != "") {
+			leaseArray.mac.push(dhcpMac);
+			leaseArray.hostname.push(dhcpName);			
+		}		
+	}
+	
 	clientList = [];
 	totalClientNum.wireless = 0;
 	totalClientNum.wireless_0 = 0;
@@ -150,12 +179,14 @@ function genClientList(){
 	
 	for(var i=0; i<originData.wlList_2g.length; i++){
 		var wlClientMacAddr = (typeof originData.wlList_2g[i][0] == "undefined") ? false : originData.wlList_2g[i][0].toUpperCase();
+
 		if(!wlClientMacAddr || typeof clientList[thisClientMacAddr] == "undefined"){
 			continue;
 		}		
+
 		if(typeof clientList[wlClientMacAddr] != "undefined"){
-			clientList[wlClientMacAddr].rssi = originData.wlList_2g[i][1];	//Viz patched 2014.12.22
-			clientList[wlClientMacAddr].isWL = 1;														//Viz patched	2014.12.22
+			clientList[wlClientMacAddr].rssi = originData.wlList_2g[i][1];
+			clientList[wlClientMacAddr].isWL = 1;
 			totalClientNum.wireless++;
 			totalClientNum.wireless_0++;		
 		}		
@@ -166,15 +197,24 @@ function genClientList(){
 
 		if(!wlClientMacAddr || typeof clientList[thisClientMacAddr] == "undefined"){
 			continue;
-		}		
-		clientList[thisClientMacAddr].rssi = originData.wlList_5g[i][1];
-		clientList[thisClientMacAddr].isWL = 2;
-		totalClientNum.wireless++;
-		totalClientNum.wireless_1++;
+		}
+
+		if(typeof clientList[wlClientMacAddr] != "undefined"){
+			clientList[wlClientMacAddr].rssi = originData.wlList_5g[i][1];
+			clientList[wlClientMacAddr].isWL = 2;
+			totalClientNum.wireless++;
+			totalClientNum.wireless_1++;
+		}
 	}
 	
+	for(var i = 0; i < leaseArray.mac.length; i += 1) {
+		if(typeof clientList[leaseArray.mac[i]] != "undefined"){
+			clientList[leaseArray.mac[i]].ipMethod = "DHCP";
+		}
+	}
+
 	for(var i=0; i<originData.staticList.length; i++){
-		if(originData.staticList.length == "0") break;
+		if(originData.staticList.length == "0") break;	//nvram : "dhcp_static_x"	//'192.168.100.40>F4:6D:04:5D:9C:68<192.168.100.41>F4:6D:04:5D:9C:55'
 
 		var thisClient = originData.staticList[i].split(">");
 		var thisClientMacAddr = (typeof thisClient[1] == "undefined") ? false : thisClient[1].toUpperCase();
@@ -184,7 +224,10 @@ function genClientList(){
 		}
 
 		if(typeof clientList[thisClientMacAddr] != "undefined"){
-			clientList[thisClientMacAddr].isStaticIP = true;
+			if(clientList[thisClientMacAddr].ipMethod == "DHCP") {				
+				if(clientList[thisClientMacAddr].IP == thisClient[0] || clientList[thisClientMacAddr].IP == "offline")
+					clientList[thisClientMacAddr].ipMethod = "Manual";
+			}			
 		}
 	}
 	

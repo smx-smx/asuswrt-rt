@@ -1,10 +1,14 @@
 #!/bin/sh
 
 #echo "======get pppoe-relay start======="
-getpppoe_relay=`/userfs/bin/tcapi get Firewall_Entry fw_pt_pppoerelay`
+wan_primary=`/userfs/bin/tcapi get Wanduck_Common wan_primary`
+wan_unit=`expr substr $1 1 2`
+if [ "`expr index $wan_unit _`" != "0" ]; then
+wan_unit=`expr substr $wan_unit 1 1`
+fi
+
 #echo "getpppoe_relay=${getpppoe_relay}"
-if [ "$getpppoe_relay" = "1" ] ; then
-	killall pppoe-relay
-	/userfs/bin/pppoe-relay -C br0 -S nas$1 &
+if [ "$wan_unit" = "$wan_primary" ]; then
+	service "restart_pppoe_relay $wan_unit"
 fi
 #echo "======get pppoe-relay end======="
