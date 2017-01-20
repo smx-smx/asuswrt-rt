@@ -1,13 +1,11 @@
-# dsl-n55u
-Custom asuswrt-based firmware for Asus DSL-N55U
+# asuswrt-rt
+Asus OpenSource release for Ralink modems
 
-This repository is to keep track of ASUS firmware changes, and maybe in the future apply some changes.
+This repository keeps track of ASUS firmware changes
 
-There's no current plan/roadmap to do any development now
+## DSL-N55U-D1 Information ##
 
-## Supporting DSL-N55U-D1 ##
-
-This device is a Wireless Router with built-in Trendchip modem.
+N600 Modem/Router with built-in Trendchip modem.
 ```sh
 # cat /proc/cpuinfo 
 system type		: Ralink RT63365 SOC
