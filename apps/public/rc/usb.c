@@ -1105,8 +1105,9 @@ done:
 #endif
 
 		// check the permission files.
-		if(ret == MOUNT_VAL_RW)
+		if(ret == MOUNT_VAL_RW) {
 			test_of_var_files(mountpoint);
+		}
 
 		// if (nvram_get_int("usb_automount"))
 			// run_nvscript("script_usbmount", mountpoint, 3);
@@ -1548,6 +1549,7 @@ void write_ftpd_conf()
 		fprintf(fp, "max_clients=%s\n", "10");
 	fprintf(fp, "ftp_username=anonymous\n");
 	fprintf(fp, "ftpd_banner=Welcome to ASUS %s FTP service.\n", get_productid());
+	fprintf(fp, "hide_file={.router_temp*}\n");
 
 	// update codepage
 	// modprobe_r("nls_cp936");
@@ -1583,8 +1585,15 @@ void write_ftpd_conf()
  */
 
 void
-start_ftpd()
+start_ftpd(void)
 {
+	pid_t pid;
+#if defined(TCSUPPORT_2_6_36_KERNEL)
+	char *vsftpd_argv[] = { "taskset", "0xa", "/userfs/bin/vsftpd", "/etc/vsftpd.conf", NULL };
+#else
+	char *vsftpd_argv[] = { "/userfs/bin/vsftpd", "/etc/vsftpd.conf", NULL };
+#endif
+
 	// if(getpid()!=1) {
 		// notify_rc_after_wait("start_ftpd");
 		// return;
@@ -1594,15 +1603,11 @@ start_ftpd()
 	if (tcapi_match(SAMBA_DATA, "enable_ftp", "No")) return;
 
 	write_ftpd_conf();
-	
+
 	killall("vsftpd", SIGHUP);
 	
 	if (!pids("vsftpd"))
-#if defined(TCSUPPORT_2_6_36_KERNEL)
-		system("taskset 0xa /userfs/bin/vsftpd /etc/vsftpd.conf &");
-#else
-		system("/userfs/bin/vsftpd /etc/vsftpd.conf &");
-#endif
+		_eval(vsftpd_argv, NULL, 0, &pid);
 
 	if (pids("vsftpd"))
 		logmessage("FTP server", "daemon is started");

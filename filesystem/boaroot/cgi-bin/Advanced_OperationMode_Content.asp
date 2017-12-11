@@ -65,7 +65,7 @@ document.form.lan_netmask.value = document.form.lan_netmask_rt.value;
 document.form.lan_gateway.value = document.form.lan_ipaddr_rt.value;
 if('1' == '2'){
 close_guest_unit(0,1);
-if(band5g_support != -1)
+if(wl_info.band5g_support)
 close_guest_unit(1,1);
 }
 }

@@ -142,7 +142,8 @@ helpcontent[8] = new Array("",
 
 helpcontent[9] = new Array("",
 "<%tcWebApi_get("String_Entry","FC_URLActiveDate_id","s")%>",
-"<%tcWebApi_get("String_Entry","FC_URLActiveTime_id","s")%>");
+"<%tcWebApi_get("String_Entry","FC_URLActiveTime_id","s")%>",
+"<%tcWebApi_get("String_Entry","FC_LanWanDefaultAct_id","s")%>");
 
 helpcontent[10] = new Array("",
 "<%tcWebApi_get("String_Entry","FC_LanWanActiveDate_id","s")%>",
@@ -212,7 +213,9 @@ helpcontent[20] = new Array("",
 '<%tcWebApi_get("String_Entry","BM_manual_link_speed_desc","s")%>',
 "<%tcWebApi_get("String_Entry","min_bound_desc","s")%>",
 "<%tcWebApi_get("String_Entry","max_bound_desc","s")%>",
-"<%tcWebApi_get("String_Entry","bound_zero_desc","s")%>");
+"<%tcWebApi_get("String_Entry","bound_zero_desc","s")%>",
+"The max size is <%tcWebApi_staticGet("WebHistory_Entry","wh_max", "s") %> records, if max limit reached remove old entries one by one.",	/* untranslated */
+"Backup data would be hidden from network access such as Samba/ FTP. Data will be stored under USB disk /.router_temp/web_history_backup/ directory. Since .router_temp is hidden folder format, in order to view it from Windows, go to Control Panel > Appearance and Personalization > Folder Options, set as Show hidden files.");	/* untranslated */
 
 helpcontent[21] = new Array("",
 "<%tcWebApi_get("String_Entry","HSDPAC_hsdpa_mode_id","s")%>",
@@ -261,7 +264,7 @@ helpcontent[25] = new Array("",
 							"<% tcWebApi_Get("String_Entry", "DSL_PVC_id", "s") %>",
 							"<% tcWebApi_Get("String_Entry", "DSL_Bitswap_id", "s") %>",
 							"<% tcWebApi_Get("String_Entry", "DSL_pwr_saving_id", "s") %>",
-							"This item allows you to tweak the target SNR Margin of VDSL. For instance with a downstream SNR Margin at 8dB, you could set to 7dB or lower value to maximize the downstream performance, 4dB (Max.performance) but please note that the lower the value, DSL modem router will be weaker to defend the line noise, thus sync lost might occur, so please adjust with proper value. However if your VDSL connection is unstable or not able to establish a connection, for this case then set to a higher value such as 9dB ~ 30dB.",
+							"This item allows you to tweak the target SNR Margin of VDSL. For instance with a downstream SNR Margin at 8dB, you could set to 7dB or lower value to maximize the downstream performance, 3dB (Max.performance) but please note that the lower the value, DSL modem router will be weaker to defend the line noise, thus sync lost might occur, so please adjust with proper value. However if your VDSL connection is unstable or not able to establish a connection, for this case then set to a higher value such as 9dB ~ 30dB.",
 							"This item configures Profile to be used for VDSL connection, default is 30a multi mode. However in order to work around the non-standard 30a multi mode VDSL DSLAM sync issue, which deployed by some of Germany ISP, set to 17a multi mode might be needed in order for the VDSL line to sync up. For users of other countries, there is no need to change this setting.",
 							"This item allows you to tweak the Tx Power of VDSL. Reduce Tx Power(-1 dB ~ -7 dB) would increase the downstream performance(reduce more Tx Power leads to higher downstream data rate), but will impact upstream and vice versa.",
 							"This item configures Rx AGC(Auto Gain Control) GAIN for VDSL, if tweak the Stability Adjustment (VDSL) setting still could not get desired downstream speed, then could try to set Rx AGC GAIN Adjustment to High Performance mode. However if your VDSL connection is unstable and has some CRC then could set to Stable mode.",

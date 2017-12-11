@@ -211,6 +211,12 @@ void SearchServerTree(Server_TreeNode* treeRoot)
 
 int create_sync_list()
 {
+
+#if MEM_POOL_ENABLE
+        mem_pool_init();
+        printf("######eable mem  pool######\n");
+#endif
+
     local_sync = 0;
     server_sync = 1;
     finished_initial = 0;
@@ -218,7 +224,7 @@ int create_sync_list()
     int i;
     int num=asus_cfg.dir_number;
     g_pSyncList = (sync_list **)malloc(sizeof(sync_list *)*num);
-    memset(g_pSyncList,0,sizeof(g_pSyncList));
+    memset(g_pSyncList,0,sizeof(sync_list *)*num);
 #if TOKENFILE
     sighandler_finished = 0;
 #endif
@@ -372,12 +378,12 @@ char *serverpath_to_localpath(char *from_serverpath,int index){
     //hreftmp = oauth_url_unescape(hreftmp,NULL);
 #ifdef MULTI_PATH
     to_localpath = (char *)malloc(sizeof(char)*(strlen(from_serverpath)+asus_cfg.prule[index]->base_path_len+2));
-    memset(to_localpath,'\0',sizeof(to_localpath));
+    memset(to_localpath,'\0',sizeof(char)*(strlen(from_serverpath)+asus_cfg.prule[index]->base_path_len+2));
 
     sprintf(to_localpath,"%s%s",asus_cfg.prule[index]->base_path,from_serverpath);
 #else
     to_localpath = (char *)malloc(sizeof(char)*(strlen(from_serverpath)+asus_cfg.prule[index]->base_path_len+asus_cfg.prule[index]->rooturl_len+2));
-    memset(to_localpath,'\0',sizeof(to_localpath));
+    memset(to_localpath,'\0',sizeof(char)*(strlen(from_serverpath)+asus_cfg.prule[index]->base_path_len+asus_cfg.prule[index]->rooturl_len+2));
 
     sprintf(to_localpath,"%s%s%s",asus_cfg.prule[index]->base_path,asus_cfg.prule[index]->rooturl,from_serverpath);
 #endif
@@ -396,7 +402,7 @@ char *localpath_to_serverpath(char *from_localpath,int index)
     hreftmp=strstr(from_localpath,asus_cfg.prule[index]->base_path)+asus_cfg.prule[index]->base_path_len+asus_cfg.prule[index]->rooturl_len;
 #endif
     to_serverpath=(char *)malloc(sizeof(char)*(strlen(hreftmp)+2));
-    memset(to_serverpath,0,sizeof(to_serverpath));
+    memset(to_serverpath,0,sizeof(char)*(strlen(hreftmp)+2));
     sprintf(to_serverpath,"%s",hreftmp);
     wd_DEBUG("from_localpath = %s\n",from_localpath);
     wd_DEBUG("Localpath_to_serverpath to_serverpath = %s\n",to_serverpath);
@@ -691,7 +697,7 @@ int upload_serverlist(Server_TreeNode *treenode,Browse *perform_br, LocalFolder 
         char *serverpath;
         serverpath=localpath_to_serverpath(localfoldertmp->path,index);
         foldertmp->href=(char *)malloc(sizeof(char)*(strlen(serverpath)+1));
-        memset(foldertmp->href,'\0',sizeof(foldertmp->href));
+        memset(foldertmp->href,'\0',sizeof(char)*(strlen(serverpath)+1));
         strcpy(foldertmp->href,serverpath);
         foldertmp->size=0;
         foldertmp->name=parse_name_from_path(foldertmp->href);

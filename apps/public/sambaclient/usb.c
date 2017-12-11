@@ -493,8 +493,8 @@ char *delete_nvram_contents(char *url,char *folder)
         {
                 nv = my_malloc(2);
                 //2014.10.20 by sherry malloc申请内存是否成功
-                if(nv==NULL)
-                    return NULL;
+//                if(nv==NULL)
+//                    return NULL;
                 sprintf(nv, "");
         }
         else
@@ -654,8 +654,8 @@ int add_tokenfile_info(char *url, char *folder, char *mpath)
 
         tokenfile_info_tmp->folder = my_malloc(strlen(folder) + 1);
         //2014.10.20 by sherry malloc申请内存是否成功
-        if(tokenfile_info_tmp->folder==NULL)
-            return NULL;
+//        if(tokenfile_info_tmp->folder==NULL)
+//            return NULL;
         sprintf(tokenfile_info_tmp->folder, "%s", folder);
 
         tokenfile_info->next = tokenfile_info_tmp;

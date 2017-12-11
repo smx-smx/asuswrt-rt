@@ -62,41 +62,44 @@ if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
 			iptv_ptm_pvc_str += " + ";
 		}
 		dsltmp_cfg_iptv_pvclist_col = dsltmp_cfg_iptv_pvclist_row[i].split('>');
-		for(j=0; j<dsltmp_cfg_iptv_pvclist_col.length; j++){
-		switch(j) {
-			case 0: //vpi
-				iptv_atm_pvc_str += "<span class='cfg_val'>" + dsltmp_cfg_iptv_pvclist_col[j] + "/";
-				break;
-			case 1: //vci
-				iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[j] + ",";
-				break;
-			case 2: //proto
-				iptv_ptm_pvc_str += "<span class='cfg_val'>";
-				if(dsltmp_cfg_iptv_pvclist_col[j] == 3) {
-					iptv_atm_pvc_str += "Bridged, ";
-					iptv_ptm_pvc_str += "Bridged, ";
-				}
-				else {
-					iptv_atm_pvc_str += ", ";
-					iptv_ptm_pvc_str += "Bridged, ";
-				}
-				break;
-			case 3: //encap
-				if(dsltmp_cfg_iptv_pvclist_col[j] == 1)
-					iptv_atm_pvc_str += "VC-Mux";
-				else
-					iptv_atm_pvc_str += "LLC";
-				break;
-			case 4: //vlan id
-				if(dsltmp_cfg_iptv_pvclist_col[j] != "") {
-					iptv_atm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
-					iptv_ptm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
-				}
-				iptv_atm_pvc_str += "</span>";
-				iptv_ptm_pvc_str += "</span>";
-				break;
+
+		//Protocol
+		iptv_atm_pvc_str += "<span class='cfg_val'>";
+		iptv_ptm_pvc_str += "<span class='cfg_val'>";
+		if(dsltmp_cfg_iptv_pvclist_col[2] == 2) {
+			iptv_atm_pvc_str += "MER, ";
+			iptv_ptm_pvc_str += "Automatic IP ";
 		}
+		else if(dsltmp_cfg_iptv_pvclist_col[2] == 1) {
+			iptv_atm_pvc_str += "PPPoA, ";
+			iptv_ptm_pvc_str += " ";
 		}
+		else if(dsltmp_cfg_iptv_pvclist_col[2] == 0) {
+			iptv_atm_pvc_str += "PPPoE, ";
+			iptv_ptm_pvc_str += "PPPoE ";
+		}
+		else {  //3
+			iptv_atm_pvc_str += "Bridge, ";
+			iptv_ptm_pvc_str += "Bridge ";
+		}
+		//vpi
+		iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[0] + "/";
+		//vci
+		iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[1] + ", ";
+		//encap
+		if(dsltmp_cfg_iptv_pvclist_col[3] == 1)
+			iptv_atm_pvc_str += "VC-Mux ";
+		else
+			iptv_atm_pvc_str += "LLC ";
+		//VLAN ID
+		if(dsltmp_cfg_iptv_pvclist_col[4] != "") {
+			iptv_atm_pvc_str += "</span>VLAN ID: <span class='cfg_val'>" + dsltmp_cfg_iptv_pvclist_col[4];
+			iptv_ptm_pvc_str += "</span>VLAN ID: <span class='cfg_val'>" + dsltmp_cfg_iptv_pvclist_col[4];
+		}       
+                
+		iptv_atm_pvc_str += "</span>";
+		iptv_ptm_pvc_str += "</span>";
+
 	}
 }
 

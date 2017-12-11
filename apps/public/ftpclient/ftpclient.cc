@@ -1783,7 +1783,8 @@ int deal_dragfolder_to_socketlist(char *dir,int index)
             //fullname = (char *)malloc(sizeof(char)*(strlen(dir)+strlen(ent->d_name)+strlen("/")+1));
             //2014.10.30 by sherry  sizeof(指针)=4
             //memset(fullname,'\0',sizeof(fullname));
-            memset(fullname,'\0',sizeof(char)*(strlen(dir)+strlen(ent->d_name)+strlen("/")+1));
+            //memset(fullname,'\0',sizeof(char)*(strlen(dir)+strlen(ent->d_name)+strlen("/")+1));
+            memset(fullname,'\0',sizeof(char)*(strlen(dir)+strlen(ent->d_name)+2));
             sprintf(fullname,"%s/%s",dir,ent->d_name);
             if(test_if_dir(fullname) == 1)
             {
@@ -1862,7 +1863,8 @@ mod_time *Getmodtime(char *href,int index)
     //char *command = (char *)malloc(sizeof(char)*(strlen(href) + strlen("MDTM ")+1));
     //2014.10.29 by sherry   sizeof(指针)=4
     //memset(command,'\0',sizeof(command));
-    memset(command,'\0',sizeof(char)*(strlen(href) + strlen("MDTM ")+1));
+    //memset(command,'\0',sizeof(char)*(strlen(href) + strlen("MDTM ")+1));
+    memset(command,'\0',sizeof(char)*(strlen(href) + 6));
     sprintf(command,"MDTM %s",href + 1);
     DEBUG("command:%s\n",command);
     char *temp = utf8_to(command,index);
@@ -2537,6 +2539,7 @@ void parseCloudInfo_forsize(char *parentherf)
         int fail = 0;
         FolderTmp_size=(CloudFile *)malloc(sizeof(struct node));
         memset(FolderTmp_size,0,sizeof(FolderTmp_size));
+        FolderTmp_size->next = NULL; //2016.2.25 by tina
         p = strtok(buf,split);
         int i=0;
         while(p != NULL && i <= 8)
@@ -2719,6 +2722,7 @@ int parseCloudInfo_tree(char *parentherf,int index)
         DEBUG("BUF:%s\n",buf);
         FolderTmp=(CloudFile *)malloc(sizeof(struct node));
         memset(FolderTmp,0,sizeof(FolderTmp));
+        FolderTmp->next = NULL; //2016.2.25 by tina
         p=strtok(buf,split);
         int i=0;
         //DEBUG("p:%s\n",p);
@@ -2866,8 +2870,8 @@ int parseCloudInfo_tree(char *parentherf,int index)
         else
         {
             free_CloudFile_item(FolderTmp);
-            fclose(fp);
-            return 912;
+            //fclose(fp); //2016.2.25 by tina
+            //return 912; //2016.2.25 by tina
         }
     }
     fclose(fp);

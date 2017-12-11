@@ -148,7 +148,7 @@ typedef struct REQCLIENT{
 #pragma pack() // End.
 
 // var
-#define DUT_DOMAIN_NAME "router.asus.com"
+//#define DUT_DOMAIN_NAME "router.asus.com"
 int test_log = 0;
 char router_name[PATHLEN];
 int sw_mode = SW_MODE_ROUTER, isFirstUse;

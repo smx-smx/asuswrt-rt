@@ -42,6 +42,7 @@ int sigterm_flag = 0;           /* lame duck mode */
 time_t current_time;
 int max_fd = 0;
 int pending_requests = 0;
+char lan_ip[64];
 
 struct pageset* pageMap[PAGEMAP_I_NUM][PAGEMAP_J_NUM];
 
@@ -319,6 +320,13 @@ int main(int argc, char **argv)
         DIE("can't dup2 /dev/null to STDOUT_FILENO");
     }
 
+    //get lan ip
+    memset(lan_ip, 0, sizeof(lan_ip));
+    if(tcapi_get("Lan_Entry0", "IP", lan_ip))
+    {
+	DIE("can't get lan ip");
+    }
+	
     /* but first, update timestamp, because log_error_time uses it */
     (void) time(&current_time);
 
@@ -417,11 +425,11 @@ int main(int argc, char **argv)
             exit(1);
             break;
         case 0:
-        		perror("child");
+      	     perror("child");
             /* child, success */
             break;
         default:
-        		perror("parent");
+            perror("parent");
             /* parent, success */
             exit(0);
             break;

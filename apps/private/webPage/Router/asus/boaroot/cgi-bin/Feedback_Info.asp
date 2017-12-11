@@ -79,8 +79,11 @@ function get_debug_log_info(){
 	
 }
 
-function redirect(){
-	document.location.href = "/cgi-bin/Advanced_Feedback.asp";
+function applyRule(){
+	if(document.diagform.dslx_diag_state.value == 4){
+		document.diagform.dslx_diag_state.value = 0;
+	}
+	document.diagform.submit();
 }
 
 function reset_diag_state(unit){
@@ -116,6 +119,7 @@ function reset_diag_state(unit){
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
 <form method="post" name="diagform" action="/start_apply.asp" target="hidden_frame">
 <input type="hidden" name="current_page" value="Feedback_Info.asp">
+<input type="hidden" name="next_page" value="Advanced_Feedback.asp">
 <input type="hidden" name="dslx_diag_state" value="<% tcWebApi_staticGet("DslDiag_Entry", "dslx_diag_state", "s") %>">
 </form>
 <form method="post" name="form" action="" target="hidden_frame">
@@ -153,19 +157,15 @@ function reset_diag_state(unit){
 	<br>
 	<%if tcWebApi_get("PushMail_Entry","fb_state","h") = "2" then %>
 	<div class="feedback_info_1">However system currently experiencing issue connecting to mail server, it could be caused by your ISP blocked SMTP port 25. Thus please send us an email directly (<a href="mailto:xdsl_feedback@asus.com?Subject=<%tcWebApi_get("String_Entry","Web_Title2","s")%>" style="color:#FFCC00;" target="_top">xdsl_feedback@asus.com</a>). Simply copy from following text area and paste as mail content.
-	<br>
-	<br>	
-	<textarea name="fb_comment" maxlength="2000" cols="55" rows="8" style="font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;"><% nvram_dump("fb_fail_content", "") %></textarea>
+		<br>
+		<br>	
+		<textarea name="fb_comment" maxlength="2000" cols="55" rows="8" style="width:90%;margin-left:25px;font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;" readonly><% nvram_dump("fb_fail_content", "") %></textarea>
 	</div>
 	<br>
 	<br>
 	<%end if%>
 	<div class="feedback_info_1">We are working hard to improve the firmware of <%tcWebApi_get("String_Entry","Web_Title2","s") %> and your feedback is very important to us. We will use your feedbacks and comments to strive to improve your ASUS experience.</div>
 	<br>
-	<br>
-	<div class="feedback_info_1">To get help from other users, you could post your question in the <a href="http://vip.asus.com/forum/topic.aspx?board_id=11&SLanguage=en-us" style="color:#FFCC00;" target="_blank">ASUS VIP Forum</a>.</div>
-	<br>
-	<br>	
 </div>
 
 <div id="fb_fail" style="display:none;">
@@ -186,7 +186,7 @@ function reset_diag_state(unit){
 	<div class="feedback_info_1" id="dl_diag_log_5" onClick="reset_diag_state('e');" style="display:none; text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Partial debug log (Part 5)<br></div>
 	<br>
 	<div class="feedback_info_1">Please send us an email directly ( <a id="Email_subject" href="" target="_top" style="color:#FFCC00;">xdsl_feedback@asus.com</a> ). Simply copy from following text area and paste as mail content. <br></div>
-	<textarea name="fb_send_debug_log_content" cols="70" rows="15" style="width:95%; margin-left:30px;font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;" readonly></textarea>
+	<textarea name="fb_send_debug_log_content" cols="70" rows="15" style="width:90%;margin-left:25px;font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;" readonly></textarea>
 	<br>	
 </div>
 
@@ -196,7 +196,7 @@ function reset_diag_state(unit){
 
 
 <div class="apply_gen">
-			<input class="button_gen" onclick="redirect();" type="button" value="<%tcWebApi_get("String_Entry","Main_alert_proceeding_desc3","s")%>"/>
+	<input class="button_gen" onclick="applyRule();" type="button" value="<%tcWebApi_get("String_Entry","Main_alert_proceeding_desc3","s")%>"/>	<!-- Complete! -->
 </div>
 </td>
 </tr>

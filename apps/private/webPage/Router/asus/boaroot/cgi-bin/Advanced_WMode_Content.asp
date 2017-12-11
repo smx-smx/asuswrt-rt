@@ -126,7 +126,7 @@ show_wl_wdslist();
 document.getElementById("wl0_hwaddr").value =	document.getElementById("wl0_hwaddr").value.toString().toUpperCase();
 document.getElementById("wl1_hwaddr").value =	document.getElementById("wl1_hwaddr").value.toString().toUpperCase();
 
-if(band5g_support == -1){
+if(!wl_info.band5g_support){
 	document.getElementById("wl_5g_mac").style.display = "none";
 	document.getElementById("wl_unit_field").style.display = "none";
 }
@@ -283,7 +283,7 @@ function showLANIPList(){
 	var show_title = "";
 	if(wds_aplist != ""){
 		for(var i = 0; i < wds_aplist.length ; i++){
-			wds_aplist[i][0] = decodeURIComponent(wds_aplist[i][0]);
+			wds_aplist[i][0] = htmlEnDeCode.htmlEncode(decodeURIComponent(wds_aplist[i][0]));
 			if(wds_aplist[i][0] && wds_aplist[i][0].length > 12)
 				show_name = wds_aplist[i][0].substring(0, 10) + "...";
 			else

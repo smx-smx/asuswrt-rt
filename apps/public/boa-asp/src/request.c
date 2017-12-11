@@ -26,6 +26,7 @@
 #include <stddef.h> /* for offsetof */
 #include <crypt.h>
 #include "tcutils.h"
+#include <shared.h>
 #if !defined(TCSUPPORT_CT) 
 #include "../../lib/libtcapi.h"
 
@@ -46,8 +47,10 @@ int flag_save = 0;
 #define SUB_NODE_NAME "Entry"
 #endif
 
-#ifdef RTCONFIG_PROTECTION_SERVER
-#include <shared.h>
+#ifdef ASUS_LOGIN_SESSION	//Andy Chiu, 2015/11/27.
+int login_err = 0;
+asus_token_t *token_head = NULL;
+login_retry_t *retry_head = NULL;
 #endif
 
 restrict_client_t restrict_client;
@@ -62,23 +65,32 @@ cgibin_exception_file_t cgibin_exception_file_list[] =
 		{"modemlog.txt"},
 };
 
+// some should be referer
+struct mime_referer mime_referers[] = {
+	{ "Main_Login.asp", NO_CHECK_REFERER},
+	{ ".png", NO_CHECK_REFERER},
+	{ ".ico", NO_CHECK_REFERER},
+	{ ".jpg", NO_CHECK_REFERER},
+	{ ".gif", NO_CHECK_REFERER},
+	{ ".css", NO_CHECK_REFERER},
+	{ "error_page.asp", NO_CHECK_REFERER},
+	{ "QIS_wizard.asp", NO_CHECK_REFERER},
+	{ "get_webdavInfo.asp", NO_CHECK_REFERER},
+	{ "appGet_image_path.asp", NO_CHECK_REFERER},
+	{ NULL, 0 }
+};
+
 #define CGIBIN_EXCEPT_FILE_LIST_SIZE sizeof(cgibin_exception_file_list)/sizeof(cgibin_exception_file_t)
 
 static int sockbufsize = SOCKETBUF_SIZE;
 
 /* function prototypes located in this file only */
 static void free_request(request ** list_head_addr, request * req);
-static inline struct passwd *getrealpass(const char *user);
+//static inline struct passwd *getrealpass(const char *user);
 
 
 static int dynamicPassUrl(char * url);
-/*
- * Name: new_request
- * Description: Obtains a request struct off the free list, or if the
- * free list is empty, allocates memory
- *
- * Return value: pointer to initialized request
- */
+
 #if  defined(TCSUPPORT_WEBSERVER_SSL)
 extern int server_ssl;		
 static request*  newest_request = NULL;
@@ -86,6 +98,15 @@ extern int ssl_pending_requests;
 extern SSL_CTX *ssl_ctx;
 #endif
 
+extern char lan_ip[64];
+
+/*
+ * Name: new_request
+ * Description: Obtains a request struct off the free list, or if the
+ * free list is empty, allocates memory
+ *
+ * Return value: pointer to initialized request
+ */
 request *new_request(void)
 {
     request *req;
@@ -361,7 +382,7 @@ static void free_request(request ** list_head_addr, request * req)
             /* errors already reported */
 //            enqueue(&request_free, req);
             close(req->fd);
-        	//tcdbg_printf("free_request: ptr=%08lx\r\n", (unsigned long)req);
+        	//dbgprintf("free_request: ptr=%08lx\r\n", (unsigned long)req);
             free(req);
             total_connections--;
             return;
@@ -395,7 +416,7 @@ static void free_request(request ** list_head_addr, request * req)
         BOA_FD_SET(conn->fd, &block_read_fdset);
 
         //enqueue(&request_free, req);
-    	//tcdbg_printf("free_request: ptr=%08lx\r\n", (unsigned long)req);
+    	//dbgprintf("free_request: ptr=%08lx\r\n", (unsigned long)req);
         free(req);
         return;
     }
@@ -443,7 +464,7 @@ static void free_request(request ** list_head_addr, request * req)
     total_connections--;
 
 //    enqueue(&request_free, req);
-	//tcdbg_printf("free_request: ptr=%08lx\r\n", (unsigned long)req);
+	//dbgprintf("free_request: ptr=%08lx\r\n", (unsigned long)req);
     free(req);
     return;
 }
@@ -524,7 +545,6 @@ void process_requests(int server_s)
             case ONE_CR:
             case ONE_LF:
             case TWO_CR:
-            		
                 retval = read_header(current);
                 break;
             case BODY_READ:
@@ -728,7 +748,7 @@ static const char *my_strpbrk (char *cs,char *ct)
 
 #define JNK 0177
 #define PAD 0100
-static void *rfc822_base64 (unsigned char *src,unsigned long srcl,unsigned long *len)
+void *rfc822_base64 (unsigned char *src,unsigned long srcl,unsigned long *len)
 {
   char c,*s,tmp[512];
   void *ret = malloc ((size_t) (*len = 4 + ((srcl * 3) / 4)));
@@ -814,13 +834,7 @@ static void *rfc822_base64 (unsigned char *src,unsigned long srcl,unsigned long 
   return ret;			/* return the string */
 }
 
-
-typedef struct param_s {
-	char	*name;
-	char	*value;
-} s_param;
-
-static void free_param(s_param **var)
+void free_param(s_param **var)
 {
 	int i;
 	#ifdef TRENDCHIP
@@ -839,7 +853,7 @@ static void free_param(s_param **var)
 	}
 	#endif
 }
-static s_param **param_line (char *line,char separate1,char separate2)
+s_param **param_line (char *line,char separate1,char separate2)
 {
     int numargs;
     char *cp, *ip, *esp, *sptr;
@@ -975,7 +989,7 @@ int check_validate(char *usr,char*pwd,request *req,char *path)
 	}
 		
 	sprintf(str,"usr=%s\npwd=%s\nuid=%s\ngid=%s\nlevel=%d\nip=%s",usr,pwdencode,req->uid,req->gid,level,req->remote_ip_addr);
-	//tcdbg_printf("usr=%s\npwd=%s\nuid=%s\ngid=%s\nlevel=%d\nremote_ip_addr=%s\n",usr,pwdencode,req->uid,req->gid,level,req->remote_ip_addr);
+	//dbgprintf("usr=%s\npwd=%s\nuid=%s\ngid=%s\nlevel=%d\nremote_ip_addr=%s\n",usr,pwdencode,req->uid,req->gid,level,req->remote_ip_addr);
 
 	fwrite(str,1,strlen(str),fd);
 	fclose(fd);
@@ -1001,7 +1015,7 @@ int check_validate(char *usr,char*pwd,request *req,char *path)
 	
 }
 		
-static inline struct passwd *getrealpass(const char *user) 
+struct passwd *getrealpass(const char *user) 
 {	
 	struct passwd *pwp;
 	pwp = getpwnam(user);
@@ -1073,7 +1087,16 @@ int AllPassUrl(char *url)
 		strstr(url, ".ico") ||
 		strstr(url, "error_page.asp") ||
 		strstr(url, "update_applist.asp")
-		//strstr(url, "index.asp")
+#ifdef ASUS_LOGIN_SESSION
+		|| strstr(url, "Main_Login.asp")
+		|| strstr(url, "login.asp")
+/* ASUS Router (AiHome) APP no need tokan */
+		|| strstr(url, "get_webdavInfo.asp")
+		|| strstr(url, "appGet_image_path.asp")
+		|| strstr(url, "upload.asp")
+		|| strstr(url, "setting_lan.asp")
+#endif
+		|| strstr(url, "index.asp")
 	)
 		return 1;	//pass
 	else
@@ -1099,6 +1122,16 @@ int passURL(char * url)
 	return -1;
 }
 
+/*******************************************************************
+* NAME: http_authorize
+* AUTHOR: 
+* CREATE DATE: 
+* DESCRIPTION: 
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:	Andy Chiu, 2015/12/11. do auth by cookie not auth field
+*******************************************************************/
 int http_authorize(request *req)
 {
 	s_param **var,**auth;
@@ -1109,7 +1142,10 @@ int http_authorize(request *req)
 	char path[256];
 	int level=-1;
 	FILE *fd;
-
+#ifdef ASUS_LOGIN_SESSION		
+	int flag = NOTOKEN; 	//0: success, 1: NOTOKEN, 2:AUTHFAIL
+	asus_token_t *token = NULL;
+#endif
 	req->session = 0; //Ren.0001: For DSL-N66U, Bug#135
 
 	//if cookie is null return
@@ -1129,11 +1165,28 @@ int http_authorize(request *req)
 	for(i = 0;var[i];i++)
 	{	
 		#ifdef BOA_DEBUG
-		fprintf (stderr,"cookie param:%s=%s\t index:%d\n", var[i]->name, var[i]->value,i);
+		dbgprintf("[%s, %d]cookie param:%s=%s\t index:%d\n", __FUNCTION__, __LINE__, var[i]->name, var[i]->value,i);
 		if(var[i+1] != NULL)
-			fprintf (stderr,"cookie param:%s=%s\t index:%d\n", var[i+1]->name, var[i+1]->value,i+1);
+			dbgprintf("[%s, %d]cookie param:%s=%s\t index:%d\n", __FUNCTION__, __LINE__, var[i+1]->name, var[i+1]->value,i+1);
 		#endif
 		
+#ifdef ASUS_LOGIN_SESSION		
+		if(!strcmp(var[i]->name, "asus_token"))
+		{
+			token = SEARCH_TOKEN_LST_BY_TOKEN(var[i]->value);
+
+			if(token && !strcmp(token->ipaddr, req->remote_ip_addr))
+			{
+				login_err = 0;
+				free_param(var);                              
+				return 0;
+			}
+			else
+			{
+				flag = AUTHFAIL;
+			}
+		}
+#else		
 		#ifdef TRENDCHIP /*add "mstnc" is for ie8.0.7601.17514 version*/
 		if(!strcmp(var[i]->name,"SESSIONID") || !strcmp(var[i]->name,"mstnc"))
 		#else
@@ -1191,25 +1244,18 @@ int http_authorize(request *req)
 				#if 0 //Disable it to avoid some user's concern. If you want to track login attack, you can enable it on beta firmware.
 					syslog(LOG_INFO, "WEB login failed![%s][%s][%s]\n", auth[0]->name, auth[0]->value, req->remote_ip_addr);
 				#else
-					syslog(LOG_INFO, "WEB login failed!\n");
+					syslog(LOG_INFO, "User [%s] from [%s] failed to log in via WEB.\n", auth[0]->name, req->remote_ip_addr);
 				#endif
 					closelog();
 #endif
 					free_param(auth);
 					free_param(var);
-#ifdef RTCONFIG_PROTECTION_SERVER
-					struct state_report web;
-					strcpy(web.ip_addr, req->remote_ip_addr);
-					web.loginType = PROTECTION_SERVICE_WEB;
-					strcpy(web.note, "From BOA, LOGIN FAIL");
-					send_socket(web);
-#endif
 					return -1;
 				}
 #ifdef TCSUPPORT_SYSLOG_ENHANCE
 				else{
 					char log[128];
-					snprintf(log, sizeof(log), "WEB user <%s> login\n", auth[0]->name);
+					snprintf(log, sizeof(log), "User [%s] logged in from [%s] via WEB\n", auth[0]->name, req->remote_ip_addr);
 					openlog("TCSysLog WEB", 0, LOG_LOCAL2);
 					syslog(LOG_INFO, log);
 					closelog();
@@ -1238,11 +1284,16 @@ int http_authorize(request *req)
 			break;
 			
 		} 		
-		
+#endif		
 	}		
 	free_param(var);
-	
+#ifdef ASUS_LOGIN_SESSION		
+	login_err = flag;
+	//dbgprintf("[%s, %d]auth failed:%d\n", __FUNCTION__, __LINE__, login_err);
+	return -1;
+#else	
 	return level;
+#endif
 }
 #endif
 
@@ -1354,7 +1405,7 @@ static int pageAccessCheck(request * req)
  */
 int uploadDownLoadUrl(request * req)
 {
-        if(0 == strcmp(req->pathname,"/boaroot/cgi-bin/tools_update.asp") 
+        if(req->pathname && (0 == strcmp(req->pathname,"/boaroot/cgi-bin/tools_update.asp") )
         )
         {
                 return 1;
@@ -1417,23 +1468,23 @@ void releaseMemory2(request *req)
 	{
 		mark = (mark & 0xf0000000) >> 28;
 	#if 1
-		tcdbg_printf("makr = %d\n", mark);
+		dbgprintf("makr = %d\n", mark);
 	#endif
 		if((SSID1_PORT_MASK == mark)||(SSID2_PORT_MASK == mark)||(SSID3_PORT_MASK == mark)||(SSID4_PORT_MASK == mark))
 		{
-			tcdbg_printf("\r\nRelease memory: WIFI upgrade!!\r\n");		
+			dbgprintf("\r\nRelease memory: WIFI upgrade!!\r\n");		
 #if !defined(TCSUPPORT_CD_NEW_GUI) 
 			system("sh /usr/script/before_web_download.sh 1");
 #endif
 		}
 		else
 		{
-			tcdbg_printf("\r\nRelease memory: Not WIFI upgrade!!\r\n");
+			dbgprintf("\r\nRelease memory: Not WIFI upgrade!!\r\n");
 
 #if defined(TCSUPPORT_WLAN_RT6856)
 			// this is for old board.
 			/* Paul comment 2013/7/3, new hardware could reset iNIC while system boot */
-			//tcdbg_printf("\r\nGoing to bring down WiFi!!\r\n");
+			//dbgprintf("\r\nGoing to bring down WiFi!!\r\n");
 			//system("ifconfig ra00_0 down");
 			//system("ifconfig ra01_0 down");
 #endif
@@ -1445,7 +1496,7 @@ void releaseMemory2(request *req)
 	}
 	else
 	{
-		tcdbg_printf("\r\nRelease memory: Unknown upgrade!!\r\n");
+		dbgprintf("\r\nRelease memory: Unknown upgrade!!\r\n");
 		system("/usr/script/before_firmware_update.sh");
 	}
 
@@ -1500,7 +1551,12 @@ int pass_login_check(char* url)
 	strstr(url , ".js") ||
 	strstr(url , ".gif") ||
 	strstr(url , ".png") ||
-	strstr(url , ".css"))
+	strstr(url , ".css") ||
+	strstr(url ,  ".jpg")
+#ifdef ASUS_LOGIN_SESSION	
+	|| (strstr(url, "Main_Login.asp") && strstr(url, "error_status=9"))
+#endif
+	)
 		return 1;
         else
 		return 0;
@@ -1645,10 +1701,138 @@ static int http_client_ip_check(request * req)
 	return 1;
 }
 
-
+#define APPGETSTR 	"appGet.cgi"
 #define APPLYAPPSTR 	"applyapp.cgi"
 #define GETAPPSTR	"getapp"
 #define GETWEBDAVINFO	"get_webdavInfo.asp"
+
+void _dump_request(request * req)
+{
+	if(req)
+	{
+		dbgprintf("[%s, %d]Start to dump.\n", __FUNCTION__, __LINE__);
+		dbgprintf("fd=%d\n", req->fd);
+		dbgprintf("status=%d\n", req->status);
+		dbgprintf("time_last=%ld\n", req->time_last);
+		if(req->pathname)
+			dbgprintf("pathname=%s\n", req->pathname);
+		dbgprintf("simple=%d\n", req->simple);
+		dbgprintf("keepalive=%d\n", req->keepalive);
+		dbgprintf("kacount=%d\n",  req->kacount);
+		dbgprintf("data_fd=%d\n",  req->data_fd);
+		dbgprintf("filesize=%ld\n",  req->filesize);
+		dbgprintf("filepos=%ld\n", req->filepos);
+		if(req->data_mem)
+			dbgprintf("data_mem=%s\n", req->data_mem);
+		dbgprintf("method=%d\n",  req->method);
+		if(req->logline)
+			dbgprintf("logline=%s\n", req->logline);
+		if(req->header_line)
+			dbgprintf("header_line=%s\n", req->header_line);
+		if(req->header_end)
+			dbgprintf("header_end=%s\n", req->header_end);
+		dbgprintf("parse_pos=%d\n", req->parse_pos);
+		dbgprintf("client_stream_pos=%d\n",  req->client_stream_pos);
+		dbgprintf("buffer_start=%d\n",  req->buffer_start);
+		dbgprintf("buffer_end=%d\n",  req->buffer_end);
+		if(req->http_version)
+			dbgprintf("http_version=%s\n", req->http_version);
+		dbgprintf("response_status=%d\n",  req->response_status);
+		if(req->if_modified_since)
+			dbgprintf("if_modified_since=%s\n", req->if_modified_since);
+		dbgprintf("last_modified=%d\n", req->last_modified);
+		dbgprintf("local_ip_addr=%s\n", req->local_ip_addr);
+		dbgprintf("remote_port=%d\n", req->remote_port);
+		dbgprintf("remote_ip_addr=%s\n", req->remote_ip_addr);
+		dbgprintf("is_cgi=%d\n", req->is_cgi);
+		dbgprintf("cgi_status=%d\n", req->cgi_status);
+		dbgprintf("cgi_env_index=%d\n", req->cgi_env_index);
+		if(req->header_user_agent)
+			dbgprintf("header_user_agent=%s\n", req->header_user_agent);
+		if(req->header_referer)
+			dbgprintf("header_referer=%s\n", req->header_referer);
+		dbgprintf("post_data_fd=%d\n", req->post_data_fd);
+		if(req->path_info)
+			dbgprintf("path_info=%s\n", req->path_info);
+		if(req->path_translated)
+			dbgprintf("path_translated=%s\n", req->path_translated);
+		if(req->script_name)
+			dbgprintf("script_name=%s\n", req->script_name);
+		if(req->query_string)
+			dbgprintf("query_string=%s\n", req->query_string);
+		if(req->content_type)
+			dbgprintf("content_type=%s\n", req->content_type);
+		if(req->content_length)
+			dbgprintf("content_length=%s\n", req->content_length);
+		dbgprintf("buffer=%s\n", req->buffer);
+		dbgprintf("request_uri=%s\n", req->request_uri);
+		dbgprintf("client_stream=%s\n", req->client_stream);
+#ifdef ACCEPT_ON
+		dbgprintf("accept=%s\n", req->accept);
+#endif
+		if(req->cookie)
+			dbgprintf("cookie=%s\n", req->cookie);
+		dbgprintf("session=%d\n", req->session);
+		if(req->authorize)
+			dbgprintf("authorize=%s\n", req->authorize);
+		dbgprintf("usr_name=%s\n", req->usr_name);
+		dbgprintf("pwd=%s\n", req->pwd);
+		dbgprintf("access_level=%s\n", req->access_level);
+		dbgprintf("uid=%s\n", req->uid);
+		dbgprintf("gid=%s\n", req->gid);
+#ifndef TRENDCHIP
+		dbgprintf("web_api_addr=%s\n", req->web_api_addr);
+		dbgprintf("val_def_addr=%s\n", req->val_def_addr);
+#endif
+	}
+}
+
+//Port referer_check() from httpd of ASUSWRT.
+static int referer_check(char* referer, int fromapp_flag)
+{
+
+	char *auth_referer=NULL;
+	char *cp1=NULL, *cp2=NULL, *location_cp=NULL, *location_cp1=NULL;
+
+	if(fromapp_flag != 0)
+	{
+		return 0;
+	}
+	if(!referer){
+		return NOREFERER;
+	}else{
+		if(strstr(referer,"\r") != (char*) 0)
+			location_cp1 = strtok(referer, "\r");
+		else
+			location_cp1 = referer;
+
+		location_cp = strstr(location_cp1,"//");
+		if(location_cp != (char*) 0){
+			cp1 = &location_cp[2];
+			if(strstr(cp1,"/") != (char*) 0){
+				cp2 = strtok(cp1, "/");
+				auth_referer = cp2;
+			}else
+				auth_referer = cp1;
+		}else
+			auth_referer = location_cp1;
+
+	}
+
+	//Compare refer with domain name and LAN IP.
+	if((strncmp(DUT_DOMAIN_NAME, auth_referer, strlen(DUT_DOMAIN_NAME))==0) ||
+		((strlen(auth_referer) == strlen(lan_ip)) && strncmp( auth_referer, lan_ip, strlen(lan_ip) ) == 0))
+	{
+		return 0;
+	}
+	else
+	{
+		return REFERERFAIL;	
+	}
+}
+
+
+
 /*
  * Name: process_header_end
  *
@@ -1659,7 +1843,6 @@ static int http_client_ip_check(request * req)
 
 int process_header_end(request * req)
 {
-		char hostUrl[64] = "";
 		char voIPBusy[] = "0";
 		char forbidden[] = "0";
 #ifdef TCSUPPORT_MODEL_NAME_CUSKIT
@@ -1668,6 +1851,16 @@ int process_header_end(request * req)
 #endif
 		char cfgFileName[128] = {0}; //Ren
 		int ret = 0;
+
+#ifdef ASUS_LOGIN_SESSION
+	char passwd[128] = {0}, def_passwd[128] = {0};
+	int  auth_result = 0;	//0:auth fail or unchecked ; 1: auth success
+	int isAteMode = 0;	//Andy Chiu, 2016/01/19.
+	asus_token_t *token;
+	login_retry_t *retry;
+	long now;
+#endif
+	struct mime_referer *doreferer;
 
 	//process for app
 	char tmpuri[MAX_HEADER_LENGTH + 1] = {0};
@@ -1678,15 +1871,48 @@ int process_header_end(request * req)
 		strcpy(tmpuri, p + strlen(GETAPPSTR));
 		strcpy(p, tmpuri);
 		fromapp=1;
-	}
-	else if(strstr(req->request_uri, APPLYAPPSTR)) {
+	} /* for ASUS Router (AiHome) APP  */
+	else if((strstr(req->request_uri, APPLYAPPSTR)) || (strstr(req->request_uri, APPGETSTR))
+		|| (strstr(req->request_uri, "appGet_image_path.cgi")) || (strstr(req->request_uri, "upload.cgi"))) {
 		//change .cgi to .asp
 		p = strstr(req->request_uri, ".cgi");
+		strncpy(p, ".asp", 4);
+		fromapp=1;
+	} /* [SET] [QIS] Change lan ip conflict */
+	else if(strstr(req->request_uri, "setting_lan.htm")) {
+		//change setting_lan.htm to setting_lan.asp
+		p = strstr(req->request_uri, ".htm");
 		strncpy(p, ".asp", 4);
 		fromapp=1;
 	}
 	else if(strstr(req->request_uri, GETWEBDAVINFO)) {
 		fromapp=1;
+	}
+#ifdef ASUS_LOGIN_SESSION	
+	//Andy Chiu, 2016/01/05. Check APP
+	else if(check_client_type(req->header_user_agent) != CLI_TYPE_BROWSER)
+	{
+			fromapp = 1;		
+	}
+#endif
+
+	if(fromapp)
+	{
+		dbgprintf("[%s, %d]client is from APP\n", __FUNCTION__, __LINE__);
+	}
+
+	//Check refer
+	for(doreferer = &mime_referers[0]; doreferer->pattern; doreferer++)
+	{
+		if(strstr(req->request_uri, doreferer->pattern) && doreferer->flag != NO_CHECK_REFERER)
+		{
+			ret = referer_check(req->header_referer, fromapp);
+			if(ret)
+			{
+				send_r_login_page(req, ret, NULL, 0);
+				return 0;
+			}
+		}
 	}
 
 	/* Check if request come from allowed client list */
@@ -1695,7 +1921,31 @@ int process_header_end(request * req)
 		send_r_forbidden(req);
 		return 0;
 	}
-#ifdef RTCONFIG_PROTECTION_SERVER		
+
+#ifdef ASUS_LOGIN_SESSION
+	//check web lock.
+	retry = search_retry_list(req->remote_ip_addr);
+	if(retry && retry->is_lock)
+	{
+		//check time
+		now = uptime();
+		if((now - retry->last_login_timestamp) > 60)
+		{
+			//unlock web
+			retry->is_lock = 0;
+		}
+		else
+		{
+			//lock web
+			if(!strstr(req->request_uri, "Main_Login.asp?error_status=7") && !pass_login_check(req->request_uri))
+			{
+				send_r_login_page(req, LOGINLOCK, NULL, 0);
+				return 0;
+			}
+		}
+	}
+
+#elif defined(RTCONFIG_PROTECTION_SERVER)
 		/* Carlos 2015/11/10, if keep login fail, block login page */
 		char en_web_pt[4];
 		ret = tcapi_get("Vram_Entry", "enable_web_protection", en_web_pt);
@@ -1704,6 +1954,84 @@ int process_header_end(request * req)
 			return 0;
 		}
 #endif
+
+
+#ifdef ASUS_LOGIN_SESSION	//Andy Chiu, 2015/12/14.
+
+	token = SEARCH_TOKEN_LST_BY_CLITYPE(CLI_TYPE_BROWSER);
+
+	char tmp[256] = {0};
+	//Andy Chiu, 2016/01/19.
+	FILE	*fp = fopen("/tmp/IsATEMode", "r");
+	if(fp)
+	{
+		fgets(tmp, sizeof(tmp), fp);
+		fclose(fp);
+		if( strncmp(tmp, "1", 1) == 0 )
+		{
+			isAteMode = 1;
+		}
+		memset(tmp, 0, sizeof(tmp));
+	}
+
+	//check default and remove /cgi-bin/ in the uri
+	int x_Setting = 0;	
+	tcapi_get("SysInfo_Entry", "x_Setting", tmp);
+	x_Setting = atoi(tmp);
+	if(!fromapp && !x_Setting)
+	{
+		if(-1 == http_authorize(req))
+		{
+			if(!strncmp(req->request_uri, "/cgi-bin", strlen("/cgi-bin")))		
+			{
+				send_r_redirect_page(req, 0);
+				return 0;
+			}
+			else if(!strncmp(req->request_uri, "/QIS_", 5))
+			{
+				send_r_redirect_page(req, 1);
+				return 0;
+			}
+		}		
+		else
+			auth_result = 1;
+	}
+
+	//check url, if it's /cgi-bin/Main_Login.asp, redirect to /Main_Login.asp
+	if(!fromapp && strstr(req->request_uri, "/cgi-bin/Main_Login.asp") )
+	{
+		//_dump_request(req);
+		send_r_login_page(req, 0, NULL, 0);
+		return 0;
+	}
+
+	//convert login.cgi to login.asp
+	if(p = strstr(req->request_uri, "login.cgi"))
+	{
+		//_dump_request(req);
+		strcpy(p, "login.asp");
+	}
+	
+	//check current login ip	
+	if(!fromapp && token)
+	{
+		if(strcmp(token->ipaddr, req->remote_ip_addr))
+	{
+		if(!pass_login_check(req->request_uri)) {	//all can access, not only the login one
+				long now = uptime();
+
+				if((now - token->login_timestamp) < 60)
+			{
+				//_dump_request(req);
+				send_r_login_page(req, NOLOGIN, NULL, 0);
+				return 0;
+			}
+		}
+		}
+		else
+			token->login_timestamp = uptime();
+	}
+#else
 		/* Paul add start 2013/1/3, only allow single user to be logged in, and unlock if not accessed again in 60 seconds. */
 		char *uptime = file2str("/proc/uptime");
 		char cur_temp_ip[32];
@@ -1747,12 +2075,13 @@ int process_header_end(request * req)
 		}
 		free(uptime);
 		/* Paul add end */
+#endif
 
-	   int VoIPBusyFlag = 0; /* for ForbiddenWeb in VoIP */
-        if (!req->logline) {
-                send_r_error(req);
-                return 0;
-        }
+	int VoIPBusyFlag = 0; /* for ForbiddenWeb in VoIP */
+	if (!req->logline) {
+		send_r_error(req);
+		return 0;
+	}
 
 	//redirect the requests with incorrect path.
 	//process before unescape_uri, or query_string will miss. Sam 2013/7/3
@@ -1765,68 +2094,73 @@ int process_header_end(request * req)
 		}
 	}
 
-        /* Percent-decode request */
-        if (unescape_uri(req->request_uri, &(req->query_string)) == 0) {
-                log_error_doc(req);
-                fputs("Problem unescaping uri\n", stderr);
-                send_r_bad_request(req);
-                return 0;
-        }
+	/* Percent-decode request */
+	if (unescape_uri(req->request_uri, &(req->query_string)) == 0) {
+		log_error_doc(req);
+		fputs("Problem unescaping uri\n", stderr);
+		send_r_bad_request(req);
+		return 0;
+	}
 
-        /* clean pathname */
-        clean_pathname(req->request_uri);
-        
-        if (req->request_uri[0] != '/') {
-                send_r_bad_request(req);
-                return 0;
-        }
-		
-	
-        if (translate_uri(req) == 0) { /* unescape, parse uri */
-                SQUASH_KA(req);
-                return 0;               /* failure, close down */
-        }
-        
-         /* get method function */
-        if(req->method == M_GET)
-        {
-        	//Ren.B
-        	if( strstr(req->request_uri, "Settings_") )
-        	{
-        	sprintf(strNodeName,"%s_%s",SYS_INFO_NODE_NAME,SUB_NODE_NAME);
-		ret = tcapi_get(strNodeName, SYS_INFO_PRODUCT_NAME, productName);
-		if(ret < 0)
+	/* clean pathname */
+	clean_pathname(req->request_uri);
+
+	if (req->request_uri[0] != '/') {
+		send_r_bad_request(req);
+		return 0;
+	}
+
+	if (translate_uri(req) == 0) { /* unescape, parse uri */
+		SQUASH_KA(req);
+		return 0;               /* failure, close down */
+	}
+
+
+	/* get method function */
+	if(req->method == M_GET)
+	{
+		//Ren.B
+		/*for ASUS Router (AiHome) APP: DUT_RT_Config_Download*/
+		if( strstr(req->request_uri, "Settings_") || (strstr(req->request_uri, ".CFG") && fromapp) )
 		{
-			fputs("[request.c][process_header_end()]Cannot get product name!\n", stderr);
-		}
-		else {
-			sprintf(cfgFileName, "Settings_%s.cfg", productName ); //cfgFileName will like as "Settings_DSL-N66U.cfg"
-			if( strstr(req->request_uri, cfgFileName) )
+			sprintf(strNodeName,"%s_%s",SYS_INFO_NODE_NAME,SUB_NODE_NAME);
+			ret = tcapi_get(strNodeName, SYS_INFO_PRODUCT_NAME, productName);
+			if(ret < 0)
 			{
-				handleRomfile(productName);
+				fputs("[request.c][process_header_end()]Cannot get product name!\n", stderr);
+			}
+			else {
+				sprintf(cfgFileName, "Settings_%s.cfg", productName ); //cfgFileName will like as "Settings_DSL-N66U.cfg"
+				if( strstr(req->request_uri, cfgFileName) || (strstr(req->request_uri, ".CFG") && fromapp) )
+				{
+					handleRomfile(productName);
+				}
 			}
 		}
-        	}
 		//Ren.E
-			
-                /* user login need add below this line */
-                /* -------------------------------------------- */
+		/* user login need add below this line */
+		/* -------------------------------------------- */
 #if !defined(TCSUPPORT_SELF_LOGIN_WINDOW) 
 #if !defined(TCSUPPORT_CD_NEW_GUI) 
-                 /* main trunk authorize function */
-                //lee 2006-4-11:authorize
-                if ( (0 != passURL(req->request_uri)) && (-1 == http_authorize(req)) )
-                {
-                        #ifdef BOA_DEBUG
-                        fprintf(stderr,"send_r_unauthorized\n");
-                        #endif
+		/* main trunk authorize function */
+		//lee 2006-4-11:authorize
+		//dbgprintf("[%s, %d]uri(%s) auth_result(%d)\n", __FUNCTION__, __LINE__, req->request_uri, auth_result);
+		if ( (0 != passURL(req->request_uri)) && (1 != auth_result && -1 == http_authorize(req)) )
+		{
+			#ifdef BOA_DEBUG
+			fprintf(stderr,"send_r_unauthorized\n");
+			#endif
+#ifdef ASUS_LOGIN_SESSION	//Andy Chiu, 2015/11/27.
+			//redirect to Main_Login.asp
+			send_r_login_page(req, login_err, req->request_uri, 0);
+#else						
 #ifdef TCSUPPORT_MODEL_NAME_CUSKIT
-                       	sprintf(strNodeName,"%s_%s",SYS_INFO_NODE_NAME,SUB_NODE_NAME);
+			sprintf(strNodeName,"%s_%s",SYS_INFO_NODE_NAME,SUB_NODE_NAME);
 			ret = tcapi_get(strNodeName, SYS_INFO_PRODUCT_NAME, productName);
 			replace_seconddash(productName);
 			if(ret < 0)
 			{
-			       	send_r_unauthorized(req,"Member Login");
+				send_r_unauthorized(req,"Member Login");
 			}
 			else {
 				send_r_unauthorized(req,productName);
@@ -1834,10 +2168,25 @@ int process_header_end(request * req)
 #else
 			send_r_unauthorized(req,"Member Login");
 #endif
-                        return 0;
-                }
+#endif
+			//dbgprintf("[%s, %d] fail in passURL(), return 0\n", __FUNCTION__, __LINE__);
+			return 0;
+		}
 #endif
 #endif
+#ifdef ASUS_LOGIN_SESSION
+		//check there is another one login.
+		int other_login = 0;
+		
+		if(token && strcmp(token->ipaddr, req->remote_ip_addr))
+			other_login =1;
+	
+		if(!pass_login_check(req->request_uri) && !fromapp && !other_login && !strstr(req->request_uri, "Main_Login.asp"))
+		{
+			if(token && !strcmp(token->ipaddr, req->remote_ip_addr))
+				token->login_timestamp = uptime();			
+		}
+#else
 		if(!pass_login_check(req->request_uri) && !fromapp) {	//all can access, not only the login one
 			// Sam, 2013/1/15, update time, ip, ...etc. after authrization.
 			tcapi_set("WebCurSet_Entry", "login_ip_tmp", req->remote_ip_addr);
@@ -1846,21 +2195,114 @@ int process_header_end(request * req)
 				tcapi_set("WebCurSet_Entry", "login_uptime", uptime);
 			free(uptime);
 		}
-        }
+#endif
+		
+#ifdef ASUS_LOGIN_SESSION
+		//Andy Chiu, 2015/12/29.
+		//check default password
+		tcapi_get("Account_Entry0", "web_passwd", passwd);
+		tcapi_get("Account_Entry0", "default_passwd", def_passwd);
+		if(!pass_login_check(req->request_uri) && !fromapp && !other_login && !isAteMode
+			&& !strstr(req->request_uri, "Main_Login.asp") && !strcmp(passwd, def_passwd) 
+			&& !strstr(req->request_uri, "Main_Password.asp") && !strstr(req->request_uri, "Logout.asp")
+			&& !strstr(req->request_uri, "QIS") && !strstr(req->request_uri, "index.asp") 
+			&& !strstr(req->request_uri, "login.asp") && !strstr(req->request_uri, "facmode.asp") 
+			&& !strstr(req->request_uri, "factelnet.asp"))
+		{
+			send_r_password_page(req, req->request_uri);
+			//dbgprintf("[%s, %d] fail in pass_login_check(), return 0\n", __FUNCTION__, __LINE__);
+			return 0;
+		}
+#endif
+	}
 
 #ifndef PURE_BRIDGE
 #if !defined(TCSUPPORT_SELF_LOGIN_WINDOW) 
-        if(0 != pageAccessCheck(req))
+    if(0 != pageAccessCheck(req))
 #endif
-        {
-                send_r_forbidden(req);
-                // the page is blocked
-                return 0;
-        }
+    {
+            send_r_forbidden(req);		
+            // the page is blocked
+            return 0;
+    }
 #endif
 
-         /* post method function */
-        if (req->method == M_POST) {
+     /* post method function */
+    if (req->method == M_POST) {
+
+#if !defined(TCSUPPORT_SELF_LOGIN_WINDOW) 
+#if !defined(TCSUPPORT_CD_NEW_GUI) 
+		/* main trunk authorize function */
+		//lee 2006-4-11:authorize
+		if ( (0 != passURL(req->request_uri)) && (1 != auth_result && -1 == http_authorize(req)) )
+		{
+
+			#ifdef BOA_DEBUG
+			fprintf(stderr,"send_r_unauthorized\n");
+			#endif
+#ifdef ASUS_LOGIN_SESSION	//Andy Chiu, 2015/11/27.
+			//redirect to Main_Login.asp
+			send_r_login_page(req, login_err, NULL, 0);
+#else						
+#ifdef TCSUPPORT_MODEL_NAME_CUSKIT
+			sprintf(strNodeName,"%s_%s",SYS_INFO_NODE_NAME,SUB_NODE_NAME);
+			ret = tcapi_get(strNodeName, SYS_INFO_PRODUCT_NAME, productName);
+			replace_seconddash(productName);
+			if(ret < 0)
+			{
+				send_r_unauthorized(req,"Member Login");
+			}
+			else {
+				send_r_unauthorized(req,productName);
+			}
+#else
+			send_r_unauthorized(req,"Member Login");
+#endif
+#endif
+			//dbgprintf("[%s, %d] fail in passURL(), return 0\n", __FUNCTION__, __LINE__);
+			return 0;
+		}
+#endif
+#endif
+#ifdef ASUS_LOGIN_SESSION
+		//check there is another one login.
+		int other_login = 0;
+		
+		if(token && strcmp(token->ipaddr, req->remote_ip_addr))
+			other_login =1;
+	
+		if(!pass_login_check(req->request_uri) && !fromapp && !other_login && !strstr(req->request_uri, "Main_Login.asp"))
+		{
+			if(token && !strcmp(token->ipaddr, req->remote_ip_addr))
+				token->login_timestamp = uptime();			
+		}
+#else
+		if(!pass_login_check(req->request_uri) && !fromapp) {	//all can access, not only the login one
+			// Sam, 2013/1/15, update time, ip, ...etc. after authrization.
+			tcapi_set("WebCurSet_Entry", "login_ip_tmp", req->remote_ip_addr);
+			uptime = file2str("/proc/uptime");
+			if(uptime)
+				tcapi_set("WebCurSet_Entry", "login_uptime", uptime);
+			free(uptime);
+		}
+#endif
+		
+#ifdef ASUS_LOGIN_SESSION
+		//Andy Chiu, 2015/12/29.
+		//check default password
+		tcapi_get("Account_Entry0", "web_passwd", passwd);
+		tcapi_get("Account_Entry0", "default_passwd", def_passwd);
+		if(!pass_login_check(req->request_uri) && !fromapp && !other_login && !isAteMode
+			&& !strstr(req->request_uri, "Main_Login.asp") && !strcmp(passwd, def_passwd) 
+			&& !strstr(req->request_uri, "Main_Password.asp") && !strstr(req->request_uri, "Logout.asp")
+			&& !strstr(req->request_uri, "QIS") && !strstr(req->request_uri, "index.asp") 
+			&& !strstr(req->request_uri, "login.asp") && !strstr(req->request_uri, "facmode.asp") 
+			&& !strstr(req->request_uri, "factelnet.asp"))
+		{
+			send_r_password_page(req, req->request_uri);
+			return 0;
+		}
+#endif
 #ifdef TRENDCHIP
 /*20110217 PTChen add for Forbidden Web functionality of VoIP */
 /*if it match ForbiddenWeb & VoIPBusy all equal to 1, represent VoIP system is busy now. return a new web page to inform user VoIP is busy, and pass through following work*/
@@ -1875,34 +2317,35 @@ int process_header_end(request * req)
 
 
 
-                // when upload the file to cpe
-                if((1 == uploadDownLoadUrl(req)) && (VoIPBusyFlag != 1))
-                {
+		// when upload the file to cpe
+		if((1 == uploadDownLoadUrl(req)) && (VoIPBusyFlag != 1))
+		{
 #ifdef PURE_BRIDGE
-                        releaseMemory();
+			releaseMemory();
 #else
 #ifdef TCSUPPORT_FW_UPGRADE_16M
 #if 0
 #if !defined(TCSUPPORT_CD_NEW_GUI)
-			releaseMemory2();
+		releaseMemory2();
 #endif
 #endif
 			releaseMemory2(req);
 #endif
 #endif
 #ifdef WITHVOIP
-                        savingFileForVoipRestart();
+			savingFileForVoipRestart();
 #endif
-                }               
+		}
 #endif       
 		req->post_data_fd = create_temporary_file(1, NULL, 0);
         if (req->post_data_fd == 0)
+        {
             return(0);
+        }
         return(1); /* success */
     }
 
     if (req->is_cgi) {
-    	
         return init_cgi(req);
     }
 

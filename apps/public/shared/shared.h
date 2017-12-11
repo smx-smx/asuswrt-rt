@@ -45,6 +45,8 @@
 #define	DEV_GPIO(arg)	"/dev/gpio/"#arg
 #endif
 
+#define DUT_DOMAIN_NAME "router.asus.com"
+
 //version.c
 extern const char *rt_version;
 extern const char *rt_serialno;
@@ -92,6 +94,9 @@ enum {
 
 #define GIF_LINKLOCAL  0x0001  /* return link-local addr */
 #define GIF_PREFIXLEN  0x0002  /* return addr & prefix */
+
+#define EXTEND_AIHOME_API_LEVEL		6
+#define EXTEND_HTTPD_AIHOME_VER		0
 
 enum {
 	ACT_IDLE,
@@ -692,26 +697,28 @@ extern void set_wan_phy(char *phy);
 extern void add_wan_phy(char *phy);
 
 #ifdef RTCONFIG_PROTECTION_SERVER
-#define LOCAL_SOCKET_PORT 1478
+#define PROTECTION_SERVER_SOCKET_PATH     "/etc/protection_server_socket"
 
-enum {
+typedef enum {
 	PROTECTION_SERVICE_NONE=0,
 	PROTECTION_SERVICE_WEB,
 	PROTECTION_SERVICE_SSH,
 	PROTECTION_SERVICE_TELNET,
 	PROTECTION_SERVICE_SMB
-};
+}PROTEC_TYPE_T;
 
-struct state_report
+typedef struct _state_report__t_
 {
-        char ip_addr[64];	//Access fail address
-	int  loginType;		//login service type, refer _ServerType
-        int  frequency;		//login retry fail time
-        long int now;		//login fail timestamp
-        char note[256];		//some info
-};
+	int        loginType;         /* login service type */
+	char       ip_addr[64];       /* record fail address */
+	char       note[256];         /* Info */
 
-int send_socket(struct state_report report);
+/* Control by Protection Server */
+	int        frequency;         /* login retry fail time */
+	long int   now;               /* login fail timestamp */
+} STATE_REPORT_T;
+
+int send_protect_event(STATE_REPORT_T report);
 #endif
 
 /* semaphore.c */

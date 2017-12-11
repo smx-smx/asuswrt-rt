@@ -38,6 +38,7 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_manual_setting.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist","dsltmp_cfg_iptv_pvclist")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_enable","dsltmp_cfg_iptv_enable")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_ispname","dsltmp_cfg_ispname")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_ispservice","dsltmp_cfg_ispservice")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_country","dsltmp_cfg_country")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_transfer_mode","dsltmp_transfer_mode")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_wanTypeOption","dsltmp_wanTypeOption")
@@ -57,14 +58,10 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_PTM_manual_setting.asp" 
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist","dsltmp_cfg_iptv_pvclist")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_enable","dsltmp_cfg_iptv_enable")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_ispname","dsltmp_cfg_ispname")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_ispservice","dsltmp_cfg_ispservice")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_country","dsltmp_cfg_country")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_transfer_mode","dsltmp_transfer_mode")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_wanTypeOption","dsltmp_wanTypeOption")
-	tcWebApi_set("GUITemp_Entry0","dsltmp_set_ginp","dsltmp_set_ginp")
-	tcWebApi_set("Vram_Entry","dsltmp_qis_set_ginp","dsltmp_set_ginp")
-	if Request_Form("dsltmp_set_ginp") = "1" Then
-		tcWebApi_set("Adsl_Entry","dslx_ginp","dsltmp_cfg_ginp")
-	end if
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_th3bb","dsltmp_cfg_th3bb")
 	if Request_Form("dsltmp_cfg_th3bb") = "1" Then
 		tcWebApi_set("Adsl_Entry","MODULATIONTYPE","dsltmp_cfg_modulation")
@@ -100,7 +97,10 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ppp_cfg.asp" Then
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ppp_cfg_tmp.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_pppoe_username","dsltmp_cfg_pppoe_username")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_pppoe_passwd","dsltmp_cfg_pppoe_passwd")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_hwaddr","dsltmp_cfg_hwaddr")
 	tcWebApi_set("GUITemp_Entry0","with_wan_setting","with_wan_setting")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_username","dsltmp_cfg_iptv_username")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_iptv_passwd","dsltmp_cfg_iptv_passwd")
 	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_mer_cfg.asp" Then
@@ -227,7 +227,7 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_finish.asp" Then
 				end if
 			end if
 
-			tcWebApi_set("Wan_PVC","DHCP_clientid","dsltmp_dhcp_clientid")
+			tcWebApi_set("Wan_PVC","dhcp_clientid","dsltmp_dhcp_clientid")
 			tcWebApi_set("Wan_PVC","BridgeInterface","value_no")
 
 			if tcWebApi_get("GUITemp_Entry0","dsltmp_cfg_dnsenable","h") = "0" then
@@ -340,6 +340,7 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_finish.asp" Then
 
 			tcWebApi_set("Wan_PVC","USERNAME","dsltmp_cfg_pppoe_username")
 			tcWebApi_set("Wan_PVC","PASSWORD","dsltmp_cfg_pppoe_passwd")
+			tcWebApi_set("Wan_PVC","WAN_MAC", "dsltmp_cfg_hwaddr")
 			tcWebApi_set("Wan_PVC", "AUTHEN", "PPPAuthen")
 			if tcWebApi_get("SysInfo_Entry", "Customer", "h") = "POL" then
 				tcWebApi_set("Wan_PVC","CONNECTION","wan_ConnectSelect_POL")

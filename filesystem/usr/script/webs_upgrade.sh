@@ -7,15 +7,23 @@
 
 #openssl support rsa check
 rsa_enabled=`/userfs/bin/tcapi get SysInfo_Entry rc_support | grep HTTPS`
-echo "---- rsa_enabled= $rsa_enabled  ----" > /tmp/webs_upgrade.log
+echo "---- rsa_enabled= $rsa_enabled  ----" >> /tmp/webs_upgrade.log
 
 forsq=`/userfs/bin/tcapi get Apps_Entry apps_sq`
 url_path=`/userfs/bin/tcapi get WebCustom_Entry webs_state_url`
-model=`/userfs/bin/tcapi get SysInfo_Entry ProductName`
-firmware_file=`/userfs/bin/tcapi get SysInfo_Entry ProductName`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info`.zip
+firmware_path=`/userfs/bin/tcapi get Misc_Entry firmware_path`
+if [ "$firmware_path" = "1" ]; then
+	firmware_file=`/userfs/bin/tcapi get SysInfo_Entry ProductName`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info_beta`.zip
+else
+	firmware_file=`/userfs/bin/tcapi get SysInfo_Entry ProductName`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info`.zip
+fi
 
 if [ "$rsa_enabled" != "" ]; then
-firmware_rsasign=`/userfs/bin/tcapi get SysInfo_Entry ProductName`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info`_rsa.zip
+	if [ "$firmware_path" = "1" ]; then
+		firmware_rsasign=`/userfs/bin/tcapi get SysInfo_Entry ProductName`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info_beta`_rsa.zip
+	else
+		firmware_rsasign=`/userfs/bin/tcapi get SysInfo_Entry ProductName`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info`_rsa.zip
+	fi		
 fi
 
 touch /tmp/update_url
@@ -27,25 +35,25 @@ update_url=`cat /tmp/update_url`
 # get firmware information
 echo 3 > /proc/sys/vm/drop_caches
 if [ "$update_url" != "" ]; then
-	echo "---- update_url exist upgrade HTTPS----" > /tmp/webs_upgrade.log
+	echo "---- update_url exist upgrade HTTPS----" >> /tmp/webs_upgrade.log
        	wget -q --no-check-certificate ${update_url}/$firmware_file -O /var/tmp/tclinux.bin
 	if [ "$rsa_enabled" != "" ]; then
 		wget -q --no-check-certificate ${update_url}/$firmware_rsasign -O /var/tmp/rsasign.bin
 	fi
 elif [ "$forsq" = "1" ]; then
-	echo "---- sq path upgrade HTTPS----" > /tmp/webs_upgrade.log
+	echo "---- sq path upgrade HTTPS----" >> /tmp/webs_upgrade.log
        	wget -q --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$firmware_file -O /var/tmp/tclinux.bin
 	if [ "$rsa_enabled" != "" ]; then
 		wget -q --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$firmware_rsasign -O /var/tmp/rsasign.bin
 	fi
 elif [ "$url_path" = "" ]; then
-	echo "---- Official path upgrade HTTPS----" > /tmp/webs_upgrade.log
+	echo "---- Official path upgrade HTTPS----" >> /tmp/webs_upgrade.log
 	wget -q --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$firmware_file -O /var/tmp/tclinux.bin
 	if [ "$rsa_enabled" != "" ]; then
 		wget -q --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$firmware_rsasign -O /var/tmp/rsasign.bin
 	fi
 else
-	echo "---- External URL path upgrade HTTPS----" > /tmp/webs_upgrade.log
+	echo "---- External URL path upgrade HTTPS----" >> /tmp/webs_upgrade.log
 	wget -q --no-check-certificate $url_path/$firmware_file -O /var/tmp/tclinux.bin
 	if [ "$rsa_enabled" != "" ]; then
 		wget -q --no-check-certificate $url_path/$firmware_rsasign -O /var/tmp/rsasign.bin

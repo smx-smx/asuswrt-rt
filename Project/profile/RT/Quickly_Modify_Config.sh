@@ -15,6 +15,7 @@ DSL_N55U_C1_CONFIG="./dsl-n55u-c1/kernel.config"
 DSL_N55U_D1_CONFIG="./dsl-n55u-d1/kernel.config"
 DSL_N66U_CONFIG="./dsl-n66u/kernel.config"
 DSL_AC52U_CONFIG="./dsl-ac52u/kernel_36.config"
+DSL_AC55U_CONFIG="./dsl-ac55u/kernel_36.config"
 DSL_AC56U_CONFIG="./dsl-ac56u/kernel_36.config"
 #DSL_N10_C1_POL_CONFIG="./dsl-n10-c1_pol/kernel.config"
 #DSL_N10_C1_DODO_CONFIG="dsl-n10-c1_dodo/kernel.config"
@@ -39,6 +40,7 @@ DSL_N55U_C1_NEW_CONFIG="./dsl-n55u-c1/new.config"
 DSL_N55U_D1_NEW_CONFIG="./dsl-n55u-d1/new.config"
 DSL_N66U_NEW_CONFIG="./dsl-n66u/new.config"
 DSL_AC52U_NEW_CONFIG="./dsl-ac52u/new.config"
+DSL_AC55U_NEW_CONFIG="./dsl-ac55u/new.config"
 DSL_AC56U_NEW_CONFIG="./dsl-ac56u/new.config"
 #DSL_N10_C1_POL_NEW_CONFIG="./dsl-n10-c1_pol/new.config"
 #DSL_N10_C1_DODO_NEW_CONFIG="dsl-n10-c1_dodo/new.config"
@@ -63,6 +65,7 @@ DSL_N55U_C1_PROFILE="./dsl-n55u-c1/dsl-n55u-c1.profile"
 DSL_N55U_D1_PROFILE="./dsl-n55u-d1/dsl-n55u-d1.profile"
 DSL_N66U_PROFILE="./dsl-n66u/dsl-n66u.profile"
 DSL_AC52U_PROFILE="./dsl-ac52u/dsl-ac52u_2_6_36.profile"
+DSL_AC55U_PROFILE="./dsl-ac55u/dsl-ac55u_2_6_36.profile"
 DSL_AC56U_PROFILE="./dsl-ac56u/dsl-ac56u_2_6_36.profile"
 #DSL_N10_C1_POL_PROFILE="./dsl-n10-c1_pol/dsl-n10-c1_pol.profile"
 #DSL_N10_C1_DODO_PROFILE="dsl-n10-c1_dodo/dsl-n10-c1_dodo.profile"
@@ -87,6 +90,7 @@ DSL_N55U_C1_NEW_PROFILE="./dsl-n55u-c1/new.profile"
 DSL_N55U_D1_NEW_PROFILE="./dsl-n55u-d1/new.profile"
 DSL_N66U_NEW_PROFILE="./dsl-n66u/new.profile"
 DSL_AC52U_NEW_PROFILE="./dsl-ac52u/new.profile"
+DSL_AC55U_NEW_PROFILE="./dsl-ac55u/new.profile"
 DSL_AC56U_NEW_PROFILE="./dsl-ac56u/new.profile"
 #DSL_N10_C1_POL_NEW_PROFILE="./dsl-n10-c1_pol/new.profile"
 #DSL_N10_C1_DODO_NEW_PROFILE="dsl-n10-c1_dodo/new.profile"
@@ -98,20 +102,29 @@ DSL_AC56U_NEW_PROFILE="./dsl-ac56u/new.profile"
 
 MODULE_LIST="./module_list.conf"
 
-#example
-#./Modify_Kernel_Config.sh "# CONFIG_NETFILTER_XT_MATCH_PKTTYPE is not set" "CONFIG_NETFILTER_XT_MATCH_PKTTYPE=y"
+usage()
+{
+	echo "Usage: $0 [0:kernel|1:profile] [0:Disable|1:Enable] "CONFIG""
+	echo "Example:"
+	echo "         $0 "\"0\"" "\"1\"" "\"CONFIG_NETFILTER_XT_MATCH_PKTTYPE\"""
+	echo ""
+}
 
 if [ $# != 3 ]; then
-	echo "Usage: $0 [0:kernel|1:profile] "CONFIG" "NEW_CONFIG""
+	usage
 	exit;
 else
 	if [ $1 != 0 ] && [ $1 != 1 ]; then
-		echo "Usage: $0 [0:kernel|1:profile] "CONFIG" "NEW_CONFIG""
+		usage
+		exit;
+	fi
+	if [ $2 != 0 ] && [ $2 != 1 ]; then
+		usage
 		exit;
 	fi
 	TYPE=$1
-	UNSET_CONFIG="$2"
-	SET_CONFIG="$3"
+	ENABLE="$2"
+	ENTER_CONFIG="$3"
 fi
 
 rm ./report
@@ -129,7 +142,15 @@ for ((index=0; index<${#MODULE_DATA[@]}; index++)); do
 	fi
 	#echo ${CONFIG}
 	#echo ${NEW_CONFIG}
-	cat $CONFIG | sed s/"${UNSET_CONFIG}"/"${SET_CONFIG}/" > $NEW_CONFIG
+	SET_CONFIG=${ENTER_CONFIG}"=y"
+	UNSET_CONFIG="# "${ENTER_CONFIG}" is not set"
+	#echo ${SET_CONFIG}
+	#echo ${UNSET_CONFIG}
+	if [ $ENABLE == 1 ]; then
+		cat $CONFIG | sed s/"${UNSET_CONFIG}"/"${SET_CONFIG}/" > $NEW_CONFIG
+	elif [ $ENABLE == 0 ]; then
+		cat $CONFIG | sed s/"${SET_CONFIG}"/"${UNSET_CONFIG}/" > $NEW_CONFIG
+	fi
 	echo "######${MODULE_DATA[$index]}######" >> ./report
 	diff $NEW_CONFIG $CONFIG >> ./report
 	mv $NEW_CONFIG $CONFIG

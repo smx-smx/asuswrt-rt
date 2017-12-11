@@ -25,3 +25,6 @@ ethphxcmd gsww2 1 7a18 33
 ethphxcmd gsww2 1 7a20 33
 ethphxcmd gsww2 1 7a28 33
 ethphxcmd gsww2 1 7a30 33
+
+#share QDMA IRQ to CPU 0 & 2
+echo 5 > /proc/irq/23/smp_affinity

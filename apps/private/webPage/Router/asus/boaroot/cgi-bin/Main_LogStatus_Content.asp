@@ -34,11 +34,10 @@ function showclock(){
 
 	var uptimeStr_new = document.getElementById('time1').value;
 
-	$("system_time").value = JS_timeObj2;
+	document.getElementById("system_time").value = JS_timeObj2;
 
 	setTimeout("showclock()", 1000);
-	//if(navigator.appName.indexOf("Microsoft") >= 0)
-	//document.getElementById("textarea").style.width = "99%";
+	corrected_timezone(DAYLIGHT_orig, TZ_orig);	
 }
 
 function showbootTime(){
@@ -46,10 +45,10 @@ function showbootTime(){
 	Hours = Math.floor((boottime / 3600) % 24);
 	Minutes = Math.floor(boottime % 3600 / 60);
 	Seconds = Math.floor(boottime % 60);
-	$("boot_days").innerHTML = Days;
-	$("boot_hours").innerHTML = Hours;
-	$("boot_minutes").innerHTML = Minutes;
-	$("boot_seconds").innerHTML = Seconds;
+	document.getElementById("boot_days").innerHTML = Days;
+	document.getElementById("boot_hours").innerHTML = Hours;
+	document.getElementById("boot_minutes").innerHTML = Minutes;
+	document.getElementById("boot_seconds").innerHTML = Seconds;
 	boottime += 1;
 	setTimeout("showbootTime()", 1000);
 }
@@ -108,6 +107,7 @@ function clearLog(){
 								<th width="20%"><%tcWebApi_get("String_Entry","General_x_SystemTime_in","s")%></th>
 <td>
 <input type="text" id="system_time" name="system_time" size="40" class="devicepin" value="" readonly="1" style="font-size:12px;">
+<div><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;display:none;"></span></div>
 </form>
 </td>
 </tr>

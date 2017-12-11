@@ -22,6 +22,7 @@
 #include "wanduck.h"
 #include "libtcapi.h"
 #include "tcutils.h"
+#include <shared.h>
 
 #define NO_DETECT_INTERNET
 
@@ -589,7 +590,6 @@ int chk_proto(int wan_unit, int wan_state){
 	// Start chk_proto() in SW_MODE_ROUTER.
 #ifdef RTCONFIG_USB_MODEM
 	if (dualwan_unit__usbif(wan_unit)) {
-
 		if(wan_state == WAN_STATE_INITIALIZING){
 			disconn_case[wan_unit] = CASE_PPPFAIL;
 			return DISCONN;
@@ -607,7 +607,10 @@ int chk_proto(int wan_unit, int wan_state){
 			return DISCONN;
 		}
 		else if(wan_state == WAN_STATE_STOPPED){
-			disconn_case[wan_unit] = CASE_PPPFAIL;
+			if(wan_sbstate == WAN_STOPPED_REASON_INVALID_IPADDR)
+				disconn_case[wan_unit] = CASE_THESAMESUBNET;
+			else
+				disconn_case[wan_unit] = CASE_PPPFAIL;
 			return DISCONN;
 		}
 	}
@@ -908,6 +911,8 @@ void handle_wan_line(int wan_unit, int action){
 	// Redirect rules.
 	if(action){
 		stop_nat_rules();
+		//Andy Chiu, 2016/08/03. Stop Wan
+		//stop_wan_if(wan_unit);
 	}
 	/*
 	 * When C2C and remove the redirect rules,
@@ -995,7 +1000,8 @@ void send_page(int wan_unit, int sfd, char *file_dest, char *url){
 	// TODO: Only send pages for the wan(0)'s state.
 #ifdef RTCONFIG_USB_MODEM
 	if (dualwan_unit__usbif(wan_unit)) {
-		if(conn_changed_state[wan_unit] == SET_ETH_MODEM)
+		if((conn_changed_state[wan_unit] == SET_ETH_MODEM) ||
+			((conn_changed_state[wan_unit] == C2D || conn_changed_state[wan_unit] == DISCONN) && disconn_case[wan_unit] == CASE_THESAMESUBNET))
 			sprintf(buf, "%s%s%s%s%s%d%s%s" ,buf , "Connection: close\r\n", "Location:http://", dut_addr, "/cgi-bin/error_page.asp?flag=", CASE_THESAMESUBNET, "\r\nContent-Type: text/plain\r\n", "\r\n<html></html>\r\n");
 		else{
 			close_socket(sfd, T_HTTP);
@@ -1098,7 +1104,6 @@ void handle_http_req(int sfd, char *line){
 	
 	if(!strncmp(line, "GET /", 5)){
 		parse_dst_url(line+5);
-		
 		len = strlen(dst_url);
 		if((dst_url[len-4] == '.') &&
 				(dst_url[len-3] == 'i') &&

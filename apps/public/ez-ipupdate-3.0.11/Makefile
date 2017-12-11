@@ -97,7 +97,7 @@ ez_ipupdate_LDFLAGS =
 
 # 2007.03.14 Yau add for ASUS DDNS
 ez_ipupdate_OBJECTS += asus_ddns.o
-CFLAGS += -I$(APP_SHARED_DIR) -I$(APP_TCAPILIB_DIR) -DASUS_DDNS
+CFLAGS += -I$(APP_SHARED_DIR) -I$(APP_TCAPILIB_DIR) -DASUS_DDNS $(TC_CFLAGS)
 LDFLAGS += -L$(APP_SHARED_DIR) -lshared -L$(APP_TCAPILIB_DIR) -ltcapi
 #end of Yau add
 

@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <time.h>
+#include <misc.h>
 
 // Line number as text string
 #define __LINE_T__ __LINE_T_(__LINE__)
@@ -227,6 +228,9 @@ void start_vpnclient(int clientNum)
 	tcapi_get(node, "cipher", &buffer[0]);
 	if ( !find_word(&buffer[0], "default") )
 		fprintf(fp, "cipher %s\n", &buffer[0]);
+	tcapi_get(node, "digest", &buffer[0]);
+	if ( !find_word(&buffer[0], "default") )
+		fprintf(fp, "auth %s\n", &buffer[0]);
 	tcapi_get(node, "redirect_gateway", &buffer[0]);
 	if ( atoi(&buffer[0]) )
 	{
@@ -791,6 +795,13 @@ void start_vpnserver(int serverNum)
 		fprintf(fp_client, "cipher %s\n", &buffer[0]);
 	}
 
+	//digest
+	tcapi_get(node, "digest", &buffer[0]);
+	if ( !find_word(&buffer[0], "default") ) {
+		fprintf(fp, "auth %s\n", &buffer[0]);
+		fprintf(fp_client, "auth %s\n", &buffer[0]);
+	}
+	
 	//compression
 	tcapi_get(node, "comp", &buffer[0]);
 	if ( atoi(&buffer[0]) >= 0 ) {
@@ -1429,8 +1440,7 @@ void start_vpn_eas()
 	}
 
 	// Parse and start servers
-	if(tcapi_get_int("VPNControl_Entry", "VPNServer_enable") &&
-		tcapi_match("VPNControl_Entry", "VPNServer_mode", "openvpn"))
+	if(tcapi_get_int("VPNControl_Entry", "VPNServer_enable"))
 	{
 		memset(buffer, 0, sizeof(buffer));
 		tcapi_get("OpenVPN_Common", "vpn_serverx_eas", buffer);
@@ -1655,11 +1665,11 @@ void create_openvpn_passwd()
 	unsigned char s[512];
 	char *p;
 	char salt[32];
-	char nv[MAXLEN_TCAPI_MSG], *nvp, *b;
-	char *username, *passwd;
 	FILE *fp;
+	openvpn_accnt_info_t account_info;
 	int id = 200;
-
+	int i;
+	
 	strcpy(salt, "$1$");
 	f_read("/dev/urandom", s, 6);
 	base64_encode(s, salt + 3, 6);
@@ -1673,18 +1683,120 @@ void create_openvpn_passwd()
 	fp=fopen("/etc/passwd.openvpn", "w");
 	if (!fp) return;
 
-	nvp = nv;
+	bzero(&account_info, sizeof(account_info));
+	get_openvpn_account(&account_info);
 
-	if(tcapi_get("OpenVPN_Common", "vpn_server_clientlist", nv) == TCAPI_PROCESS_OK) {
-		while ((b = strsep(&nvp, "<")) != NULL) {
-			if((vstrsep(b, ">", &username, &passwd)!=2)) continue;
-			if(strlen(username)==0||strlen(passwd)==0) continue;
-
-			p = crypt(passwd, salt);
-			fprintf(fp, "%s:%s:%d:%d:::\n", username, p, id, id);
-			id++;
-		}
-		free(nv);
+	for (i = 0; i <account_info.count; i++)
+	{
+		p = crypt(account_info.account[i].passwd, salt);
+		fprintf(fp, "%s:%s:%d:%d:::\n", account_info.account[i].name, p, id, id);
+		id++;
 	}
+
 	fclose(fp);
 }
+
+static int _is_dup_vpnaccount(char *account_str)
+{
+	int is_duplicate = 0;
+	int i;
+	openvpn_accnt_info_t account_info;
+
+	if ((account_str == NULL))
+	{
+		return 0;
+	}
+
+	get_openvpn_account(&account_info);
+
+	for (i=0; i<account_info.count; i++)
+	{
+		//printf("%s-account(%s)-(%s)\n", __FUNCTION__, account_str, username);
+		if (!strcmp(account_str, account_info.account[i].name))
+		{
+			is_duplicate = 1;
+			break;
+		}
+	}
+
+	return is_duplicate;
+}
+
+/*
+	work around, OpenVpn server account would duplicate with system and samba
+	need to deal with it before a formal account management function is
+	implmented, or OpenVpn account won't work..
+
+	Samba account only need an entry, so when account is duplicate with openvpn
+	account, replaced with OpenVPN account
+*/
+void add_openvpn_account(const char *path, const char *fname)
+{
+	char tmpfile[256];
+	char line[512];
+	char account[32];
+	FILE *f;
+	FILE *f_tmp;
+
+	if ((path == NULL) || (fname == NULL))
+	{
+		return;
+	}
+
+	if ((f_exists(path) == 0) || (f_exists(fname) == 0))
+	{
+		return;
+	}
+
+	bzero(tmpfile, sizeof(tmpfile));
+	snprintf(tmpfile, sizeof(tmpfile), "%s.tmp", path);
+	if ((f = fopen(path, "r")) != NULL)
+	{
+		if ((f_tmp = fopen(tmpfile, "w+")) != NULL)
+		{
+			//first line for admin account
+			if (fgets(line, sizeof(line), f))
+			{
+				fputs(line, f_tmp);
+			}
+			
+			while (fgets(line, sizeof(line), f))
+			{
+				if (sscanf(line, "%31[^:]:%*s", account) == 1)
+				{
+					//printf("%s-account(%s)\n", __FUNCTION__, account);
+					if (_is_dup_vpnaccount(account) == 0)
+					{
+						fputs(line, f_tmp);
+					}
+				}
+				else
+				{
+					fputs(line, f_tmp);
+				}
+			}
+		}
+		else
+		{
+			fclose(f);
+			return;
+		}
+
+		fclose(f);
+		fclose(f_tmp);
+
+		unlink(path);
+		rename(tmpfile, path);
+	}
+	else
+	{
+		return;
+	}
+
+	if ((f = fopen(path, "a")) != NULL) 
+	{
+		fappend(f, fname);
+		fclose(f);
+	}
+}
+

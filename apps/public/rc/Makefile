@@ -1,8 +1,8 @@
 
 CFLAGS = -Wall -Os $(TC_CFLAGS)
 CFLAGS += -I.
-CFLAGS += -I../shared -I../utils
-LDFLAGS = -L../shared -lshared -L../utils -lutils
+CFLAGS += -I../shared -I$(LIB_UTILS_DIR)
+LDFLAGS = -L../shared -lshared -L$(LIB_UTILS_DIR) -lutils
 ifneq ($(RTCONFIG_USB),)
 CFLAGS += -I../libdisk
 LDFLAGS += -L../libdisk -ldisk
@@ -40,9 +40,33 @@ ifeq ($(RTCONFIG_VPNC),y)
 OBJS += vpnc.o
 endif
 
+ifeq ($(RTCONFIG_LETSENCRYPT),y)
+CFLAGS += -DRTCONFIG_CROND
+OBJS += letsencrypt.o
+endif
+
 ifeq ($(RTCONFIG_TR069),y)
 OBJS += tr069.o
 endif
+
+ifneq ($(TCSUPPORT_SSH),)
+OBJS += ssh.o
+endif
+
+ifneq ($(strip $(RTCONFIG_NOTIFICATION_CENTER)),)
+OBJS += nt_mail.o
+CFLAGS += -I$(APP_NOTIFICATION_CENTER_DIR) -I$(APP_NOTIFICATION_CENTER_DIR)/lib/
+CFLAGS += -I$(APP_NOTIFICATION_CENTER_DIR)/actMail/
+CFLAGS += -I$(APP_SQLITE_DIR)/
+LDFLAGS += -L$(APP_NOTIFICATION_CENTER_DIR)/lib -lnt -lm
+LDFLAGS += -L$(APP_SQLITE_DIR)/.libs -lsqlite3
+endif
+
+ifeq ($(RTCONFIG_LETSENCRYPT),y)
+CFLAGS += -I$(APP_OPENSSL_DIR)/include
+LDFLAGS += -L$(APP_OPENSSL_DIR) -lcrypto -lssl
+endif
+
 
 all: rc
 

@@ -19,6 +19,9 @@
 #define MAX_SHOW_BUF	8192 
 #define MAX_ATTR_BUF	640
 
+#define WAN_IPTV	"Wan_IPTV"
+#define WAN_IPTV_ID	1
+
 int 
 isVaildNode(char name[][MAX_NODE_NAME]);
 

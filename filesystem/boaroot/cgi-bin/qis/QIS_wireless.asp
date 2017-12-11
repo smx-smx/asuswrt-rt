@@ -20,7 +20,7 @@ function QKWireless_load_body(){
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_wireless_webtitle","s")%>";
 	parent.set_step("t3");
 
-	if(band5g_support == -1){
+	if(!wl_info.band5g_support){
 		$("wl_unit_field_1").style.display = "none";
 		$("wl_unit_field_2").style.display = "none";
 		$("wl_unit_field_3").style.display = "none";
@@ -41,10 +41,10 @@ function submitForm(){
 		document.form.wl1_auth_mode_x.value = "WPA2PSK";
 		if(!validate_psk(document.form.wl1_wpa_psk))
 			return false;
-		//confirm common string combination     #JS_common_passwd#
+		//confirm common string combination
                 var is_common_string = check_common_string(document.form.wl1_wpa_psk.value, "wpa_key");
                 if(is_common_string){
-                        if(confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
+                        if(!confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
                                 document.form.wl1_wpa_psk.focus();
                                 document.form.wl1_wpa_psk.select();
                                 return false;   
@@ -58,10 +58,10 @@ function submitForm(){
 		document.form.wl0_auth_mode_x.value = "WPA2PSK";
 		if(!validate_psk(document.form.wl0_wpa_psk))
 			return false;
-		//confirm common string combination     #JS_common_passwd#
+		//confirm common string combination
                 var is_common_string = check_common_string(document.form.wl0_wpa_psk.value, "wpa_key");
                 if(is_common_string){
-                        if(confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
+                        if(!confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
                                 document.form.wl0_wpa_psk.focus();
                                 document.form.wl0_wpa_psk.select();
                                 return false;   

@@ -440,13 +440,14 @@ function printer_html(device_seat, printer_order){
 	var icon_html_code = '';
 	var dec_html_code = '';
 	if(printer_pool()[printer_order] != "")
-		printer_status = 'Enabled';
+		printer_status = '<% tcWebApi_Get("String_Entry", "CTL_Enabled", "s") %>';
 	else
-		printer_status = 'Disabled';
+		printer_status = '<% tcWebApi_Get("String_Entry", "CTL_Disabled", "s") %>';
 	icon_html_code += '<a href="/cgi-bin/device-map/printer.asp" target="statusframe">\n';
 	icon_html_code += ' <div id="iconPrinter'+printer_order+'" class="iconPrinter" onclick="clickEvent(this);"></div>\n';
 	icon_html_code += '</a>\n';
 	dec_html_code += '<div class="formfonttitle_nwm" style="text-align:center;margin-top:10px;"><span id="printerName'+device_seat+'">'+ printer_name +'</span></div>\n';
+	dec_html_code += '<div style="margin:10px;">'+printer_status+'</div>';
 	device_icon.innerHTML = icon_html_code;
 	device_dec.innerHTML = dec_html_code;
 }
@@ -656,17 +657,17 @@ function change_wan_pvc(wan_pvc){
 
 function show_ddns_fail_hint() {
 	var str="";
-	if(!((link_status == "2" && (link_auxstatus == "0" || link_auxstatus == "2")) || (secondary_link_status == "2" && (secondary_link_auxstatus == "0" || secondary_link_auxstatus == "2"))))	//Both link down
+	if(sw_mode != 3 && document.getElementById("connect_status").className == "connectstatusoff")	//Both link down
 		str = "<%tcWebApi_get("String_Entry","Disconnected","s")%>";
 	else if(ddns_server = 'WWW.ASUS.COM') {
 		if(ddns_return_code.indexOf('203')!=-1)
 			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_hostname","s") %> <% tcWebApi_get("Ddns_Entry","MYHOST","s") %> <% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_registered","s") %>";
 		else if(ddns_return_code.indexOf('233')!=-1)
-			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_hostname", "s") %> <% tcWebApi_get("Ddns_Entry","MYHOST","s") %> <% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_registered_2", "s") %> <% tcWebApi_get("GUITemp_Entry2","ddns_old_name","s"); %>";
+			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_hostname", "s") %> <% tcWebApi_get("Ddns_Entry","MYHOST","s") %> <% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_registered_2", "s") %> <% tcWebApi_get("Vram_Entry","ddns_old_name","s"); %>";
 		else if(ddns_return_code.indexOf('296')!=-1)
 			str = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_6", "s")%>";
 	  	else if(ddns_return_code.indexOf('297')!=-1)
-       		str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_7", "s") %>";
+			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_7", "s") %>";
 	  	else if(ddns_return_code.indexOf('298')!=-1)
     			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_8", "s") %>";
 	  	else if(ddns_return_code.indexOf('299')!=-1)
@@ -675,20 +676,24 @@ function show_ddns_fail_hint() {
 	    		str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_10", "s") %>";
 	  	else if(ddns_return_code.indexOf('407')!=-1)
     			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_11", "s") %>";
-			else if(ddns_return_code.indexOf('-1')!=-1)
-					str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2", "s") %>";
+		else if(ddns_return_code.indexOf('-1')!=-1)
+			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2", "s") %>";
 	  	else if(ddns_return_code =='no_change')
     			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_nochange", "s") %>";
-	    else if(ddns_return_code == 'Time-out')
-          str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_1", "s") %>";
-	    else if(ddns_return_code =='unknown_error')
-          str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2", "s") %>";
-	  	else if(ddns_return_code =='')
-    			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2", "s") %>";
-			else if(ddns_return_code =='connect_fail')
-          str = "<% tcWebApi_get("String_Entry","qis_fail_desc7", "s") %>";
-      else if(ddns_return_code =='auth_fail')
-          str = "<% tcWebApi_get("String_Entry","qis_fail_desc1", "s") %>";
+		else if(ddns_return_code == 'Time-out')
+			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_1", "s") %>";
+		else if(ddns_return_code =='unknown_error')
+			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2", "s") %>";
+		else if(ddns_return_code =='')
+			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2", "s") %>";
+		else if(ddns_return_code =='connect_fail')
+			str = "<% tcWebApi_get("String_Entry","qis_fail_desc7", "s") %>";
+		else if(ddns_return_code =='auth_fail')
+			str = "<% tcWebApi_get("String_Entry","qis_fail_desc1", "s") %>";
+		else if(ddns_return_code =='Updating' || ddns_return_code =='ddns_query')
+			str = "Still query ASUS DDNS registration status. Please wait.";
+		else
+			str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2", "s") %>";
 	}
 	else
 		str = "<% tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2", "s") %>";
@@ -701,28 +706,28 @@ function show_ddns_status(){
 	var ddns_server_x = '<% tcWebApi_get("Ddns_Entry","SERVERNAME","s") %>';
 	var ddnsName = '<% tcWebApi_get("Ddns_Entry","MYHOST","s") %>';
 
-	$("ddns_fail_hint").className = "notificationoff";
+	document.getElementById("ddns_fail_hint").className = "notificationoff";
         if( ddns_enable == '0')
-                $("ddnsHostName").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp?af=ddns_enable_x"><% tcWebApi_get("String_Entry","btn_go","s")%></a>';
-        else if(ddnsName == '')
-                $("ddnsHostName").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp?af=DDNSName">Sign up</a>';
-        else if(ddnsName == isMD5DDNSName())
-                $("ddnsHostName").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp?af=DDNSName">Sign up</a>';
-        else{
-                $("ddnsHostName").innerHTML = '<span>'+ ddnsName +'</span>';
-                if( ddns_enable == '1' ) {
-										if(!((link_status == "2" && (link_auxstatus == "0" || link_auxstatus == "2")) || (secondary_link_status == "2" && (secondary_link_auxstatus == "0" || secondary_link_auxstatus == "2")))) //Both link down
-													$("ddns_fail_hint").className = "notificationon";
-										if( ddns_server_x == 'WWW.ASUS.COM' ) { //ASUS DDNS
-			    								if( (ddns_return_code.indexOf('200')==-1) && (ddns_return_code.indexOf('220')==-1) && (ddns_return_code.indexOf('230')==-1))
-																$("ddns_fail_hint").className = "notificationon";
-										}
-										else { //Other ddns service
-			    								if(ddns_updated != '1' || ddns_return_code=='unknown_error' || ddns_return_code=="auth_fail")
-                        				$("ddns_fail_hint").className = "notificationon";
-										}
-                }
+		document.getElementById("ddnsHostName").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp?af=ddns_enable_x"><% tcWebApi_get("String_Entry","btn_go","s")%></a>';
+	else if(ddnsName == '')
+		document.getElementById("ddnsHostName").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp?af=DDNSName">Sign up</a>';
+	else if(ddnsName == isMD5DDNSName())
+		document.getElementById("ddnsHostName").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp?af=DDNSName">Sign up</a>';
+	else{
+		document.getElementById("ddnsHostName").innerHTML = '<span>'+ ddnsName +'</span>';
+		if( ddns_enable == '1' ) {
+			if(!((link_status == "2" && (link_auxstatus == "0" || link_auxstatus == "2")) || (secondary_link_status == "2" && (secondary_link_auxstatus == "0" || secondary_link_auxstatus == "2")))) //Both link down
+				document.getElementById("ddns_fail_hint").className = "notificationon";
+				if( ddns_server_x == 'WWW.ASUS.COM' ) { //ASUS DDNS
+					if( (ddns_return_code.indexOf('200')==-1) && (ddns_return_code.indexOf('220')==-1) && (ddns_return_code.indexOf('230')==-1))
+						document.getElementById("ddns_fail_hint").className = "notificationon";
 				}
+				else { //Other ddns service
+			    		if(ddns_updated != '1' || ddns_return_code=='unknown_error' || ddns_return_code=="auth_fail")
+		                        	document.getElementById("ddns_fail_hint").className = "notificationon";
+				}
+                }
+	}
 	setTimeout("show_ddns_status();", 2000);
 }
 

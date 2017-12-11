@@ -21,7 +21,6 @@ End If
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
-<script language="JavaScript" type="text/javascript" src="/ajax.js"></script>
 <style>
 #ClientList_Block_PC{
 	border:1px outset #999;

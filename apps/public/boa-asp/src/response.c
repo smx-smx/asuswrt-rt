@@ -27,7 +27,6 @@
 #define HTML "text/html; charset=ISO-8859-1"
 #define CRLF "\r\n"
 
-
 void print_content_type(request * req)
 {
     req_write(req, "Content-Type: ");
@@ -244,7 +243,13 @@ void send_r_cannot_login(request * req)
 		SQUASH_KA(req);
 		char cur_temp_ip[32];
 		memset(cur_temp_ip, 0, 32);
+#ifdef ASUS_LOGIN_SESSION
+		asus_token_t *token = SEARCH_TOKEN_LST_BY_CLITYPE(CLI_TYPE_BROWSER);
+		if(token)
+			snprintf(cur_temp_ip, sizeof(cur_temp_ip), token->ipaddr);
+#else
 		tcapi_get("WebCurSet_Entry", "login_ip_tmp", cur_temp_ip);
+#endif
 		req->response_status = R_BAD_REQUEST;
     if (!req->simple) {
         req_write(req, "HTTP/1.0 400 Bad Request\r\n");
@@ -288,7 +293,7 @@ void send_r_cannot_login(request * req)
 void send_r_unauthorized(request * req, char *realm_name)
 {	
 		
-#ifdef RTCONFIG_PROTECTION_SERVER
+#if 0 //def RTCONFIG_PROTECTION_SERVER
 	/* Carlos 2015/11/10, if keep login fail, block login page */
 	char en_web_pt[4];
 	tcapi_get("Vram_Entry", "enable_web_protection", en_web_pt);
@@ -567,3 +572,241 @@ void send_r_bad_version(request * req)
     }
     req_flush(req);
 }
+
+
+#ifdef ASUS_LOGIN_SESSION	//Andy Chiu, 2015/11/27.
+/*******************************************************************
+* NAME: send_r_login_page
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/11/27
+* DESCRIPTION: send login page
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE: Andy Chiu, 2016/01/04. Modify the redirect web page function.
+*	      Andy Chiu, 2016/01/05. Add APP reply
+*******************************************************************/
+void send_r_login_page(request *req, int error_status, char* url, int lock_time)
+{
+	SQUASH_KA(req);
+	req->response_status = R_REQUEST_OK;
+
+	char buffer[256]={0};
+	char url_tmp[64]={0};
+	int flag;
+	int fromapp = 0;
+
+	if(url)
+	{
+		if(strstr(url, "Main_Login.asp"))
+		{
+			strcpy(url_tmp, "Main_Login.asp");
+		}
+		else
+		{
+			if(!strncmp(url, "cgi-bin", 7) || !strncmp(url, "/cgi-bin", 8))
+				url_tmp[0] = '\0';
+			else
+				strcpy(url_tmp, "cgi-bin/");
+			
+			if(url[0] == '/')
+				strncat(url_tmp, url + 1, sizeof(url_tmp) - strlen(url_tmp) - 1);
+			else
+				strncat(url_tmp, url, sizeof(url_tmp) - strlen(url_tmp) - 1);
+		}
+	}
+
+	req_write(req, "HTTP/1.0 200 OK\r\n");	
+	print_http_headers(req);
+       	req_write(req, "Content-Type: " HTML "\r\n\r\n"); // terminate header
+
+	//Andy Chiu, 2016/01/05. Check APP
+	if(check_client_type(req->header_user_agent) != CLI_TYPE_BROWSER)
+	{
+			fromapp = 1;		
+	}
+
+	if(!fromapp)
+	{
+		req_write(req, "<meta http-equiv=\"refresh\" content=\"0; url=/Main_Login.asp");
+
+		if(lock_time > 0 || error_status > 0 || url)
+		{
+			req_write(req, "?");
+			flag = 0;
+			if(error_status > 0)
+			{
+				snprintf(buffer, sizeof(buffer), "error_status=%d", error_status);
+				req_write(req, buffer);
+				flag = 1;
+			}
+
+			if(url)
+			{
+				snprintf(buffer, sizeof(buffer), flag? "&page=/%s": "page=/%s", url_tmp);
+				req_write(req, buffer);
+				flag = 1;
+			}
+
+			if(lock_time > 0)
+			{
+				snprintf(buffer, sizeof(buffer), flag? "&lock_time=%d": "lock_time=%d", lock_time);
+				req_write(req, buffer);
+			}
+		}
+		req_write(req, "\">\n</HEAD></HTML>\n");
+	}
+	else
+	{
+		snprintf(buffer, sizeof(buffer), "{\n\"error_status\":\"%d\"\n}\n", error_status);
+		req_write(req, buffer);
+	}
+}
+
+/*******************************************************************
+* NAME: send_r_password_page
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/12/29
+* DESCRIPTION: send Main_Password page
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:	Andy Chiu, 2016/01/04. Modify the redirect web page function.
+*******************************************************************/
+void send_r_password_page(request *req, char* url)
+{
+	SQUASH_KA(req);
+	req->response_status = R_REQUEST_OK;
+
+	char buffer[256]={0};
+	char url_tmp[64]={0};
+	char *p;
+
+	if(url)
+	{
+		//compare cgi-bin
+		p = strstr(url, "cgi-bin/");
+		if(p)
+			snprintf(url_tmp, sizeof(url_tmp), "%s", p + strlen("cgi-bin/"));
+		else if(url[0] == '/')
+			snprintf(url_tmp, sizeof(url_tmp), "%s", url + 1);
+		else
+			snprintf(url_tmp, sizeof(url_tmp), "%s", url);
+	}
+
+	
+	req_write(req, "HTTP/1.0 200 OK\r\n");	
+	print_http_headers(req);
+       	req_write(req, "Content-Type: " HTML "\r\n\r\n"); // terminate header
+	req_write(req, "<meta http-equiv=\"refresh\" content=\"0; url=/Main_Password.asp");
+	if(url)
+	{
+		snprintf(buffer, sizeof(buffer), "?page=/%s", url_tmp);
+		req_write(req, buffer);
+	}
+	req_write(req, "\">\n</HEAD></HTML>\n");
+}
+
+/*******************************************************************
+* NAME: send_redirect_packet_with_token
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/01/06
+* DESCRIPTION: send login packet
+* INPUT: req: pointer of request; redirect_path: the redirect target path
+* OUTPUT:
+* RETURN:
+* NOTE: 
+*******************************************************************/
+void send_redirect_packet_with_token(request *req, char *redirect_path)
+{
+	int fromapp = 0;
+	char wp[2048];
+	char dst_page[256] = {0};
+	char buff[256] = {0};
+	CLIENT_TYPE cli_type;
+	asus_token_t *token;
+
+	if(!req)
+		return;
+
+	SQUASH_KA(req);	
+	req->response_status = R_REQUEST_OK;
+	
+	//check client type
+	cli_type = check_client_type(req->header_user_agent);
+	
+	//send login header. If error_status is zero, auth is successful.
+	
+	token = add_asus_token(cli_type, generate_token(buff, sizeof(buff)), req->remote_ip_addr);
+	if(!token)
+	{
+		send_r_login_page(req, ACCOUNTFAIL, NULL, 0);
+		return;
+	}
+	
+	http_login_header(token->token, req);
+
+	//Andy Chiu, 2016/01/05. Check APP
+	if(cli_type != CLI_TYPE_BROWSER)
+	{
+			fromapp = 1;		
+	}
+
+	//send content
+	if(!fromapp)
+	{	
+		//send content
+		req_write(req, "<HTML><HEAD>\n");
+
+		if(redirect_path)
+		{
+			decode_uri(redirect_path);
+
+			//Andy Chiu, 2016/01/04. Modify the redirect page function without java script for security issue.
+			snprintf(wp, sizeof(wp), "<meta http-equiv=\"refresh\" content=\"0; url=%s\">\n", redirect_path);
+			req_write(req, wp);
+		}
+		req_write(req, "</HEAD></HTML>\n");
+	}
+	else
+	{
+		snprintf(wp, sizeof(wp), "{\n\"asus_token\":\"%s\"\n}\n", token->token);
+		req_write(req, wp);
+	}
+}
+
+/*******************************************************************
+* NAME: send_r_qis_page
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/12/29
+* DESCRIPTION: send QIS page
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:	Andy Chiu, 2016/01/04. Modify the redirect web page function.
+*******************************************************************/
+void send_r_redirect_page(request *req, const int with_token)
+{
+	SQUASH_KA(req);	
+	char *p = req->request_uri;
+	char tmp[512];
+
+	//remove /cgi-bin in path
+	req->response_status = R_REQUEST_OK;
+	if(!strncmp(p, "/cgi-bin", strlen("/cgi-bin")))
+		p += strlen("/cgi-bin");	
+
+	if(with_token)
+		send_redirect_packet_with_token(req, p);
+	else
+	{
+		req_write(req, "HTTP/1.0 200 OK\r\n");	
+		print_http_headers(req);
+	       	req_write(req, "Content-Type: " HTML "\r\n\r\n"); // terminate header
+		snprintf(tmp, sizeof(tmp), "<meta http-equiv=\"refresh\" content=\"0; url=%s", p);	       	
+		req_write(req, tmp);
+		req_write(req, "\">\n</HEAD></HTML>\n");
+	}
+}
+#endif
+

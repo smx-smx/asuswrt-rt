@@ -44,10 +44,14 @@ function login_mac_str() { return ''; }
 var targeturl = "index.asp";
 var firmver = "<% tcWebApi_staticGet("DeviceInfo","FwVer","s") %>";
 var detect_status = '<% tcWebApi_get("AutoPVC_Common","dsltmp_autodet_state","s") %>';
+var AnnexTypeA_orig = "<%tcWebApi_get("Adsl_Entry","ANNEXTYPEA","s")%>";
+
 var autodet_annex_counter = 0;  //for QIS_detect to switch dslx_annex value
 var x_Setting = "<%tcWebApi_get("SysInfo_Entry","x_Setting","s")%>";
 var w_Setting_tmp = "<%tcWebApi_get("SysInfo_Entry","w_Setting","s")%>";
-var wan_type = "<%tcWebApi_get("AutoPVC_Common","Detect_XDSL","s")%>";
+var wan_type = "<%tcWebApi_get("AutoPVC_Common","Detect_XDSL","s")%>";	//ATM | PTM
+var wan_type_info = "<%tcWebApi_get("Info_Adsl","xDSLmode","s")%>";	//ADSL | VDSL
+var wan_type_compare = (wan_type_info=="VDSL")? "PTM":"ATM";
 
 function set_step(focus_id){
 	document.getElementById("t1").className = "lefttabmid";
@@ -81,20 +85,31 @@ function QIS_load_body(){
 			return;
 		}
 		else { //x_Setting == 1
+
+		   if(wan_type != wan_type_compare){
+
+			action = "qis/QIS_detect.asp";
+			submit();
+		   }
+		   else{
+
 			if (detect_status == "Fail") {
-				if(wan_type == "ATM"){
-					action = "qis/QIS_manual_setting.asp";
+				if(wan_type_info == "VDSL"){	//wan_type == "PTM"
+					action = "qis/QIS_PTM_manual_setting.asp";
 				}
 				else{
-					action = "qis/QIS_PTM_manual_setting.asp";
+					action = "qis/QIS_manual_setting.asp";
 				}
 				submit();
 				return;
 			}
 
 			if ((detect_status == "initializing") || (detect_status == "wait_for_init") || (detect_status == "up")) {
-				if(detect_status == "up" && wan_type == "PTM"){
+				if(detect_status == "up" && wan_type_info == "VDSL"){	//wan_type == "PTM"
 					action = "qis/QIS_PTM_manual_setting.asp";
+				}
+				else if(detect_status == "up" && wan_type_info == "ADSL" && (AnnexTypeA_orig == "ANNEX B" || AnnexTypeA_orig == "ANNEX B/J" || AnnexTypeA_orig == "ANNEX B/J/M")){	// wan_type == "ATM"
+					action = "qis/QIS_manual_setting.asp";
 				}
 				else{
 					action = "qis/QIS_detect.asp";
@@ -111,11 +126,17 @@ function QIS_load_body(){
 				submit();
 			}
 			else if ((detect_status == "pppoe") || (detect_status == "pppoa")) { //1:PPPoE, 2:PPPoA
-				action = "qis/QIS_ppp_cfg.asp";
+				if(AnnexTypeA_orig == "ANNEX B" || AnnexTypeA_orig == "ANNEX B/J" || AnnexTypeA_orig == "ANNEX B/J/M")
+					action = "qis/QIS_manual_setting.asp";
+				else
+					action = "qis/QIS_ppp_cfg.asp";
 				submit();
 			}
 			else if (detect_status == "dhcp") { //2:MER/Automatic IP
-				action = "qis/QIS_mer_cfg.asp";
+				if(AnnexTypeA_orig == "ANNEX B" || AnnexTypeA_orig == "ANNEX B/J" || AnnexTypeA_orig == "ANNEX B/J/M")
+					action = "qis/QIS_manual_setting.asp";
+				else
+					action = "qis/QIS_mer_cfg.asp";
 				submit();
 			}
 			else if (detect_status == "") { //Unknown state
@@ -148,6 +169,8 @@ function QIS_load_body(){
 				}
 				submit();
 			}
+
+		   }
 			return;
 		}
 	}

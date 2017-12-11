@@ -72,11 +72,7 @@ var vpn_server_clientlist_array_ori = '<%tcWebApi_char_to_ascii("OpenVPN_Common"
 var vpn_server_clientlist_array = decodeURIComponent(vpn_server_clientlist_array_ori);
 var openvpn_unit = '1';
 var vpn_server_enable = '<%tcWebApi_Get("VPNControl_Entry", "VPNServer_enable", "s")%>';
-var vpn_server_mode = '<%tcWebApi_Get("VPNControl_Entry", "VPNServer_mode", "s")%>';
 var open_vpn_enable = vpn_server_enable;
-if(vpn_server_mode != "openvpn") {
-	open_vpn_enable = 0;
-}
 var service_state = '<%tcWebApi_Get("OpenVPN_Entry", "state", "s")%>';
 
 var openvpnd_connected_clients = [];
@@ -112,7 +108,7 @@ function initial(){
 		document.getElementById("divSwitchMenu").style.display = "";
 	}
 
-	formShowAndHide(vpn_server_enable, vpn_server_mode);
+	formShowAndHide(vpn_server_enable, "openvpn");
 	//check DUT is belong to private IP.
 
 	if(realip_support){
@@ -150,7 +146,7 @@ function formShowAndHide(server_enable, server_type) {
 		document.getElementById('openvpn_export').style.display = "";
 		document.getElementById('OpenVPN_setting').style.display = "";
 		document.getElementById("divAdvanced").style.display = "none";
-		if(vpn_server_enable == '0' || vpn_server_mode == 'pptpd')
+		if(vpn_server_enable == '0' )
 			document.getElementById('openvpn_export').style.display = "none";
 		else
 			document.getElementById('openvpn_export').style.display = "";
@@ -172,9 +168,6 @@ function formShowAndHide(server_enable, server_type) {
 		document.getElementById("openvpn_export").style.display = "none";
 		document.getElementById("OpenVPN_setting").style.display = "none";
 		document.getElementById("divAdvanced").style.display = "none";
-		if(vpn_server_mode != "openvpn") {
-			document.getElementById("divApply").style.display = "none";
-		}
 	}
 }
 
@@ -202,9 +195,6 @@ function openvpnd_connected_status(){
 
 function applyRule(){
 	var confirmFlag = true;
-	if(document.form.VPNServer_mode.value != "openvpn" && vpn_server_enable == '1') {
-		 confirmFlag = confirm("<%tcWebApi_Get("String_Entry","vpn_switch_confirm","s")%>");
-	}
 
 	/* Advanced setting start */
 	var check_openvpn_conflict = function () {		//if conflict with LAN ip & DHCP ip pool & static
@@ -397,8 +387,7 @@ function applyRule(){
 		};
 
 		if(document.form.VPNServer_enable.value == "1") {
-			document.form.VPNServer_mode.value = 'openvpn';
-			document.form.action_script.value = "restart_vpnd;restart_chpass";
+			document.form.action_script.value = "restart_openvpnd;restart_chpass";
 			document.form.vpn_server_clientlist.value = get_group_value();
 			/* Advanced setting start */
 			//Viz add 2014.06
@@ -459,7 +448,7 @@ function applyRule(){
 			/* Advanced setting end */
 		}
 		else {		//disable server
-			document.form.action_script.value = "stop_vpnd";
+			document.form.action_script.value = "stop_openvpnd";
 			document.form.vpn_server_clientlist.value = get_group_value();
 		}
 
@@ -634,7 +623,7 @@ function showOpenVPNClients(uname){
 }
 
 function check_vpn_server_state(){
-	if(vpn_server_enable == '1' && vpn_server_mode == 'openvpn' && service_state != '2'){
+	if(vpn_server_enable == '1' && service_state != '2'){
 		document.getElementById('export_div').style.display = "none";
 		document.getElementById('openvpn_initial').style.display = "";
 		update_vpn_server_state();
@@ -704,7 +693,7 @@ function showMailPanel(){
 function switchMode(mode){
 	if(mode == "1"){		//general setting
 		document.getElementById("OpenVPN_setting").style.display = "";
-		if(vpn_server_enable == "1" && vpn_server_mode == "openvpn"){
+		if(vpn_server_enable == "1"){
 			document.getElementById("openvpn_export").style.display = "";
 		}
 		else{
@@ -748,6 +737,7 @@ function update_visibility(){
 	showhide("server_ccd_excl", ccd);
 	showhide("openvpn_client_table", ccd);
 	showhide("openvpn_clientlist_Block", ccd);
+	showhide("server_rgw", (auth == "tls"));
 	showhide("server_pdns", ((auth == "tls") && (dns == 1)));
 	showhide("server_dhcp",((auth == "tls") && (iface == "tap")));
 	showhide("server_range", ((dhcp == 0) && (auth == "tls") && (iface == "tap")));
@@ -817,6 +807,21 @@ function addRow_Group_Advanced(upper){
 		alert("<%tcWebApi_Get("String_Entry","JS_fieldblank","s")%>");
 		document.form.vpn_clientlist_netmask_0.focus();
 		document.form.vpn_clientlist_netmask_0.select();
+		return false;
+	}
+
+	if(!validator.isLegalIP(document.form.vpn_clientlist_subnet_0)) {
+		return false;
+	}
+
+	if(!validator.isLegalMask(document.form.vpn_clientlist_netmask_0)){
+		return false;
+	}
+
+	if(!validator.subnetAndMaskCombination(document.form.vpn_clientlist_subnet_0.value, document.form.vpn_clientlist_netmask_0.value)) {
+		alert(document.form.vpn_clientlist_subnet_0.value + " / " + document.form.vpn_clientlist_netmask_0.value + " combination is invalid");
+		document.form.vpn_clientlist_subnet_0.focus();
+		document.form.vpn_clientlist_subnet_0.select();
 		return false;
 	}
 
@@ -1189,7 +1194,7 @@ function update_vpn_client_state() {
 										</tr>
 										</thead>
 										<tr>
-											<th><%tcWebApi_Get("String_Entry","vpn_enable","s")%></th>
+											<th><%tcWebApi_Get("String_Entry","vpn_openvpn_enable","s")%></th>
 											<td>
 												<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="radio_VPNServer_enable"></div>
 												<script type="text/javascript">
@@ -1448,7 +1453,7 @@ function update_vpn_client_state() {
 													<input type="radio" name="vpn_server_plan" class="input" value="0" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "push_lan", "0", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
 												</td>
 		 									</tr>
-											<tr>
+											<tr id="server_rgw">
 												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_RedirectInternet","s")%></th>
 												<td>
 													<input type="radio" name="vpn_server_rgw" class="input" value="1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "redirect_gateway", "1", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>

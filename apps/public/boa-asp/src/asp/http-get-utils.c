@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "shared.h"
+#include <json.h>
 
 #include "http-get-utils.h"
 //#include "../../../lib/libtcapi.h"
@@ -17,6 +18,23 @@ char *get_param (s_var **vars, const char *name)
 	}
 	
     return NULL;
+}
+
+/* for ASUS Router (AiHome) APP */
+char *get_cgi_json(s_var **vars, char *name, json_object *root)
+{
+    int i;
+	if(vars == NULL)
+		return NULL;
+
+    for (i=0;vars[i]; i++)
+	if (!strcmp(name,vars[i]->name)) {
+	    return vars[i]->value;
+	}
+
+	struct json_object *json_value;
+	json_value = json_object_object_get(root, name);
+	return (char *)json_object_get_string(json_value);
 }
 
 void free_param_line(s_var **vars)

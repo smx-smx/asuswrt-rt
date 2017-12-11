@@ -2569,8 +2569,8 @@ function insertExtChannelOption_5g(){
 		if(wl_channel_list_5g != ""){
 				var wl_channel_list_5g_length = wl_channel_list_5g.length;
 				var wl_channel_skiplist_5g_length = 0;				
-				if(document.form.wl_bw.value == "2" || (band5g_11ac_support < 0 && document.form.wl_bw.value == "1")){
-						// bw== 40MHz   || 20/40MHz
+				if(document.form.wl_bw.value == "2"){
+						// bw== 40MHz
 						wl_channel_skiplist_5g_length = wl_channel_skiplist_5g[40].length;
 						for(var x=wl_channel_skiplist_5g_length;x>0;x--){
 								for(var y=0;y<wl_channel_list_5g_length;y++){
@@ -2579,8 +2579,8 @@ function insertExtChannelOption_5g(){
 								}	
 						}
 				} 
-				else if(document.form.wl_bw.value == "3" || (band5g_11ac_support >= 0 && document.form.wl_bw.value == "1")){	
-						// bw== 80MHz	|| 20/40/80MHz
+				else if(document.form.wl_bw.value == "3"){	
+						// bw== 80MHz
 						wl_channel_skiplist_5g_length = wl_channel_skiplist_5g[80].length;
 						for(var x=wl_channel_skiplist_5g_length;x>0;x--){
 								for(var y=0;y<wl_channel_list_5g_length;y++){
@@ -2977,8 +2977,7 @@ function insertExtChannelOption_5g(){
 function insertExtChannelOption_2g(){
 	var wmode = document.form.wl_nmode_x.value;
 	var CurrentCh = document.form.wl_channel.value;
-	if(CurrentCh == "") CurrentCh = '<% tcWebApi_get("WLan_Common","Channel","s"); %>';
-	var option_length = document.form.wl_channel.options.length;
+	if(CurrentCh == "") CurrentCh = '<% tcWebApi_get("WLan_Common","Channel","s"); %>';	
 	
 	//setting wl channel
 	free_options(document.form.wl_channel);
@@ -3011,8 +3010,9 @@ function insertExtChannelOption_2g(){
 		channels[0] = "<% tcWebApi_Get("String_Entry", "Auto", "s") %>";
 	}
 	add_options_x2(document.form.wl_channel, channels, ch_v, CurrentCh);
-
+			
 	//setting wl_nctrlsb
+	var option_length = document.form.wl_channel.options.length;
 	if ((wmode == "9"||wmode == "8"||wmode == "6"||wmode == "11") && document.form.wl_bw.value != "0"){
 		inputCtrl(document.form.wl_nctrlsb, 1);
 		var x = document.form.wl_nctrlsb;
@@ -3022,37 +3022,40 @@ function insertExtChannelOption_2g(){
 			x.remove(x.selectedIndex);
 		}
 		if ((CurrentCh >=1) && (CurrentCh <= 4)){
-			x.options[0].text = "Lower";
-			x.options[0].value = "0";
+			x.options[0].text = "Upper";
+			x.options[0].value = "1";
 		}
 		else if ((CurrentCh >= 5) && (CurrentCh <= 7)){
 			x.options[0].text = "Lower";
 			x.options[0].value = "0";
 			add_a_option(document.form.wl_nctrlsb, "1", "Upper");
-			if (document.form.wl_nctrlsb_old.value == "1")
-					document.form.wl_nctrlsb.options.selectedIndex=1;
+			if (document.form.wl_nctrlsb_old.value == "1"){
+				document.form.wl_nctrlsb.options.selectedIndex=1;
+			}
 		}
 		else if ((CurrentCh >= 8) && (CurrentCh <= 9)){
 			x.options[0].text = "Upper";
 			x.options[0].value = "1";
 			if (option_length >=14){
-					add_a_option(document.form.wl_nctrlsb, "0", "Lower");
-					if (document.form.wl_nctrlsb_old.value == "0")
-							document.form.wl_nctrlsb.options.selectedIndex=1;
+				add_a_option(document.form.wl_nctrlsb, "0", "Lower");
+				if (document.form.wl_nctrlsb_old.value == "0"){
+					document.form.wl_nctrlsb.options.selectedIndex=1;
+				}
 			}
 		}
 		else if (CurrentCh == 10){
-			x.options[0].text = "Upper";
-			x.options[0].value = "1";
+			x.options[0].text = "Lower";
+			x.options[0].value = "0";
 			if (option_length > 14){
-					add_a_option(document.form.wl_nctrlsb, "0", "Lower");
-					if (document.form.wl_nctrlsb_old.value == "0")
-							document.form.wl_nctrlsb.options.selectedIndex=1;
+				add_a_option(document.form.wl_nctrlsb, "1", "Upper");
+				if (document.form.wl_nctrlsb_old.value == "1"){
+					document.form.wl_nctrlsb.options.selectedIndex=1;
+				}
 			}
 		}
 		else if (CurrentCh >= 11){
-			x.options[0].text = "Upper";
-			x.options[0].value = "1";
+			x.options[0].text = "Lower";
+			x.options[0].value = "0";
 		}
 		else{
 			x.options[0].text = "<% tcWebApi_Get("String_Entry", "Auto", "s") %>";
@@ -3472,7 +3475,7 @@ function wireless_mode_change(obj){
 function handle_11ac_80MHz(){
 	if(document.form.wl_nmode_x.value == '0' || document.form.wl_nmode_x.value == '2') //legacy: 0 for 2.4GHz, 2 for 5GHz
 		document.form.wl_bw[0].text = "20 MHz";
-	else if(band5g_support == -1 || band5g_11ac_support == -1 || document.form.wl_unit[0].selected == true || document.form.wl_nmode_x.value== '6' || document.form.wl_nmode_x.value== '11') {			
+	else if(!wl_info.band5g_support || band5g_11ac_support == -1 || document.form.wl_unit[0].selected == true || document.form.wl_nmode_x.value== '6' || document.form.wl_nmode_x.value== '11') {			
 		document.form.wl_bw[0].text = "20/40 MHz";
 		document.form.wl_bw.remove(3); //remove 80 Mhz when not when not required required
 	} 

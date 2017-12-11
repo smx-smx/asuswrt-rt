@@ -194,6 +194,12 @@
 #define ASUSDEV_LST_NODE	"AsusDevLst"
 #define ASUSDEV_LST_SIZE	255
 
+//Carlos Hua, 2016/03/28
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+#define NC_NODE                 "NTcenter"
+#define NC_ENTRY                "Entry"
+#endif
+
 typedef struct _UserDefClientDev
 {
 	char name[36];
@@ -444,4 +450,12 @@ int asusdev_lst_init(void);
 #ifdef RTCONFIG_TR069
 int tr_init(void);
 int tr_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
+#endif
+
+//Carlos Hua, 2016/03/28
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+int NTcenter_init(void);
+int NTcenter_boot(mxml_node_t *top);
+int NTcenter_write(mxml_node_t *top, mxml_node_t *parant);
+int NTcenter_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
 #endif

@@ -5,6 +5,9 @@ end if
 If Request_Form("update_networkmap_Flag") = "1" then
 	ClientList_Update()
 end if
+If Request_Form("experience_DSL_Flag") = "1" then
+	tcWebApi_Set("Misc_Entry","experience_DSL_fb","experience_DSL_Feedback")
+End if
 if Request_Form("action_script") = "aidisk_asusddns_register" then
 	tcWebApi_Set("Ddns_Entry", "Active", "ddns_enable_x")
 	tcWebApi_Set("Ddns_Entry", "MYHOST", "ddns_hostname_x")
@@ -137,6 +140,7 @@ elseif Request_Form("current_page") = "Advanced_VPNClient_Content.asp" then
 		update_variables()
 	end if
 	tcWebApi_Save()
+	tcWebApi_commit("VPNC_Entry")
 elseif Request_Form("current_page") = "Main_LogStatus_Content.asp" then	
 	if Request_Form("clearLog_Flag") = "1" then
 		tcWebApi_commit("LogAccess_ClearLog")
@@ -149,17 +153,6 @@ elseif Request_Form("current_page") = "Advanced_SettingBackup_Content.asp" then
 	elseif request_Form("postflag") = "5" then
 		tcWebApi_set("System_Entry","upgrade_fw_status","value_NONE")
 	end if
-elseif Request_Form("current_page") = "Advanced_IPTV_Content.asp" then
-	tcWebApi_set("IPTV_Entry", "switch_stb_x", "switch_stb_x")
-	tcWebApi_set("IPTV_Entry", "dr_enable_x", "dr_enable_x")
-	tcWebApi_set("IPTV_Entry", "mr_enable_x", "mr_enable_x")
-	tcWebApi_set("IPTV_Entry", "udpxy_enable_x", "udpxy_enable_x")
-	if tcWebApi_get("WebCustom_Entry","isMultiSerSupported","h") = "Yes" then
-		tcWebApi_set("IPTV_Entry", "rmvlan", "rmvlan")
-	end if
-	tcWebApi_set("GUITemp_Entry0", "switch_stb_modified", "modified")
-	tcWebApi_commit("IPTV")
-	tcWebApi_commit("Firewall")
 elseif Request_Form("current_page") = "Advanced_Feedback.asp" then
 	If Request_Form("saveFlag") = "1" Then
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_country","fb_country")
@@ -282,7 +275,7 @@ function qis_delay_redirect(next_url){
 	parent.parent.document.redirectForm.submit();
 }
 function redirect_page(next_url){
-	parent.location.href = "/cgi-bin/"+next_url;
+	parent.location.href = "/"+next_url;
 }
 function redirect(){
 	parent.location.href = 'http://'+parent.document.form.lan_ipaddr.value+'/QIS_wizard.asp?flag=detect';
@@ -333,8 +326,11 @@ function initial(){
 			}
 		}
 	}
-	else if(current_page.indexOf("Feedback") >= 0){
-				
+	else if(current_page.indexOf("Feedback_Info") >= 0){
+		setTimeout("redirect_page(next_page)", 200);
+	}
+	else if(current_page.indexOf("Advanced_Feedback") >= 0){
+		return;
 	}	
 	else if(getflag == "ddnscheck"){
 		setTimeout("parent.go_index_page();", 5000);

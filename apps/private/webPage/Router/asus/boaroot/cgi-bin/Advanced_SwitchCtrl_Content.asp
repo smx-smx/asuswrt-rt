@@ -1,7 +1,11 @@
 <%
 If Request_Form("hwnat_flag") = "1" Then
-  TCWebApi_set("Misc_Entry","hwnat_enable","hwnat")  
-  
+	TCWebApi_set("Misc_Entry","hwnat_enable","hwnat")
+	tcWebApi_commit("Misc_Entry")
+End If
+If Request_Form("hwnat_flag") = "2" Then
+	TCWebApi_set("Misc_Entry","hwnat_enable","hwnat")  
+	TCWebApi_set("Misc_Entry","jumbo_frame_enable","jumbo_frame_enable")
 	tcWebApi_commit("Misc_Entry")
 End If
 %>
@@ -30,11 +34,22 @@ End If
 <script>
 var wireless = []; // [[MAC, associated, authorized], ...]
 function initial(){
-show_menu();
+	show_menu();
+	
+	if(Jumbo_frame_support >= 0)	//Jumbo_frame_support
+		inputCtrl(document.form.jumbo_frame_enable, 1);
+	else
+		inputCtrl(document.form.jumbo_frame_enable, 0);
+			
 }
 function applyRule(){
 	if(valid_form()){
-		document.form.hwnat_flag.value = "1";
+				
+		if(Jumbo_frame_support >= 0)
+			document.form.hwnat_flag.value = "2";
+		else
+			document.form.hwnat_flag.value = "1";	
+			
 		showLoading(5);
 		setTimeout("redirect();", 5000);
 		document.form.submit();
@@ -44,7 +59,7 @@ function redirect(){
 	document.location.href = "/cgi-bin/Advanced_SwitchCtrl_Content.asp";
 }
 function valid_form(){
-return true;
+	return true;
 }
 </script>
 </head>
@@ -97,15 +112,15 @@ return true;
 <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 <div class="formfontdesc"><%tcWebApi_get("String_Entry","SwitchCtrl_desc","s")%></div>
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
-<!--tr>
-      <th><%tcWebApi_get("String_Entry","jumbo_frame","s")%></th>
+<tr>
+	<th><%tcWebApi_get("String_Entry","jumbo_frame","s")%></th>
 <td>
 	<select name="jumbo_frame_enable" class="input_option">
-		<option class="content_input_fd" value="0"><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_buttonname","s")%></option>
-		<option class="content_input_fd" value="1"><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_button1name","s")%></option>
+		<option class="content_input_fd" value="0" <% if tcWebApi_get("Misc_Entry","jumbo_frame_enable","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_buttonname","s")%></option>
+		<option class="content_input_fd" value="1" <% if tcWebApi_get("Misc_Entry","jumbo_frame_enable","h") = "1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_button1name","s")%></option>
 	</select>
 </td>
-</tr-->
+</tr>
 <tr>
       <th><%tcWebApi_get("String_Entry","NAT_Acceleration","s")%></th>
 <td>

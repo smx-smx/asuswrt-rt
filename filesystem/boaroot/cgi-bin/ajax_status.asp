@@ -32,5 +32,6 @@
   <vpn>vpn_client4_errno=<% tcWebApi_Get("OpenVPN_Entry14", "errno", "s") %></vpn>
   <vpn>vpn_client5_errno=<% tcWebApi_Get("OpenVPN_Entry15", "errno", "s") %></vpn>
   <% secondary_ajax_wanstate(); %>
+  <sys>uptimeStr=<% uptime(); %></sys>
   <usb>modem_enable=<% tcWebApi_staticGet("USBModem_Entry","modem_enable","s") %></usb>
 </devicemap>

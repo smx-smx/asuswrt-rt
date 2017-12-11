@@ -17,7 +17,7 @@ var detect_dhcp_pppoe = "";
 var current_lanip = '<% tcWebApi_get("Lan_Entry","IP","s") %>';
 var current_mask = '<% tcWebApi_get("Lan_Entry","netmask","s") %>';
 var new_lan_ip = '';
-var reboot_time = 5;
+var setting_LAN_time = 23;
 var wanstate = -1;
 var wansbstate = -1;
 var wanauxstate = -1;
@@ -169,9 +169,9 @@ function manually_start_wan_Link(){
 }
 
 function change_lan_subnet(){
-	showLoadingBar(reboot_time);
+	showLoadingBar(setting_LAN_time);
 	send_setting();
-	setTimeout("check_system_ready();", reboot_time*1000);
+	setTimeout("check_system_ready();", setting_LAN_time*1000);
 }
 
 function check_system_ready(){
@@ -185,7 +185,7 @@ function check_system_ready(){
 		$("#proceeding_img_text")[0].innerHTML = "<%tcWebApi_get("String_Entry","Main_alert_proceeding_desc3","s")%>";
 		$("#proceeding_action")[0].innerHTML = "<%tcWebApi_get("String_Entry","APS_action_renew_success","s")%>";
 
-		setTimeout("parent.location = \"http://"+new_lan_ip+"/cgi-bin/index.asp\"", 2*1000);
+		setTimeout("parent.location = \"http://"+new_lan_ip+"/cgi-bin/QIS_wizard.asp?flag=detect\"", 2*1000);
 	}
 }
 

@@ -31,7 +31,7 @@
 
 #include "shutils.h"
 #include "shared.h"
-
+#include "misc.h"
 
 extern char *read_whole_file(const char *target){
 	FILE *fp;
@@ -849,7 +849,7 @@ int ubi_getinfo(const char *ubiname, int *dev, int *part, int *size)
 
 // -----------------------------------------------------------------------------
 
-#if defined(RTCONFIG_SSH) || defined(RTCONFIG_HTTPS)
+#if defined(TCSUPPORT_SSH) || defined(RTCONFIG_HTTPS)
 int nvram_get_file(const char *key, const char *fname, int max)
 {
 	int n;
@@ -918,6 +918,52 @@ int nvram_set_file(const char *key, const char *fname, int max)
 	}
 	return 0;
 */
+}
+int nvram_get_multiattr_file(const char *key, const char *attr, const char *fname, int max)
+{
+	int n;
+	char *p;
+	char *b;
+	int r;
+	char buf[500 * 32];
+	
+	r = 0;
+	memset(buf, 0, sizeof(buf));
+	tcapi_get_multiattr(key, attr, buf, sizeof(buf));
+	n = strlen(buf);
+	
+	if (n <= max && n > 0 ) {
+		if ((b = malloc(base64_decoded_len(n) + 128)) != NULL) {
+			n = base64_decode(&buf, (unsigned char *) b, n);
+			if (n > 0) r = (f_write(fname, b, n, 0, 0644) == n);
+			free(b);
+		}
+	} else return 0;
+	return r;
+}
+
+int nvram_set_multiattr_file(const char *key, const char *attr, const char *fname, int max)
+{
+	char *in;
+	char *out;
+	long len;
+	int n;
+	int r;
+
+	if ((len = f_size(fname)) > max) return 0;
+	max = (int)len;
+	r = 0;
+	if (f_read_alloc(fname, &in, max) == max) {
+		if ((out = malloc(base64_encoded_len(max) + 128)) != NULL) {
+			n = base64_encode((unsigned char *) in, out, max);
+			out[n] = 0;
+			tcapi_set_multiattr(key, attr, out, strlen(out));
+			free(out);
+			r = 1;
+		}
+		free(in);
+	}
+	return r;
 }
 #endif
 
@@ -1532,6 +1578,44 @@ int ovpn_crt_is_empty(const char *name)
 #endif
 	}
 }
+
+int get_openvpn_account(openvpn_accnt_info_t *account_info) 
+{
+	char nv[4096], *nvp, *b;
+	char *username, *passwd;
+	int index = 0;
+
+	if ((account_info == NULL))
+	{
+		return 0;
+	}
+
+	bzero(account_info, sizeof(openvpn_accnt_info_t));
+	bzero(nv, sizeof(nv));
+
+	nvp = nv;
+	if(tcapi_get_multiattr("OpenVPN_Common", "vpn_server_clientlist", nv, sizeof(nv)) == TCAPI_PROCESS_OK)
+	{
+		while ((b = strsep(&nvp, "<")) != NULL) 
+		{
+			if((vstrsep(b, ">", &username, &passwd)!=2)) continue;
+			if(strlen(username)==0||strlen(passwd)==0) continue;
+
+			snprintf(account_info->account[index].name, sizeof(account_info->account[index].name),
+				"%s", username);
+			snprintf(account_info->account[index].passwd, sizeof(account_info->account[index].passwd),
+				"%s", passwd);
+
+			index++;
+		}
+
+		account_info->count = index;
+	}
+
+	return 0;
+}
+
+
 #endif
 
 #if 0//#ifdef RTCONFIG_DUALWAN

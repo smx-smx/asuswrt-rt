@@ -1,6 +1,8 @@
 #if defined(TCSUPPORT_WEBSERVER_SSL)
 #include "boa.h"
 #include <shutils.h>
+#include "shared.h"
+#include "libtcapi.h"
 #define SSL_KEYF "/etc/key.pem"
 #define SSL_CERTF "/etc/cert.pem"
 #define SSL_CERT_GEN	"/usr/script/gencert.sh"
@@ -22,26 +24,13 @@ int  boa_sslInit(void)
 	tcdbg_printf( "[%s, %d]Generate new key.\n", __FUNCTION__, __LINE__);
 	unsigned long long sn;
 	char t[32];
-	
-	//TODO: create key	
-	
-	unlink(SSL_KEYF);
-	unlink(SSL_CERTF);
-	f_read("/dev/urandom", &sn, sizeof(sn));
-	sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
-	eval(SSL_CERT_GEN, t);
-	if(access(SSL_KEYF, F_OK) || access(SSL_CERTF, F_OK))
-	{
-		tcdbg_printf("[%s, %d]Couldn't create key for ssl\n", __FUNCTION__, __LINE__);
-		DIE("Couldn't create key for ssl");
-	}
 
 	if(access(SSL_KEYF, F_OK) || access(SSL_CERTF, F_OK))
 	{
-		tcdbg_printf("[%s, %d]Couldn't create key for ssl\n", __FUNCTION__, __LINE__);
-		DIE("Couldn't create key for ssl");
+		f_read("/dev/urandom", &sn, sizeof(sn));
+		sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
+		eval(SSL_CERT_GEN, t);
 	}
-
 
 	tcdbg_printf( "[%s, %d]Enabling SSL security system\n", __FUNCTION__, __LINE__);
 	if ((server_ssl = socket(SERVER_AF, SOCK_STREAM, IPPROTO_TCP)) == -1)
@@ -98,7 +87,7 @@ int  boa_sslInit(void)
 
 void  boa_sslUninit()
 {
-	tcdbg_printf("[%s, %d]\n", __FUNCTION__, __LINE__);
+	//tcdbg_printf("[%s, %d]\n", __FUNCTION__, __LINE__);
 	mssl_deinit(ssl_ctx);
 }
 

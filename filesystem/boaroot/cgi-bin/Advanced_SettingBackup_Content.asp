@@ -26,7 +26,6 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
-<script language="JavaScript" type="text/javascript" src="/ajax.js"></script>
 <script>
 var $j = jQuery.noConflict();
 wan_route_x = '';
@@ -47,7 +46,7 @@ function redirect_self(){
 	document.location.href = "/cgi-bin/Advanced_SettingBackup_Content.asp";
 }
 
-function uiDoUpdate()
+function uploadSetting()
 {
 	var form=document.uiPostUpdateForm;
 
@@ -93,12 +92,16 @@ function uiDoUpdate()
 	}
 	else {
 		if (string3 >= 0) {
-			showLoading(120); //90
+			showtext(document.getElementById("loading_block2"), "<%tcWebApi_get("String_Entry","SET_ok_desc","s")%>");
+			document.getElementById('loading_block3').style.display = "none";
+			showLoadingBar(120);
 			form.postflag.value = "1";
 			form.submit();
 		}
-		else
+		else{
 			alert("<%tcWebApi_get("String_Entry","Setting_upload_hint","s")%>");
+			form.tools_FW_UploadFile.focus();
+		}	
 	}
 }
 
@@ -109,13 +112,17 @@ function backup_settings()
 	eval(code);
 }
 
-function restart()
+function restoreRule()
 {
-	var alert_string = "All current settings are deleted and the router will be restored to its factory default settings. Are you sure you want to continue?";
+	var alert_string = "<%tcWebApi_get("String_Entry","Setting_factorydefault_hint1","s")%>";
+	alert_string += "<%tcWebApi_get("String_Entry","Setting_factorydefault_hint2","s")%>";
 	if(confirm(alert_string)){
+		document.tools_System_Restore.RestartBtn.blur();
 		document.tools_System_Restore.rebootFlag.value=1;
-		showLoadingBar(120); //90
-		setTimeout("redirect();", 120000); //90000
+		showtext(document.getElementById("loading_block2"), "<%tcWebApi_get("String_Entry","SAVE_restart_desc","s")%>");
+		document.getElementById('loading_block3').style.display = "none";
+		showLoading(120);
+		setTimeout("redirect();", 120000);
 		document.tools_System_Restore.submit();
 	}
 	else
@@ -152,34 +159,40 @@ function chk_upgrade(){
 </head>
 <body onload="initial();">
 <div id="TopBanner"></div>
+
 <div id="LoadingBar" class="popup_bar_bg">
 <table cellpadding="5" cellspacing="0" id="loadingBarBlock" class="loadingBarBlock" align="center">
-<tr>
-<td height="80">
-<div id="loading_block1" class="Bar_container">
-<div id="proceeding_img_text" ></div>
-<div id="proceeding_img"></div>
-</div>
-		<div id="loading_text" style="margin:5px auto; width:85%;"><%tcWebApi_get("String_Entry","SAVE_restart_desc","s")%></div>
-</td>
-</tr>
+	<tr>
+		<td height="80">
+		<div id="loading_block1" class="Bar_container">
+			<div id="proceeding_img_text"></div>
+			<div id="proceeding_img"></div>
+		</div>
+		<div id="loading_block2" style="margin:5px auto; width:85%;"></div>
+		<div id="loading_block3" style="margin:5px auto; width:85%; font-size:12pt;"></div>	
+		</td>
+	</tr>
 </table>
+<!--[if lte IE 6.5]><iframe class="hackiframe"></iframe><![endif]-->
 </div>
 <div id="hiddenMask" class="popup_bg">
-<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center">
-<tr>
-<td>
-<div class="drword" id="drword"><%tcWebApi_get("String_Entry","Main_alert_proceeding_desc4","s")%> <%tcWebApi_get("String_Entry","Main_alert_proceeding_desc1","s")%>...
-<br/>
-<br/>
-</div>
-<div class="drImg"><img src="/images/alertImg.png"></div>
-<div style="height:70px; "></div>
-</td>
-</tr>
-</table>
+	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center">
+		<tr>
+		<td>
+			<div class="drword" id="drword"><%tcWebApi_get("String_Entry","Main_alert_proceeding_desc4","s")%> <%tcWebApi_get("String_Entry","Main_alert_proceeding_desc1","s")%>...
+				<br/>
+				<br/>
+		    </div>
+		  <div class="drImg"><img src="/images/alertImg.png"></div>
+			<div style="height:70px; "></div>
+		</td>
+		</tr>
+	</table>
+<!--[if lte IE 6.5]><iframe class="hackiframe"></iframe><![endif]-->
 </div>
 <div id="Loading" class="popup_bg"></div>
+<!--for uniform show, useless but have exist-->
+
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
 <form method="post" name="form" action="" target="hidden_frame">
 <input type="hidden" name="action_mode" value="">
@@ -210,11 +223,11 @@ function chk_upgrade(){
 <tr>
             <th width="25%" align="right"><a class="hintstyle"  href="javascript:void(0);" onclick="openHint(19,1)"><%tcWebApi_get("String_Entry","Setting_factorydefault_in","s")%></a></th>
 <td>
-<FORM METHOD="POST" ACTION="/cgi-bin/Advanced_SettingBackup_Content.asp" name="tools_System_Restore" target="hidden_frame">
+<FORM METHOD="POST" ACTION="/Advanced_SettingBackup_Content.asp" name="tools_System_Restore" target="hidden_frame">
 <INPUT TYPE="HIDDEN" NAME="testFlag" VALUE="0">
 <INPUT TYPE="HIDDEN" NAME="restoreFlag" VALUE="2">
 <INPUT TYPE="HIDDEN" NAME="rebootFlag" value="0">
-<input class="button_gen" onclick="restart();" type="button" value="<%tcWebApi_get("String_Entry","CTL_restore","s")%>" name="RestartBtn" />
+<input class="button_gen" onclick="restoreRule();" type="button" value="<%tcWebApi_get("String_Entry","CTL_restore","s")%>" name="RestartBtn" />
 </form>
 </td>
 </tr>
@@ -233,7 +246,7 @@ function chk_upgrade(){
             <th align="right"><a class="hintstyle" href="javascript:void(0);" onclick="openHint(19,3)"><%tcWebApi_get("String_Entry","Setting_upload_in","s")%></a></th>
 <td>
 <div style="margin-left:-10px;"><table><tr>
-<td style="border:0px"><input type="button" class="button_gen" onclick="uiDoUpdate();" value="<% tcWebApi_Get("String_Entry", "CTL_upload", "s") %>"/></td>
+<td style="border:0px"><input type="button" class="button_gen" onclick="uploadSetting();" value="<% tcWebApi_Get("String_Entry", "CTL_upload", "s") %>"/></td>
 <td style="border:0px"><input type="file" name="tools_FW_UploadFile" class="input" style="color:#FFCC00;"/></td>
 </tr></table></div>
 </td>

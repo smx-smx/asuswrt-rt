@@ -312,7 +312,7 @@ function showadslbootTime(){
 <div>&nbsp;</div>
 <div class="formfonttitle"><%tcWebApi_get("String_Entry","System_Log","s")%> - <%tcWebApi_get("String_Entry","menu_dsl_log","s")%></div>
 <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
-<div class="formfontdesc"><% tcWebApi_Get("String_Entry", "GeneralLog_title", "s") %></div>
+<div class="formfontdesc">This page shows the detailed DSL status.</div>	<!-- untranslated -->
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_log">
 <thead>
 <tr>

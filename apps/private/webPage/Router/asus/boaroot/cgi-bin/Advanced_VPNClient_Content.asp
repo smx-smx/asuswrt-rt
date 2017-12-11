@@ -211,7 +211,7 @@ function addRow_Group(upper, flag, idx){
 
 			document.vpnclientForm.vpnc_pptp_options_x_list.value = vpnc_pptp_options_x_list_array;
 			document.form.vpnc_pptp_options_x_list.value = vpnc_pptp_options_x_list_array;
-			show_vpnc_rulelist();
+			disableCheckChangedStatus();	//stop to trigger show_vpnc_rulelist()
 
 			if(restart_vpncall_flag == 1){	//restart_vpncall
 				var vpnc_clientlist_row = vpnc_clientlist_array.split('<');
@@ -328,7 +328,7 @@ function addRow_Group(upper, flag, idx){
 				vpnc_pptp_options_x_list_array = handlePPTPOPtion(idx, document.form.selPPTPOption.value, vpnc_clientlist_array);
 			}
 
-			show_vpnc_rulelist();
+			disableCheckChangedStatus();	//stop to trigger show_vpnc_rulelist()
 			cancel_add_rule();
 			document.vpnclientForm.listFlag.value = "1";
 			if(vpnc_clientlist_array.charAt(0) != "<")	//add the 1st "<"

@@ -71,6 +71,16 @@ ifneq ($(strip $(ASUS_SPECTRUM)),)
 	cp -rf $(APP_SPECTRUM_DIR)/spectrum  $(APP_BINARY_DIR)/$(TCPLATFORM)
 endif
 
+#Release hwinfo
+ifneq ($(strip $(ASUS_HWINFO)),)
+	cp -rf $(APP_HWINFO_DIR)/hwinfo  $(APP_BINARY_DIR)/$(TCPLATFORM)
+endif
+
+#Release sysstate
+ifneq ($(strip $(ASUS_SYSSTATE)),)
+	cp -rf $(APP_SYSSTATE_DIR)/sysstate  $(APP_BINARY_DIR)/$(TCPLATFORM)
+endif
+
 #Release auto_det
 	cp -rf $(APP_AUTO_DET_DIR)/auto_det  $(APP_BINARY_DIR)/$(TCPLATFORM)
 

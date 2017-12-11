@@ -226,7 +226,7 @@ function initial(){
 	else
 		document.getElementById("rssiTr").style.display = "none";
 
-	if(band5g_support == -1)
+	if(!wl_info.band5g_support)
 		document.getElementById("wl_unit_field").style.display = "none";
 
 	document.getElementById("wl_rate").style.display = "none";

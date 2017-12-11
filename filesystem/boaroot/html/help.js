@@ -79,15 +79,16 @@ function suspendconn(wan_index, wanenable){
 	setTimeout('location = "'+ location.pathname +'";', 2000);
 	document.internetForm_title.submit();
 }
+
 function enableMonomode(){
-document.titleForm.action = "/apply.cgi";
-document.titleForm.action_mode.value = "mfp_monopolize";
-document.titleForm.current_page.value = "/device-map/printer.asp";
-document.form.target = "hidden_frame";
-showLoading(2);
-setTimeout('location = "'+ location.pathname +'";', 2000);
-document.titleForm.submit();
+	document.titleForm.action = "/apply.asp";
+	document.titleForm.action_mode.value = "mfp_monopolize";
+	document.titleForm.action_wait.value = "2";
+	showLoading(2);
+	setTimeout('location = "'+ location.pathname +'";', 2000);
+	document.titleForm.submit();
 }
+
 function remove_disk(disk_num){
 var str = "<% tcWebApi_Get("String_Entry", "Safelyremovedisk_confirm", "s") %>";
 if(confirm(str)){
@@ -107,39 +108,52 @@ function gotoDSL_log(){
 top.location.href = "Main_AdslStatus_Content.asp";
 }
 
+function gotoModem(){	
+	if( dualWAN_support != -1 && usb_index == -1 ){
+		top.location.href = "/Advanced_WANPort_Content.asp";	
+	}
+	else{
+		top.location.href = "/Advanced_Modem_Content.asp";
+	}
+}
+
 <% available_disk_names_and_sizes(); %>
 
 var debug_end_time = parseInt('<% tcWebApi_staticGet("DslDiag_Entry","dslx_diag_end_uptime","s") %>');
 var wans_mode = '<% tcWebApi_staticGet("Dualwan_Entry","wans_mode","s") %>';
 var wans_lanport = '<%tcWebApi_Get("Dualwan_Entry", "wans_lanport", "s")%>';
+var usb_path0_product = '<% tcWebApi_get("USB_Entry","usb_path1_product","s") %>';
+var usb_path1_product = '<% tcWebApi_get("USB_Entry","usb_path2_product","s") %>';
 
 function overHint(itemNum){
 	var statusmenu = "";
+	var lineDesc = "";
 	var title2 = 0;
 	var title5 = 0;
 	if(itemNum == 9){		//Viz add 2013.03 for adsl sync status
 		statusmenu = "<div class='StatusHint'>DSL :</div>";
+		if(wan_line_state == "up")
+                        lineDesc += "Link up";
+                else if(wan_line_state == "wait for init")
+                        lineDesc += "Wait for init";
+                else if(wan_line_state == "initializing")
+                        lineDesc += "Initializing";
+                else
+                        lineDesc += "Link down";
+
 		if(wan_diag_state == "1" && 
 			((rc_support.search("usbX1") >= 0 && usb_path1.search("storage") >= 0) || 
-				(rc_support.search("usbX2") >= 0 && (usb_path1.search("storage") >= 0 && usb_path2.search("storage") >= 0)))
+				(rc_support.search("usbX2") >= 0 && (usb_path1.search("storage") >= 0 || usb_path2.search("storage") >= 0)))
 		){
-			lineDesc = "Diagnostic debug log capture in progress.<br>";
-			lineDesc += show_diagTime();
+			lineDesc += "<br>Diagnostic debug log capture in progress.<br>";
+			lineDesc += show_diagTime(boottime_update);
 		}
-		else if(wan_line_state == "up")
-			lineDesc = "Link up";
-		else if(wan_line_state == "wait for init")	
-			lineDesc = "Wait for init";
-		else if(wan_line_state == "initializing")
-			lineDesc = "Initializing";
-		else
-			lineDesc = "Link down";
 			
 		statusmenu += "<span>" + lineDesc + "</span>";	
 	}	
 	if(itemNum == 8){
 		statusmenu = "<div class='StatusHint'>Wi-Fi:</div>";
-		if(band5g_support != -1){
+		if(wl_info.band5g_support){
 			if(wlan0_radio_flag == "0" && wlan1_radio_flag == "0")
 				wifiDesc = '<b>2.4GHz -</b><br><% tcWebApi_Get("String_Entry","btn_Disabled","s") %><br><br><b>5GHz -</b><br><% tcWebApi_Get("String_Entry","btn_Disabled","s") %>';
 			else if(wlan0_radio_flag == "1" && wlan1_radio_flag == "0")
@@ -168,11 +182,25 @@ function overHint(itemNum){
 			coolerDesc = "cooler=Automatic"
 		statusmenu += "<span>" + coolerDesc.substring(7, coolerDesc.length) + "</span>";
 	}
+
+	//printer
 	if(itemNum == 6){
-		statusmenu = "<div class='StatusHint'><%tcWebApi_get("String_Entry","Printing_button_item","s")%></div>";
-		if(monoClient == "monoClient=" || monoClient == "monoClient=N/A")
-			monoClient = "monoClient=Disabled"
-		statusmenu += "<span>" + monoClient.substring(11, monoClient.length) + "</span>";
+		var i = -1;
+		if (usb_path1.search("printer") >= 0) i=0;
+		if (usb_path2.search("printer") >= 0) i=1;
+		if(i != -1) {
+			statusmenu = "<div class='StatusHint'>" + printer_manufacturers()[i] + " " + printer_models()[i] + "</div>";
+			if(printer_serialn()[i] == '<% tcWebApi_get("USB_Entry", "u2ec_serial", "s") %>') {
+				statusmenu += '<div><%tcWebApi_get("String_Entry","CTL_Enabled","s")%></div>';
+				if(monoClient != "monoClient=" && monoClient != "monoClient=N/A")
+					statusmenu += '<span><%tcWebApi_get("String_Entry","Printing_button_item","s")%>' + monoClient.substring(11, monoClient.length) + '</span>';
+			}
+			else {
+				statusmenu += '<div><%tcWebApi_get("String_Entry","CTL_Disabled","s")%></div>';
+			}
+		}
+		else
+			return overlib(statusmenu, OFFSETX, -160, LEFT, DELAY, 400);
 	}
 	if(itemNum == 5){
 		statusmenu = "<span class='StatusHint'><%tcWebApi_get("String_Entry","no_printer_detect","s")%></span>";
@@ -181,57 +209,66 @@ function overHint(itemNum){
 		for(var i=0; i<gn_array_2g.length; i++){
 			if(gn_array_2g[i][0] == 1){
 				if(title2 == 0){
-					if(band5g_support != -1)
+					if(wl_info.band5g_support)
 						statusmenu += "<div class='StatusHint'>2.4GHz Network:</div>";
 					else //DSL-N16U ...
 						statusmenu += "<div class='StatusHint'><%tcWebApi_get("String_Entry","Guest_Network","s")%>:</div>";
 
 					title2 = 1;
 				}
-				statusmenu += "<span>"+ decodeURIComponent(gn_array_2g[i][1]) + " (";
+				statusmenu += "<span><b>"+ decodeURIComponent(gn_array_2g[i][1]) + "</b><br> (";
 				
 				if(gn_array_2g[i][11] == 0)
 						statusmenu += '<%tcWebApi_get("String_Entry","Limitless","s")%>)</span><br>';
 				else{
-					var expire_hr = Math.floor(gn_array_2g[i][13]/3600);
+					var expire_day = Math.floor(gn_array_2g[i][13]/86400);
+					var expire_hr = Math.floor((gn_array_2g[i][13]%86400)/3600);
 					var expire_min = Math.floor((gn_array_2g[i][13]%3600)/60);
 					
-					if(expire_hr > 0)
-						statusmenu += '<b id="expire_hr_'+i+'">'+ expire_hr + '</b> Hr <b id="expire_min_'+i+'">' + expire_min +'</b> Min';
+					statusmenu += '<%tcWebApi_get("String_Entry","mssid_time_remaining", "s")%>: ';
+					if(expire_day > 0)
+						statusmenu += '<b id="expire_day_'+i+'">'+ expire_day + '</b> <% tcWebApi_Get("String_Entry", "Day", "s") %> <b id="expire_hr_'+i+'">'+ expire_hr + '</b> <% tcWebApi_Get("String_Entry", "Hour", "s") %> <b id="expire_min_'+i+'">' + expire_min +'</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %>';
+					else if(expire_hr > 0)
+						statusmenu += '<b id="expire_hr_'+i+'">'+ expire_hr + '</b> <% tcWebApi_Get("String_Entry", "Hour", "s") %> <b id="expire_min_'+i+'">' + expire_min +'</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %>';
 					else{
 						if(expire_min > 0)
-								statusmenu += '<b id="expire_min_'+i+'">' + expire_min +'</b> Min';
+								statusmenu += '<b id="expire_min_'+i+'">' + expire_min +'</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %>';
 						else	
-								statusmenu += '<b id="expire_min_'+i+'">< 1</b> Min';
+								statusmenu += '<b id="expire_min_'+i+'">< 1</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %>';
 					}	
-					statusmenu += " left)</span><br>";		
+					statusmenu += ")</span><br>";
 				}
 			
 			}
 		}
-		if(band5g_support != -1){
+		if(wl_info.band5g_support){
 			for(var i=0; i<gn_array_2g.length; i++){
 				if(gn_array_5g[i][0] == 1){
 					if(title5 == 0){
 						statusmenu += "<div class='StatusHint' style='margin-top:15px;'>5GHz Network:</div>";
 						title5 = 1;
 					}
-					statusmenu += "<span>" + decodeURIComponent(gn_array_5g[i][1]) + " (";
+					statusmenu += "<span><b>" + decodeURIComponent(gn_array_5g[i][1]) + "</b><br> (";
 					
 					if(gn_array_5g[i][11] == 0)
 						statusmenu += '<%tcWebApi_get("String_Entry","Limitless","s")%>)</span><br>';
 					else{
-						var expire_hr = Math.floor(gn_array_5g[i][13]/3600);
+						var expire_day = Math.floor(gn_array_5g[i][13]/86400);
+						var expire_hr = Math.floor((gn_array_5g[i][13]%86400)/3600);
 						var expire_min = Math.floor((gn_array_5g[i][13]%3600)/60);
-						if(expire_hr > 0)
-							statusmenu += '<b id="expire_hr_'+i+'">'+ expire_hr + '</b> Hr <b id="expire_min_'+i+'">' + expire_min +'</b> Min';
+						
+						statusmenu += '<%tcWebApi_get("String_Entry","mssid_time_remaining", "s")%>: ';						
+						if(expire_day > 0)
+							statusmenu += '<b id="expire_day_'+i+'">'+ expire_day + '</b> <% tcWebApi_Get("String_Entry", "Day", "s") %> <b id="expire_hr_'+i+'">'+ expire_hr + '</b> <% tcWebApi_Get("String_Entry", "Hour", "s") %> <b id="expire_min_'+i+'">' + expire_min +'</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %>';
+						else if(expire_hr > 0)
+							statusmenu += '<b id="expire_hr_'+i+'">'+ expire_hr + '</b> <% tcWebApi_Get("String_Entry", "Hour", "s") %> <b id="expire_min_'+i+'">' + expire_min +'</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %>';
 						else{
 							if(expire_min > 0)
-								statusmenu += '<b id="expire_min_'+i+'">' + expire_min +'</b> Min';
+								statusmenu += '<b id="expire_min_'+i+'">' + expire_min +'</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %>';
 							else	
-								statusmenu += '<b id="expire_min_'+i+'">< 1</b> Min';							
+								statusmenu += '<b id="expire_min_'+i+'">< 1</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %>';
 						}	
-						statusmenu += " left)</span><br>";
+						statusmenu += ")</span><br>";
 					}									
 				}
 			}
@@ -503,65 +540,46 @@ function overHint(itemNum){
 		}
 	}
 	if(itemNum == 2){
-		var dmStatus = "Not installed";
-		if(nodm_support != -1){
-			var dmStatus = "Not support.";
-		}
-
 		var apps_dev = "<% tcWebApi_Get("Apps_Entry", "apps_dev", "s") %>";
-
-		if(foreign_disk_total_mounted_number()[0] == null){
+				
+		if(foreign_disk_total_mounted_number()[0] == "" && usb_path1 != "usb=modem" && usb_path2 != "usb=modem"){
 			statusmenu = "<div class='StatusHint'><% tcWebApi_Get("String_Entry", "no_usb_found", "s") %></div>";
 		}
 		else if(foreign_disk_total_mounted_number()[0] == "0" && foreign_disk_total_mounted_number()[foreign_disk_total_mounted_number().length-1] == "0"){
 			statusmenu = "<span class='StatusHint'><% tcWebApi_Get("String_Entry", "usb_unmount", "s") %></span>";
 		}
 		else{
-			statusmenu = "<div class='StatusHint'>Download Master:</div>";
-			if(getCookie_help("dm_install") == null || getCookie_help("dm_enable") == null)
-				dmStatus = "<% tcWebApi_Get("String_Entry", "USB_App_check", "s") %>";
-			else if(getCookie_help("dm_install") == "yes" && getCookie_help("dm_enable") == "yes"){
-				if(pool_devices() != ""){ // avoid no disk error
-					partitions_array = pool_devices();
-					for(var i = 0; i < partitions_array.length; i++){
-						if(apps_dev == partitions_array[i]){
-							if(i > foreign_disk_total_mounted_number()[0]){
-								dmStatus = "" + decodeURIComponent(foreign_disks()[1]) + "";
-								DMDiskNum = foreign_disk_interface_names()[0];
-							}
-							else{
-								dmStatus = "" + decodeURIComponent(foreign_disks()[0]) + "";
-								DMDiskNum = foreign_disk_interface_names()[1];
-							}
-						}
-					}
+			
+			for(i=0; i<foreign_disk_interface_names().length; i++){
+				statusmenu += "<div class='StatusHint'>"+ foreign_disks()[i] +":";
+				statusmenu += "<br><span class='StatusHint' style='font-weight:normal'>storage</span>";
+				if(pool_status()[i] == "unmounted"){
+					statusmenu += "<br><span class='StatusHint'><% tcWebApi_Get("String_Entry", "DISK_UNMOUNTED", "s") %></span>";
 				}
-			}
-			else if(getCookie_help("dm_install") == "no"){
-				dmStatus = "Not installed";
-				if(nodm_support != -1){
-					dmStatus = "Not support.";
-				}
-			}
-			else if(getCookie_help("dm_enable") == "no" && getCookie_help("dm_install") == "yes")
-				dmStatus = "<% tcWebApi_Get("String_Entry","btn_Disabled","s") %>";
-			statusmenu += "<span>"+ dmStatus +"</span>";
-			if(usb_path1 == "usb=modem" || usb_path2 == "usb=modem"){
-				statusmenu += "<div class='StatusHint'><%tcWebApi_get("String_Entry","HSDPAC_USBAdapter_in","s")%>:</div>";
-				statusmenu += "<span>On</span>";
+				statusmenu += "</div><br>";	
+			}	
+									
+			if(usb_path1 == "usb=modem"){
+				statusmenu += "<div class='StatusHint'>"+usb_path0_product+":";
+				statusmenu += "<br><span class='StatusHint' style='font-weight:normal'><% tcWebApi_Get("String_Entry", "menu5_4_4", "s") %></span>";
+				statusmenu += "</div><br>";
+			}	
+			if(usb_path2 == "usb=modem"){
+				statusmenu += "<div class='StatusHint'>"+usb_path1_product+":";
+				statusmenu += "<br><span class='StatusHint' style='font-weight:normal'><% tcWebApi_Get("String_Entry", "menu5_4_4", "s") %></span>";
+				statusmenu += "</div><br>";
 			}
 		}
 	}
 	return overlib(statusmenu, OFFSETX, -160, LEFT, DELAY, 400);
 }
 
-function show_diagTime(){
+function show_diagTime(boottime_update){
 				
-	Etime = debug_end_time - boottime;
+	Etime = debug_end_time - boottime_update;
 	EHours = Math.floor(Etime / 3600);	
 	EMinutes = Math.floor(Etime % 3600 / 60);	
-	boottime += 1;
-	//setTimeout("show_diagTime();", 1000);
+	
 	if(EHours <= 0 && EMinutes <= 0)
 		return "<% tcWebApi_Get("String_Entry", "mssid_time_remaining", "s") %> : <span>0</span> <% tcWebApi_Get("String_Entry", "Hour", "s") %> <span>0</span> <% tcWebApi_Get("String_Entry", "Minute", "s") %>";
 	else
@@ -581,6 +599,17 @@ function openHint(hint_array_id, hint_show_id, flag){
 			statusmenu = "<span class='StatusClickHint' onclick='cancel_diag();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>Cancel debug capture</span>";
 			_caption = "DSL Line Diagnostic capture";
 		}
+		else if(hint_show_id == 7){
+			statusmenu = "<span class='StatusClickHint' onclick='gotoModem();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>";
+			if(dualWAN_support != -1 && usb_index == -1){
+				statusmenu += "<%tcWebApi_get("String_Entry","Activate_usb","s")%></span>"
+				_caption = "<%tcWebApi_get("String_Entry","dualwan","s")%>";
+			}
+			else{
+				statusmenu += "<%tcWebApi_get("String_Entry","GO_HSDPA_SETTING","s")%></span>"
+				_caption = "<%tcWebApi_get("String_Entry","menu5_4_4","s")%>";	
+			}
+		}
 		else if(hint_show_id == 6){
 			statusmenu = "<span class='StatusClickHint' onclick='gotoDSL_log();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>Go to DSL Log</span>";
 			_caption = "DSL Log";
@@ -599,13 +628,12 @@ function openHint(hint_array_id, hint_show_id, flag){
 				if(dualWAN_support == -1 || wans_dualwan_array[1] == "none"){
 						if((link_status == "2" && link_auxstatus == "0") || (link_status == "2" && link_auxstatus == "2"))
 								statusmenu = "<span class='StatusClickHint' onclick='suspendconn(0,2);' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'><%tcWebApi_get("String_Entry","disconnect_internet","s")%></span>";
-						//else if(link_status == "2" && link_auxstatus == "2") //link_status == 5
 						else{
 								statusmenu = "<span class='StatusClickHint' onclick='goToWAN(0);' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>";								
 								if(usb_index == 0){	//pri WAN == usb
-									//if(gobi_support)
-										//statusmenu += "Go to Mobile Broadband Setting.</span>";
-									//else
+									if(gobi_support)
+										statusmenu += "Go to Mobile Broadband Setting.</span>";
+									else
 										statusmenu += "<%tcWebApi_get("String_Entry","GO_HSDPA_SETTING","s")%></span>";
 								}	
 								else
@@ -670,8 +698,8 @@ function openHint(hint_array_id, hint_show_id, flag){
 			_caption = "<% tcWebApi_Get("String_Entry", "statusTitle_Internet", "s") %>";
 		}
 		else if(hint_show_id == 2){
-			var statusmenu = "";
-			for(i=0; i<foreign_disk_interface_names().length; i++){
+			var statusmenu = "";			
+			for(i=0; i<foreign_disk_interface_names().length; i++){				
 				if(foreign_disk_total_mounted_number()[0] == ""){
 					statusmenu = "<span class='StatusHint'><% tcWebApi_Get("String_Entry", "no_usb_found", "s") %></span>";
 					break;
@@ -687,10 +715,10 @@ function openHint(hint_array_id, hint_show_id, flag){
 					continue;
 			}
 			if(current_url!="index2.asp" && current_url!=""){
-			if((usb_path_tmp[0] != usb_path1) && usb_path1 != "usb=" && usb_path1 != "usb=printer")
-			statusmenu += "<div style='margin-top:2px;' class='StatusClickHint' onclick='remove_disk(1);' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'><%tcWebApi_get("String_Entry","Eject_usb_disk","s")%> <span style='font-weight:normal'>USB Disk 1</span></div>";
-			if((usb_path_tmp[1] != usb_path2) && usb_path2 != "usb=" && usb_path2 != "usb=printer")
-			statusmenu += "<div style='margin-top:2px;' class='StatusClickHint' onclick='remove_disk(2);' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'><%tcWebApi_get("String_Entry","Eject_usb_disk","s")%> <span style='font-weight:normal'>USB Disk 2</span></div>";
+				if((usb_path_tmp[0] != usb_path1) && usb_path1 != "usb=" && usb_path1 != "usb=printer")
+					statusmenu += "<div style='margin-top:2px;' class='StatusClickHint' onclick='remove_disk(1);' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'><%tcWebApi_get("String_Entry","Eject_usb_disk","s")%> <span style='font-weight:normal'>USB Disk 1</span></div>";
+				if((usb_path_tmp[1] != usb_path2) && usb_path2 != "usb=" && usb_path2 != "usb=printer")
+					statusmenu += "<div style='margin-top:2px;' class='StatusClickHint' onclick='remove_disk(2);' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'><%tcWebApi_get("String_Entry","Eject_usb_disk","s")%> <span style='font-weight:normal'>USB Disk 2</span></div>";
 			}
 			_caption = "USB storage";
 		}

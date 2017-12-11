@@ -16,6 +16,7 @@
 #include "libtcapi.h"
 #include "tcapi.h"
 #include "apps.h"
+#include <json.h>
 
 #if defined(TCSUPPORT_GENERAL_MULTILANGUAGE)
 #include "parsers.h"
@@ -43,6 +44,8 @@
 #ifdef RTCONFIG_OPENVPN
 #include "openvpn_options.h"
 #endif
+#include <math.h> /*for ceil(), ASUS Router (AiHome) APP */
+#include <misc.h>
 
 char SystemCmd[128];
 
@@ -55,6 +58,10 @@ char SystemCmd[128];
 
 #define MAX_ATTRIBUTE_LEN 1024 //Ren
 #define SAFE_FREE(x)		if(x){free(x); x = NULL;}	//Andy Chiu, 2015/01/27
+
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+#include <libnt.h>
+#endif
 
 //Andy Chiu, 2015/01/23.
 //use it as printf, such as dbgprintf("test %s %d\n", "string", 123);
@@ -87,6 +94,73 @@ void con_dbgprintf (const char * format, ...)
 
 #define IF_LAN "br0"	//andy chiu, 2014/10/13
 
+/* image path for ASUS Router (AiHome) APP */
+#define IMAGE_MODEL_PRODUCT	"/images/Model_product.png"
+#define IMAGE_WANUNPLUG		"/images/WANunplug.png" //not support now
+#define IMAGE_ROUTER_MODE	"/images/New_ui/rt.jpg"
+#define IMAGE_REPEATER_MODE	"/images/New_ui/re.jpg"
+#define IMAGE_AP_MODE		"/images/New_ui/ap.jpg"
+#define IMAGE_MEDIA_BRIDGE_MODE	"/images/New_ui/mb.jpg" //not support now
+
+#define _U	0x01	/* upper */
+#define _L	0x02	/* lower */
+#define _D	0x04	/* digit */
+#define _C	0x08	/* cntrl */
+#define _P	0x10	/* punct */
+#define _S	0x20	/* white space (space/lf/tab) */
+#define _X	0x40	/* hex digit */
+#define _SP	0x80	/* hard space (0x20) */
+
+static unsigned char _ctype[] = {
+	_C,_C,_C,_C,_C,_C,_C,_C,			/* 0-7 */
+	_C,_C|_S,_C|_S,_C|_S,_C|_S,_C|_S,_C,_C,		/* 8-15 */
+	_C,_C,_C,_C,_C,_C,_C,_C,			/* 16-23 */
+	_C,_C,_C,_C,_C,_C,_C,_C,			/* 24-31 */
+	_S|_SP,_P,_P,_P,_P,_P,_P,_P,			/* 32-39 */
+	_P,_P,_P,_P,_P,_P,_P,_P,			/* 40-47 */
+	_D,_D,_D,_D,_D,_D,_D,_D,			/* 48-55 */
+	_D,_D,_P,_P,_P,_P,_P,_P,			/* 56-63 */
+	_P,_U|_X,_U|_X,_U|_X,_U|_X,_U|_X,_U|_X,_U,	/* 64-71 */
+	_U,_U,_U,_U,_U,_U,_U,_U,			/* 72-79 */
+	_U,_U,_U,_U,_U,_U,_U,_U,			/* 80-87 */
+	_U,_U,_U,_P,_P,_P,_P,_P,			/* 88-95 */
+	_P,_L|_X,_L|_X,_L|_X,_L|_X,_L|_X,_L|_X,_L,	/* 96-103 */
+	_L,_L,_L,_L,_L,_L,_L,_L,			/* 104-111 */
+	_L,_L,_L,_L,_L,_L,_L,_L,			/* 112-119 */
+	_L,_L,_L,_P,_P,_P,_P,_C,			/* 120-127 */
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,		/* 128-143 */
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,		/* 144-159 */
+	_S|_SP,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,   /* 160-175 */
+	_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,       /* 176-191 */
+	_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,       /* 192-207 */
+	_U,_U,_U,_U,_U,_U,_U,_P,_U,_U,_U,_U,_U,_U,_U,_L,       /* 208-223 */
+	_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,       /* 224-239 */
+	_L,_L,_L,_L,_L,_L,_L,_P,_L,_L,_L,_L,_L,_L,_L,_L	/* 240-255 */
+};
+#define __ismask(x) (_ctype[(int)(unsigned char)(x)])
+#define isalnum(c)	((__ismask(c)&(_U|_L|_D)) != 0)
+#define SHUT_RDWR 2
+void websRedirect_iframe(char *wp, char *url);
+void websApply(char *wp, char *url);
+extern	char *get_cgi_json(s_var **vars, char *name, json_object *root);
+void json_unescape(char *s);
+void decode_json_buffer(char *query);
+static int appSet_attribute(char *wp, json_object *root);
+static int appDo_rc_service(char *rc_service, char *wp, json_object *root);
+char *unqstrstr_t(char *haystack, char *needle);
+char *get_arg_t(char *args, char **next);
+char *filter(char *string, char c);
+//int ejArgs(int argc, char **argv, char *fmt, ...);
+char* reverse_str(char *str);
+static int check_macrepeat(char *maclist,char *mac);
+static int appGet_attribute(char *stream, char *name);
+static void appGet_encode(char *str);
+static void app_call(char *func, char *stream);
+static void do_appGet_cgi (asp_reent* reent, const asp_text* params, asp_text* ret);
+static void do_appGet_image_path_cgi (asp_reent* reent, const asp_text* params, asp_text* ret);
+static void do_upload_cgi (asp_reent* reent, const asp_text* params, asp_text* ret);
+
+
 static void get_post_multipart(request *req);
 static void get_post(request *req);
 static void get_query(request *req);
@@ -113,6 +187,7 @@ static void tcWebApi_clean_get (asp_reent* reent, const asp_text* params,  asp_t
 static void get_post_parameter (asp_reent* reent, const asp_text* params, asp_text* ret);
 
 static void _webs_clean_write(char* buf);
+static void get_all_accounts (asp_reent* reent, const asp_text* params, asp_text* ret);
 
 //Sam
 #ifdef RTCONFIG_USB
@@ -129,7 +204,7 @@ static void create_sharedfolder (asp_reent* reent, const asp_text* params, asp_t
 static void delete_sharedfolder (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void modify_sharedfolder (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void get_permissions_of_account (asp_reent* reent, const asp_text* params, asp_text* ret);
-static void get_all_accounts (asp_reent* reent, const asp_text* params, asp_text* ret);
+static void get_usb_accounts (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void create_account (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void delete_account (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void modify_account (asp_reent* reent, const asp_text* params, asp_text* ret);
@@ -169,8 +244,10 @@ static void _save_openvpn_server_static();
 #endif
 
 static void qis_do_dsl_iptv (asp_reent* reent, const asp_text* params, asp_text* ret);
-static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* ret);
+static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* ret); /* modify for ASUS Router (AiHome) APP */
 static void wanstate (asp_reent* reent, const asp_text* params, asp_text* ret);
+static void set_current_active_wan(asp_reent* reent, const asp_text* params, asp_text* ret);
+static void wl_nband_info(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void disable_other_wan (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void wanlink (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void first_wanlink (asp_reent* reent, const asp_text* params, asp_text* ret);
@@ -200,11 +277,17 @@ static void get_asus_dev_list(asp_reent* reent, const asp_text* params, asp_text
 static void get_cl_userdef_list(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2014/12/04
 static void get_static_dhcp_list(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2014/12/30
 static void dhcpLeaseMacList(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2015/08/11
+#ifdef ASUS_LOGIN_SESSION
+static void IP_dhcpLeaseInfo(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2015/12/03
+#endif
 #ifdef ASUS_DISK_UTILITY
 static void disk_scan(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2015/07/23
 static void disk_scan_result(asp_reent* reent, const asp_text* params, asp_text* ret);	//Andy Chiu, 2015/07/23
 #endif
 static int get_nat_vserver_table(char *wp);	//Andy Chiu, 2016/03/08
+#ifdef TCSUPPORT_WEBMON
+static void get_web_history_table(char *wp);
+#endif
 
 static void load_parameters_to_generic(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void load_parameters_from_generic(asp_reent* reent, const asp_text* params, asp_text* ret);
@@ -289,6 +372,25 @@ extern	int	islangChanged(void);
 #ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
 static void stop_dsl_diag(asp_reent* reent, const asp_text* params, asp_text* ret);
 #endif
+#ifdef ASUS_BUSYBOX_NEW
+static void get_isp_dhcp_opt_list(asp_reent* reent, const asp_text* params, asp_text* ret);
+#endif
+#ifdef ASUS_LOGIN_SESSION
+static void do_login(asp_reent* reent, const asp_text* params, asp_text* ret);
+static int login_try;
+static int MAX_login;
+#endif
+
+static void get_iptv_wan_list_ad(asp_reent* reent, const asp_text* params, asp_text* ret);
+#if defined(TCSUPPORT_WAN_PTM) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+static void get_iptv_wan_list_vd(asp_reent* reent, const asp_text* params, asp_text* ret);
+#endif
+#if defined(TCSUPPORT_WAN_ETHER) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+static void get_iptv_wan_list_eth(asp_reent* reent, const asp_text* params, asp_text* ret);
+#endif
+#ifdef TCSUPPORT_WAN_ETHER_LAN
+static void available_eth_lan_wan_port(asp_reent* reent, const asp_text* params, asp_text* ret);
+#endif
 
 #define MAX_IF_NUM 4
 
@@ -312,6 +414,7 @@ netDev_t EthernetWANData; //nas10
 //Ren.E
 
 int isPPPoA_boa = 0;
+const char cl_cache_path[] = "/var/tmp/cl_cache"; /* for ASUS Router (AiHome) APP */
 
 //Ren.B
 typedef struct wifiIfName_s
@@ -324,6 +427,14 @@ wifiIfName_t Wifi2Gifname;
 wifiIfName_t Wifi5Gifname;
 //Ren.E
 
+/* for web history */
+typedef struct clientInfo_s
+{
+	char ipaddr[64];
+	char mac[32];
+}clientInfo_t;
+clientInfo_t landev[512];
+
 int asp_handler(request * req)
 {
 	int ret, i;
@@ -331,7 +442,7 @@ int asp_handler(request * req)
 
 	memset(username, 0, sizeof(username));
 	//fprintf(stderr,"%s mothed:%d %s \n",__FUNCTION__,req->method,req->pathname);
-	//tcdbg_printf("**req->pathname: %s\n", req->pathname);
+	//dbgprintf("**req->pathname: %s\n", req->pathname);
 	for(i = 0 ; i < 1; i++){
 		sprintf(nodename, "Account_Entry%d", i);
 		ret = tcapi_get(nodename, "username", username);
@@ -353,7 +464,13 @@ int asp_handler(request * req)
 
 	//special case: logout. Sam, 2013/7/3
 	if(strstr(req->pathname, "Logout.asp"))
-		tcapi_set("WebCurSet_Entry","login_ip_tmp", "none");
+	{
+#ifdef ASUS_LOGIN_SESSION		
+		//Andy Chiu, 2015/12/14. remove token
+		dbgprintf("[%s, %d]reset data for logout.\n", __FUNCTION__, __LINE__);
+		RM_TOKEN_ITEM_BY_IP(req->remote_ip_addr);
+#endif
+	}
 
 	g_var_post = NULL;
 #if defined(TCSUPPORT_WEBSERVER_SSL)
@@ -361,6 +478,10 @@ int asp_handler(request * req)
 	dontDoAsp = 0;
 #endif
 	fd_out = req->fd;
+#ifdef ASUS_LOGIN_SESSION		
+	if(!strstr(req->pathname, "login.asp"))
+	{
+#endif
 	if(http_header() == -1)
 	{
 		close(fd_out);
@@ -368,6 +489,9 @@ int asp_handler(request * req)
 		req->keepalive = KA_INACTIVE;//Ian_20070326
 		return 0;//Ian_20070326
 	}
+#ifdef ASUS_LOGIN_SESSION		
+	}
+#endif
 
 	if((req->method == M_POST) && req->content_length){
 		if(req->content_type == NULL)
@@ -436,9 +560,9 @@ static void get_post_multipart(request *req){
 				}
 			}
 			strcpy(boundary,c_ret+i);
-			//tcdbg_printf("bound = %s\n",boundary);
+			//dbgprintf("bound = %s\n",boundary);
 		}else{
-			tcdbg_printf("boundary too long!!!upgrade fail\n");
+			dbgprintf("boundary too long!!!upgrade fail\n");
 			return;
 		}
 	}
@@ -481,6 +605,18 @@ static void get_post(request *req)
 	ret = read(req->post_data_fd,post,len);
 	if(ret<=0)
 		goto exit;
+
+#ifdef ASUS_LOGIN_SESSION
+	//Andy Chiu, 2015/12/30. For app login
+	if(strstr(req->request_uri, "login.asp")
+		/* for ASUS Router (AiHome) APP */
+		|| strstr(req->request_uri, "appGet.asp")
+		|| strstr(req->request_uri, "Applyapp.asp"))
+	{
+		decode_uri(post);
+	}
+#endif
+
 	g_var_post = parse_param_line (post);
 
 exit:
@@ -985,6 +1121,7 @@ void init_asp_funcs(void)
     append_asp_func("get_parameter", get_post_parameter);
 	append_asp_func("tcWebApi_MatchThenWrite", tcWebApi_MatchThenWrite);
 	append_asp_func("tcWebApi_clean_get", tcWebApi_clean_get);
+	append_asp_func("get_all_accounts", get_all_accounts);
 	//Sam
 #ifdef RTCONFIG_USB
 	append_asp_func("get_folder_tree", get_folder_tree);
@@ -998,7 +1135,7 @@ void init_asp_funcs(void)
 	append_asp_func("delete_sharedfolder", delete_sharedfolder);
 	append_asp_func("modify_sharedfolder", modify_sharedfolder);
 	append_asp_func("get_permissions_of_account", get_permissions_of_account);
-	append_asp_func("get_all_accounts", get_all_accounts);
+	append_asp_func("get_usb_accounts", get_usb_accounts);
 	append_asp_func("create_account", create_account);
 	append_asp_func("delete_account", delete_account);
 	append_asp_func("modify_account", modify_account);
@@ -1034,8 +1171,14 @@ void init_asp_funcs(void)
 	append_asp_func("vpnupload_cgi", do_vpnupload_cgi);
 #endif
 	append_asp_func("qis_do_dsl_iptv", qis_do_dsl_iptv);
+	/* for ASUS Router (AiHome) APP */
 	append_asp_func("do_apply_cgi", do_apply_cgi);
+	append_asp_func("do_appGet_cgi", do_appGet_cgi);
+	append_asp_func("do_appGet_image_path_cgi", do_appGet_image_path_cgi);
+	append_asp_func("do_upload_cgi", do_upload_cgi);
 	append_asp_func("wanstate", wanstate);
+	append_asp_func("set_current_active_wan", set_current_active_wan);
+	append_asp_func("wl_nband_info", wl_nband_info);
 	append_asp_func("disable_other_wan", disable_other_wan);
 	append_asp_func("wanlink", wanlink);
 	append_asp_func("first_wanlink", first_wanlink);
@@ -1067,6 +1210,9 @@ void init_asp_funcs(void)
 	append_asp_func("get_cl_userdef_list", get_cl_userdef_list);	//Andy Chiu, 2014/12/04
 	append_asp_func("get_static_dhcp_list", get_static_dhcp_list);	//Andy Chiu, 2014/12/30
 	append_asp_func("dhcpLeaseMacList", dhcpLeaseMacList);	//Andy Chiu, 2015/08/11	
+#ifdef ASUS_LOGIN_SESSION
+	append_asp_func("IP_dhcpLeaseInfo", IP_dhcpLeaseInfo);	//Andy Chiu, 2015/12/03	
+#endif
 #ifdef ASUS_DISK_UTILITY
 	append_asp_func("disk_scan", disk_scan);	//Andy Chiu, 2015/07/22
 	append_asp_func("disk_scan_result", disk_scan_result);	//Andy Chiu, 2015/07/23
@@ -1119,6 +1265,22 @@ void init_asp_funcs(void)
 #endif
 #ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
     append_asp_func ("stop_dsl_diag", stop_dsl_diag);
+#endif
+#ifdef ASUS_BUSYBOX_NEW
+    append_asp_func ("get_isp_dhcp_opt_list", get_isp_dhcp_opt_list);	
+#endif
+#ifdef ASUS_LOGIN_SESSION
+    append_asp_func ("do_login", do_login);
+#endif
+    append_asp_func ("get_iptv_wan_list_ad", get_iptv_wan_list_ad);
+#if defined(TCSUPPORT_WAN_PTM) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+    append_asp_func ("get_iptv_wan_list_vd", get_iptv_wan_list_vd);
+#endif
+#if defined(TCSUPPORT_WAN_ETHER) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+    append_asp_func ("get_iptv_wan_list_eth", get_iptv_wan_list_eth);
+#endif
+#ifdef TCSUPPORT_WAN_ETHER_LAN
+    append_asp_func ("available_eth_lan_wan_port", available_eth_lan_wan_port);
 #endif
 }
 
@@ -1298,7 +1460,7 @@ request_Form (asp_reent* reent, const asp_text* params,  asp_text* ret)
     	memset(tmp,0,params[0].len+1);
     	memcpy(tmp,params[0].str,params[0].len);
     	val = get_param(g_var_post,tmp);
-	//tcdbg_printf("request name %s value %s\n",tmp,val);
+	//dbgprintf("request name %s value %s\n",tmp,val);
       if(val ==NULL)
     		return;
 		decode_uri(val);
@@ -1364,9 +1526,13 @@ tcWebApi_Set (asp_reent* reent, const asp_text* params,  asp_text* ret)
 			|| !strcmp(value, "vpnc_clientlist")
 			|| !strcmp(value, "qos_rulelist")
 			|| !strcmp(value, "qos_bw_rulelist")
+			|| !strcmp(value, "MULTIFILTER_DEVICENAME")
 			|| !strcmp(value, "MULTIFILTER_MACFILTER_DAYTIME")
 		) {
 			r_val = tcapi_set_list(value, v_tmp);
+		}
+		else if(!strcmp(value, "vpn_server_clientlist")) {
+			r_val = tcapi_set_multiattr(node, attr, v_tmp, strlen(v_tmp));
 		}
 		else {
 			r_val=tcapi_set(node, attr,v_tmp);
@@ -1749,9 +1915,9 @@ wl_get_2G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	strcat(buf, "]");
 	asp_send_response (NULL,buf,strlen(buf));
 	/* The example as the following:
-	       [["0", "ASUS_Guest1", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]
-		["0", "ASUS_Guest2", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]
-		["0", "ASUS_Guest3", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]]  */
+	       [["0", "ASUS_Guest1", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", "", "", "", ""]
+		["0", "ASUS_Guest2", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", "", "", "", ""]
+		["0", "ASUS_Guest3", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", "", "", "", ""]]  */
 }
 
 void
@@ -1829,9 +1995,9 @@ wl_get_5G_guestnetwork(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	strcat(buf, "]");
 	asp_send_response (NULL,buf,strlen(buf));
 	/* The example as the following:
-		       [["0", "ASUS_5G_Guest1", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]
-			["0", "ASUS_5G_Guest2", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]
-			["0", "ASUS_5G_Guest3", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", ""]]  */
+		       [["0", "ASUS_5G_Guest1", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", "", "", "", ""]
+			["0", "ASUS_5G_Guest2", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", "", "", "", ""]
+			["0", "ASUS_5G_Guest3", "open", "aes", "", "0", "1", "", "", "", "", "0", "off", "", "disabled", "", "", "", "", "", ""]]  */
 }
 
 void
@@ -1996,7 +2162,7 @@ tcWebApi_char_to_ascii(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	char *node,*attr,*show;
 	int r_val;
 	int str_length=0;
-	static char val[1024];
+	static char val[4096];
 	char tmp[1024];
 	char *buf = tmp;
 
@@ -2022,10 +2188,16 @@ tcWebApi_char_to_ascii(asp_reent* reent, const asp_text* params, asp_text* ret) 
 	else if(!strcmp(node, "VPNC_Entry") && !strcmp(attr, "clientlist")) {
 		r_val = tcapi_get_list("vpnc_clientlist", val, sizeof(val));
 	}
+	else if(!strcmp(node, "OpenVPN_Common") && !strcmp(attr, "vpn_server_clientlist")) {
+		r_val = tcapi_get_multiattr(node, attr, val, sizeof(val));
+	}
 	else if(!strcmp(attr, "qos_rulelist")) {
 		r_val = tcapi_get_list(attr, val, sizeof(val));
 	}
 	else if(!strcmp(attr, "qos_bw_rulelist")) {
+		r_val = tcapi_get_list(attr, val, sizeof(val));
+	}
+	else if(!strcmp(attr, "MULTIFILTER_DEVICENAME")) {
 		r_val = tcapi_get_list(attr, val, sizeof(val));
 	}
 	else if(!strcmp(attr, "MULTIFILTER_MACFILTER_DAYTIME")) {
@@ -2958,9 +3130,9 @@ static void ej_check_acpw(asp_reent* reent, const asp_text* params, asp_text* re
 
 	strcpy(result, "0");
 	if(tcapi_match("Account_Entry0", "username", default_acpw) && tcapi_match("Account_Entry0", "web_passwd", default_acpw))
-	{
 		strcpy(result, "1");
-	}
+	else
+		strcpy(result, "0");
 
 	asp_send_response( NULL, result, strlen(result));
 }
@@ -3054,6 +3226,9 @@ tcWebApi_Get (asp_reent* reent, const asp_text* params,  asp_text* ret)
 				r_val = tcapi_get_list(attr, val, sizeof(val));
 			}
 			else if(!strcmp(attr, "qos_bw_rulelist")) {
+				r_val = tcapi_get_list(attr, val, sizeof(val));
+			}
+			else if(!strcmp(attr, "MULTIFILTER_DEVICENAME")) {
 				r_val = tcapi_get_list(attr, val, sizeof(val));
 			}
 			else if(!strcmp(attr, "MULTIFILTER_MACFILTER_DAYTIME")) {
@@ -3228,7 +3403,7 @@ tcWebApi_Commit (asp_reent* reent, const asp_text* params,  asp_text* ret)
 
 #ifdef RTCONFIG_TR069
 	if(pids("tr069")) {
-		tcdbg_printf("value change from web!\n");
+		dbgprintf("value change from web!\n");
 		eval("sendtocli", "http://127.0.0.1:1234/web/value/change", "\"name=change\"");
 	}
 #endif
@@ -3261,18 +3436,18 @@ tcWebApi_delay_CommitWithoutSave (asp_reent* reent, const asp_text* params,  asp
 	node = (char*)asp_alloc(reent,params[0].len+1);
 	memset(node,0,params[0].len+1);
 	memcpy(node,params[0].str,params[0].len);
-	//tcdbg_printf("node name %s \n", node);
+	//dbgprintf("node name %s \n", node);
 
 	if (params[1].str && params[1].len) {
 		tmp = (char*)asp_alloc(reent,params[1].len+1);
 		memset(tmp,0,params[1].len+1);
 		memcpy(tmp,params[1].str,params[1].len);
-		//tcdbg_printf("delay time=%d seconds\n", atoi(tmp));
+		//dbgprintf("delay time=%d seconds\n", atoi(tmp));
 	}
 	sleep(atoi(tmp));
 
 	r_val=tcapi_commit(node);
-    //tcdbg_printf("commit ret = %d node %s\n",r_val,node);
+    //dbgprintf("commit ret = %d node %s\n",r_val,node);
 
 }
 
@@ -3566,7 +3741,7 @@ get_post_parameter (asp_reent* reent, const asp_text* params, asp_text* ret)
 		memcpy(tmp,params[0].str,params[0].len);
 		val = get_param(g_var_post,tmp);
 
-		//tcdbg_printf("request name %s value %s\n",tmp,val);
+		//dbgprintf("request name %s value %s\n",tmp,val);
 		if(val ==NULL)
 			return;
 
@@ -3576,6 +3751,54 @@ get_post_parameter (asp_reent* reent, const asp_text* params, asp_text* ret)
 		asp_send_response(NULL, val, strlen(val));
 	}
 }
+
+static void
+get_all_accounts (asp_reent* reent, const asp_text* params, asp_text* ret) {
+	char tmp[256];
+	int i;
+#ifdef RTCONFIG_USB
+	int acc_num;
+	char **account_list = NULL;
+	int result, first;
+
+	if ((result = get_account_list(&acc_num, &account_list)) < 0){
+		printf("Failed to get the account list!\n");
+		return;// -1;
+	}
+
+	first = 1;
+	for (i = 0; i < acc_num; ++i){
+		if (first == 1)
+			first = 0;
+		else
+			asp_send_response(NULL, ", ", 2);//websWrite(wp, ", ");
+
+		//websWrite(wp, "\"%s\"", account_list[i]);
+		sprintf(tmp, "\"%s\"", account_list[i]);
+		asp_send_response(NULL, tmp, strlen(tmp));
+	}
+
+	free_2_dimension_list(&acc_num, &account_list);
+#endif
+
+#ifdef RTCONFIG_OPENVPN
+	do {
+		openvpn_accnt_info_t account_info;
+
+		get_openvpn_account(&account_info);
+
+		for (i=0; i<account_info.count; i++)
+		{
+			sprintf(tmp, ", \"%s\"", account_info.account[i].name);
+			asp_send_response(NULL, tmp, strlen(tmp));
+		}
+	} while(0);
+#endif
+	
+	return;// 0;
+}
+
+
 
 #ifdef RTCONFIG_USB
 /*____________________________________________________________________
@@ -5119,7 +5342,7 @@ _check_vars () {
 
 static void
 set_share_mode (asp_reent* reent, const asp_text* params, asp_text* ret) {
-	char tmp[1024] = {0};
+	char tmp[4096] = {0};
 	tcapi_get("Samba_Entry", "st_samba_mode", tmp);
 	int samba_mode = atoi(tmp);
 	tcapi_get("Samba_Entry", "st_ftp_mode", tmp);
@@ -5128,9 +5351,18 @@ set_share_mode (asp_reent* reent, const asp_text* params, asp_text* ret) {
 	tcapi_get("AiCloud_Entry", "st_webdav_mode", tmp);
 	int webdav_mode = atoi(tmp);
 #endif
-	char *dummyShareway = get_param(g_var_post, "dummyShareway");//websGetVar(wp, "dummyShareway", "");
-	char *protocol = get_param(g_var_post, "protocol");//websGetVar(wp, "protocol", "");
-	char *mode = get_param(g_var_post, "mode");//websGetVar(wp, "mode", "");
+	struct json_object *root=NULL;
+	FILE *fp;
+	fp = fopen("/tmp/boa-temp", "r");
+	if(fp) {
+		fgets(tmp, 4096, fp);
+		fclose(fp);
+	}
+	decode_json_buffer(tmp);
+	root = json_tokener_parse(tmp);
+	char *dummyShareway = get_cgi_json(g_var_post, "dummyShareway", root);//websGetVar(wp, "dummyShareway", "");
+	char *protocol = get_cgi_json(g_var_post, "protocol", root);//websGetVar(wp, "protocol", "");
+	char *mode = get_cgi_json(g_var_post, "mode", root);//websGetVar(wp, "mode", "");
 	// int result;
 
 	if (dummyShareway && strlen(dummyShareway) > 0)
@@ -5148,6 +5380,7 @@ set_share_mode (asp_reent* reent, const asp_text* params, asp_text* ret) {
 		asp_send_response(NULL, tmp, strlen(tmp));
 
 		clean_error_msg();
+		json_object_put(root);
 		return;// -1;
 	}
 	if (strlen(mode) <= 0){
@@ -5160,6 +5393,7 @@ set_share_mode (asp_reent* reent, const asp_text* params, asp_text* ret) {
 		asp_send_response(NULL, tmp, strlen(tmp));
 
 		clean_error_msg();
+		json_object_put(root);
 		return;// -1;
 	}
 	if (!strcmp(mode, "share")){
@@ -5195,6 +5429,7 @@ set_share_mode (asp_reent* reent, const asp_text* params, asp_text* ret) {
 			asp_send_response(NULL, tmp, strlen(tmp));
 
 			clean_error_msg();
+			json_object_put(root);
 			return;// -1;
 		}
 	}
@@ -5231,6 +5466,7 @@ set_share_mode (asp_reent* reent, const asp_text* params, asp_text* ret) {
 			asp_send_response(NULL, tmp, strlen(tmp));
 
 			clean_error_msg();
+			json_object_put(root);
 			return;// -1;
 		}
 	}
@@ -5244,6 +5480,7 @@ set_share_mode (asp_reent* reent, const asp_text* params, asp_text* ret) {
 		asp_send_response(NULL, tmp, strlen(tmp));
 
 		clean_error_msg();
+		json_object_put(root);
 		return;// -1;
 	}
 
@@ -5279,6 +5516,7 @@ set_share_mode (asp_reent* reent, const asp_text* params, asp_text* ret) {
 		asp_send_response(NULL, tmp, strlen(tmp));
 
 		clean_error_msg();
+		json_object_put(root);
 		return;// -1;
 	}
 
@@ -5302,6 +5540,7 @@ SET_SHARE_MODE_SUCCESS:
 	sprintf(tmp, "<script>\nset_share_mode_success();\n</script>\n");
 	asp_send_response(NULL, tmp, strlen(tmp));
 
+	json_object_put(root);
 	return;// 0;
 }
 
@@ -5324,8 +5563,9 @@ void not_ej_initial_folder_var_file()						// J++
 	free_disk_data(&disks_info);
 }
 
+#ifdef RTCONFIG_USB
 static void
-get_all_accounts (asp_reent* reent, const asp_text* params, asp_text* ret) {
+get_usb_accounts (asp_reent* reent, const asp_text* params, asp_text* ret) {
 	int acc_num;
 	char **account_list = NULL;
 	int result, i, first;
@@ -5349,8 +5589,10 @@ get_all_accounts (asp_reent* reent, const asp_text* params, asp_text* ret) {
 	}
 
 	free_2_dimension_list(&acc_num, &account_list);
+
 	return;// 0;
 }
+#endif
 
 static void create_account (asp_reent* reent, const asp_text* params, asp_text* ret) {
 	char *account = get_param(g_var_post, "account");//websGetVar(wp, "account", "");
@@ -6907,7 +7149,14 @@ static void ej_webdavInfo(asp_reent* reent, const asp_text* params, asp_text* re
 	websWrite(wp, "'%s',", tcapi_get_string(NodeName, "WanIP", buf));
 	websWrite(wp, "'%s',", "");	//nvram_safe_get("")
 	websWrite(wp, "'%s',", tcapi_get_string("SysInfo_Entry", "x_Setting", buf));
-	websWrite(wp, "'%s'", tcapi_get_string("AiCloud_Entry", "webdav_https_port", buf));
+	websWrite(wp, "'%s',", tcapi_get_string("AiCloud_Entry", "webdav_https_port", buf));
+	/* for ASUS Router (AiHome) APP */
+#ifdef RTCONFIG_WEBDAV
+	websWrite(wp, "'1'");
+#else
+	if(check_if_file_exist("/opt/etc/init.d/S50aicloud")) websWrite(wp, "'1'");
+	else websWrite(wp, "'0'");
+#endif
 	websWrite(wp, "];\n");
 
 	return;
@@ -7194,13 +7443,13 @@ static char *get_msg_from_dict(char *lang_path, const char *const msg_name){
 
 	dict_info = read_whole_file(dict_file);
 	if (dict_info == NULL){
-		tcdbg_printf("No dictionary file, \"%s\".\n", dict_file);
+		dbgprintf("No dictionary file, \"%s\".\n", dict_file);
 		return NULL;
 	}
 
 	follow_info = strstr(dict_info, msg_name);
 	if (follow_info == NULL){
-		tcdbg_printf("No \"%s\" in the dictionary file.\n", msg_name);
+		dbgprintf("No \"%s\" in the dictionary file.\n", msg_name);
 		free(dict_info);
 		return NULL;
 	}
@@ -7214,7 +7463,7 @@ static char *get_msg_from_dict(char *lang_path, const char *const msg_name){
 
 	target = (char *)malloc(sizeof(char)*(len+1));
 	if (target == NULL){
-		tcdbg_printf("No memory \"target\".\n");
+		dbgprintf("No memory \"target\".\n");
 		free(dict_info);
 		return NULL;
 	}
@@ -7235,7 +7484,49 @@ static void qis_do_dsl_iptv (asp_reent* reent, const asp_text* params, asp_text*
 	int i = 0;
 	char node[MAXLEN_NODE_NAME];
 	char cmd[256];
+	char tmp[64];
 
+	//LAN IPTV Settings
+	tcapi_get("GUITemp_Entry0", "dsltmp_transfer_mode", dsltmp_transfer_mode);
+	
+	if(!strncmp(dsltmp_transfer_mode, "PTM", 3)) 	//PTM
+	{
+		if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_iptv_mr", "1")) {
+			tcapi_set("IPTV_Entry", "vd_mr_enable_x", "1");
+			tcapi_set("IPTV_Entry", "vd_wan_port", "1");
+		}
+		else {
+			tcapi_set("IPTV_Entry", "vd_mr_enable_x", "0");
+		}	
+		
+		if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_iptv_rmvlan", "1")) {
+			tcapi_set("IPTV_Entry", "vd_rmvlan", "1");
+		}
+		else {
+			tcapi_set("IPTV_Entry", "vd_rmvlan", "0");
+		}
+	}	
+	else	//ATM
+	{
+		if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_iptv_mr", "1")) {
+			tcapi_set("IPTV_Entry", "ad_mr_enable_x", "1");
+			tcapi_set("IPTV_Entry", "ad_wan_port", "1");
+		}
+		else {
+			tcapi_set("IPTV_Entry", "ad_mr_enable_x", "0");
+		}
+
+		if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_iptv_rmvlan", "1")) {
+			tcapi_set("IPTV_Entry", "ad_rmvlan", "1");
+		}
+		else {
+			tcapi_set("IPTV_Entry", "ad_rmvlan", "0");
+		}
+	}
+
+	tcapi_commit("IPTV");
+
+	//Set Wan
 	if(tcapi_get("GUITemp_Entry0", "dsltmp_cfg_iptv_pvclist", dsltmp_cfg_iptv_pvclist) == TCAPI_PROCESS_OK
 		&& tcapi_get("GUITemp_Entry0", "dsltmp_transfer_mode", dsltmp_transfer_mode) == TCAPI_PROCESS_OK
 	) {
@@ -7244,7 +7535,7 @@ static void qis_do_dsl_iptv (asp_reent* reent, const asp_text* params, asp_text*
 			if((vstrsep(b, ">", &p1, &p2, &p3, &p4, &p5) != 5))
 				continue;
 			++i;
-			_dprintf("set vpi/vci,proto,encap,vlan: [%s/%s][%s][%s][%s]\n", p1,p2,p3,p4,p5);
+			//dbgprintf("[%s, %d]set vpi/vci,proto,encap,vlan: [%s/%s][%s][%s][%s]\n", __FUNCTION__, __LINE__, p1,p2,p3,p4,p5);
 			if(!strncmp(dsltmp_transfer_mode, "PTM", 3)) {
 				snprintf(node, sizeof(node), "WanExt_PVC8e%d", i);
 			}
@@ -7253,10 +7544,31 @@ static void qis_do_dsl_iptv (asp_reent* reent, const asp_text* params, asp_text*
 				tcapi_set(node, "VPI", p1);
 				tcapi_set(node, "VCI", p2);
 
-				if(strcmp(p4, "1"))
+				if(strcmp(p4, "1"))	//LLC
+				{
+					//check protocol
+					if(!strcmp(p3, "0"))		//pppoe0
+						tcapi_set(node, "ENCAP", "PPPoE LLC");
+					else if(!strcmp(p3, "1"))	//pppoa
+						tcapi_set(node, "ENCAP", "PPPoA LLC");
+					else if(!strcmp(p3, "2"))	//Automatic IP
+						tcapi_set(node, "ENCAP", "1483 Bridged IP LLC");
+//					else if(!strcmp(p3, "4"))	//ipoa
+					else	//bridge				
 					tcapi_set(node, "ENCAP", "1483 Bridged Only LLC");
-				else
+				}	
+				else	//VC-MUX
+				{
+					if(!strcmp(p3, "0"))		//pppoe
+						tcapi_set(node, "ENCAP", "PPPoE VC-Mux");
+					else if(!strcmp(p3, "1"))	//pppoa
+						tcapi_set(node, "ENCAP", "PPPoA VC-Mux");
+					else if(!strcmp(p3, "2"))	//Automatic IP
 					tcapi_set(node, "ENCAP", "1483 Bridged IP VC-Mux");
+//					else if(!strcmp(p3, "4"))	//ipoa
+					else	//bridge				
+						tcapi_set(node, "ENCAP", "1483 Bridged Only VC-Mux");
+				}
 
 				//QoS
 				//tcapi_set(node,"QOS","rt-vbr");
@@ -7264,11 +7576,66 @@ static void qis_do_dsl_iptv (asp_reent* reent, const asp_text* params, asp_text*
 				//tcapi_set(node,"SCR","299");
 				//tcapi_set(node,"MBS","32");
 			}
+
+			//dbgprintf("[%s, %d]node(%s)\n", __FUNCTION__, __LINE__, node);
+			
 			//proto
-			if(!strcmp(p3, "2"))
+			if(!strcmp(p3, "0") || !strcmp(p3, "1"))		//ppp
+			{
+				tcapi_set(node, "ISP", "2");
+
+				if(!tcapi_get("GUITemp_Entry0", "dsltmp_cfg_iptv_username", tmp) && tmp[0] != '\0')
+					tcapi_set(node, "USERNAME", tmp);
+				
+				if(!tcapi_get("GUITemp_Entry0", "dsltmp_cfg_iptv_passwd", tmp) && tmp[0] != '\0')
+					tcapi_set(node, "PASSWORD", tmp);
+
+				tcapi_set(node, "WAN_MAC", "");
+				tcapi_set(node, "AUTHEN", "AUTO");
+				tcapi_set(node, "CONNECTION", "Connect_Keep_Alive");
+				tcapi_set(node, "CLOSEIFIDLE", "0");
+				tcapi_set(node, "MSS", "0");
+				tcapi_set(node, "MTU", "1492");
+				tcapi_set(node, "wan_pppoe_options", "");
+				tcapi_set(node, "PPPGETIP", "Dynamic");
+				tcapi_set(node, "MLDproxy", "No");
+				tcapi_set(node, "DNS_type", "0");
+				tcapi_set(node, "Primary_DNS", "");
+				tcapi_set(node, "Secondary_DNS", "");
+				tcapi_set(node, "RIPVERSION", "RIP1");
+				tcapi_set(node, "DIRECTION", "None");
+				tcapi_set(node, "DEFAULTROUTE", "No");
+				tcapi_set(node, "PPPv6Mode", "");
+				tcapi_set(node, "PPPv6PD", "Yes");
+				tcapi_set(node, "LASTmss", "0");				
+			}
+			else  if(!strcmp(p3, "2"))	//dhcp
+			{
 				tcapi_set(node, "ISP", "0");
+				if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_iptv_dns_enable", "1"))
+				{					
+					tcapi_set(node, "DNS_type", "1");
+					if(!tcapi_get("GUITemp_Entry0", "dsltmp_cfg_iptv_dns1", tmp) && tmp[0] != '\0')
+						tcapi_set(node, "Primary_DNS", tmp);
+
+					if(!tcapi_get("GUITemp_Entry0", "dsltmp_cfg_iptv_dns2", tmp) && tmp[0] != '\0')
+						tcapi_set(node, "Secondary_DNS", tmp);					
+				}
 			else
+					tcapi_set(node, "DNS_type", "0");
+				tcapi_set(node, "MLDproxy", "No");				
+				tcapi_set(node, "DEFAULTROUTE", "No");				
+				tcapi_set(node, "MTU", "1492");				
+				tcapi_set(node, "RIPVERSION", "RIP1");				
+				tcapi_set(node, "IPOE_DOT1X_STATUS", "Disabled");				
+			}
+			else	//bridge
+			{
+				dbgprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
 				tcapi_set(node, "ISP", "3");
+				tcapi_set(node, "bridge_lan_port", "1");
+			}
+			
 			//vlan
 			if(!strcmp(p5, "")) {
 				tcapi_set(node, "dot1q", "No");
@@ -7282,7 +7649,7 @@ static void qis_do_dsl_iptv (asp_reent* reent, const asp_text* params, asp_text*
 			tcapi_set(node, "Active", "Yes");
 			tcapi_commit(node);
 		}
-
+#if 0
 		if(i) {
 			tcapi_set("IPTV_Entry", "switch_stb_x", "1");
 		#ifdef TCSUPPORT_WAN_ETHER_LAN
@@ -7296,7 +7663,8 @@ static void qis_do_dsl_iptv (asp_reent* reent, const asp_text* params, asp_text*
 		#endif
 		}
 		else {
-			tcapi_set("IPTV_Entry", "switch_stb_x", "0");
+#endif
+		if(!i){
 			//disable iptv pvc if re-run QIS but select internet service only.
 			for(i = 1; i < 8; i++) {
 			#ifdef TCSUPPORT_MULTISERVICE_ON_WAN
@@ -7319,94 +7687,78 @@ static void qis_do_dsl_iptv (asp_reent* reent, const asp_text* params, asp_text*
 			}
 		}
 	}
-	//LAN IPTV Settings
-	if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_iptv_mr", "1")) {
-		tcapi_set("IPTV_Entry", "mr_enable_x", "1");
-	}
-	else {
-		tcapi_set("IPTV_Entry", "mr_enable_x", "0");
-	}
-	if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_iptv_rmvlan", "1")) {
-		tcapi_set("IPTV_Entry", "rmvlan", "1");
-	}
-	else {
-		tcapi_set("IPTV_Entry", "rmvlan", "0");
-	}
-
-	tcapi_commit("IPTV");
-
 }
 
 static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* ret)
 {
-	char *action_mode = get_param(g_var_post, "action_mode");
 	char value[32] = {0};
 	char wp[32] = {0};
+	request *req;
+	asus_token_t *token = NULL;
+	struct json_object *root=NULL;
+	FILE *fp;
+	char tmp[4096];
+	int app_method_hit = 0;
 
-	if(!action_mode)
+	/* get full URL */
+	fp = fopen("/tmp/boa-temp", "r");
+	if(fp) {
+		fgets(tmp, 4096, fp);
+		fclose(fp);
+	}
+
+	decode_json_buffer(tmp); //f24834f2, add decode json buffer for app
+	//_dprintf("[AiHome] do_apply_cgi: decode tmp=%s\n", tmp);
+	root = json_tokener_parse(tmp);
+	if (!root) {
+		//return 0; /* Aicloud app can not use JSON format */
+	}
+
+	char *action_mode = get_cgi_json(g_var_post, "action_mode", root);
+	char *current_url = get_cgi_json(g_var_post, "current_page", root);
+	//_dprintf("[AiHome] do_apply_cgi: %s %s\n", action_mode, current_url);
+
+	if(!action_mode || !reent || !(reent->server_env)) {
+		json_object_put(root);
 		return;
+	}
+	req = reent->server_env;
 
 	if (!strcmp(action_mode, "apply")) {
-		char *rc_service = get_param(g_var_post, "rc_service");
-		char *action_script = get_param(g_var_post, "action_script");
-
-		if(rc_service) {
-			if(!strcmp(rc_service, "enable_webdav")) {
-				char *ddns_enable_x = get_param(g_var_post, "ddns_enable_x");
-				char *ddns_server_x = get_param(g_var_post, "ddns_server_x");
-				char *ddns_hostname_x = get_param(g_var_post, "ddns_hostname_x");
-				char *enable_webdav = get_param(g_var_post, "enable_webdav");
-				char *webdav_aidisk = get_param(g_var_post, "webdav_aidisk");
-				char *webdav_proxy = get_param(g_var_post, "webdav_proxy");
-				char *st_webdav_mode = get_param(g_var_post, "st_webdav_mode");
-
-				if(ddns_enable_x)
-					tcapi_set("Ddns_Entry", "Active", ddns_enable_x);
-				if(ddns_server_x)
-					tcapi_set("Ddns_Entry", "SERVERNAME", ddns_server_x);
-				if(ddns_hostname_x)
-					tcapi_set("Ddns_Entry", "MYHOST", ddns_hostname_x);
-				if(ddns_enable_x || ddns_server_x || ddns_hostname_x)
-					tcapi_commit("Ddns");
-
-				if(enable_webdav)
-					tcapi_set("AiCloud_Entry", "enable_webdav", enable_webdav);
-				if(webdav_aidisk)
-					tcapi_set("AiCloud_Entry", "webdav_aidisk", webdav_aidisk);
-				if(webdav_proxy)
-					tcapi_set("AiCloud_Entry", "webdav_proxy", webdav_proxy);
-				if(st_webdav_mode)
-					tcapi_set("AiCloud_Entry", "st_webdav_mode", st_webdav_mode);
-				if(enable_webdav || webdav_aidisk || webdav_proxy || st_webdav_mode)
-					system("/sbin/rc_call webdav 2 &");	//restart
-
-				websWrite(wp, "MODIFIED\n");
-				websWrite(wp, "RUN SERVICE\n");
-				tcapi_save();
-			}
-			else if(!strcmp(rc_service, "restart_cloudsync")) {
-				char *enable_cloudsync = get_param(g_var_post, "enable_cloudsync");
-				char *cloud_sync = get_param(g_var_post, "cloud_sync");
-
-				if(enable_cloudsync)
-					tcapi_set("AiCloud_Entry", "enable_cloudsync", enable_cloudsync);
-				if(cloud_sync)
-					tcapi_set("AiCloud_Entry", "cloud_sync", cloud_sync);
-				if(enable_cloudsync || cloud_sync)
-					system("/sbin/rc_call cloudsync 2 &");	//restart
-
-				tcapi_save();
-			}
+		app_method_hit = appSet_attribute(wp, root);
+		char *rc_service = get_cgi_json(g_var_post, "rc_service", root);
+		//_dprintf("[AiHome] do_apply_cgi: rc_service=%s\n", rc_service);
+		char *saveptr = NULL;
+		char *rc_service_t = strtok_r(rc_service, ";", &saveptr);
+		while (rc_service_t != NULL){
+			if (appDo_rc_service(rc_service_t, wp, root))
+				app_method_hit=2;
+			rc_service_t = strtok_r(NULL, ";", &saveptr);
 		}
 
+		if (app_method_hit == 2) {
+			websWrite(wp, "MODIFIED\n");
+			websWrite(wp, "RUN SERVICE\n");
+			tcapi_save();
+		}
+		else if (app_method_hit == 1) {
+			websWrite(wp, "MODIFIED\n");
+			tcapi_save();
+		}
+		else {
+			websWrite(wp, "NOT MODIFIED\n");
+		}
+
+		char *action_script = get_cgi_json(g_var_post, "action_script", root);
 		if(action_script) {
+			/* [SET] [QoS] Parental Control Rule */
 			if(!strcmp(action_script, "saveNvram")) {
-				char *current_page = get_param(g_var_post, "current_page");
+				char *current_page = get_cgi_json(g_var_post, "current_page", root);
 
 				if(current_page) {
 #ifdef RTCONFIG_OPENVPN
 					if(!strcmp(current_page, "Advanced_VPN_OpenVPN.asp")) {
-						char *formname = get_param(g_var_post, "formname");
+						char *formname = get_cgi_json(g_var_post, "formname", root);
 
 						if(formname) {
 							if(!strcmp(formname, "openvpnTLSKeyForm")) {
@@ -7418,7 +7770,7 @@ static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* re
 						}
 					}
 					else if(!strcmp(current_page, "Advanced_VPNClient_Content.asp")) {
-						char *formname = get_param(g_var_post, "formname");
+						char *formname = get_cgi_json(g_var_post, "formname", root);
 
 						if(formname) {
 							if(!strcmp(formname, "openvpnManualForm")) {
@@ -7429,6 +7781,92 @@ static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* re
 #endif
 				}
 			}
+		}
+	}
+	else if (!strcmp(action_mode," Refresh "))
+	{
+		int i=0, j=0;
+		char *system_cmd = get_cgi_json(g_var_post, "SystemCmd", root);
+		int len = strlen(system_cmd);
+
+		for(i=0;i<len;i++){
+			if (isalnum(system_cmd[i]) != 0 || system_cmd[i] == ':' || system_cmd[i] == '-' || system_cmd[i] == '_' || system_cmd[i] == '.' || isspace(system_cmd[i]) != 0)
+				j++;
+			else{
+				_dprintf("[httpd] Invalid SystemCmd!\n");
+				strcpy(SystemCmd, "");
+
+				json_object_put(root);
+				websRedirect_iframe(wp, current_url);
+
+				return;
+			}
+		}
+		if(!strcmp(current_url, "Main_Netstat_Content.asp") && (
+			strncasecmp(system_cmd, "netstat", 7) == 0
+		)){
+			strncpy(SystemCmd, system_cmd, sizeof(SystemCmd));
+		}
+		else if(!strcmp(current_url, "Main_Analysis_Content.asp") && (
+			   strncasecmp(system_cmd, "ping", 4) == 0
+			|| strncasecmp(system_cmd, "traceroute", 10) == 0
+			|| strncasecmp(system_cmd, "nslookup", 8) == 0
+		)){
+			strncpy(SystemCmd, system_cmd, sizeof(SystemCmd));
+		}
+		else if(!strcmp(current_url, "Main_WOL_Content.asp") && (
+			strncasecmp(system_cmd, "ether-wake", 10) == 0
+		)){
+			strncpy(SystemCmd, system_cmd, sizeof(SystemCmd));
+			sys_script("syscmd.sh");
+		}
+		else if(!strcmp(current_url, "Main_AdmStatus_Content.asp"))
+		{
+			if(strncasecmp(system_cmd, "run_telnetd", 11) == 0){
+				strncpy(SystemCmd, system_cmd, sizeof(SystemCmd));
+				sys_script("syscmd.sh");
+			}else if(strncasecmp(system_cmd, "run_infosvr", 11) == 0){
+				nvram_set("ateCommand_flag", "1");
+			}else if(strncasecmp(system_cmd, "set_factory_mode", 16) == 0){
+				strncpy(SystemCmd, system_cmd, sizeof(SystemCmd));
+				sys_script("syscmd.sh");
+			}
+		}
+		else{
+			_dprintf("[httpd] Invalid SystemCmd!\n");
+			strcpy(SystemCmd, "");
+		}
+
+		websWrite(wp, "MODIFIED\n");
+		websWrite(wp, "RUN SERVICE\n");
+		tcapi_save();
+		json_object_put(root);
+		websRedirect_iframe(wp, current_url);
+		return;
+	}
+	/* [SET] [General] Restore */
+	else if (!strcmp(action_mode, "Restore")||!strcmp(action_mode, "restore"))
+	{
+		tcapi_set("System_Entry", "reboot_type", "2");
+		tcapi_commit("System_Entry");
+
+		websWrite(wp, "MODIFIED\n");
+		websWrite(wp, "RUN SERVICE\n");
+		json_object_put(root);
+		return;
+	}
+	/* [SET] [Wireless] WPS Method */
+	else if (!strcmp(action_mode, "wps_apply"))
+	{
+		char *rc_service = get_cgi_json(g_var_post, "rc_service", root);
+		if(!strcmp(rc_service, "start_wps_method")) {
+			tcapi_commit("WLan_Entry0");
+
+			websWrite(wp, "MODIFIED\n");
+			websWrite(wp, "RUN SERVICE\n");
+			tcapi_save();
+			json_object_put(root);
+			return;
 		}
 	}
 	else if (!strcmp(action_mode, "change_wan_pvc"))
@@ -7455,7 +7893,7 @@ static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* re
 #ifdef RTCONFIG_DUALWAN
 	else if (!strcmp(action_mode, "change_wan_unit"))
 	{
-		char *wan_unit = get_param(g_var_post, "wan_unit");
+		char *wan_unit = get_cgi_json(g_var_post, "wan_unit", root);
 
 		if(wan_unit) {
 			csprintf("wan_unit=[%s]\n", wan_unit);
@@ -7485,29 +7923,24 @@ static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* re
 		struct in_addr addr;
 		in_addr_t login_ip;
 
-		memset(value, 0 , sizeof(value));
-		if(tcapi_get("WebCurSet_Entry", "login_ip_tmp", value))
+		token = SEARCH_TOKEN_LST_BY_CLITYPE(CLI_TYPE_BROWSER);
+		if(!token)
 			return;
-		login_ip = inet_aton(value, &addr);
+		login_ip = inet_aton(token->ipaddr, &addr);
 
 		fprintf(stderr, "[%s %d] run action_mode: mfp_monopolize\n", __func__, __LINE__);
 		if (login_ip==0x100007f || login_ip==0x0)
-			// nvram_set("mfp_ip_monopoly", "");
 			tcapi_set("USB_Entry", "mfp_ip_monopoly", "");
 		else
-		{
-			// struct in_addr addr;
-			// addr.s_addr=login_ip;
-			// nvram_set("mfp_ip_monopoly", inet_ntoa(addr));
-			tcapi_set("USB_Entry", "mfp_ip_monopoly", value);
-		}
+			tcapi_set("USB_Entry", "mfp_ip_monopoly", token->ipaddr);
+
 		int u2ec_fifo = open("/var/u2ec_fifo", O_WRONLY|O_NONBLOCK);
 		write(u2ec_fifo, "m", 1);
 		close(u2ec_fifo);
 	}
 #ifdef RTCONFIG_CLOUDSYNC
-        else if (!strcmp(action_mode, "get_sharelink"))
-        {
+	else if (!strcmp(action_mode, "get_sharelink"))
+	{
 		FILE *fp;
 		char buf[256] = {0};
 		pid_t pid = 0;
@@ -7535,8 +7968,4753 @@ static void do_apply_cgi (asp_reent* reent, const asp_text* params, asp_text* re
 				printf("[HTTPD] Signaling lighttpd FAIL!\n");
 			}
 		}
-        }
+	}
 #endif
+
+	json_object_put(root);
+}
+
+/* for ASUS Router (AiHome) APP */
+void
+json_unescape(char *s)
+{
+	unsigned int c;
+
+	while ((s = strpbrk(s, "%+"))) {
+		/* Parse %xx */
+		if (*s == '%') {
+			sscanf(s + 1, "%02x", &c);
+			*s++ = (char) c;
+			strncpy(s, s + 2, strlen(s) + 1);
+		}
+		/* Space is special */
+		else if (*s == '+')
+			*s++ = ' ';
+	}
+}
+
+void
+decode_json_buffer(char *query)
+{
+	int len;
+	char *q, *name, *value;
+
+	/* Clear variables */
+	if (!query) {
+		//hdestroy_r(&htab);
+		return;
+	}
+
+	/* Parse into individual assignments */
+	q = query;
+	len = strlen(query);
+
+	for (q = query; q < (query + len);) {
+		/* Unescape each assignment */
+		json_unescape(name = value = q);
+
+		/* Skip to next assignment */
+		for (q += strlen(q); q < (query + len) && !*q; q++);
+	}
+}
+
+static int appSet_attribute(char *wp, json_object *root)
+{
+	int app_method_hit = 0, tmpInt = -1;
+	char tmp[4096], wan0_node[16], wan1_node[16];
+
+	int pri_unit = wan_primary_ifunit();
+	int sec_unit = wan_secondary_ifunit();
+	if (pri_unit >= 0) {
+		sprintf(wan0_node, "Wan_PVC%d", pri_unit);
+	}
+	if (sec_unit >= 0) {
+		sprintf(wan1_node, "Wan_PVC%d", sec_unit);
+	}
+
+	/* AiHome [SET] [AiProtection] Router Security - Secure your router */
+	/* not support
+	char *wan1_upnp_enable = get_cgi_json(g_var_post, "wan1_upnp_enable", root);
+	char *wrs_cc_enable = get_cgi_json(g_var_post, "wrs_cc_enable", root);
+	char *wrs_vp_enable = get_cgi_json(g_var_post, "wrs_vp_enable", root);
+	char *wrs_mals_enable = get_cgi_json(g_var_post, "wrs_mals_enable", root);
+	 */
+	char *wan0_upnp_enable = get_cgi_json(g_var_post, "wan0_upnp_enable", root);
+	char *misc_http_x = get_cgi_json(g_var_post, "misc_http_x", root);
+	char *misc_ping_x = get_cgi_json(g_var_post, "misc_ping_x", root);
+	char *dmz_ip = get_cgi_json(g_var_post, "dmz_ip", root);
+	char *autofw_enable_x = get_cgi_json(g_var_post, "autofw_enable_x", root);
+	char *wps_enable = get_cgi_json(g_var_post, "wps_enable", root);
+	char *wps_sta_pin = get_cgi_json(g_var_post, "wps_sta_pin", root);
+
+	if(wan0_upnp_enable) {
+		if(strcmp(wan0_upnp_enable, "1") == 0)
+			tcapi_set("Upnpd_Entry", "Active", "Yes");
+		else
+			tcapi_set("Upnpd_Entry", "Active", "No");
+	}
+	if(misc_http_x)
+		tcapi_set("Firewall_Entry", "misc_http_x", misc_http_x);
+	if(misc_ping_x)
+		tcapi_set("Firewall_Entry", "misc_ping_x", misc_ping_x);
+	if(dmz_ip)
+		tcapi_set("Dmz_PVC", "DMZ_IP", dmz_ip);
+	if(autofw_enable_x)
+		tcapi_set("portTriggering_Entry0", "AutoFW_Enable", autofw_enable_x);
+	if(wps_enable)
+		tcapi_set("WLan_Common", "wps_enable", wps_enable);
+	if(wps_sta_pin)
+		tcapi_set("WLan_Entry0", "enrolleePinCode", wps_sta_pin);
+	if(wan0_upnp_enable || misc_http_x || misc_ping_x || dmz_ip || autofw_enable_x || wps_enable || wps_sta_pin)
+		app_method_hit = 1; //"MODIFIED"
+
+	/* DUT_RT_SetHttpWANAccess */
+	char *misc_httpport_x = get_cgi_json(g_var_post, "misc_httpport_x", root);
+	char *misc_httpsport_x = get_cgi_json(g_var_post, "misc_httpsport_x", root);
+	if(misc_httpport_x)
+		tcapi_set("Firewall_Entry", "misc_httpport_x", misc_httpport_x);
+	if(misc_httpsport_x)
+		tcapi_set("Firewall_Entry", "misc_httpsport_x", misc_httpsport_x);
+	if(misc_httpport_x || misc_httpsport_x)
+		app_method_hit = 1;
+
+	/* [SET] [Client List] Custom Name: <$nickName>$mac>0>$type>> */
+	/* not support
+	char *custom_clientlist = get_cgi_json(g_var_post, "custom_clientlist", root);
+	 */
+	/* [SET] [Client List] User Icon: <$mac>$imagebase64 */
+	/* not support
+	char *custom_usericon = get_cgi_json(g_var_post, "custom_usericon", root);
+	if(custom_usericon) {
+		_dprintf("http: custom_usericon=%s\n", custom_usericon);
+		(void)handle_upload_icon(value);
+		nvram_modified = 1;
+	} */
+
+	/* [SET] [QoS] game first mode */
+	char *qos_enable = get_cgi_json(g_var_post, "qos_enable", root);
+	char *qos_type = get_cgi_json(g_var_post, "qos_type", root);
+	char *qos_obw = get_cgi_json(g_var_post, "qos_obw", root);
+	char *qos_ibw = get_cgi_json(g_var_post, "qos_ibw", root);
+	char *ctf_disable = get_cgi_json(g_var_post, "ctf_disable", root);
+	/* not support
+	char *bwdpi_app_rulelist = get_cgi_json(g_var_post, "bwdpi_app_rulelist", root);
+	char *ctf_fa_mode = get_cgi_json(g_var_post, "ctf_fa_mode", root);
+	 */
+	if(qos_enable)
+		tcapi_set("QoS_Entry0", "qos_enable", qos_enable);
+	if(qos_type)
+		tcapi_set("QoS_Entry0", "qos_type", qos_type);
+	if(qos_obw)
+		tcapi_set("QoS_Entry0", "qos_obw", qos_obw);
+	if(qos_ibw)
+		tcapi_set("QoS_Entry0", "qos_ibw", qos_ibw);
+	if(ctf_disable)
+		tcapi_set("Misc_Entry", "hwnat_enable", ctf_disable);
+	if(qos_enable || qos_type || qos_obw || qos_ibw || ctf_disable) {
+		app_method_hit = 1;
+	}
+
+	/* [SET] [QoS] Bandwidth limiter */
+	char *qos_rulelist = get_cgi_json(g_var_post, "qos_rulelist", root);
+	char *qos_bw_rulelist = get_cgi_json(g_var_post, "qos_bw_rulelist", root);
+	if(qos_rulelist)
+		//tcapi_set("QoS_Entry0", "qos_rulelist", qos_rulelist);
+		tcapi_set_list("qos_rulelist", qos_rulelist);
+	if(qos_bw_rulelist)
+		//tcapi_set("QoS_Entry0", "qos_bw_rulelist", qos_bw_rulelist);
+		tcapi_set_list("qos_bw_rulelist", qos_bw_rulelist);
+	if(qos_rulelist || qos_bw_rulelist) {
+		app_method_hit = 1;
+	}
+
+	/* [SET] [USB] FTP - Enabled */
+	char *enable_ftp = get_cgi_json(g_var_post, "enable_ftp", root);
+	char *st_ftp_mode = get_cgi_json(g_var_post, "st_ftp_mode", root);
+	if(enable_ftp) {
+		if(strcmp(enable_ftp, "1") == 0)
+			tcapi_set("Samba_Entry", "enable_ftp", "Yes");
+		else
+			tcapi_set("Samba_Entry", "enable_ftp", "No");
+	}
+	if(st_ftp_mode)
+		tcapi_set("Samba_Entry", "st_ftp_mode", st_ftp_mode);
+	if(enable_ftp || st_ftp_mode)
+		app_method_hit = 1;
+
+	/* [SET] [USB] samba - enabled */
+	char *enable_samba = get_cgi_json(g_var_post, "enable_samba", root);
+	char *st_samba_mode = get_cgi_json(g_var_post, "st_samba_mode", root);
+	if(enable_samba) {
+		if(strcmp(enable_samba, "1") == 0)
+			tcapi_set("Samba_Entry", "Active", "Yes");
+		else
+			tcapi_set("Samba_Entry", "Active", "No");
+	}
+	if(st_samba_mode)
+		tcapi_set("Samba_Entry", "st_samba_mode", st_samba_mode);
+	if(enable_samba || st_samba_mode)
+		app_method_hit = 1;
+
+	/* [SET] [Guest Network] 2.4GHz - 1 */
+	/* DUT_RT_SetGuestWireless: 2.4GHz */
+	char *wl_unit = get_cgi_json(g_var_post, "wl_unit", root);
+	char *wl_subunit = get_cgi_json(g_var_post, "wl_subunit", root);
+	char *wl0_1_bss_enabled = get_cgi_json(g_var_post, "wl0.1_bss_enabled", root);
+	char *wl0_1_ssid = get_cgi_json(g_var_post, "wl0.1_ssid", root);
+	char *wl0_1_auth_mode_x = get_cgi_json(g_var_post, "wl0.1_auth_mode_x", root);
+	char *wl0_1_crypto = get_cgi_json(g_var_post, "wl0.1_crypto", root);
+	char *wl0_1_key = get_cgi_json(g_var_post, "wl0.1_key", root);
+	char *wl0_1_wpa_psk = get_cgi_json(g_var_post, "wl0.1_wpa_psk", root);
+	char *wl0_1_lanaccess = get_cgi_json(g_var_post, "wl0.1_lanaccess", root);
+	char *wl0_1_expire = get_cgi_json(g_var_post, "wl0.1_expire", root);
+	char *wl0_1_expire_tmp = get_cgi_json(g_var_post, "wl0.1_expire_tmp", root);
+	char *wl0_1_macmode = get_cgi_json(g_var_post, "wl0.1_macmode", root);
+	char *wl0_2_bss_enabled = get_cgi_json(g_var_post, "wl0.2_bss_enabled", root);
+	char *wl0_2_ssid = get_cgi_json(g_var_post, "wl0.2_ssid", root);
+	char *wl0_2_auth_mode_x = get_cgi_json(g_var_post, "wl0.2_auth_mode_x", root);
+	char *wl0_2_crypto = get_cgi_json(g_var_post, "wl0.2_crypto", root);
+	char *wl0_2_key = get_cgi_json(g_var_post, "wl0.2_key", root);
+	char *wl0_2_wpa_psk = get_cgi_json(g_var_post, "wl0.2_wpa_psk", root);
+	char *wl0_2_lanaccess = get_cgi_json(g_var_post, "wl0.2_lanaccess", root);
+	char *wl0_2_expire = get_cgi_json(g_var_post, "wl0.2_expire", root);
+	char *wl0_2_expire_tmp = get_cgi_json(g_var_post, "wl0.2_expire_tmp", root);
+	char *wl0_2_macmode = get_cgi_json(g_var_post, "wl0.2_macmode", root);
+	char *wl0_3_bss_enabled = get_cgi_json(g_var_post, "wl0.3_bss_enabled", root);
+	char *wl0_3_ssid = get_cgi_json(g_var_post, "wl0.3_ssid", root);
+	char *wl0_3_auth_mode_x = get_cgi_json(g_var_post, "wl0.3_auth_mode_x", root);
+	char *wl0_3_crypto = get_cgi_json(g_var_post, "wl0.3_crypto", root);
+	char *wl0_3_key = get_cgi_json(g_var_post, "wl0.3_key", root);
+	char *wl0_3_wpa_psk = get_cgi_json(g_var_post, "wl0.3_wpa_psk", root);
+	char *wl0_3_lanaccess = get_cgi_json(g_var_post, "wl0.3_lanaccess", root);
+	char *wl0_3_expire = get_cgi_json(g_var_post, "wl0.3_expire", root);
+	char *wl0_3_expire_tmp = get_cgi_json(g_var_post, "wl0.3_expire_tmp", root);
+	char *wl0_3_macmode = get_cgi_json(g_var_post, "wl0.3_macmode", root);
+	/* not support
+	char *wl0_1_mbss = get_cgi_json(g_var_post, "wl0.1_mbss", root);
+	 */
+	if(wl_unit)
+		tcapi_set("WLan_Common", "wl_unit", wl_unit);
+	if(wl_subunit)
+		tcapi_set("WLan_Common", "wl_subunit", wl_subunit);
+	if(wl0_1_bss_enabled)
+		tcapi_set("WLan_Entry0", "wl0.1_bss_enabled", wl0_1_bss_enabled);
+	if(wl0_1_ssid)
+		tcapi_set("WLan_Entry0", "wl0.1_ssid", wl0_1_ssid);
+	if(wl0_1_auth_mode_x) {
+		if(strcmp(wl0_1_auth_mode_x, "open") ==0)
+			tcapi_set("WLan_Entry0", "wl0.1_auth_mode_x", "OPEN");
+		else if(strcmp(wl0_1_auth_mode_x, "psk2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.1_auth_mode_x", "WPA2PSK");
+		else if(strcmp(wl0_1_auth_mode_x, "pskpsk2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.1_auth_mode_x", "WPAPSKWPA2PSK");
+		else if(strcmp(wl0_1_auth_mode_x, "wpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.1_auth_mode_x", "WPA2");
+		else if(strcmp(wl0_1_auth_mode_x, "wpawpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.1_auth_mode_x", "WPA1WPA2");
+	}
+	if(wl0_1_crypto) {
+		if(tcapi_match("WLan_Entry0", "wl0.1_auth_mode_x", "OPEN"))
+			tcapi_set("WLan_Entry0", "wl0.1_crypto", "NONE");
+		else if(strcmp(wl0_1_crypto, "aes") ==0)
+			tcapi_set("WLan_Entry0", "wl0.1_crypto", "AES");
+		else if(strcmp(wl0_1_crypto, "tkip+aes") ==0)
+			tcapi_set("WLan_Entry0", "wl0.1_crypto", "TKIP+AES");
+	}
+	if(wl0_1_key)
+		tcapi_set("WLan_Entry0", "wl0.1_key", wl0_1_key);
+	if(wl0_1_wpa_psk)
+		tcapi_set("WLan_Entry0", "wl0.1_wpa_psk", wl0_1_wpa_psk);
+	if(wl0_1_lanaccess)
+		tcapi_set("WLan_Entry0", "wl0.1_lanaccess", wl0_1_lanaccess);
+	if(wl0_1_expire)
+		tcapi_set("WLan_Entry0", "wl0.1_expire", wl0_1_expire);
+	if(wl0_1_expire_tmp)
+		tcapi_set("WLan_Entry0", "wl0.1_expire_tmp", wl0_1_expire_tmp);
+	if(wl0_1_macmode)
+		tcapi_set("ACL_Entry0", "wl0.1_wl_macmode", wl0_1_macmode);
+	if(wl0_2_bss_enabled)
+		tcapi_set("WLan_Entry0", "wl0.2_bss_enabled", wl0_2_bss_enabled);
+	if(wl0_2_ssid)
+		tcapi_set("WLan_Entry0", "wl0.2_ssid", wl0_2_ssid);
+	if(wl0_2_auth_mode_x) {
+		if(strcmp(wl0_2_auth_mode_x, "open") ==0)
+			tcapi_set("WLan_Entry0", "wl0.2_auth_mode_x", "OPEN");
+		else if(strcmp(wl0_2_auth_mode_x, "psk2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.2_auth_mode_x", "WPA2PSK");
+		else if(strcmp(wl0_2_auth_mode_x, "pskpsk2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.2_auth_mode_x", "WPAPSKWPA2PSK");
+		else if(strcmp(wl0_2_auth_mode_x, "wpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.2_auth_mode_x", "WPA2");
+		else if(strcmp(wl0_2_auth_mode_x, "wpawpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.2_auth_mode_x", "WPA1WPA2");
+	}
+	if(wl0_2_crypto) {
+		if(tcapi_match("WLan_Entry0", "wl0.2_auth_mode_x", "OPEN"))
+			tcapi_set("WLan_Entry0", "wl0.2_crypto", "NONE");
+		else if(strcmp(wl0_2_crypto, "aes") ==0)
+			tcapi_set("WLan_Entry0", "wl0.2_crypto", "AES");
+		else if(strcmp(wl0_2_crypto, "tkip+aes") ==0)
+			tcapi_set("WLan_Entry0", "wl0.2_crypto", "TKIP+AES");
+	}
+	if(wl0_2_key)
+		tcapi_set("WLan_Entry0", "wl0.2_key", wl0_2_key);
+	if(wl0_2_wpa_psk)
+		tcapi_set("WLan_Entry0", "wl0.2_wpa_psk", wl0_2_wpa_psk);
+	if(wl0_2_lanaccess)
+		tcapi_set("WLan_Entry0", "wl0.2_lanaccess", wl0_2_lanaccess);
+	if(wl0_2_expire)
+		tcapi_set("WLan_Entry0", "wl0.2_expire", wl0_2_expire);
+	if(wl0_2_expire_tmp)
+		tcapi_set("WLan_Entry0", "wl0.2_expire_tmp", wl0_2_expire_tmp);
+	if(wl0_2_macmode)
+		tcapi_set("ACL_Entry0", "wl0.2_wl_macmode", wl0_2_macmode);
+	if(wl0_3_bss_enabled)
+		tcapi_set("WLan_Entry0", "wl0.3_bss_enabled", wl0_3_bss_enabled);
+	if(wl0_3_ssid)
+		tcapi_set("WLan_Entry0", "wl0.3_ssid", wl0_3_ssid);
+	if(wl0_3_auth_mode_x) {
+		if(strcmp(wl0_3_auth_mode_x, "open") ==0)
+			tcapi_set("WLan_Entry0", "wl0.3_auth_mode_x", "OPEN");
+		else if(strcmp(wl0_3_auth_mode_x, "psk2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.3_auth_mode_x", "WPA2PSK");
+		else if(strcmp(wl0_3_auth_mode_x, "pskpsk2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.3_auth_mode_x", "WPAPSKWPA2PSK");
+		else if(strcmp(wl0_3_auth_mode_x, "wpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.3_auth_mode_x", "WPA2");
+		else if(strcmp(wl0_3_auth_mode_x, "wpawpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl0.3_auth_mode_x", "WPA1WPA2");
+	}
+	if(wl0_3_crypto) {
+		if(tcapi_match("WLan_Entry0", "wl0.3_auth_mode_x", "OPEN"))
+			tcapi_set("WLan_Entry0", "wl0.3_crypto", "NONE");
+		else if(strcmp(wl0_3_crypto, "aes") ==0)
+			tcapi_set("WLan_Entry0", "wl0.3_crypto", "AES");
+		else if(strcmp(wl0_3_crypto, "tkip+aes") ==0)
+			tcapi_set("WLan_Entry0", "wl0.3_crypto", "TKIP+AES");
+	}
+	if(wl0_3_key)
+		tcapi_set("WLan_Entry0", "wl0.3_key", wl0_3_key);
+	if(wl0_3_wpa_psk)
+		tcapi_set("WLan_Entry0", "wl0.3_wpa_psk", wl0_3_wpa_psk);
+	if(wl0_3_lanaccess)
+		tcapi_set("WLan_Entry0", "wl0.3_lanaccess", wl0_3_lanaccess);
+	if(wl0_3_expire)
+		tcapi_set("WLan_Entry0", "wl0.3_expire", wl0_3_expire);
+	if(wl0_3_expire_tmp)
+		tcapi_set("WLan_Entry0", "wl0.3_expire_tmp", wl0_3_expire_tmp);
+	if(wl0_3_macmode)
+		tcapi_set("ACL_Entry0", "wl0.3_wl_macmode", wl0_3_macmode);
+	if(wl_unit || wl_subunit
+		|| wl0_1_bss_enabled || wl0_1_ssid || wl0_1_auth_mode_x || wl0_1_crypto || wl0_1_key || wl0_1_wpa_psk || wl0_1_lanaccess || wl0_1_expire || wl0_1_expire_tmp || wl0_1_macmode
+		|| wl0_2_bss_enabled || wl0_2_ssid || wl0_2_auth_mode_x || wl0_2_crypto || wl0_2_key || wl0_2_wpa_psk || wl0_2_lanaccess || wl0_2_expire || wl0_2_expire_tmp || wl0_2_macmode
+		|| wl0_3_bss_enabled || wl0_3_ssid || wl0_3_auth_mode_x || wl0_3_crypto || wl0_3_key || wl0_3_wpa_psk || wl0_3_lanaccess || wl0_3_expire || wl0_3_expire_tmp || wl0_3_macmode)
+		app_method_hit = 1;
+
+	/* [SET] [Guest Network] 5GHz - 1 */
+	/* DUT_RT_SetGuestWireless: 5GHz */
+	char *wl1_1_bss_enabled = get_cgi_json(g_var_post, "wl1.1_bss_enabled", root);
+	char *wl1_1_ssid = get_cgi_json(g_var_post, "wl1.1_ssid", root);
+	char *wl1_1_auth_mode_x = get_cgi_json(g_var_post, "wl1.1_auth_mode_x", root);
+	char *wl1_1_crypto = get_cgi_json(g_var_post, "wl1.1_crypto", root);
+	char *wl1_1_key = get_cgi_json(g_var_post, "wl1.1_key", root);
+	char *wl1_1_wpa_psk = get_cgi_json(g_var_post, "wl1.1_wpa_psk", root);
+	char *wl1_1_lanaccess = get_cgi_json(g_var_post, "wl1.1_lanaccess", root);
+	char *wl1_1_expire = get_cgi_json(g_var_post, "wl1.1_expire", root);
+	char *wl1_1_expire_tmp = get_cgi_json(g_var_post, "wl1.1_expire_tmp", root);
+	char *wl1_1_macmode = get_cgi_json(g_var_post, "wl1.1_macmode", root);
+	char *wl1_2_bss_enabled = get_cgi_json(g_var_post, "wl1.2_bss_enabled", root);
+	char *wl1_2_ssid = get_cgi_json(g_var_post, "wl1.2_ssid", root);
+	char *wl1_2_auth_mode_x = get_cgi_json(g_var_post, "wl1.2_auth_mode_x", root);
+	char *wl1_2_crypto = get_cgi_json(g_var_post, "wl1.2_crypto", root);
+	char *wl1_2_key = get_cgi_json(g_var_post, "wl1.2_key", root);
+	char *wl1_2_wpa_psk = get_cgi_json(g_var_post, "wl1.2_wpa_psk", root);
+	char *wl1_2_lanaccess = get_cgi_json(g_var_post, "wl1.2_lanaccess", root);
+	char *wl1_2_expire = get_cgi_json(g_var_post, "wl1.2_expire", root);
+	char *wl1_2_expire_tmp = get_cgi_json(g_var_post, "wl1.2_expire_tmp", root);
+	char *wl1_2_macmode = get_cgi_json(g_var_post, "wl1.2_macmode", root);
+	char *wl1_3_bss_enabled = get_cgi_json(g_var_post, "wl1.3_bss_enabled", root);
+	char *wl1_3_ssid = get_cgi_json(g_var_post, "wl1.3_ssid", root);
+	char *wl1_3_auth_mode_x = get_cgi_json(g_var_post, "wl1.3_auth_mode_x", root);
+	char *wl1_3_crypto = get_cgi_json(g_var_post, "wl1.3_crypto", root);
+	char *wl1_3_key = get_cgi_json(g_var_post, "wl1.3_key", root);
+	char *wl1_3_wpa_psk = get_cgi_json(g_var_post, "wl1.3_wpa_psk", root);
+	char *wl1_3_lanaccess = get_cgi_json(g_var_post, "wl1.3_lanaccess", root);
+	char *wl1_3_expire = get_cgi_json(g_var_post, "wl1.3_expire", root);
+	char *wl1_3_expire_tmp = get_cgi_json(g_var_post, "wl1.3_expire_tmp", root);
+	char *wl1_3_macmode = get_cgi_json(g_var_post, "wl1.3_macmode", root);
+	/* not support
+	char *wl1_1_macmode = get_cgi_json(g_var_post, "wl1.1_macmode", root);
+	char *wl1_1_mbss = get_cgi_json(g_var_post, "wl1.1_mbss", root);
+	 */
+	if(wl1_1_bss_enabled)
+		tcapi_set("WLan_Entry0", "wl1.1_bss_enabled", wl1_1_bss_enabled);
+	if(wl1_1_ssid)
+		tcapi_set("WLan_Entry0", "wl1.1_ssid", wl1_1_ssid);
+	if(wl1_1_auth_mode_x) {
+		if(strcmp(wl1_1_auth_mode_x, "open") ==0)
+			tcapi_set("WLan_Entry0", "wl1.1_auth_mode_x", "OPEN");
+		else if(strcmp(wl1_1_auth_mode_x, "psk2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.1_auth_mode_x", "WPA2PSK");
+		else if(strcmp(wl1_1_auth_mode_x, "pskpsk2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.1_auth_mode_x", "WPAPSKWPA2PSK");
+		else if(strcmp(wl1_1_auth_mode_x, "wpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.1_auth_mode_x", "WPA2");
+		else if(strcmp(wl1_1_auth_mode_x, "wpawpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.1_auth_mode_x", "WPA1WPA2");
+	}
+	if(wl1_1_crypto) {
+		if(tcapi_match("WLan_Entry0", "wl1.1_auth_mode_x", "OPEN"))
+			tcapi_set("WLan_Entry0", "wl1.1_crypto", "NONE");
+		else if(strcmp(wl1_1_crypto, "aes") ==0)
+			tcapi_set("WLan_Entry0", "wl1.1_crypto", "AES");
+		else if(strcmp(wl1_1_crypto, "tkip+aes") ==0)
+			tcapi_set("WLan_Entry0", "wl1.1_crypto", "TKIP+AES");
+	}
+	if(wl1_1_key)
+		tcapi_set("WLan_Entry0", "wl1.1_key", wl1_1_key);
+	if(wl1_1_wpa_psk)
+		tcapi_set("WLan_Entry0", "wl1.1_wpa_psk", wl1_1_wpa_psk);
+	if(wl1_1_lanaccess)
+		tcapi_set("WLan_Entry0", "wl1.1_lanaccess", wl1_1_lanaccess);
+	if(wl1_1_expire)
+		tcapi_set("WLan_Entry0", "wl1.1_expire", wl1_1_expire);
+	if(wl1_1_expire_tmp)
+		tcapi_set("WLan_Entry0", "wl1.1_expire_tmp", wl1_1_expire_tmp);
+	if(wl1_1_macmode)
+		tcapi_set("ACL_Entry0", "wl1.1_wl_macmode", wl1_1_macmode);
+	if(wl1_2_bss_enabled)
+		tcapi_set("WLan_Entry0", "wl1.2_bss_enabled", wl1_2_bss_enabled);
+	if(wl1_2_ssid)
+		tcapi_set("WLan_Entry0", "wl1.2_ssid", wl1_2_ssid);
+	if(wl1_2_auth_mode_x) {
+		if(strcmp(wl1_2_auth_mode_x, "open") ==0)
+			tcapi_set("WLan_Entry0", "wl1.2_auth_mode_x", "OPEN");
+		else if(strcmp(wl1_2_auth_mode_x, "psk2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.2_auth_mode_x", "WPA2PSK");
+		else if(strcmp(wl1_2_auth_mode_x, "pskpsk2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.2_auth_mode_x", "WPAPSKWPA2PSK");
+		else if(strcmp(wl1_2_auth_mode_x, "wpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.2_auth_mode_x", "WPA2");
+		else if(strcmp(wl1_2_auth_mode_x, "wpawpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.2_auth_mode_x", "WPA1WPA2");
+	}
+	if(wl1_2_crypto) {
+		if(tcapi_match("WLan_Entry0", "wl1.2_auth_mode_x", "OPEN"))
+			tcapi_set("WLan_Entry0", "wl1.2_crypto", "NONE");
+		else if(strcmp(wl1_2_crypto, "aes") ==0)
+			tcapi_set("WLan_Entry0", "wl1.2_crypto", "AES");
+		else if(strcmp(wl1_2_crypto, "tkip+aes") ==0)
+			tcapi_set("WLan_Entry0", "wl1.2_crypto", "TKIP+AES");
+	}
+	if(wl1_2_key)
+		tcapi_set("WLan_Entry0", "wl1.2_key", wl1_2_key);
+	if(wl1_2_wpa_psk)
+		tcapi_set("WLan_Entry0", "wl1.2_wpa_psk", wl1_2_wpa_psk);
+	if(wl1_2_lanaccess)
+		tcapi_set("WLan_Entry0", "wl1.2_lanaccess", wl1_2_lanaccess);
+	if(wl1_2_expire)
+		tcapi_set("WLan_Entry0", "wl1.2_expire", wl1_2_expire);
+	if(wl1_2_expire_tmp)
+		tcapi_set("WLan_Entry0", "wl1.2_expire_tmp", wl1_2_expire_tmp);
+	if(wl1_2_macmode)
+		tcapi_set("ACL_Entry0", "wl1.2_wl_macmode", wl1_2_macmode);
+	if(wl1_3_bss_enabled)
+		tcapi_set("WLan_Entry0", "wl1.3_bss_enabled", wl1_3_bss_enabled);
+	if(wl1_3_ssid)
+		tcapi_set("WLan_Entry0", "wl1.3_ssid", wl1_3_ssid);
+	if(wl1_3_auth_mode_x) {
+		if(strcmp(wl1_3_auth_mode_x, "open") ==0)
+			tcapi_set("WLan_Entry0", "wl1.3_auth_mode_x", "OPEN");
+		else if(strcmp(wl1_3_auth_mode_x, "psk2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.3_auth_mode_x", "WPA2PSK");
+		else if(strcmp(wl1_3_auth_mode_x, "pskpsk2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.3_auth_mode_x", "WPAPSKWPA2PSK");
+		else if(strcmp(wl1_3_auth_mode_x, "wpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.3_auth_mode_x", "WPA2");
+		else if(strcmp(wl1_3_auth_mode_x, "wpawpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl1.3_auth_mode_x", "WPA1WPA2");
+	}
+	if(wl1_3_crypto) {
+		if(tcapi_match("WLan_Entry0", "wl1.3_auth_mode_x", "OPEN"))
+			tcapi_set("WLan_Entry0", "wl1.3_crypto", "NONE");
+		else if(strcmp(wl1_3_crypto, "aes") ==0)
+			tcapi_set("WLan_Entry0", "wl1.3_crypto", "AES");
+		else if(strcmp(wl1_3_crypto, "tkip+aes") ==0)
+			tcapi_set("WLan_Entry0", "wl1.3_crypto", "TKIP+AES");
+	}
+	if(wl1_3_key)
+		tcapi_set("WLan_Entry0", "wl1.3_key", wl1_3_key);
+	if(wl1_3_wpa_psk)
+		tcapi_set("WLan_Entry0", "wl1.3_wpa_psk", wl1_3_wpa_psk);
+	if(wl1_3_lanaccess)
+		tcapi_set("WLan_Entry0", "wl1.3_lanaccess", wl1_3_lanaccess);
+	if(wl1_3_expire)
+		tcapi_set("WLan_Entry0", "wl1.3_expire", wl1_3_expire);
+	if(wl1_3_expire_tmp)
+		tcapi_set("WLan_Entry0", "wl1.3_expire_tmp", wl1_3_expire_tmp);
+	if(wl1_3_macmode)
+		tcapi_set("ACL_Entry0", "wl1.3_wl_macmode", wl1_3_macmode);
+	if(wl1_1_bss_enabled || wl1_1_ssid || wl1_1_auth_mode_x || wl1_1_crypto || wl1_1_key || wl1_1_wpa_psk || wl1_1_lanaccess || wl1_1_expire || wl1_1_expire_tmp || wl1_1_macmode
+		|| wl1_2_bss_enabled || wl1_2_ssid || wl1_2_auth_mode_x || wl1_2_crypto || wl1_2_key || wl1_2_wpa_psk || wl1_2_lanaccess || wl1_2_expire || wl1_2_expire_tmp || wl1_2_macmode
+		|| wl1_3_bss_enabled || wl1_3_ssid || wl1_3_auth_mode_x || wl1_3_crypto || wl1_3_key || wl1_3_wpa_psk || wl1_3_lanaccess || wl1_3_expire || wl1_3_expire_tmp || wl1_3_macmode)
+		app_method_hit = 1;
+
+	/* [SET] [Wireless] General Setting */
+	char *wl_closed = get_cgi_json(g_var_post, "wl_closed", root);
+	char *wl_radio = get_cgi_json(g_var_post, "wl_radio", root);
+	char *wl_ssid = get_cgi_json(g_var_post, "wl_ssid", root);
+	char *wl_nmode_x = get_cgi_json(g_var_post, "wl_nmode_x", root);
+	char *wl_bw = get_cgi_json(g_var_post, "wl_bw", root);
+	/* not support
+	char *acs_dfs = get_cgi_json(g_var_post, "acs_dfs", root);
+	char *wl_chanspec = get_cgi_json(g_var_post, "wl_chanspec", root);
+	 */
+	if(wl_closed)
+		tcapi_set("WLan_Entry0","HideSSID",wl_closed);
+	if(wl_radio)
+		tcapi_set("WLan_Entry0","radio_on",wl_radio);
+	if(wl_ssid)
+		tcapi_set("WLan_Entry0","ssid",wl_ssid);
+	if(wl_nmode_x)
+		tcapi_set("WLan_Common","WirelessMode",wl_nmode_x);
+	if(wl_bw)
+		tcapi_set("WLan_Common","HT_BW",wl_bw);
+	if(wl_closed || wl_radio || wl_ssid || wl_nmode_x || wl_bw)
+		app_method_hit = 1;
+
+	/* DUT_RT_SetWirelessConfig: 2.4GHz */
+	char *wl0_ssid = get_cgi_json(g_var_post, "wl0_ssid", root);
+	char *wl0_closed = get_cgi_json(g_var_post, "wl0_closed", root);
+	char *wl0_nmode_x = get_cgi_json(g_var_post, "wl0_nmode_x", root);
+	char *wl0_bw = get_cgi_json(g_var_post, "wl0_bw", root);
+	char *wl0_auth_mode_x = get_cgi_json(g_var_post, "wl0_auth_mode_x", root);
+	char *wl0_crypto = get_cgi_json(g_var_post, "wl0_crypto", root);
+	char *wl0_wpa_psk = get_cgi_json(g_var_post, "wl0_wpa_psk", root);
+	if(wl0_ssid)
+		tcapi_set("WLan_Entry0", "wl0_ssid", wl0_ssid);
+	if(wl0_closed)
+		tcapi_set("WLan_Entry0", "wl0_HideSSID", wl0_closed);
+	if(wl0_nmode_x) { //APP=> 2:Legacy, 1:N only, 0:Auto
+		tmpInt = atoi(wl0_nmode_x);
+		switch (tmpInt) {
+			case 2:
+				tcapi_set("WLan_Common", "wl0_WirelessMode", "0"); /*2G=>0: Legacy*/
+				break;
+			case 1:
+				tcapi_set("WLan_Common", "wl0_WirelessMode", "6"); /*2G=>6: N Only*/
+				break;
+			case 0:
+				tcapi_set("WLan_Common", "wl0_WirelessMode", "9"); /*2G=>9: Auto*/
+				break;
+		}
+	}
+	if(wl0_bw)
+		tcapi_set("WLan_Common", "wl0_HT_BW", wl0_bw);
+	if(wl0_auth_mode_x) {
+		if(strcmp(wl0_auth_mode_x, "open") ==0)
+			tcapi_set("WLan_Entry0", "wl0_auth_mode_x", "OPEN");
+		else if(strcmp(wl0_auth_mode_x, "psk2") ==0)
+			tcapi_set("WLan_Entry0", "wl0_auth_mode_x", "WPA2PSK");
+		else if(strcmp(wl0_auth_mode_x, "pskpsk2") ==0)
+			tcapi_set("WLan_Entry0", "wl0_auth_mode_x", "WPAPSKWPA2PSK");
+		else if(strcmp(wl0_auth_mode_x, "wpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl0_auth_mode_x", "WPA2");
+		else if(strcmp(wl0_auth_mode_x, "wpawpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl0_auth_mode_x", "WPA1WPA2");
+	}
+	if(wl0_crypto) {
+		if(tcapi_match("WLan_Entry0", "wl0_auth_mode_x", "OPEN"))
+			tcapi_set("WLan_Entry0", "wl0_crypto", "NONE");
+		else if(strcmp(wl0_crypto, "aes") ==0)
+			tcapi_set("WLan_Entry0", "wl0_crypto", "AES");
+		else if(strcmp(wl0_crypto, "tkip+aes") ==0)
+			tcapi_set("WLan_Entry0", "wl0_crypto", "TKIP+AES");
+	}
+	if(wl0_wpa_psk)
+		tcapi_set("WLan_Entry0", "wl0_wpa_psk", wl0_wpa_psk);
+	if(wl0_ssid || wl0_closed || wl0_nmode_x || wl0_bw || wl0_auth_mode_x || wl0_crypto || wl0_wpa_psk)
+		app_method_hit = 1;
+
+	/* DUT_RT_SetWirelessConfig: 5GHz */
+	char *wl1_ssid = get_cgi_json(g_var_post, "wl1_ssid", root);
+	char *wl1_closed = get_cgi_json(g_var_post, "wl1_closed", root);
+	char *wl1_nmode_x = get_cgi_json(g_var_post, "wl1_nmode_x", root);
+	char *wl1_bw = get_cgi_json(g_var_post, "wl1_bw", root);
+	char *wl1_auth_mode_x = get_cgi_json(g_var_post, "wl1_auth_mode_x", root);
+	char *wl1_crypto = get_cgi_json(g_var_post, "wl1_crypto", root);
+	char *wl1_wpa_psk = get_cgi_json(g_var_post, "wl1_wpa_psk", root);
+	if(wl1_ssid)
+		tcapi_set("WLan_Entry0", "wl1_ssid", wl1_ssid);
+	if(wl1_closed)
+		tcapi_set("WLan_Entry0", "wl1_HideSSID", wl1_closed);
+	if(wl1_nmode_x) { //APP=>2:Legacy, 1:N only, 0:Auto
+		tmpInt = atoi(wl1_nmode_x);
+		switch (tmpInt) {
+			case 2:
+				tcapi_set("WLan_Common", "wl1_WirelessMode", "2"); /*5G=>2: Legacy*/
+				break;
+			case 1:
+				tcapi_set("WLan_Common", "wl1_WirelessMode", "11"); /*5G=>11: N Only*/
+				break;
+			case 0:
+				tcapi_set("WLan_Common", "wl1_WirelessMode", "8"); /*5G=>8: Auto*/
+				break;
+		}
+	}
+	if(wl1_bw)
+		tcapi_set("WLan_Common", "wl1_HT_BW", wl1_bw);
+	if(wl1_auth_mode_x) {
+		if(strcmp(wl1_auth_mode_x, "open") ==0)
+			tcapi_set("WLan_Entry0", "wl1_auth_mode_x", "OPEN");
+		else if(strcmp(wl1_auth_mode_x, "psk2") ==0)
+			tcapi_set("WLan_Entry0", "wl1_auth_mode_x", "WPA2PSK");
+		else if(strcmp(wl1_auth_mode_x, "pskpsk2") ==0)
+			tcapi_set("WLan_Entry0", "wl1_auth_mode_x", "WPAPSKWPA2PSK");
+		else if(strcmp(wl1_auth_mode_x, "wpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl1_auth_mode_x", "WPA2");
+		else if(strcmp(wl1_auth_mode_x, "wpawpa2") ==0)
+			tcapi_set("WLan_Entry0", "wl1_auth_mode_x", "WPA1WPA2");
+	}
+	if(wl1_crypto) {
+		if(tcapi_match("WLan_Entry0", "wl1_auth_mode_x", "OPEN"))
+			tcapi_set("WLan_Entry0", "wl1_crypto", "NONE");
+		else if(strcmp(wl1_crypto, "aes") ==0)
+			tcapi_set("WLan_Entry0", "wl1_crypto", "AES");
+		else if(strcmp(wl1_crypto, "tkip+aes") ==0)
+			tcapi_set("WLan_Entry0", "wl1_crypto", "TKIP+AES");
+	}
+	if(wl1_wpa_psk)
+		tcapi_set("WLan_Entry0", "wl1_wpa_psk", wl1_wpa_psk);
+	if(wl1_ssid || wl1_closed || wl1_nmode_x || wl1_bw || wl1_auth_mode_x || wl1_crypto || wl1_wpa_psk)
+		app_method_hit = 1;
+
+	/* [SET] [Wireless] Mac filter */
+	char *wl0_macmode = get_cgi_json(g_var_post, "wl0_macmode", root);
+	char *wl1_macmode = get_cgi_json(g_var_post, "wl1_macmode", root);
+	char *wl2_macmode = get_cgi_json(g_var_post, "wl2_macmode", root);
+	char *wl0_maclist_x = get_cgi_json(g_var_post, "wl0_maclist_x", root);
+	char *wl1_maclist_x = get_cgi_json(g_var_post, "wl1_maclist_x", root);
+	char *wl2_maclist_x = get_cgi_json(g_var_post, "wl2_maclist_x", root);
+	if(wl0_macmode)
+		tcapi_set("ACL_Entry0", "wl0_wl_macmode",wl0_macmode);
+	if(wl1_macmode)
+		tcapi_set("ACL_Entry0", "wl1_wl_macmode",wl1_macmode);
+	if(wl2_macmode)
+		tcapi_set("ACL_Entry0", "wl2_wl_macmode",wl2_macmode);
+	if(wl0_maclist_x)
+		tcapi_set("ACL_Entry0","wl0_wl_maclist",wl0_maclist_x);
+	if(wl1_maclist_x)
+		tcapi_set("ACL_Entry0","wl1_wl_maclist",wl1_maclist_x);
+	if(wl2_maclist_x)
+		tcapi_set("ACL_Entry0","wl2_wl_maclist",wl2_maclist_x);
+	if(wl0_macmode || wl1_macmode || wl2_macmode || wl0_maclist_x || wl1_maclist_x || wl2_maclist_x)
+		app_method_hit = 1;
+
+	/* [SET] [Wireless] radio on/off */
+	char *wl0_radio = get_cgi_json(g_var_post, "wl0_radio", root);
+	char *wl1_radio = get_cgi_json(g_var_post, "wl1_radio", root);
+	if(wl0_radio)
+		tcapi_set("WLan_Entry0", "wl0_radio_on", wl0_radio);
+	if(wl1_radio)
+		tcapi_set("WLan_Entry0", "wl1_radio_on", wl1_radio);
+	if(wl0_radio || wl1_radio)
+		app_method_hit = 1;
+
+	/* [SET] [Wireless] Roaming assistant */
+	char *wl0_user_rssi = get_cgi_json(g_var_post, "wl0_user_rssi", root);
+	char *wl1_user_rssi = get_cgi_json(g_var_post, "wl1_user_rssi", root);
+	char *wl2_user_rssi = get_cgi_json(g_var_post, "wl2_user_rssi", root);
+	if(wl0_user_rssi)
+		tcapi_set("WLan_Entry0", "wl0_user_rssi", wl0_user_rssi);
+	if(wl1_user_rssi)
+		tcapi_set("WLan_Entry0", "wl1_user_rssi", wl1_user_rssi);
+	if(wl2_user_rssi)
+		tcapi_set("WLan_Entry0", "wl2_user_rssi", wl2_user_rssi);
+	if(wl0_user_rssi || wl1_user_rssi || wl2_user_rssi)
+		app_method_hit = 1;
+
+	/* [SET] [Wireless] Tx power adjustment */
+	char *wl0_txpower = get_cgi_json(g_var_post, "wl0_txpower", root);
+	char *wl1_txpower = get_cgi_json(g_var_post, "wl1_txpower", root);
+	if(wl0_txpower)
+		tcapi_set("WLan_Common", "wl0_TxPower", wl0_txpower);
+	if(wl1_txpower)
+		tcapi_set("WLan_Common", "wl1_TxPower", wl1_txpower);
+	if(wl0_txpower || wl1_txpower)
+		app_method_hit = 1;
+
+	/* [SET] [CloudCheck] Enabled */
+	/* not support
+	char *enable_cloudcheck = get_cgi_json(g_var_post, "enable_cloudcheck", root);
+	 */
+
+	/* [SET] [Change Mode] Repeater mode setting */
+	/* not support (only support SW_MODE_ROUTER mode) */
+
+	/* [SET] [USB] samba - NTFS Sparse Files Support */
+	/* not support
+	char *usb_fs_ntfs_sparse = get_cgi_json(g_var_post, "usb_fs_ntfs_sparse", root);
+	 */
+
+	/* [SET] [System] HTTP / HTTPS */
+	char *http_enable = get_cgi_json(g_var_post, "http_enable", root);
+	char *https_lanport = get_cgi_json(g_var_post, "https_lanport", root);
+	if(http_enable) {
+		/**** in DSL model ****|***** in RT model ****
+		http_enable            | http_enable
+		1:HTTP                 | 0:HTTP
+		2:HTTPS                | 1:HTTPS
+		3:Both HTTP and HTTPS  | 2:Both HTTP and HTTPS
+		***********************|**********************/
+		tmpInt = atoi(http_enable);
+		switch (tmpInt) {
+			case 0:
+				tcapi_set("Https_Entry", "http_enable", "1");
+				break;
+			case 1:
+				tcapi_set("Https_Entry", "http_enable", "2");
+				break;
+			case 2:
+				tcapi_set("Https_Entry", "http_enable", "3");
+				break;
+		}
+	}
+	if(https_lanport)
+		tcapi_set("Https_Entry", "https_lanport", https_lanport);
+	if(http_enable || https_lanport)
+		app_method_hit = 1;
+
+	/* [SET] [WAN] ASUS DDNS */
+	char *ddns_enable_x = get_cgi_json(g_var_post, "ddns_enable_x", root);
+	char *ddns_server_x = get_cgi_json(g_var_post, "ddns_server_x", root);
+	char *ddns_hostname_x = get_cgi_json(g_var_post, "ddns_hostname_x", root);
+	if(ddns_enable_x)
+		tcapi_set("Ddns_Entry", "Active", ddns_enable_x);
+	if(ddns_server_x)
+		tcapi_set("Ddns_Entry", "SERVERNAME", ddns_server_x);
+	if(ddns_hostname_x){
+		tcapi_set("Ddns_Entry", "MYHOST", ddns_hostname_x);
+	}
+	if(ddns_enable_x || ddns_server_x || ddns_hostname_x)
+		app_method_hit = 1;
+
+	/* [SET] [WAN] Disconnect WAN */
+	char *wan0_enable = get_cgi_json(g_var_post, "wan0_enable", root);
+	char *wan1_enable = get_cgi_json(g_var_post, "wan1_enable", root);
+	if((wan0_enable) && (pri_unit >= 0)) {
+		tcapi_set(wan0_node, "Active", strcmp(wan0_enable, "1") ? "No" : "Yes");
+		app_method_hit = 1;
+	}
+	if((wan1_enable) && (sec_unit >= 0)) {
+		tcapi_set(wan1_node, "Active", strcmp(wan1_enable, "1") ? "No" : "Yes");
+		app_method_hit = 1;
+	}
+
+	/* [SET] [WAN] PPTP VPN server */
+	char *VPNServer_enable = get_cgi_json(g_var_post, "VPNServer_enable", root);
+	char *pptpd_enable = get_cgi_json(g_var_post, "pptpd_enable", root);
+	char *VPNServer_mode = get_cgi_json(g_var_post, "VPNServer_mode", root);
+	char *pptpd_clientlist = get_cgi_json(g_var_post, "pptpd_clientlist", root);
+	if(VPNServer_enable)
+		tcapi_set("VPNControl_Entry", "VPNServer_enable", VPNServer_enable);
+	if(pptpd_enable)
+		tcapi_set("PPTP_Entry", "pptpd_enable", pptpd_enable);
+	if(VPNServer_mode)
+		tcapi_set("VPNControl_Entry", "VPNServer_mode", VPNServer_mode);
+	if(pptpd_clientlist)
+		//tcapi_set("PPTP_Entry", "pptpd_clientlist", pptpd_clientlist);
+		tcapi_set_list("pptpd_clientlist", pptpd_clientlist);
+	if(VPNServer_enable || pptpd_enable || VPNServer_mode || pptpd_clientlist)
+		app_method_hit = 1;
+
+	/* [SET] [Wireless] RF 4x4 to 1x1 */
+	/* not support now */
+	char *guard_mode = get_cgi_json(g_var_post, "guard_mode", root);
+	if(guard_mode)
+		tcapi_set("WLan_Common", "guard_mode", guard_mode);
+
+	/* [SET] [QoS] Parental Control Rule */
+	char *MULTIFILTER_ALL = get_cgi_json(g_var_post, "MULTIFILTER_ALL", root);
+	char *MULTIFILTER_ENABLE = get_cgi_json(g_var_post, "MULTIFILTER_ENABLE", root);
+	char *MULTIFILTER_MAC = get_cgi_json(g_var_post, "MULTIFILTER_MAC", root);
+	char *MULTIFILTER_DEVICENAME = get_cgi_json(g_var_post, "MULTIFILTER_DEVICENAME", root);
+	char *MULTIFILTER_MACFILTER_DAYTIME = get_cgi_json(g_var_post, "MULTIFILTER_MACFILTER_DAYTIME", root);
+	if(MULTIFILTER_ALL)
+		tcapi_set("Parental_Entry", "MULTIFILTER_ALL", MULTIFILTER_ALL);
+	if(MULTIFILTER_ENABLE)
+		tcapi_set("Parental_Entry", "MULTIFILTER_ENABLE", MULTIFILTER_ENABLE);
+	if(MULTIFILTER_MAC)
+		tcapi_set("Parental_Entry", "MULTIFILTER_MAC", MULTIFILTER_MAC);
+	if(MULTIFILTER_DEVICENAME)
+		//tcapi_set("Parental_Entry", "MULTIFILTER_DEVICENAME", MULTIFILTER_DEVICENAME);
+		tcapi_set_list("MULTIFILTER_DEVICENAME", MULTIFILTER_DEVICENAME);
+	if(MULTIFILTER_MACFILTER_DAYTIME)
+		//tcapi_set("Parental_Entry", "MULTIFILTER_MACFILTER_DAYTIME", MULTIFILTER_MACFILTER_DAYTIME);
+		tcapi_set_list("MULTIFILTER_MACFILTER_DAYTIME", MULTIFILTER_MACFILTER_DAYTIME);
+	if(MULTIFILTER_ALL || MULTIFILTER_ENABLE || MULTIFILTER_MAC || MULTIFILTER_DEVICENAME || MULTIFILTER_MACFILTER_DAYTIME) {
+		app_method_hit = 1;
+	}
+
+	/* [SET] [Wireless] WPS Method */
+	char *wps_band = get_cgi_json(g_var_post, "wps_band", root);
+	if(wps_band) {
+		tcapi_set("WLan_Common","wl_unit", wps_band);
+			app_method_hit = 1;
+	}
+
+	/* [SET] [QIS] */
+	char *wan0_proto = get_cgi_json(g_var_post, "wan0_proto", root);
+	char *wan1_proto = get_cgi_json(g_var_post, "wan1_proto", root);
+	if((wan0_proto) && (pri_unit >= 0)) {
+		sprintf(tmp, "wan%d_proto", pri_unit);
+		tcapi_set("Wanduck_Common", tmp, wan0_proto);
+		app_method_hit = 1;
+	}
+	if((wan1_proto) && (pri_unit >= 0)) {
+		sprintf(tmp, "wan%d_proto", sec_unit);
+		tcapi_set("Wanduck_Common", tmp, wan1_proto);
+		app_method_hit = 1;
+	}
+	char *wan0_dhcpenable_x = get_cgi_json(g_var_post, "wan0_dhcpenable_x", root);
+	char *wan1_dhcpenable_x = get_cgi_json(g_var_post, "wan1_dhcpenable_x", root);
+	if((wan0_dhcpenable_x) && (pri_unit >= 0)) {
+		tcapi_set(wan0_node, "ISP", strcmp(wan0_dhcpenable_x, "0") ? "0" : "1"); //ISP=0, Automatic; ISP=1, Static; ISP=2, PPPoE
+		app_method_hit = 1;
+	}
+	if((wan1_dhcpenable_x) && (sec_unit >= 0)) {
+		tcapi_set(wan1_node, "ISP", strcmp(wan1_dhcpenable_x, "0") ? "0" : "1"); //ISP=0, Automatic; ISP=1, Static; ISP=2, PPPoE
+		app_method_hit = 1;
+	}
+
+	/* [SET] [QIS] Wan DHCP Setting */
+	char *wan0_dnsenable_x = get_cgi_json(g_var_post, "wan0_dnsenable_x", root);
+	char *wan0_dns1_x = get_cgi_json(g_var_post, "wan0_dns1_x", root);
+	char *wan0_dns2_x = get_cgi_json(g_var_post, "wan0_dns2_x", root);
+	if(pri_unit >= 0) {
+		if(wan0_dnsenable_x)
+			tcapi_set(wan0_node, "DNS_type", strcmp(wan0_dnsenable_x, "0") ? "0" : "1");
+		if(wan0_dns1_x)
+			tcapi_set(wan0_node, "Primary_DNS", wan0_dns1_x);
+		if(wan0_dns2_x)
+			tcapi_set(wan0_node, "Secondary_DNS", wan0_dns2_x);
+		if(wan0_dnsenable_x || wan0_dns1_x || wan0_dns2_x)
+			app_method_hit = 1;
+	}
+	char *wan1_dnsenable_x = get_cgi_json(g_var_post, "wan1_dnsenable_x", root);
+	char *wan1_dns1_x = get_cgi_json(g_var_post, "wan1_dns1_x", root);
+	char *wan1_dns2_x = get_cgi_json(g_var_post, "wan1_dns2_x", root);
+	if(sec_unit >= 0) {
+		if(wan1_dnsenable_x)
+			tcapi_set(wan1_node, "DNS_type", strcmp(wan1_dnsenable_x, "0") ? "0" : "1");
+		if(wan1_dns1_x)
+			tcapi_set(wan1_node, "Primary_DNS", wan1_dns1_x);
+		if(wan1_dns2_x)
+			tcapi_set(wan1_node, "Secondary_DNS", wan1_dns2_x);
+		if(wan1_dnsenable_x || wan1_dns1_x || wan1_dns2_x)
+			app_method_hit = 1;
+	}
+
+	/* [SET] [QIS] Wan L2TP Setting */
+	/* not support
+	char *wan0_heartbeat_x = get_cgi_json(g_var_post, "wan0_heartbeat_x", root);
+	 */
+	/* [SET] [QIS] Wan PPPoE Setting */
+	char *wan0_pppoe_username = get_cgi_json(g_var_post, "wan0_pppoe_username", root);
+	char *wan0_pppoe_passwd = get_cgi_json(g_var_post, "wan0_pppoe_passwd", root);
+	char *wan0_hwaddr_x = get_cgi_json(g_var_post, "wan0_hwaddr_x", root);
+	if(pri_unit >= 0) {
+		if(wan0_pppoe_username)
+			tcapi_set(wan0_node, "USERNAME", wan0_pppoe_username);
+		if(wan0_pppoe_passwd)
+			tcapi_set(wan0_node, "PASSWORD", wan0_pppoe_passwd);
+		if(wan0_hwaddr_x)
+			tcapi_set(wan0_node, "WAN_MAC", wan0_hwaddr_x);
+		if(wan0_pppoe_username || wan0_pppoe_passwd || wan0_hwaddr_x)
+			app_method_hit = 1;
+	}
+	char *wan1_pppoe_username = get_cgi_json(g_var_post, "wan1_pppoe_username", root);
+	char *wan1_pppoe_passwd = get_cgi_json(g_var_post, "wan1_pppoe_passwd", root);
+	char *wan1_hwaddr_x = get_cgi_json(g_var_post, "wan1_hwaddr_x", root);
+	if(sec_unit >= 0) {
+		if(wan1_pppoe_username)
+			tcapi_set(wan1_node, "USERNAME", wan1_pppoe_username);
+		if(wan1_pppoe_passwd)
+			tcapi_set(wan1_node, "PASSWORD", wan1_pppoe_passwd);
+		if(wan1_hwaddr_x)
+			tcapi_set(wan1_node, "WAN_MAC", wan1_hwaddr_x);
+		if(wan1_pppoe_username || wan1_pppoe_passwd || wan1_hwaddr_x)
+			app_method_hit = 1;
+	}
+
+	/* [SET] [QIS] Wan PPTP Setting */
+	/* not support
+	char *wan0_heartbeat_x = get_cgi_json(g_var_post, "wan0_heartbeat_x", root);
+	 */
+	/* [SET] [QIS] Wan Static Setting */
+	char *wan0_ipaddr = get_cgi_json(g_var_post, "wan0_ipaddr", root);
+	char *wan0_gateway = get_cgi_json(g_var_post, "wan0_gateway", root);
+	char *wan0_netmask = get_cgi_json(g_var_post, "wan0_netmask", root);
+	char *wan0_ipaddr_x = get_cgi_json(g_var_post, "wan0_ipaddr_x", root);
+	char *wan0_gateway_x = get_cgi_json(g_var_post, "wan0_gateway_x", root);
+	char *wan0_netmask_x = get_cgi_json(g_var_post, "wan0_netmask_x", root);
+	if(pri_unit >= 0) {
+		if(wan0_ipaddr) {
+			sprintf(tmp, "wan%d_ipaddr", pri_unit);
+			tcapi_set("Wanduck_Common", tmp, wan0_ipaddr);
+			app_method_hit = 1;
+		}
+		else if(wan0_ipaddr_x) {
+			sprintf(tmp, "wan%d_ipaddr", pri_unit);
+			tcapi_set("Wanduck_Common", tmp, wan0_ipaddr_x);
+			app_method_hit = 1;
+		}
+		if(wan0_gateway) {
+			sprintf(tmp, "wan%d_gateway", pri_unit);
+			tcapi_set("Wanduck_Common", tmp, wan0_gateway);
+			app_method_hit = 1;
+		}
+		else if(wan0_gateway_x) {
+			sprintf(tmp, "wan%d_gateway", pri_unit);
+			tcapi_set("Wanduck_Common", tmp, wan0_gateway_x);
+			app_method_hit = 1;
+		}
+		if(wan0_netmask) {
+			sprintf(tmp, "wan%d_netmask", pri_unit);
+			tcapi_set("Wanduck_Common", tmp, wan0_netmask);
+			app_method_hit = 1;
+		}
+		else if(wan0_netmask_x) {
+			sprintf(tmp, "wan%d_netmask", pri_unit);
+			tcapi_set("Wanduck_Common", tmp, wan0_netmask_x);
+			app_method_hit = 1;
+		}
+	}
+	char *wan1_ipaddr = get_cgi_json(g_var_post, "wan1_ipaddr", root);
+	char *wan1_gateway = get_cgi_json(g_var_post, "wan1_gateway", root);
+	char *wan1_netmask = get_cgi_json(g_var_post, "wan1_netmask", root);
+	char *wan1_ipaddr_x = get_cgi_json(g_var_post, "wan1_ipaddr_x", root);
+	char *wan1_gateway_x = get_cgi_json(g_var_post, "wan1_gateway_x", root);
+	char *wan1_netmask_x = get_cgi_json(g_var_post, "wan1_netmask_x", root);
+	if(sec_unit >= 0) {
+		if(wan1_ipaddr) {
+			sprintf(tmp, "wan%d_ipaddr", sec_unit);
+			tcapi_set("Wanduck_Common", tmp, wan1_ipaddr);
+			app_method_hit = 1;
+		}
+		else if(wan1_ipaddr_x) {
+			sprintf(tmp, "wan%d_ipaddr", sec_unit);
+			tcapi_set("Wanduck_Common", tmp, wan1_ipaddr_x);
+			app_method_hit = 1;
+		}
+		if(wan1_gateway) {
+			sprintf(tmp, "wan%d_gateway", sec_unit);
+			tcapi_set("Wanduck_Common", tmp, wan1_gateway);
+			app_method_hit = 1;
+		}
+		else if(wan1_gateway_x) {
+			sprintf(tmp, "wan%d_gateway", sec_unit);
+			tcapi_set("Wanduck_Common", tmp, wan1_gateway_x);
+			app_method_hit = 1;
+		}
+		if(wan1_netmask) {
+			sprintf(tmp, "wan%d_netmask", sec_unit);
+			tcapi_set("Wanduck_Common", tmp, wan1_netmask);
+			app_method_hit = 1;
+		}
+		else if(wan1_netmask_x) {
+			sprintf(tmp, "wan%d_netmask", sec_unit);
+			tcapi_set("Wanduck_Common", tmp, wan1_netmask_x);
+			app_method_hit = 1;
+		}
+	}
+
+	/* DUT_RT_SetBandwidthMonitorMode */
+	/* not support
+	char *apps_analysis = get_cgi_json(g_var_post, "apps_analysis", root);
+	 */
+
+	/* Others */
+	char *x_Setting = get_cgi_json(g_var_post, "x_Setting", root);
+	if(x_Setting) {
+		tcapi_set("SysInfo_Entry","x_Setting", x_Setting);
+		app_method_hit = 1;
+	}
+
+	/* [SET] [QIS] Username/Passwd */
+	char *http_username = get_cgi_json(g_var_post, "http_username", root);
+	char *http_passwd = get_cgi_json(g_var_post, "http_passwd", root);
+	if(http_username)
+		tcapi_set("Account_Entry0", "username", http_username);
+	if(http_passwd) {
+		tcapi_set("Account_Entry0", "web_passwd", http_passwd);
+		tcapi_set("Account_Entry0", "console_passwd", http_passwd);
+	}
+	if(http_username || http_passwd) {
+		tcapi_commit("Account");
+		app_method_hit = 2;
+#ifdef RTCONFIG_USB
+		/*modify_aidisk_account();*/
+		{
+			char acclist[256] = {0};
+			char newpwd[128] = {0};
+			char newuser[128] = {0};
+			char *p = NULL;
+			char charAccount[64] = {0};
+
+			tcapi_get("Samba_Entry", "acc_list", acclist);
+			tcapi_get("Account_Entry0", "username", newuser);
+			tcapi_get("Account_Entry0", "web_passwd", newpwd);
+
+			if(strlen(acclist) > 1)
+			{
+				p = strstr(acclist, ">");
+				if(p)
+				{
+					*p = 0;
+					ascii_to_char_safe(charAccount, acclist, 64);
+					mod_account(charAccount, newuser, newpwd);
+				}
+			}
+		}
+#endif
+	}
+
+	return app_method_hit;
+}
+
+static int appDo_rc_service(char *rc_service, char *wp, json_object *root)
+{
+	int app_method_hit = 0;
+	char wan0_node[16], wan1_node[16];
+
+	int pri_unit = wan_primary_ifunit();
+	int sec_unit = wan_secondary_ifunit();
+	if (pri_unit >= 0) {
+		sprintf(wan0_node, "Wan_PVC%d", pri_unit);
+	}
+	if (sec_unit >= 0) {
+		sprintf(wan1_node, "Wan_PVC%d", sec_unit);
+	}
+
+	//_dprintf("[AiHome] appDo_rc_service: rc_service=%s\n", rc_service);
+	if(rc_service) {
+		if(!strcmp(rc_service, "enable_webdav")) {
+			char *ddns_enable_x = get_cgi_json(g_var_post, "ddns_enable_x", root);
+			char *ddns_server_x = get_cgi_json(g_var_post, "ddns_server_x", root);
+			char *ddns_hostname_x = get_cgi_json(g_var_post, "ddns_hostname_x", root);
+			char *enable_webdav = get_cgi_json(g_var_post, "enable_webdav", root);
+			char *webdav_aidisk = get_cgi_json(g_var_post, "webdav_aidisk", root);
+			char *webdav_proxy = get_cgi_json(g_var_post, "webdav_proxy", root);
+			char *st_webdav_mode = get_cgi_json(g_var_post, "st_webdav_mode", root);
+
+			if(ddns_enable_x || ddns_server_x || ddns_hostname_x) {
+				tcapi_commit("Ddns");
+				app_method_hit = 2; //"MODIFIED" and "RUN SERVICE"
+			}
+
+			if(enable_webdav)
+				tcapi_set("AiCloud_Entry", "enable_webdav", enable_webdav);
+			if(webdav_aidisk)
+				tcapi_set("AiCloud_Entry", "webdav_aidisk", webdav_aidisk);
+			if(webdav_proxy)
+				tcapi_set("AiCloud_Entry", "webdav_proxy", webdav_proxy);
+			if(st_webdav_mode)
+				tcapi_set("AiCloud_Entry", "st_webdav_mode", st_webdav_mode);
+			if(enable_webdav || webdav_aidisk || webdav_proxy || st_webdav_mode) {
+				tcapi_commit("AiCloud_Entry");
+				system("/sbin/rc_call webdav 2 &");	//restart
+				app_method_hit = 2;
+			}
+		}
+		else if(!strcmp(rc_service, "restart_cloudsync")) {
+			char *enable_cloudsync = get_cgi_json(g_var_post, "enable_cloudsync", root);
+			char *cloud_sync = get_cgi_json(g_var_post, "cloud_sync", root);
+
+			if(enable_cloudsync)
+				tcapi_set("AiCloud_Entry", "enable_cloudsync", enable_cloudsync);
+			if(cloud_sync)
+				tcapi_set("AiCloud_Entry", "cloud_sync", cloud_sync);
+			if(enable_cloudsync || cloud_sync) {
+				tcapi_commit("AiCloud_Entry");
+				system("/sbin/rc_call cloudsync 2 &");	//restart
+				app_method_hit = 2;
+			}
+		}
+		/* [SET] [AiProtection] Router Security - Secure your router */
+		/* [SET] [WAN] Disconnect WAN */
+		else if(!strncmp(rc_service, "restart_wan_if", 14)) {
+			/* not support wan1_upnp_enable */
+			/* [SET] [QIS] */
+			char *wan0_proto = get_cgi_json(g_var_post, "wan0_proto", root);
+			char *wan1_proto = get_cgi_json(g_var_post, "wan1_proto", root);
+			if(wan0_proto || wan1_proto) {
+				tcapi_commit("Wanduck_Common");
+				app_method_hit = 2;
+			}
+			char *wan0_enable = get_cgi_json(g_var_post, "wan0_enable", root);
+			char *wan0_dhcpenable_x = get_cgi_json(g_var_post, "wan0_dhcpenable_x", root);
+			char *wan0_dnsenable_x = get_cgi_json(g_var_post, "wan0_dnsenable_x", root);
+			char *wan0_dns1_x = get_cgi_json(g_var_post, "wan0_dns1_x", root);
+			char *wan0_dns2_x = get_cgi_json(g_var_post, "wan0_dns2_x", root);
+			char *wan0_pppoe_username = get_cgi_json(g_var_post, "wan0_pppoe_username", root);
+			char *wan0_pppoe_passwd = get_cgi_json(g_var_post, "wan0_pppoe_passwd", root);
+			char *wan0_hwaddr_x = get_cgi_json(g_var_post, "wan0_hwaddr_x", root);
+			char *wan0_ipaddr = get_cgi_json(g_var_post, "wan0_ipaddr", root);
+			char *wan0_gateway = get_cgi_json(g_var_post, "wan0_gateway", root);
+			char *wan0_netmask = get_cgi_json(g_var_post, "wan0_netmask", root);
+			char *wan0_ipaddr_x = get_cgi_json(g_var_post, "wan0_ipaddr_x", root);
+			char *wan0_gateway_x = get_cgi_json(g_var_post, "wan0_gateway_x", root);
+			char *wan0_netmask_x = get_cgi_json(g_var_post, "wan0_netmask_x", root);
+			if((wan0_enable || wan0_dhcpenable_x
+				|| wan0_dnsenable_x || wan0_dns1_x || wan0_dns2_x
+				|| wan0_pppoe_username || wan0_pppoe_passwd || wan0_hwaddr_x
+				|| wan0_ipaddr || wan0_gateway || wan0_netmask
+				|| wan0_ipaddr_x || wan0_gateway_x || wan0_netmask_x) && (pri_unit >= 0)) {
+				tcapi_commit(wan0_node);
+				app_method_hit = 2;
+			}
+			char *wan1_enable = get_cgi_json(g_var_post, "wan1_enable", root);
+			char *wan1_dhcpenable_x = get_cgi_json(g_var_post, "wan1_dhcpenable_x", root);
+			char *wan1_dnsenable_x = get_cgi_json(g_var_post, "wan1_dnsenable_x", root);
+			char *wan1_dns1_x = get_cgi_json(g_var_post, "wan1_dns1_x", root);
+			char *wan1_dns2_x = get_cgi_json(g_var_post, "wan1_dns2_x", root);
+			char *wan1_pppoe_username = get_cgi_json(g_var_post, "wan1_pppoe_username", root);
+			char *wan1_pppoe_passwd = get_cgi_json(g_var_post, "wan1_pppoe_passwd", root);
+			char *wan1_hwaddr_x = get_cgi_json(g_var_post, "wan1_hwaddr_x", root);
+			char *wan1_ipaddr = get_cgi_json(g_var_post, "wan1_ipaddr", root);
+			char *wan1_gateway = get_cgi_json(g_var_post, "wan1_gateway", root);
+			char *wan1_netmask = get_cgi_json(g_var_post, "wan1_netmask", root);
+			char *wan1_ipaddr_x = get_cgi_json(g_var_post, "wan1_ipaddr_x", root);
+			char *wan1_gateway_x = get_cgi_json(g_var_post, "wan1_gateway_x", root);
+			char *wan1_netmask_x = get_cgi_json(g_var_post, "wan1_netmask_x", root);
+			if((wan1_enable || wan1_dhcpenable_x
+				|| wan1_dnsenable_x || wan1_dns1_x || wan1_dns2_x
+				|| wan1_pppoe_username || wan1_pppoe_passwd || wan1_hwaddr_x
+				|| wan1_ipaddr || wan1_gateway || wan1_netmask
+				|| wan1_ipaddr_x || wan1_gateway_x || wan1_netmask_x) && (sec_unit >= 0)) {
+				tcapi_commit(wan1_node);
+				app_method_hit = 2;
+			}
+			tcapi_commit("Upnpd_Entry");
+			tcapi_commit("Route");
+		}
+		else if(!strcmp(rc_service, "restart_time")) {
+			tcapi_commit("Firewall");
+			app_method_hit = 2;
+		}
+		else if(!strcmp(rc_service, "restart_firewall")) {
+			tcapi_commit("Firewall");
+			app_method_hit = 2;
+		}
+		else if(!strcmp(rc_service, "restart_wrs")) {
+			/* not support [AiProtection][bwdpi] wrs_cc_enable, wrs_vp_enable, wrs_mals_enable */
+		}
+		else if(!strcmp(rc_service, "restart_wireless")) {
+			/* [SET] [Wireless] Mac filter */
+			char *wl0_macmode = get_cgi_json(g_var_post, "wl0_macmode", root);
+			char *wl1_macmode = get_cgi_json(g_var_post, "wl1_macmode", root);
+			char *wl2_macmode = get_cgi_json(g_var_post, "wl2_macmode", root);
+			char *wl0_maclist_x = get_cgi_json(g_var_post, "wl0_maclist_x", root);
+			char *wl1_maclist_x = get_cgi_json(g_var_post, "wl1_maclist_x", root);
+			char *wl2_maclist_x = get_cgi_json(g_var_post, "wl2_maclist_x", root);
+			if(wl0_macmode || wl1_macmode || wl2_macmode || wl0_maclist_x || wl1_maclist_x || wl2_maclist_x) {
+				tcapi_commit("ACL_Entry0");
+				app_method_hit = 2;
+			}
+			else {
+			/* [SET] [AiProtection] Router Security - Secure your router */
+			/* [SET] [Guest Network] 2.4GHz - 1 */
+			/* [SET] [Wireless] General Setting */
+			/* [SET] [Wireless] radio on/off */
+			/* [SET] [Wireless] Roaming assistant */
+			/* [SET] [Wireless] Tx power adjustment */
+				tcapi_commit("WLan_Entry0");
+				app_method_hit = 2;
+			}
+		}
+		/* [SET] [CloudCheck] Enabled */
+		else if(!strcmp(rc_service, "restart_cloudcheck")) {
+			/* not support enable_cloudcheck */
+		}
+		/* [SET] [Firmware Update] download fw server info */
+		else if(!strcmp(rc_service, "start_webs_update")) {
+			eval("/usr/script/webs_update.sh");
+			app_method_hit = 2;
+		}
+		/* [SET] [General] Firmware Upgrade */
+		else if(!strcmp(rc_service, "start_webs_upgrade")) {
+			system("/usr/script/webs_upgrade.sh");
+			/*stop_service();*/
+			killall_tk("clean_cache.sh");
+			sleep(1);
+			kill_pidfile_s("/var/run/cfg_manager_pid", SIGUSR2);
+			sleep(1);
+#ifdef RTCONFIG_USB
+			system("ejusb 1 0");	//force ejusb whether usb apps enabled or not
+			system("ejusb 2 0");
+#endif
+			system("rc_call service 0");
+			/*start to upgrade*/
+			tcapi_set("System_Entry","upgrade_fw_status","NONE");
+			tcapi_set("System_Entry","upgrade_fw","1");
+			tcapi_commit("System_Entry");
+			app_method_hit = 2;
+		}
+		/* [SET] [Change Mode] Repeater mode setting */
+		/* [SET] [General] Reboot */
+		/* [SET] [USB] samba - NTFS Sparse Files Support */
+		else if(!strcmp(rc_service, "reboot")) {
+			system("reboot");
+			app_method_hit = 2;
+		}
+		/* [SET] [QoS] Bandwidth limiter */
+		else if(!strcmp(rc_service, "restart_qos")) {
+			tcapi_commit("QoS_Entry0");
+			app_method_hit = 2;
+		}
+		/* [SET] [System] HTTP / HTTPS */
+		else if(!strcmp(rc_service, "restart_httpd")) {
+			tcapi_commit("Https_Entry");
+			app_method_hit = 2;
+		}
+		/* [SET] [USB] FTP - Enabled */
+		else if(!strcmp(rc_service, "restart_ftpd")) {
+			tcapi_commit("Samba_Entry");
+			eval("/sbin/rc_call", "ftp", "2");
+			app_method_hit = 2;
+		}
+		else if(!strcmp(rc_service, "stop_ftpd")) {
+			tcapi_commit("Samba_Entry");
+			eval("/sbin/rc_call", "ftp", "0");
+			app_method_hit = 2;
+		}
+		/* [SET] [USB] samba - enabled */
+		else if(!strcmp(rc_service, "restart_samba")) {
+			tcapi_commit("Samba_Entry");
+			eval("/sbin/rc_call", "samba", "2");
+			app_method_hit = 2;
+		}
+		else if(!strcmp(rc_service, "stop_samba")) {
+			tcapi_commit("Samba_Entry");
+			eval("/sbin/rc_call", "samba", "0");
+			app_method_hit = 2;
+		}
+		/* [SET] [WAN] ASUS DDNS */
+		else if(!strcmp(rc_service, "restart_ddns")) {
+			tcapi_commit("Ddns_Entry0");
+			app_method_hit = 2;
+		}
+		/* [SET] [WAN] PPTP VPN server */
+		else if(!strcmp(rc_service, "restart_vpnd")) {
+			tcapi_commit("VPNControl_Entry");
+			tcapi_commit("PPTP_Entry");
+			system("/sbin/service restart_vpnd");
+			tcapi_commit("Firewall");
+			app_method_hit = 2;
+		}
+		/* [SET] [Wireless] RF 4x4 to 1x1 */
+		else if(!strcmp(rc_service, "restart_eco_guard")) {
+			/* not support guard_mode */
+		}
+		/* [SET] [QIS] Change lan ip conflict */
+		else if(!strcmp(rc_service, "restart_subnet")) {
+			char lan_ipaddr_t[16];
+			char lan_netmask_t[16];
+			unsigned int lan_ip_num;
+			unsigned int lan_mask_num;
+			unsigned int lan_subnet;
+			char wan_ipaddr_t[16];
+			char wan_netmask_t[16];
+			unsigned int wan_ip_num;
+			unsigned int wan_mask_num;
+			unsigned int wan_subnet;
+			const unsigned int MAX_SUBNET = 3232300800U;
+			const unsigned int MIN_LAN_IP = 3232235521U;
+			struct in_addr addr;
+			unsigned int new_lan_ip_num;
+			unsigned int new_dhcp_start_num;
+			unsigned int new_dhcp_end_num;
+			char new_lan_ip_str[16];
+			char new_dhcp_start_str[16];
+			char new_dhcp_end_str[16];
+			// char tmp_lan[100], prefix_lan[] = "lanXXXXXXXXXX_";
+			int unit;
+			// char tmp_wan[100], prefix_wan[] = "wanXXXXXXXXXX_";
+			char tmp_wanip[32], tmp_wanmask[32];
+			char wp[4] = {0};
+
+			app_method_hit = 2;
+			// snprintf(prefix_lan, sizeof(prefix_lan), "lan_");
+
+			memset(lan_ipaddr_t, 0, sizeof(lan_ipaddr_t));
+			// strcpy(lan_ipaddr_t, nvram_safe_get(strcat_r(prefix_lan, "ipaddr", tmp_lan)));
+			tcapi_get("Lan_Entry0", "IP", lan_ipaddr_t);
+			memset(&addr, 0, sizeof(addr));
+			lan_ip_num = ntohl(inet_aton(lan_ipaddr_t, &addr));
+			lan_ip_num = ntohl(addr.s_addr);
+			memset(lan_netmask_t, 0, sizeof(lan_netmask_t));
+			// strcpy(lan_netmask_t, nvram_safe_get(strcat_r(prefix_lan, "netmask", tmp_lan)));
+			tcapi_get("Lan_Entry0", "netmask", lan_netmask_t);
+			memset(&addr, 0, sizeof(addr));
+			lan_mask_num = ntohl(inet_aton(lan_netmask_t, &addr));
+			lan_mask_num = ntohl(addr.s_addr);
+			lan_subnet = lan_ip_num&lan_mask_num;
+		dbg("http: get lan_subnet=%x!\n", lan_subnet);
+
+#if 0 /* don't care about secondary WAN in error redirect page, and must consider DSL and USB WAN. */
+			for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
+				if(unit != wan_primary_ifunit()
+						&& !nvram_match("wans_mode", "lb")
+						)
+					continue;
+
+				int wan_type = get_dualwan_by_pvcunit(unit);
+				if(wan_type != WANS_DUALWAN_IF_WAN
+						&& wan_type != WANS_DUALWAN_IF_LAN)
+					continue;
+
+				break;
+			}
+			if(unit == WAN_UNIT_MAX){
+		dbg("http: Can't get the WAN's unit!\n");
+				websWrite(wp, "0");
+				return;
+			}
+#else
+			unit = wan_primary_ifunit();
+#endif
+			// wan_prefix(unit, prefix_wan);
+
+			memset(wan_ipaddr_t, 0, sizeof(wan_ipaddr_t));
+			// strcpy(wan_ipaddr_t, nvram_safe_get(strcat_r(prefix_lan, "ipaddr", tmp_wan)));
+			sprintf(tmp_wanip, "wan%d_ipaddr", unit);
+			tcapi_get("Wanduck_Common", tmp_wanip, wan_ipaddr_t);
+			memset(&addr, 0, sizeof(addr));
+			wan_ip_num = ntohl(inet_aton(wan_ipaddr_t, &addr));
+			wan_ip_num = ntohl(addr.s_addr);
+			memset(wan_netmask_t, 0, sizeof(wan_netmask_t));
+			// strcpy(wan_netmask_t, nvram_safe_get(strcat_r(prefix_lan, "netmask", tmp_wan)));
+			sprintf(tmp_wanmask, "wan%d_netmask", unit);
+			tcapi_get("Wanduck_Common", tmp_wanmask, wan_netmask_t);
+			memset(&addr, 0, sizeof(addr));
+			wan_mask_num = ntohl(inet_aton(wan_netmask_t, &addr));
+			wan_mask_num = ntohl(addr.s_addr);
+			wan_subnet = wan_ip_num&wan_mask_num;
+		dbg("http: get wan_subnet=%x!\n", wan_subnet);
+
+			if(lan_subnet != wan_subnet){
+		dbg("http: The subnets of WAN and LAN aren't the same already.!\n");
+				//websWrite(wp, "0");
+				return app_method_hit;
+			}
+
+			if(lan_subnet >= MAX_SUBNET)
+				new_lan_ip_num = MIN_LAN_IP;
+			else
+				new_lan_ip_num = lan_ip_num+(~lan_mask_num)+1;
+
+			/* To prevent Lan IP: 192.168.1.254, then new dhcp start to 192.168.1.255. (~lan_mask_num)-1 like 254 */
+			if((new_lan_ip_num&(~lan_mask_num)) == ((~lan_mask_num)-1)) {
+				new_dhcp_start_num = (new_lan_ip_num&lan_mask_num) + 2; /* prevent x.x.x.1 for router */
+				new_dhcp_end_num = (new_lan_ip_num&lan_mask_num) + (~lan_mask_num)-2;
+				dbg("http: get new_lan_ip_num&(~lan_mask_num)=%x!\n", (new_lan_ip_num&(~lan_mask_num)));
+			}
+			else {
+				new_dhcp_start_num = new_lan_ip_num+1;
+				new_dhcp_end_num = (new_lan_ip_num|(~inet_network(lan_netmask_t)))-1;
+			}
+		dbg("%u, %u, %u.\n", new_lan_ip_num, new_dhcp_start_num, new_dhcp_end_num);
+			memset(&addr, 0, sizeof(addr));
+			addr.s_addr = htonl(new_lan_ip_num);
+			memset(new_lan_ip_str, 0, sizeof(new_lan_ip_str));
+			strcpy(new_lan_ip_str, inet_ntoa(addr));
+			memset(&addr, 0, sizeof(addr));
+			addr.s_addr = htonl(new_dhcp_start_num);
+			memset(new_dhcp_start_str, 0, sizeof(new_dhcp_start_str));
+			strcpy(new_dhcp_start_str, inet_ntoa(addr));
+			memset(&addr, 0, sizeof(addr));
+			addr.s_addr = htonl(new_dhcp_end_num);
+			memset(new_dhcp_end_str, 0, sizeof(new_dhcp_end_str));
+			strcpy(new_dhcp_end_str, inet_ntoa(addr));
+		dbg("%s, %s, %s.\n", new_lan_ip_str, new_dhcp_start_str, new_dhcp_end_str);
+
+			// nvram_set(strcat_r(prefix_lan, "ipaddr", tmp_lan), new_lan_ip_str);
+			tcapi_set("Lan_Entry0", "IP", new_lan_ip_str);
+			// nvram_set(strcat_r(prefix_lan, "ipaddr_rt", tmp_lan), new_lan_ip_str); // Sync to lan_ipaddr_rt, added by jerry5.
+			// nvram_set("dhcp_start", new_dhcp_start_str);
+			tcapi_set("Dhcpd_Common", "start", new_dhcp_start_str);
+			// nvram_set("dhcp_end", new_dhcp_end_str);
+			tcapi_set("Dhcpd_Common", "end", new_dhcp_end_str);
+
+			//websWrite(wp, "1");
+
+			// nvram_commit();
+			tcapi_save();	// commit, move to restart net_and_phy
+
+			// notify_rc("restart_net_and_phy");
+			//TODO:  many services may need to restart
+			eval("/sbin/rc_call", "net_and_phy", "2");
+
+			return app_method_hit;
+		}
+	}
+
+	return app_method_hit;
+}
+
+/* Look for unquoted character within a string */
+char *
+unqstrstr_t(char *haystack, char *needle)
+{
+	char *cur;
+	int q;
+
+	for (cur = haystack, q = 0;
+	     cur < &haystack[strlen(haystack)] && !(!q && !strncmp(needle, cur, strlen(needle)));
+	     cur++) {
+		if (*cur == '"')
+			q ? q-- : q++;
+	}
+	return (cur < &haystack[strlen(haystack)]) ? cur : NULL;
+}
+
+char *
+get_arg_t(char *args, char **next)
+{
+	char *arg, *end;
+
+	/* Parse out arg, ... */
+	if (!(end = unqstrstr_t(args, ","))) {
+		end = args + strlen(args);
+		*next = NULL;
+	} else
+		*next = end + 1;
+
+	/* Skip whitespace and quotation marks on either end of arg */
+	for (arg = args; isspace((int)*arg) || *arg == '"'; arg++);
+	for (*end-- = '\0'; isspace((int)*end) || *end == '"'; end--)
+		*end = '\0';
+
+	return arg;
+}
+
+char *filter(char *string, char c) {
+    char *from, *to;
+    for(to = from = string;*from;++from){
+		//boa_dbg("%s: *from=%c, c=%c\n", __FUNCTION__, *from, c);
+        if(*from != c){
+            *to++ = *from;
+        }
+    }
+    *to = '\0';
+    return string;
+}
+
+#if 0
+int
+ejArgs(int argc, char **argv, char *fmt, ...)
+{
+	va_list	ap;
+	int arg;
+	char *c;
+
+	if (!argv)
+		return 0;
+
+	va_start(ap, fmt);
+	for (arg = 0, c = fmt; c && *c && arg < argc;) {
+		if (*c++ != '%')
+			continue;
+		switch (*c) {
+		case 'd':
+			*(va_arg(ap, int *)) = atoi(argv[arg]);
+			break;
+		case 's':
+			*(va_arg(ap, char **)) = argv[arg];
+			break;
+		}
+		arg++;
+	}
+	va_end(ap);
+
+	return arg;
+}
+#endif
+
+char* reverse_str(char *str)
+{
+  int i, n;
+  char c;
+
+  n = strlen(str);
+  for(i=0; i<n/2; i++)
+  {
+    c = str[i];
+    str[i] = str[n-i-1];
+    str[n-i-1] = c;
+  }
+
+  return str;
+}
+
+static int
+check_macrepeat(char *maclist,char *mac)
+{
+	int total=0;
+	while (strstr(maclist,mac) != NULL)
+	{
+		maclist += strlen(maclist);
+		total++;
+	}
+	return total;
+}
+
+static int
+appGet_attribute(char *stream, char *name)
+{
+	int app_method_hit = 0;
+	char value[MAX_VALUE], webs_state_info[8], exist_firmver[8], tmp[32], tmp2[64];
+	int latest_firmver = 0, current_firmver = 0, tmpInt = -1;
+	char *exist_firm;
+	//_dprintf("appGet_attribute: name = %s\n", name);
+
+	int pri_unit = wan_primary_ifunit();
+	int sec_unit = wan_secondary_ifunit();
+
+	/* Bandwidth limiter */
+	if (strcmp(name, "qos_enable") == 0) {
+		if(!tcapi_get("QoS_Entry0", "qos_enable", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2; /* DSL model not support */
+		}
+	}
+	else if (strcmp(name, "qos_type") == 0) {
+		if(!tcapi_get("QoS_Entry0", "qos_type", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "qos_rulelist") == 0) {
+		//if(!tcapi_get("QoS_Entry0", "qos_rulelist", value)) {
+		if(!tcapi_get_list("qos_rulelist", value, sizeof(value))) {
+			appGet_encode(value);
+			//websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "qos_bw_rulelist") == 0) {
+		//if(!tcapi_get("QoS_Entry0", "qos_bw_rulelist", value)) {
+		if(!tcapi_get_list("qos_bw_rulelist", value, sizeof(value))) {
+			appGet_encode(value);
+			//websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [Client List] custom name */
+	else if (strcmp(name, "custom_clientlist") == 0) {
+		//get_client_list_cache(); //<uuuuuu1>6C:62:6D:32:E2:70>0>13>><kkkkkkkkkk2>40:16:7E:8D:0B:0E>0>16>>
+		/* not support */
+		app_method_hit = 2;
+	}
+	/* firmware update - server info */
+	/* DUT_RT_LiveUpdate_CheckResult */
+	else if (strcmp(name, "webs_state_update") == 0) {
+		if(!tcapi_get("WebCustom_Entry", "webs_state_update", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "webs_state_flag") == 0) {
+		if(!tcapi_get("WebCustom_Entry", "webs_state_info", webs_state_info) && !tcapi_get("DeviceInfo", "FwVer", exist_firmver)) {
+			latest_firmver = atoi(webs_state_info);
+			if(latest_firmver > 0){
+				exist_firm = filter(exist_firmver, '.');
+				current_firmver = atoi(exist_firm);
+				if(current_firmver < latest_firmver){
+					websWrite(stream, "1"); /* need to upgrade firmware */
+				}
+				else {
+					websWrite(stream, "0"); /* no need to upgrade firmware */
+				}
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "webs_state_error") == 0) {
+		if(!tcapi_get("WebCustom_Entry", "webs_state_error", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "webs_state_info") == 0) {
+		if(!tcapi_get("WebCustom_Entry", "webs_state_info", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* game first mode */
+	/* already exists: qos_enable, qos_type */
+	else if (strcmp(name, "qos_obw") == 0) {
+		if(!tcapi_get("QoS_Entry0", "qos_obw", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "qos_ibw") == 0) {
+		if(!tcapi_get("QoS_Entry0", "qos_ibw", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "bwdpi_app_rulelist") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	else if (strcmp(name, "ctf_disable") == 0) {
+		if(!tcapi_get("Misc_Entry", "hwnat_enable", value)) {
+			if(strcmp(value, "1") == 0)
+				websWrite(stream, "0");
+			else
+				websWrite(stream, "1");
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "ctf_fa_mode") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	/* Guest network - 2.4GHz multi ssid info */
+	/* Guest network - choice 2.4GHz multi ssid enabled */
+	/* DUT_RT_GetGuestWireless: 2.4GHz */
+	else if (strcmp(name, "wl0.1_bss_enabled") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.1_bss_enabled", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.1_ssid") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.1_ssid", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.1_auth_mode_x") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.1_auth_mode_x", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.1_crypto") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.1_crypto", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.1_key") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.1_key", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.1_wpa_psk") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.1_wpa_psk", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.1_lanaccess") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.1_lanaccess", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.1_expire") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.1_expire", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.1_expire_tmp") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.1_expire_tmp", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.1_macmode") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl0.1_wl_macmode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.1_mbss") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	else if (strcmp(name, "wl0.2_bss_enabled") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.2_bss_enabled", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.2_ssid") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.2_ssid", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.2_auth_mode_x") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.2_auth_mode_x", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.2_crypto") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.2_crypto", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.2_key") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.2_key", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.2_wpa_psk") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.2_wpa_psk", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.2_lanaccess") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.2_lanaccess", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.2_expire") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.2_expire", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.2_expire_tmp") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.2_expire_tmp", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.2_macmode") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl0.2_wl_macmode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.2_mbss") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	else if (strcmp(name, "wl0.3_bss_enabled") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.3_bss_enabled", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.3_ssid") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.3_ssid", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.3_auth_mode_x") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.3_auth_mode_x", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.3_crypto") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.3_crypto", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.3_key") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.3_key", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.3_wpa_psk") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.3_wpa_psk", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.3_lanaccess") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.3_lanaccess", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.3_expire") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.3_expire", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.3_expire_tmp") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0.3_expire_tmp", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.3_macmode") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl0.3_wl_macmode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0.3_mbss") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	/* Guest network - 5GHz multi ssid info */
+	/* Guest network - choice 5GHz multi ssid enabled */
+	/* DUT_RT_GetGuestWireless: 5GHz */
+	else if (strcmp(name, "wl1.1_bss_enabled") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.1_bss_enabled", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.1_ssid") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.1_ssid", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.1_auth_mode_x") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.1_auth_mode_x", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.1_crypto") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.1_crypto", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.1_key") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.1_key", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.1_wpa_psk") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.1_wpa_psk", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.1_lanaccess") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.1_lanaccess", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.1_expire") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.1_expire", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.1_expire_tmp") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.1_expire_tmp", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.1_macmode") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl1.1_wl_macmode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.1_mbss") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	else if (strcmp(name, "wl1.2_bss_enabled") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.2_bss_enabled", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.2_ssid") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.2_ssid", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.2_auth_mode_x") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.2_auth_mode_x", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.2_crypto") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.2_crypto", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.2_key") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.2_key", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.2_wpa_psk") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.2_wpa_psk", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.2_lanaccess") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.2_lanaccess", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.2_expire") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.2_expire", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.2_expire_tmp") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.2_expire_tmp", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.2_macmode") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl1.2_wl_macmode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.2_mbss") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	else if (strcmp(name, "wl1.3_bss_enabled") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.3_bss_enabled", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.3_ssid") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.3_ssid", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.3_auth_mode_x") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.3_auth_mode_x", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.3_crypto") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.3_crypto", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.3_key") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.3_key", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.3_wpa_psk") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.3_wpa_psk", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.3_lanaccess") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.3_lanaccess", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.3_expire") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.3_expire", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.3_expire_tmp") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1.3_expire_tmp", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.3_macmode") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl1.3_wl_macmode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1.3_mbss") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	/* Parental Control Rule */
+	/* DUT_RT_GetParentalControl */
+	else if (strcmp(name, "MULTIFILTER_ALL") == 0) {
+		if(!tcapi_get("Parental_Entry", "MULTIFILTER_ALL", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "MULTIFILTER_ENABLE") == 0) {
+		if(!tcapi_get("Parental_Entry", "MULTIFILTER_ENABLE", value)) {
+			appGet_encode(value);
+			//websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "MULTIFILTER_DEVICENAME") == 0) {
+		//if(!tcapi_get("Parental_Entry", "MULTIFILTER_DEVICENAME", value)) {
+		if(!tcapi_get_list("MULTIFILTER_DEVICENAME", value, sizeof(value))) {
+			appGet_encode(value);
+			//websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "MULTIFILTER_MAC") == 0) {
+		if(!tcapi_get("Parental_Entry", "MULTIFILTER_MAC", value)) {
+			appGet_encode(value);
+			//websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "MULTIFILTER_MACFILTER_DAYTIME") == 0) {
+		//if(!tcapi_get("Parental_Entry", "MULTIFILTER_MACFILTER_DAYTIME", value)) {
+		if(!tcapi_get_list("MULTIFILTER_MACFILTER_DAYTIME", value, sizeof(value))) {
+			appGet_encode(value);
+			//websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [GET] [System] HTTP / HTTPS */
+	else if (strcmp(name, "http_enable") == 0) {
+		if(!tcapi_get("Https_Entry", "http_enable", value)) {
+			/**** in DSL model ****|***** in RT model ****
+			http_enable            | http_enable
+			1:HTTP                 | 0:HTTP
+			2:HTTPS                | 1:HTTPS
+			3:Both HTTP and HTTPS  | 2:Both HTTP and HTTPS
+			***********************|**********************/
+			tmpInt = atoi(value);
+			switch (tmpInt) {
+				case 1:
+					websWrite(stream, "0");
+					app_method_hit = 1;
+					break;
+				case 2:
+					websWrite(stream, "1");
+					app_method_hit = 1;
+					break;
+				case 3:
+					websWrite(stream, "2");
+					app_method_hit = 1;
+					break;
+				default:
+					app_method_hit = 2;
+					break;
+			}
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "https_lanport") == 0) {
+		if(!tcapi_get("Https_Entry", "https_lanport", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [GET] [WAN] ASUS DDNS */
+	else if (strcmp(name, "ddns_enable_x") == 0) {
+		if(!tcapi_get("Ddns_Entry", "Active", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "ddns_server_x") == 0) {
+		if(!tcapi_get("Ddns_Entry", "SERVERNAME", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "ddns_hostname_x") == 0) {
+		if(!tcapi_get("Ddns_Entry", "MYHOST", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [GET] [WAN] Detect Internet status */
+	else if (strcmp(name, "link_internet") == 0) {
+		if(!tcapi_get("Wanduck_Common", "link_internet", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [WAN] Disconnect WAN */
+	else if (strcmp(name, "wan0_enable") == 0) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", pri_unit);
+			if(!tcapi_get(tmp, "Active", value)) {
+				websWrite(stream, strcmp(value, "Yes") ? "0" : "1");
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan1_enable") == 0) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", sec_unit);
+			if(!tcapi_get(tmp, "Active", value)) {
+				websWrite(stream, strcmp(value, "Yes") ? "0" : "1");
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	/* PPTP VPN server */
+	else if (strcmp(name, "VPNServer_enable") == 0) {
+		if(!tcapi_get("VPNControl_Entry", "VPNServer_enable", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "pptpd_enable") == 0) {
+		if(!tcapi_get("PPTP_Entry", "pptpd_enable", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "VPNServer_mode") == 0) {
+		if(!tcapi_get("VPNControl_Entry", "VPNServer_mode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "pptpd_clientlist") == 0) {
+		//if(!tcapi_get("PPTP_Entry", "pptpd_clientlist", value)) {
+		if(!tcapi_get_list("pptpd_clientlist", value, sizeof(value))) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* router device name */
+	/* DUT_RT_GetDeviceName */
+	else if (strcmp(name, "dms_friendly_name") == 0) {
+		if(!tcapi_get("DMS_Basic", "FriendlyName", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "computer_name") == 0) {
+		if(!tcapi_get("Samba_Entry", "NetBiosName", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "st_samba_workgroup") == 0) {
+		if(!tcapi_get("Samba_Entry", "st_samba_workgroup", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [GET] [AiProtection] Router Security - DMZ disabled */
+	else if (strcmp(name, "dmz_ip") == 0) {
+		if(!tcapi_get("Dmz_PVC", "DMZ_IP", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [GET] [AiProtection] Router Security - Infected Device Prevention and Blocking */
+	else if (strcmp(name, "wrs_cc_enable") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	/* [GET] [AiProtection] Router Security - Malicious Website Blocking enabled */
+	else if (strcmp(name, "wrs_mals_enable") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	/* [GET] [AiProtection] Router Security - Ping from Wan disabled */
+	else if (strcmp(name, "misc_ping_x") == 0) {
+		if(!tcapi_get("Firewall_Entry", "misc_ping_x", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [GET] [AiProtection] Router Security - Port forwarding disabled */
+	else if (strcmp(name, "vts_enable_x") == 0) {
+		if(!tcapi_get("VirServer_PVC0_Entry0", "VirServer_Enable", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [GET] [AiProtection] Router Security - Port trigger disabled */
+	else if (strcmp(name, "autofw_enable_x") == 0) {
+		if(!tcapi_get("portTriggering_Entry0", "AutoFW_Enable", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [GET] [AiProtection] Router Security - upnp server disabled */
+	else if (strcmp(name, "wan0_upnp_enable") == 0) {
+		if(!tcapi_get("Upnpd_Entry", "Active", value)) {
+			if(strcmp(value, "Yes") == 0)
+				websWrite(stream, "1");
+			else
+				websWrite(stream, "0");
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wan1_upnp_enable") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	/* [GET] [AiProtection] Router Security - Vulnerability Protection enabled */
+	else if (strcmp(name, "wrs_vp_enable") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	/* [GET] [AiProtection] Router Security - Web access from wan disabled */
+	/* [GET] [AiProtection] Router Security - Wireless encryption enabled */
+	/* DUT_RT_GetHttpWANAccess */
+	else if (strcmp(name, "misc_http_x") == 0) {
+		if(!tcapi_get("Firewall_Entry", "misc_http_x", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "misc_httpport_x") == 0) {
+		if(!tcapi_get("Firewall_Entry", "misc_httpport_x", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "misc_httpsport_x") == 0) {
+		if(!tcapi_get("Firewall_Entry", "misc_httpsport_x", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [GET] [AiProtection] Router Security - WPS Disabled status */
+	/* DUT_RT_GetWirelessWPS */
+	else if (strcmp(name, "wps_band") == 0) {
+		if(!tcapi_get("WLan_Common", "wl_unit", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wps_enable") == 0) {
+		if(!tcapi_get("WLan_Common", "wps_enable", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wps_sta_pin") == 0) {
+		if(!tcapi_get("WLan_Entry0", "enrolleePinCode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* Wireless 4x4 to 1x1 */
+	else if (strcmp(name, "guard_mode") == 0) {
+		/* not support now */
+		if(!tcapi_get("WLan_Common", "guard_mode", value)) {
+			websWrite(stream, value);
+		}
+		app_method_hit = 2;
+	}
+	/* Wireless Mac filter */
+	else if (strcmp(name, "wl0_macmode") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl0_wl_macmode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1_macmode") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl1_wl_macmode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl2_macmode") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl2_wl_macmode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0_maclist") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl0_wl_maclist", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1_maclist") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl1_wl_maclist", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl2_maclist") == 0) {
+		if(!tcapi_get("ACL_Entry0", "wl2_wl_maclist", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* wireless radio on/off */
+	else if (strcmp(name, "wl0_radio") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0_radio_on", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1_radio") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1_radio_on", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* [GET] [Wireless] Roaming assistant */
+	else if (strcmp(name, "wl0_user_rssi") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0_user_rssi", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1_user_rssi") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1_user_rssi", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl2_user_rssi") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl2_user_rssi", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* DUT_RT_GetWirelessConfig: 2.4GHz */
+	else if (strcmp(name, "wl0_ssid") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0_ssid", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0_closed") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0_HideSSID", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0_nmode_x") == 0) { //2G=> 0:Legacy, 6:N only, 9:Auto
+		if(!tcapi_get("WLan_Common", "wl0_WirelessMode", value)) {
+			tmpInt = atoi(value);
+			switch (tmpInt) {
+				case 0:
+					websWrite(stream, "2"); /*2: Legacy*/
+					app_method_hit = 1;
+					break;
+				case 6:
+					websWrite(stream, "1"); /*1: N Only*/
+					app_method_hit = 1;
+					break;
+				case 9:
+					websWrite(stream, "0"); /*0: Auto*/
+					app_method_hit = 1;
+					break;
+				default:
+					app_method_hit = 2;
+					break;
+			}
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0_bw") == 0) {
+		if(!tcapi_get("WLan_Common", "wl0_HT_BW", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if ((strcmp(name, "wl0_auth_mode") == 0) || (strcmp(name, "wl0_auth_mode_x") == 0)) {
+		if(!tcapi_get("WLan_Entry0", "wl0_auth_mode_x", value)) {
+			_dprintf("app_call: wl0_auth_mode_x=%s\n", value);
+			if(strcmp(value, "OPEN") ==0)
+				websWrite(stream, "open");
+			else if(strcmp(value, "WPA2PSK") ==0)
+				websWrite(stream, "psk2");
+			else if(strcmp(value, "WPAPSKWPA2PSK") ==0)
+				websWrite(stream, "pskpsk2");
+			else if(strcmp(value, "WPA2") ==0)
+				websWrite(stream, "wpa2");
+			else if(strcmp(value, "WPA1WPA2") ==0)
+				websWrite(stream, "wpawpa2");
+			else
+				websWrite(stream, "");
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0_crypto") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0_crypto", value)) {
+			_dprintf("app_call: wl0_crypto=%s\n", value);
+			if(strcmp(value, "AES") ==0)
+				websWrite(stream, "aes");
+			else if(strcmp(value, "TKIP+AES") ==0)
+				websWrite(stream, "tkip+aes");
+			else
+				websWrite(stream, "");
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl0_wpa_psk") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl0_wpa_psk", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* DUT_RT_GetWirelessConfig: 5GHz */
+	else if (strcmp(name, "wl1_ssid") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1_ssid", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1_closed") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1_HideSSID", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1_nmode_x") == 0) { //5G=> 2:Legacy, 11: N only, 8:Auto
+		if(!tcapi_get("WLan_Common", "wl1_WirelessMode", value)) {
+			tmpInt = atoi(value);
+			switch (tmpInt) {
+				case 2:
+					websWrite(stream, "2"); /*2: Legacy*/
+					app_method_hit = 1;
+					break;
+				case 11:
+					websWrite(stream, "1"); /*1: N Only*/
+					app_method_hit = 1;
+					break;
+				case 8:
+					websWrite(stream, "0"); /*0: Auto*/
+					app_method_hit = 1;
+					break;
+				default:
+					app_method_hit = 2;
+					break;
+			}
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1_bw") == 0) {
+		if(!tcapi_get("WLan_Common", "wl1_HT_BW", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1_auth_mode_x") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1_auth_mode_x", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1_crypto") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1_crypto", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1_wpa_psk") == 0) {
+		if(!tcapi_get("WLan_Entry0", "wl1_wpa_psk", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* DUT_RT_TotalWirelessIf */
+	else if (strcmp(name, "wl_ifnames") == 0) {
+		if(!tcapi_get("WLan_Common", "wl_ifnames", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* DUT_RT_GetWanConfig */
+	else if (strcmp(name, "wan0_proto") == 0) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "wan%d_proto", pri_unit);
+			if(!tcapi_get("Wanduck_Common", tmp, value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan1_proto") == 0) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "wan%d_proto", sec_unit);
+			if(!tcapi_get("Wanduck_Common", tmp, value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan0_heartbeat_x") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	else if (strcmp(name, "wan1_heartbeat_x") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	else if (strcmp(name, "wan0_dhcpenable_x") == 0) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", pri_unit);
+			if(!tcapi_get(tmp, "ISP", value)) {
+				websWrite(stream, strcmp(value, "0") ? "0" : "1"); //ISP=0, Automatic; ISP=1, Static; ISP=2, PPPoE 
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan1_dhcpenable_x") == 0) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", sec_unit);
+			if(!tcapi_get(tmp, "ISP", value)) {
+				websWrite(stream, strcmp(value, "0") ? "0" : "1"); //ISP=0, Automatic; ISP=1, Static; ISP=2, PPPoE 
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if ((strcmp(name, "wan0_ipaddr") == 0) || (strcmp(name, "wan0_ipaddr_x") == 0)) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "wan%d_ipaddr", pri_unit);
+			if(!tcapi_get("Wanduck_Common", tmp, value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if ((strcmp(name, "wan1_ipaddr") == 0) || (strcmp(name, "wan1_ipaddr_x") == 0)) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "wan%d_ipaddr", sec_unit);
+			if(!tcapi_get("Wanduck_Common", tmp, value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if ((strcmp(name, "wan0_gateway") == 0) || (strcmp(name, "wan0_gateway_x") == 0)) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "wan%d_proto", pri_unit);
+			if(!tcapi_get("Wanduck_Common", tmp, value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if ((strcmp(name, "wan1_gateway") == 0) || (strcmp(name, "wan1_gateway_x") == 0)) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "wan%d_gateway", sec_unit);
+			if(!tcapi_get("Wanduck_Common", tmp, value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if ((strcmp(name, "wan0_netmask") == 0) || (strcmp(name, "wan0_netmask_x") == 0)) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "wan%d_netmask", pri_unit);
+			if(!tcapi_get("Wanduck_Common", tmp, value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if ((strcmp(name, "wan1_netmask") == 0) || (strcmp(name, "wan1_netmask_x") == 0)) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "wan%d_netmask", sec_unit);
+			if(!tcapi_get("Wanduck_Common", tmp, value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan0_dnsenable_x") == 0) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", pri_unit);
+			if(!tcapi_get(tmp, "DNS_type", value)) {
+				websWrite(stream, strcmp(value, "0") ? "0" : "1");
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan1_dnsenable_x") == 0) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", sec_unit);
+			if(!tcapi_get(tmp, "DNS_type", value)) {
+				websWrite(stream, strcmp(value, "0") ? "0" : "1");
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan0_dns_x") == 0) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", pri_unit);
+			if(!tcapi_get(tmp, "Primary_DNS", value)) {
+				if(!tcapi_get(tmp, "Secondary_DNS", tmp2)) {
+					strcat(value, " ");
+					strcat(value, tmp2);
+					websWrite(stream, value);
+				}
+				else
+					websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan1_dns_x") == 0) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", sec_unit);
+			if(!tcapi_get(tmp, "Primary_DNS", value)) {
+				if(!tcapi_get(tmp, "Secondary_DNS", tmp2)) {
+					strcat(value, " ");
+					strcat(value, tmp2);
+					websWrite(stream, value);
+				}
+				else
+					websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan0_pppoe_username") == 0) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", pri_unit);
+			if(!tcapi_get(tmp, "USERNAME", value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan1_pppoe_username") == 0) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", sec_unit);
+			if(!tcapi_get(tmp, "USERNAME", value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan0_pppoe_passwd") == 0) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", pri_unit);
+			if(!tcapi_get(tmp, "PASSWORD", value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan1_pppoe_passwd") == 0) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", sec_unit);
+			if(!tcapi_get(tmp, "PASSWORD", value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if ((strcmp(name, "wan0_hwaddr") == 0) || (strcmp(name, "wan0_hwaddr_x") == 0)
+		|| (strcmp(name, "wan1_hwaddr") == 0) || (strcmp(name, "wan1_hwaddr_x") == 0)
+	) {
+		if(!tcapi_get("Wan_PVC0", "UniqueMacAddr", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* DUT_RT_TotalWanIf */
+	else if (strcmp(name, "wan_ifnames") == 0) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "wan%d_proto", pri_unit);
+			if(!tcapi_get("Wanduck_Common", tmp, tmp2) && (strcmp(tmp2, "pppoe") == 0)) {
+				sprintf(tmp, "wan%d_pppoe_ifname", pri_unit);
+			}
+			else {
+				sprintf(tmp, "wan%d_ifname", pri_unit);
+			}
+			if(!tcapi_get("Wanduck_Common", tmp, value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	/* DUT_RT_FirmwareExtNumber */
+	else if (strcmp(name, "extendno") == 0) {
+		if(!tcapi_get("DeviceInfo", "extendno", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* firmware version */
+	/* DUT_RT_FirmwareInfo */
+	else if (strcmp(name, "firmver") == 0) {
+		if(!tcapi_get("DeviceInfo", "firmver", value)) { //tcapi_get("DeviceInfo", "FwVer", value)
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "buildno") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	/* DUT_RT_GetWirelessTxPower */
+	else if (strcmp(name, "wl0_txpower") == 0) {
+		if(!tcapi_get("WLan_Common", "wl0_TxPower", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wl1_txpower") == 0) {
+		if(!tcapi_get("WLan_Common", "wl1_TxPower", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* DUT_RT_GetOperationMode */
+	/*
+	Router:	             sw_mode: 1, wlc_express: 0, wlc_psta: 0
+	Repeater:            sw_mode: 2, wlc_express: 0, wlc_psta: 0
+	Express Way 2.4 GHz: sw_mode: 2, wlc_express: 1, wlc_psta: 0
+	Express Way 5 GHz:   sw_mode: 2, wlc_express: 2, wlc_psta: 0
+	AP mode:             sw_mode: 3, wlc_express: 0, wlc_psta: 0
+	Media Bridge:        sw_mode: 3, wlc_express: 0, wlc_psta: 1
+	*/
+	else if (strcmp(name, "sw_mode") == 0) {
+		websWrite(stream, "1"); /*only support SW_MODE_ROUTER mode*/
+		app_method_hit = 1;
+	}
+	else if (strcmp(name, "wlc_psta") == 0) {
+		websWrite(stream, "0"); /*only support SW_MODE_ROUTER mode*/
+		app_method_hit = 1;
+	}
+	else if (strcmp(name, "wlc_express") == 0) {
+		websWrite(stream, "0"); /*only support SW_MODE_ROUTER mode*/
+		app_method_hit = 1;
+	}
+	/* DUT_RT_GetRCSupport */
+	else if (strcmp(name, "rc_support") == 0) {
+		if(!tcapi_get("SysInfo_Entry", "rc_support", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* DUT_RT_GetSambaService */
+	else if (strcmp(name, "enable_samba") == 0) {
+		if(!tcapi_get("Samba_Entry", "Active", value)) {
+			if(strcmp(value, "Yes") == 0)
+				websWrite(stream, "1");
+			else
+				websWrite(stream, "0");
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "st_samba_mode") == 0) {
+		if(!tcapi_get("Samba_Entry", "st_samba_mode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* DUT_RT_GetFTPService */
+	else if (strcmp(name, "enable_ftp") == 0) {
+		if(!tcapi_get("Samba_Entry", "enable_ftp", value)) {
+			if(strcmp(value, "Yes") == 0)
+				websWrite(stream, "1");
+			else
+				websWrite(stream, "0");
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "st_ftp_mode") == 0) {
+		if(!tcapi_get("Samba_Entry", "st_ftp_mode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	/* DUT_RT_GetBandwidthMonitorMode */
+	else if (strcmp(name, "apps_analysis") == 0) {
+		/* not support */
+		app_method_hit = 2;
+	}
+	/* Others */
+	else if (strcmp(name, "productid") == 0) {
+		if(!tcapi_get("SysInfo_Entry", "ProductName", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "x_Setting") == 0) {
+		if(!tcapi_get("SysInfo_Entry", "x_Setting", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "nat_redirect_enable") == 0) {
+		if(!tcapi_get("SysInfo_Entry", "nat_redirect_enable", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "nat_state") == 0) {
+		if(!tcapi_get("Wanduck_Common", "nat_state", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wans_cap") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wans_cap", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wans_routing_rulelist") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wans_routing_rulelist", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wans_mode") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wans_mode", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wans_dualwan") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wans_dualwan", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wans_lb_ratio") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wans_lb_ratio", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wans_routing_enable") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wans_routing_enable", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wans_lanport") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wans_lanport", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wandog_interval") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wandog_interval", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wandog_maxfail") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wandog_maxfail", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wandog_fb_count") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wandog_fb_count", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wandog_delay") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wandog_delay", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wandog_target") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wandog_target", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wandog_enable") == 0) {
+		if(!tcapi_get("Dualwan_Entry", "wandog_enable", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wan_unit") == 0) {
+		if(!tcapi_get("WebCurSet_Entry", "wan_unit", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "wan0_primary") == 0) {
+		websWrite(stream, "1");
+		app_method_hit = 1;
+	}
+	else if (strcmp(name, "wan1_primary") == 0) {
+		websWrite(stream, "0");
+		app_method_hit = 1;
+	}
+	else if (strcmp(name, "wan0_pppoe_mtu") == 0) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", pri_unit);
+			if(!tcapi_get(tmp, "MTU", value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan1_pppoe_mtu") == 0) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", sec_unit);
+			if(!tcapi_get(tmp, "MTU", value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan0_6rd_prefix") == 0) {
+		if (pri_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", pri_unit);
+			if(!tcapi_get(tmp, "PREFIX6", value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+	else if (strcmp(name, "wan1_6rd_prefix") == 0) {
+		if (sec_unit >= 0) {
+			sprintf(tmp, "Wan_PVC%d", sec_unit);
+			if(!tcapi_get(tmp, "PREFIX6", value)) {
+				websWrite(stream, value);
+				app_method_hit = 1;
+			}
+			else {
+				app_method_hit = 2;
+			}
+		}
+	}
+
+	return app_method_hit;
+}
+
+static void
+appGet_encode(char *str)
+{
+	char *c, wp[1024] = {0};;
+
+	for (c = str; *c; c++) {
+		if (isprint(*c) &&
+		    *c != '"' && *c != '&' && *c != '<' && *c != '>' && *c != '\\'){
+			websWrite(wp, "%c", *c);
+		}
+		else if(*c == '\\'){
+			websWrite(wp, "%c", *c);	
+		}
+		else {
+			websWrite(wp, "&#%d", *c);
+		}
+	}
+}
+
+static void
+app_call(char *func, char *stream)
+{
+	char *args, *end, *next;
+	int argc;
+	char * argv[32]={NULL};
+	int app_method_hit = 0;
+	char value[MAX_VALUE];
+
+	/* Parse out ( args ) */
+	if (!(args = strchr(func, '(')))
+		return;
+	if (!(end = unqstrstr_t(func, ")")))
+		return;
+	*args++ = *end = '\0';
+	/* Set up argv list */
+	for (argc = 0; argc < 16 && args && *args; argc++, args = next) {
+		if (!(argv[argc] = get_arg_t(args, &next)))
+			break;
+	}
+	//_dprintf("app_call: func = %s, argv[0] = %s\n", func, argv[0]);
+
+	if(strcmp(func, "nvram_get") == 0){
+		websWrite(stream,"\"%s\":", argv[0]);
+		websWrite(stream,"\"" );
+	}else if(argv[0] != NULL && strcmp(argv[0], "appobj") == 0){
+		websWrite(stream,"\"%s\":", func);
+		websWrite(stream,"{" );
+	}else if(argv[0] != NULL){
+		websWrite(stream,"\"%s-%s\":", func, argv[0]);
+	}else{
+		websWrite(stream,"\"%s\":", func);
+	}
+
+	/* get corresponding attribute value */
+	if (strcmp(func, "nvram_get") == 0) {
+		app_method_hit = appGet_attribute(stream, argv[0]);
+	}
+	/* [GET] [Client List] Netwrokmapd */
+	else if (strcmp(func, "get_clientlist") == 0) {
+		//get_client_list();
+		int i, shm_client_info_id;
+		void *shared_client_info=(void *) 0;
+		char output_buf[2048];
+		char maclist_buf[4096]=",\"maclist\":";
+		char mac_buf[32], dev_name[32];
+		char *brackets_h = "[";
+		char *brackets_d = "]";
+		char *dot = ",";
+		char ipaddr[16];
+		P_CLIENT_DETAIL_INFO_TABLE p_client_info_tab;
+		int lock;
+		char devname[LINE_SIZE], character;
+		int j, len;
+		int first_mac=1, first_info=1;
+
+		lock = file_lock("networkmap");
+		shm_client_info_id = shmget((key_t)1001, sizeof(CLIENT_DETAIL_INFO_TABLE), 0666|IPC_CREAT);
+		if (shm_client_info_id == -1){
+		    fprintf(stderr,"shmget failed\n");
+		    file_unlock(lock);
+		    goto get_api_fail;
+		}
+
+		shared_client_info = shmat(shm_client_info_id,(void *) 0,0);
+		if (shared_client_info == (void *)-1){
+			fprintf(stderr,"shmat failed\n");
+			file_unlock(lock);
+			goto get_api_fail;
+		}
+
+		p_client_info_tab = (P_CLIENT_DETAIL_INFO_TABLE)shared_client_info;
+		for(i=0; i<p_client_info_tab->ip_mac_num; i++) {
+
+			memset(dev_name, 0, 32);
+			memset(output_buf, 0, 2048);
+			memset(ipaddr, 0, 16);
+			memset(mac_buf, 0, 32);
+			memset(devname, 0, LINE_SIZE);
+
+		    if(strcmp((const char *)p_client_info_tab->user_define[i], ""))
+				strcpy(dev_name, (const char *)p_client_info_tab->user_define[i]);
+			else
+				strcpy(dev_name, (const char *)p_client_info_tab->device_name[i]);
+
+		    if(p_client_info_tab->exist[i]==1) {
+				len = strlen(dev_name);
+				for (j=0; (j < len) && (j < LINE_SIZE-1); j++) {
+					character = dev_name[j];
+					if ((isalnum(character)) || (character == ' ') || (character == '-') || (character == '_'))
+						devname[j] = character;
+					else
+						devname[j] = ' ';
+				}
+
+				sprintf(ipaddr, "%d.%d.%d.%d", p_client_info_tab->ip_addr[i][0],p_client_info_tab->ip_addr[i][1],
+				p_client_info_tab->ip_addr[i][2],p_client_info_tab->ip_addr[i][3]);
+
+				sprintf(mac_buf, "\"%02X:%02X:%02X:%02X:%02X:%02X\"",
+				p_client_info_tab->mac_addr[i][0],p_client_info_tab->mac_addr[i][1],
+				p_client_info_tab->mac_addr[i][2],p_client_info_tab->mac_addr[i][3],
+				p_client_info_tab->mac_addr[i][4],p_client_info_tab->mac_addr[i][5]
+				);
+				if(first_mac == 1){
+					first_mac = 0;
+					strcat(maclist_buf,brackets_h);
+				}else{
+					strcat(maclist_buf,dot);
+				}
+				strcat(maclist_buf,mac_buf);
+
+				if(first_info == 1){
+					first_info = 0;			
+				}else{
+					websWrite(stream, ",\n");
+				}
+
+				tcapi_get("Lan_Entry", "IP", value);
+				sprintf(output_buf, "%s:{\"type\":\"%d\",\"name\":\"%s\",\"ip\":\"%s\",\"mac\":%s,\"from\":\"networkmapd\",\"macRepeat\":\"%d\",\"isGateway\":\"%s\",\"isWebServer\":\"%d\",\"isPrinter\":\"%d\",\"isITunes\":\"%d\",\"isOnline\":\"true\"}",
+				mac_buf,
+				p_client_info_tab->type[i],
+				devname,
+				ipaddr,
+				mac_buf,
+				check_macrepeat(maclist_buf, mac_buf),
+				!strcmp(value, ipaddr) ? "true" : "false",
+				p_client_info_tab->http[i],
+				p_client_info_tab->printer[i],
+				p_client_info_tab->itune[i]
+				);
+				websWrite(stream, output_buf);
+		    }
+		}
+		shmdt(shared_client_info);
+		file_unlock(lock);
+		strcat(maclist_buf,brackets_d);
+		websWrite(stream, maclist_buf);
+
+		app_method_hit = 1;
+	}
+	/* [GET] [Client List] Wireless 2.4GHz */
+	else if (strcmp(func, "wl_sta_list_2g") == 0) {
+		//wl_sta_list_2g(); //wl_sta_list(0);
+		FILE* fp;
+		char tmp[512]={0};
+
+		system("/usr/bin/ATE wl_sta_list_app 2g");
+
+		fp = fopen("/var/tmp/wl_lst_2g_app","r");
+		if (fp != NULL){
+			while(fgets(tmp, 512, fp)){
+				if (tmp != NULL){
+					websWrite(stream, "%s", tmp);
+					//strcat(buf, tmp);
+				}
+			}
+			fclose(fp);
+		}
+		app_method_hit = 1;
+	}
+	/* [GET] [Client List] Wireless 5GHz */
+	else if (strcmp(func, "wl_sta_list_5g") == 0) {
+		//wl_sta_list_5g(); //wl_sta_list(1);
+		FILE* fp;
+		char tmp[512]={0};
+
+		system("/usr/bin/ATE wl_sta_list_app 5g");
+
+		fp = fopen("/var/tmp/wl_lst_5g_app","r");
+		if (fp != NULL){
+			while(fgets(tmp, 512, fp)){
+				if (tmp != NULL){
+					websWrite(stream, "%s", tmp);
+					//strcat(buf, tmp);
+				}
+			}
+			fclose(fp);
+		}
+		app_method_hit = 1;
+	}
+	/* [GET] [Client List] Wireless 5GHz */
+	else if (strcmp(func, "wl_sta_list_5g_2") == 0) {
+		//not support
+		app_method_hit = 2;
+	}
+	/* Client List User Icon */
+	else if (strcmp(func, "get_upload_icon") == 0) {
+		//ej_get_upload_icon();
+#if 0
+		char *client_mac = get_param(g_var_post, "clientmac");
+		char *client_mac_tmp = NULL;
+		int from_app = 0;
+
+		if (ejArgs(argc, argv, "%s", &client_mac_tmp) < 1) {
+			//_dprintf("name = NULL\n");
+		}else if(!strcmp(client_mac, "")){
+			client_mac = client_mac_tmp;
+			from_app = 1;
+		}
+
+		if(strcmp(client_mac, "")) {
+			char file_name[32];
+			memset(file_name, 0, 32);
+
+			//Check folder exist or not
+			if(!check_if_dir_exist(JFFS_USERICON))
+				mkdir(JFFS_USERICON, 0755);
+
+			//Write upload icon value
+			sprintf(file_name, "/jffs/usericon/%s.log", client_mac);
+			if(check_if_file_exist(file_name)) {
+				dump_file(stream, file_name);
+			}
+			else {
+				websWrite(stream, "NoIcon");
+			}
+		}
+		else {
+			websWrite(stream, "NoIcon");
+		}
+#endif
+		websWrite(stream, "\"NoIcon\"");
+
+		app_method_hit = 2;
+	}
+	/* CPU Usage */
+	else if (strcmp(func, "cpu_usage") == 0) {
+		//ej_cpu_usage();
+		unsigned long total, user, nice, system, idle, io, irq, softirq;
+		char name[10];
+		FILE *fp;
+		fp = fopen("/proc/stat", "r");
+		int i = 0, firstRow=1;
+
+		if(fp == NULL)
+			goto get_api_fail;
+
+		while(fscanf(fp, "%s %lu %lu %lu %lu %lu %lu %lu \n", name, &user, &nice, &system, &idle, &io, &irq, &softirq) != EOF){
+			if(strncmp(name, "cpu", 3) == 0){
+				if(i == 0){
+					i++;
+					continue;
+				}
+				total = user + nice + system + idle + io + irq + softirq;
+				if (firstRow == 1)
+					firstRow = 0;
+				else
+					websWrite(stream, ",");
+
+				websWrite(stream, "\"cpu%d_total\":\"%lu\",\"cpu%d_usage\":\"%lu\"", i, total, i, total - idle);
+				i++;
+			}
+		}
+		fclose(fp);
+
+		app_method_hit = 1;
+	}
+	/* Network Traffic */
+	else if (strcmp(func, "netdev") == 0) {
+		//tcWebApi_UpdateNetdev(); //ej_netdev() -> ASUSWRT
+		init_netdevData();
+
+		//read wired traffic
+#if defined(TCSUPPORT_MTK_INTERNAL_ETHER_SWITCH) || defined(MT7530_SUPPORT)
+		#if defined(TCSUPPORT_CPU_MT7510)
+		readWiredData_MTK_mt7510();
+		#else
+		readWiredData_MTK();
+		#endif
+#else
+		readWiredData_RTK();
+#endif
+		//read ATM traffic
+		readATMData_MTK();
+		//read PTM traffic
+#if defined(TCSUPPORT_CPU_MT7510)
+		readPTMData_MTK_mt7510();
+#else
+		readPTMData_MTK();
+#endif
+		//read wireless traffic
+#ifdef TCSUPPORT_WLAN_RT6856
+		readWiFiData_RT6856();
+#else
+		readWiFiData_MTK();
+#endif
+		modifyTrafficData();
+
+		//websWrite( stream, "\nnetdev = {\n" ); //only for browser
+		websWrite( stream, "\"%s_rx\":\"0x%llx\",\"%s_tx\":\"0x%llx\"", "WIRED" , WiredData.rx, "WIRED", WiredData.tx );
+		websWrite( stream, ",\"%s_rx\":\"0x%llx\",\"%s_tx\":\"0x%llx\"", "WIRELESS0" , Sum2GData.rx, "WIRELESS0", Sum2GData.tx );
+		websWrite( stream, ",\"%s_rx\":\"0x%llx\",\"%s_tx\":\"0x%llx\"", "WIRELESS1" , Sum5GData.rx, "WIRELESS1", Sum5GData.tx );
+		websWrite( stream, ",\"%s_rx\":\"0x%llx\",\"%s_tx\":\"0x%llx\"", "BRIDGE" , BridgeData.rx, "BRIDGE", BridgeData.tx );
+
+		//Paul add 2012/10/23
+		//websWrite( stream, ",\"%s_rx\":\"0x%llx\",\"%s_tx\":\"0x%llx\"", "ATM" , ATMData.rx, "ATM", ATMData.tx );
+		//websWrite( stream, ",\"%s_rx\":\"0x%llx\",\"%s_tx\":\"0x%llx\"", "PTM0" , PTMData[0].rx, "PTM0", PTMData[0].tx );
+		//websWrite( stream, ",\"%s_rx\":\"0x%llx\",\"%s_tx\":\"0x%llx\"", "PTM1" , PTMData[1].rx, "PTM1", PTMData[1].tx );
+		//websWrite( stream, ",\"%s_rx\":\"0x%llx\",\"%s_tx\":\"0x%llx\"", "ETHERNETWAN" , EthernetWANData.rx, "ETHERNETWAN", EthernetWANData.tx );
+		websWrite( stream, ",\"%s_rx\":\"0x%llx\",\"%s_tx\":\"0x%llx\"", "INTERNET" , ATMData.rx+PTMData[0].rx+PTMData[1].rx+EthernetWANData.rx, "INTERNET", ATMData.tx+PTMData[0].tx+PTMData[1].tx+EthernetWANData.tx );
+		//websWrite( stream, "}" ); //only for browser
+
+		app_method_hit = 1;
+	}
+	/* [GET] [QIS] detect wanlink status */
+	/* [GET] [QIS] wanlink status */
+	else if (strcmp(func, "wanlink_state") == 0) {
+		//wanlink(); //wanlink_state_hook() -> ASUSWRT
+		char tmp[32], prefix[32];
+		int wan_state = -1, wan_sbstate = -1, wan_auxstate = -1;
+		int unit, status = 0;
+		char *statusstr[2] = { "Disconnected", "Connected" };
+		char *type;
+		char wan_proto[8];
+		char ip[18] = "0.0.0.0";
+		char netmask[18] = "0.0.0.0";
+		char gateway[18] = "0.0.0.0";
+		char dns[64] = "0.0.0.0";
+		unsigned int lease = 0, expires = 0;
+		char *xtype = "";
+		char xip[18] = "0.0.0.0";
+		char xnetmask[18] = "0.0.0.0";
+		char xgateway[18] = "0.0.0.0";
+		char xdns[32] = "0.0.0.0";
+		unsigned int xlease = 0, xexpires = 0;
+
+		unit = wan_primary_ifunit();
+
+		memset(tmp, 0, sizeof(tmp));
+		memset(wan_proto, 0, sizeof(wan_proto));
+		wan_prefix(unit, prefix);
+
+		wan_state = tcapi_get_int(WANDUCK, strcat_r(prefix, "state_t", tmp));
+		wan_sbstate = tcapi_get_int(WANDUCK, strcat_r(prefix, "sbstate_t", tmp));
+		wan_auxstate = tcapi_get_int(WANDUCK, strcat_r(prefix, "auxstate_t", tmp));
+
+		websWrite(stream, "\"wanstate\":\"%d\",\n", wan_state);
+		websWrite(stream, "\"wansbstate\":\"%d\",\n", wan_sbstate);
+		websWrite(stream, "\"wanauxstate\":\"%d\",\n", wan_auxstate);
+		websWrite(stream, "\"autodet_state\":\"0\",\n"); //not support autodet_state, so set 0 //tcWebApi_get("AutoPVC_Common","dsltmp_autodet_state","s")
+		websWrite(stream, "\"autodet_auxstate\":\"0\",\n"); //not support autodet_auxstate, so set 0
+
+		// wan_proto = nvram_safe_get(strcat_r(prefix, "proto", tmp));
+		tcapi_get(WANDUCK, strcat_r(prefix, "proto", tmp), wan_proto);
+
+		if (dualwan_unit__usbif(unit)) {
+			if(wan_state == WAN_STATE_INITIALIZING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_CONNECTING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_DISCONNECTED){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_STOPPED){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_DISABLED){
+				status = 0;
+			}
+			else{
+				status = 1;
+			}
+		}
+		else if(wan_state == WAN_STATE_DISABLED){
+			status = 0;
+		}
+	// DSLTODO, need a better integration
+#ifdef RTCONFIG_DSL
+		// if dualwan & enable lan port as wan
+		// it always report disconnected
+		//Some AUXSTATE is displayed for reference only
+		else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) {
+			status = 0;
+		}
+#else
+		//Some AUXSTATE is displayed for reference only
+		else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) {
+			status = 0;
+		}
+#endif
+		else if(wan_auxstate == WAN_AUXSTATE_NO_INTERNET_ACTIVITY&&(tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOINTERNET)) {
+			status = 0;
+		}
+		else if(!strcmp(wan_proto, "pppoe")
+				// || !strcmp(wan_proto, "pptp")
+				// || !strcmp(wan_proto, "l2tp")
+				)
+		{
+			if(wan_state == WAN_STATE_INITIALIZING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_CONNECTING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_DISCONNECTED){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_STOPPED && wan_sbstate != WAN_STOPPED_REASON_PPP_LACK_ACTIVITY){
+				status = 0;
+			}
+			else{
+				status = 1;
+			}
+		}
+		else{
+			if(wan_state == WAN_STATE_STOPPED && wan_sbstate == WAN_STOPPED_REASON_INVALID_IPADDR){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_INITIALIZING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_CONNECTING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_DISCONNECTED){
+				status = 0;
+			}
+			else {
+				lease = nvram_get_int(strcat_r(prefix, "lease", tmp));
+				// treat short lease time as disconnected
+				if(!strcmp(wan_proto, "dhcp") &&	//DHCP
+					lease <= 60 &&
+					is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)))
+				) {
+					status = 0;
+				}
+				else {
+					status = 1;
+				}
+			}
+		}
+
+#ifdef RTCONFIG_USB_MODEM
+		if (dualwan_unit__usbif(unit))
+			type = "USB Modem";
+		else
+#endif
+			type = wan_proto;
+
+		if(status != 0){
+			strncpy(ip, nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)), sizeof(ip)-1);
+			strncpy(netmask, nvram_safe_get(strcat_r(prefix, "netmask", tmp)), sizeof(netmask)-1);
+			strncpy(gateway, nvram_safe_get(strcat_r(prefix, "gateway", tmp)), sizeof(gateway)-1);
+			strncpy(dns, nvram_safe_get(strcat_r(prefix, "dns", dns)), sizeof(dns)-1);
+			lease = nvram_get_int(strcat_r(prefix, "lease", tmp));
+			if (lease > 0)
+				expires = nvram_get_int(strcat_r(prefix, "expires", tmp)) - uptime();
+		}
+
+		if(!strcmp(argv[0],"appobj")){
+			websWrite(stream, "\"wanlink_status\":\"%d\",\n", status);
+			websWrite(stream, "\"wanlink_statusstr\":\"%s\",\n", statusstr[status]);
+			websWrite(stream, "\"wanlink_type\":\"%s\",\n", type);
+			websWrite(stream, "\"wanlink_ipaddr\":\"%s\",\n", ip);
+			websWrite(stream, "\"wanlink_netmask\":\"%s\",\n", netmask);
+			websWrite(stream, "\"wanlink_gateway\":\"%s\",\n", gateway);
+			websWrite(stream, "\"wanlink_dns\":\"%s\",\n", dns);
+			websWrite(stream, "\"wanlink_lease\":\"%d\",\n", lease);
+			websWrite(stream, "\"wanlink_expires\":\"%d\",\n", expires);
+			websWrite(stream, "\"is_private_subnet\":\"%d\",\n", is_private_subnet(ip));
+		}else if(!strcmp(argv[0],"status"))
+			websWrite(stream, "%d", status);
+		else if(!strcmp(argv[0],"statusstr"))
+			websWrite(stream, "%s", statusstr[status]);
+		else if(!strcmp(argv[0],"type"))
+			websWrite(stream, "%s", type);
+		else if(!strcmp(argv[0],"ipaddr"))
+			websWrite(stream, "%s", ip);
+		else if(!strcmp(argv[0],"netmask"))
+			websWrite(stream, "%s", netmask);
+		else if(!strcmp(argv[0],"gateway"))
+			websWrite(stream, "%s", gateway);
+		else if(!strcmp(argv[0],"dns"))
+			websWrite(stream, "%s", dns);
+		else if(!strcmp(argv[0],"lease"))
+			websWrite(stream, "%d", lease);
+		else if(!strcmp(argv[0],"expires"))
+			websWrite(stream, "%d", expires);
+		else if(!strcmp(argv[0],"private_subnet"))
+			websWrite(stream, "%d", is_private_subnet(ip));
+
+#if 0//Note: not support VPN + DHCP Connection currently
+		if (strcmp(wan_proto, "pppoe") == 0
+			//|| strcmp(wan_proto, "pptp") == 0
+			//|| strcmp(wan_proto, "l2tp") == 0
+			)
+		{
+			char node[MAXLEN_NODE_NAME];
+			int dhcpenable = 0;
+			sprintf(node, "Wan_PVC%d", unit);
+			tcapi_get(node, "PPPGETIP", tmp);
+			dhcpenable = strcmp(tmp, "Dynamic") ? 0 : 1;
+			xtype = (dhcpenable == 0) ? "static" :
+				(strcmp(wan_proto, "pppoe") == 0 && tcapi_match(node, "vpndhcp", "0")) ? "" : /* zeroconf */
+				"dhcp";
+			strncpy(xip, nvram_safe_get(strcat_r(prefix, "xipaddr", tmp)), sizeof(xip)-1);
+			strncpy(xnetmask, nvram_safe_get(strcat_r(prefix, "xnetmask", tmp)), sizeof(xnetmask)-1);
+			strncpy(xgateway, nvram_safe_get(strcat_r(prefix, "xgateway", tmp)), sizeof(xgateway)-1);
+			strncpy(xdns, nvram_safe_get(strcat_r(prefix, "xdns", tmp)), sizeof(xdns)-1);
+			xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
+			if (xlease > 0)
+				xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
+		}
+#endif
+		if(!strcmp(argv[0],"appobj")){
+			websWrite(stream, "\"wanlink_xtype\":\"%s\",\n", xtype);
+			websWrite(stream, "\"wanlink_xipaddr\":\"%s\",\n", xip);
+			websWrite(stream, "\"wanlink_xnetmask\":\"%s\",\n", xnetmask);
+			websWrite(stream, "\"wanlink_xgateway\":\"%s\",\n", xgateway);
+			websWrite(stream, "\"wanlink_xdns\":\"%s\",\n", xdns);
+			websWrite(stream, "\"wanlink_xlease\":\"%d\",\n", xlease);
+			websWrite(stream, "\"wanlink_xexpires\":\"%d\"\n", xexpires);
+		}else if(!strcmp(argv[0],"xtype"))
+			websWrite(stream, "%s", xtype);
+		else if(!strcmp(argv[0],"xipaddr"))
+			websWrite(stream, "%s", xip);
+		else if(!strcmp(argv[0],"xnetmask"))
+			websWrite(stream, "%s", xnetmask);
+		else if(!strcmp(argv[0],"xgateway"))
+			websWrite(stream, "%s", xgateway);
+		else if(!strcmp(argv[0],"xdns"))
+			websWrite(stream, "%s", xdns);
+		else if(!strcmp(argv[0],"xlease"))
+			websWrite(stream, "%d", xlease);
+		else if(!strcmp(argv[0],"xexpires"))
+			websWrite(stream, "%d", xexpires);
+
+		app_method_hit = 1;
+	}
+	/* RAM Usage */
+	else if (strcmp(func, "memory_usage") == 0) {
+		//ej_memory_usage();
+		unsigned long total, used, mfree/*, shared, buffers, cached*/;
+		char buf[80] = {0};
+		FILE *fp;
+
+		fp = fopen("/proc/meminfo", "r");
+		if(fp == NULL)
+			goto get_api_fail;
+
+		fscanf(fp, "MemTotal: %lu %s\n", &total, buf);
+		fscanf(fp, "MemFree: %lu %s\n", &mfree, buf);
+		used = total - mfree;
+		fclose(fp);
+		websWrite(stream, "\"mem_total\":\"%lu\",\"mem_free\":\"%lu\",\"mem_used\":\"%lu\"", total, mfree, used);	
+
+		app_method_hit = 1;
+	}
+	/* [GET] [AiProtection] Router Security - Anonymous login to FTP share disabled */
+	/* [GET] [AiProtection] Router Security - Disable guest login for Network Place Share */
+	else if (strcmp(func, "check_ftp_samba_anonymous") == 0) {
+		//ej_check_ftp_samba_anonymous();
+		int samba_mode=0, ftp_mode=0;
+		if (strcmp(argv[0], "cifs") == 0) {
+			if ((tcapi_get("Samba_Entry", "st_samba_force_mode", value) != TCAPI_PROCESS_OK) && (tcapi_get_int("Samba_Entry", "st_samba_mode") == 1)){
+				samba_mode = 4;
+			}else{
+				samba_mode = tcapi_get_int("Samba_Entry", "st_samba_mode");
+			}
+			if(samba_mode == 2 || samba_mode == 4){
+				websWrite(stream, "\"1\"");
+			}else{
+				websWrite(stream, "\"0\"");
+			}
+		}else if (strcmp(argv[0], "ftp") == 0){
+			if ((tcapi_get("Samba_Entry", "st_ftp_force_mode", value) != TCAPI_PROCESS_OK) && (tcapi_get_int("Samba_Entry", "st_ftp_mode") == 1)){
+				ftp_mode = 2;
+			}else{
+				ftp_mode = tcapi_get_int("Samba_Entry", "st_ftp_mode");
+			}
+			if (ftp_mode == 2){
+				websWrite(stream, "\"1\"");
+			}else{
+				websWrite(stream, "\"0\"");
+			}
+		}
+		app_method_hit = 1;
+	}
+	/* [GET] [AiProtection] Router Security - Default username or password changed */
+	else if (strcmp(func, "check_acorpw") == 0) {
+		//ej_check_acorpw(); -> ASUSWRT //ej_check_acpw(); -> DSL ASUSWRT
+		char default_acpw[] = "admin"; //hardcode
+
+		if(tcapi_match("Account_Entry0", "username", default_acpw) || tcapi_match("Account_Entry0", "web_passwd", default_acpw))
+			websWrite(stream, "\"1\"");
+		else
+			websWrite(stream, "\"0\"");
+
+		app_method_hit = 1;
+	}
+	/* [GET] [AiProtection] Router Security - Wireless encryption enabled */
+	else if (strcmp(func, "check_wireless_encryption") == 0) {
+		//ej_check_wireless_encryption();
+		int unit=0, guest_id=0;
+		char auth_mode[32];
+		char prefix[32], bss_enabled[4];
+
+		for(unit=0; unit<2; unit++) {
+			for(guest_id=0; guest_id < MAX_NO_MSSID; guest_id++){
+				if(guest_id){	//the Guest Network
+					snprintf(prefix, sizeof(prefix), "wl%d.%d_auth_mode_x", unit, guest_id);
+					tcapi_get("WLan_Entry0", prefix, auth_mode);
+					snprintf(prefix, sizeof(prefix), "wl%d.%d_bss_enabled", unit, guest_id);
+					tcapi_get("WLan_Entry0", prefix, bss_enabled);
+				}
+				else{	//bring up the primary of 2.4G and 5G.
+					snprintf(prefix, sizeof(prefix), "wl%d_auth_mode_x", unit);
+					tcapi_get("WLan_Entry0", prefix, auth_mode);
+					snprintf(prefix, sizeof(prefix), "wl%d_radio_on", unit);
+					tcapi_get("WLan_Entry0", prefix, bss_enabled);
+				}
+				if(strcmp(bss_enabled,"1") == 0
+					&& strcmp(auth_mode,"WPA2PSK") != 0
+					&& strcmp(auth_mode,"WPAPSKWPA2PSK") != 0
+					&& strcmp(auth_mode,"WPA2") != 0
+					&& strcmp(auth_mode,"WPA1WPA2") != 0)
+				{
+					websWrite(stream, "\"0\"");
+					app_method_hit = 1;
+					goto get_api_fail;
+				}
+			}
+		}
+		websWrite(stream, "\"1\"");
+		app_method_hit = 1;
+	}
+	/* [GET] [AiProtection] Router Security - Wireless password strength check */
+	else if (strcmp(func, "check_passwd_strength") == 0) {
+		//ej_check_passwd_strength();
+		int unit=0, guest_id=0;
+		int nScore_total=0, nScore=0;
+		char pwd[32];
+		char prefix[32];
+		int nLength=0, nConsecAlphaUC=0, nConsecCharType=0, nAlphaUC=0, nConsecAlphaLC=0, nAlphaLC=0, nMidChar=0, nConsecNumber=0, nNumber=0, nConsecSymbol=0, nSymbol=0, nRepChar=0, nUnqChar=0, nSeqAlpha=0, nSeqNumber=0, nSeqChar = 0, nSeqSymbol=0;
+		int nMultMidChar=2, nMultLength=4, nMultNumber=4, nMultSymbol=6, nMultConsecAlphaUC=2, nMultConsecAlphaLC=2, nMultConsecNumber=2, nMultSeqAlpha=3, nMultSeqNumber=3, nMultSeqSymbol=3;
+		int a=0, b=0, s=0, x=0;
+		int nTmpAlphaUC = -1, nTmpAlphaLC = -1, nTmpNumber = -1, nTmpSymbol = -1;
+		double nRepInc = 0.0;
+		char sAlphas[] = "abcdefghijklmnopqrstuvwxyz";
+		char sNumerics[] = "01234567890";
+		char sSymbols[] = "~!@#$%^&*()_+";
+		char pwd_s[128] = {0};
+		char *pwd_st=NULL, *arrPwd=NULL;
+		char auth_mode[32];
+		char sFwd[4], sFwd_t[4], sRev[4];
+		if(!strcmp(argv[0], "wl_key")){
+			for(unit=0; unit < 2; unit++) {
+				for(guest_id=0; guest_id < MAX_NO_MSSID; guest_id++){
+					if(guest_id){	//the Guest Network
+						snprintf(prefix, sizeof(prefix), "wl%d.%d_wpa_psk", unit, guest_id);
+						tcapi_get("WLan_Entry0", prefix, pwd);
+						snprintf(prefix, sizeof(prefix), "wl%d.%d_auth_mode_x", unit, guest_id);
+						tcapi_get("WLan_Entry0", prefix, auth_mode);
+					}
+					else{	//bring up the primary of 2.4G and 5G.
+						snprintf(prefix, sizeof(prefix), "wl%d_wpa_psk", unit);
+						tcapi_get("WLan_Entry0", prefix, pwd);
+						snprintf(prefix, sizeof(prefix), "wl%d_auth_mode_x", unit);
+						tcapi_get("WLan_Entry0", prefix, auth_mode);
+					}
+					nLength=0; nConsecAlphaUC=0; nConsecCharType=0; nAlphaUC=0; nConsecAlphaLC=0; nAlphaLC=0; nMidChar=0; nConsecNumber=0; nNumber=0; nConsecSymbol=0; nSymbol=0; nRepChar=0; nUnqChar=0; nSeqAlpha=0; nSeqNumber=0; nSeqChar = 0; nSeqSymbol=0;
+					nTmpAlphaUC = -1; nTmpAlphaLC = -1; nTmpNumber = -1; nTmpSymbol = -1;
+				   if (strlen(pwd) && (!strcmp(auth_mode,"OPEN") || !strcmp(auth_mode,"WPA2PSK") || !strcmp(auth_mode,"WPAPSKWPA2PSK") || !strcmp(auth_mode,"WPA2") || !strcmp(auth_mode,"WPA1WPA2"))){
+					nScore=0;
+					nLength=0;
+					pwd_st = pwd;
+					arrPwd = pwd;
+					nLength = strlen(pwd);
+					nScore = nLength * nMultLength;
+
+					/* Main calculation for strength:
+							Loop through password to check for Symbol, Numeric, Lowercase and Uppercase pattern matches */
+					for (a=0; a <nLength; a++){
+						if(isupper(arrPwd[a])){
+							if(nTmpAlphaUC != -1){
+								if((nTmpAlphaUC + 1) == a){
+									nConsecAlphaUC++;
+									nConsecCharType++;
+								}
+							}
+							nTmpAlphaUC = a;
+							nAlphaUC++;
+						}
+						else if(islower(arrPwd[a])){
+							if(nTmpAlphaLC != -1){
+								if((nTmpAlphaLC + 1) == a){
+									nConsecAlphaLC++;
+									nConsecCharType++;
+								}
+							}
+							nTmpAlphaLC = a;
+							nAlphaLC++;
+						}
+						else if(isdigit(arrPwd[a])){
+							if(a > 0 && a < (nLength - 1)){
+								nMidChar++;
+							}
+							if(nTmpNumber != -1){
+								if((nTmpNumber + 1) == a){
+									nConsecNumber++;
+									nConsecCharType++;
+								}
+							}
+							nTmpNumber = a;
+							nNumber++;
+						}
+						else if(!isalnum(arrPwd[a])){
+							if(a > 0 && a < (nLength - 1))
+							{
+								nMidChar++;
+							}
+							if(nTmpSymbol != -1){
+								if((nTmpSymbol + 1) == a){
+									nConsecSymbol++;
+									nConsecCharType++;
+								}
+							}
+							nTmpSymbol = a;
+							nSymbol++;
+						}
+
+						/* Internal loop through password to check for repeat characters */
+						int bCharExists = 0;
+						for (b=0; b < nLength; b++){
+							if (arrPwd[a] == arrPwd[b] && a != b){ /* repeat character exists */
+								bCharExists = 1;
+								/*
+								Calculate icrement deduction based on proximity to identical characters
+								Deduction is incremented each time a new match is discovered
+								Deduction amount is based on total password length divided by the
+								difference of distance between currently selected match
+								*/
+								nRepInc += abs(nLength/(b-a));
+							}
+						}
+						if (bCharExists == 1) {
+							nRepChar++;
+							nUnqChar = nLength-nRepChar;
+							nRepInc = (nUnqChar > 0) ? ceil(nRepInc/(double)nUnqChar) : ceil(nRepInc); 
+						}
+					}
+
+					for(x = 0; x < nLength; x++){
+						pwd_s[x]= tolower(*pwd_st);
+						pwd_st++;
+					}
+
+					/* Check for sequential alpha string patterns (forward and reverse) */
+					for (s=0; s < 23; s++){
+						memset(sFwd, 0, sizeof(sFwd));
+						memset(sFwd_t, 0, sizeof(sFwd_t));
+						memset(sRev, 0, sizeof(sRev));
+						if(sAlphas+s != '\0'){
+							strncpy(sFwd, sAlphas+s, 3);
+							strncpy(sFwd_t, sFwd, 3);
+						}
+						strcpy(sRev, reverse_str(sFwd));
+
+						if(strstr(pwd_s, sFwd_t) != NULL || strstr(pwd_s, sRev) != NULL){
+							nSeqAlpha++;
+							nSeqChar++;
+						}
+					}
+					/* Check for sequential numeric string patterns (forward and reverse) */
+					for (s=0; s < 8; s++) {
+						memset(sFwd, 0, sizeof(sFwd));
+						memset(sFwd_t, 0, sizeof(sFwd_t));
+						memset(sRev, 0, sizeof(sRev));
+						if(sNumerics+s != '\0'){
+							strncpy(sFwd, sNumerics+s, 3);
+							strncpy(sFwd_t, sFwd, 3);
+						}
+						strcpy(sRev, reverse_str(sFwd));
+						if(strstr(pwd_s, sFwd_t) != NULL || strstr(pwd_s, sRev) != NULL){
+							nSeqNumber++;
+							nSeqChar++;
+						}
+					}
+					/* Check for sequential symbol string patterns (forward and reverse) */
+					for (s=0; s < 8; s++) {
+						memset(sFwd, 0, sizeof(sFwd));
+						memset(sFwd_t, 0, sizeof(sFwd_t));
+						memset(sRev, 0, sizeof(sRev));
+						if(sSymbols+s != '\0'){
+							strncpy(sFwd, sSymbols+s, 3);
+							strncpy(sFwd_t, sFwd, 3);
+						}
+						strcpy(sRev, reverse_str(sFwd));
+						if(strstr(pwd_s, sFwd_t) != NULL || strstr(pwd_s, sRev) != NULL){
+							nSeqSymbol++;
+							nSeqChar++;
+						}
+					}
+					/* Modify overall score value based on usage vs requirements */
+
+					/* General point assignment */
+					if (nAlphaUC > 0 && nAlphaUC < nLength){
+						nScore = nScore + ((nLength - nAlphaUC) * 2);
+					}
+					if (nAlphaLC > 0 && nAlphaLC < nLength){
+						nScore = nScore + ((nLength - nAlphaLC) * 2);
+					}
+					if (nNumber > 0 && nNumber < nLength){
+						nScore = nScore + (nNumber * nMultNumber);
+					}
+					if (nSymbol > 0){
+						nScore = nScore + (nSymbol * nMultSymbol);
+					}
+					if (nMidChar > 0){
+						nScore = nScore + (nMidChar * nMultMidChar);
+					}
+					/* Point deductions for poor practices */
+					if ((nAlphaLC > 0 || nAlphaUC > 0) && nSymbol == 0 && nNumber == 0) {  // Only Letters
+						nScore = nScore - nLength;
+					}
+					if (nAlphaLC == 0 && nAlphaUC == 0 && nSymbol == 0 && nNumber > 0) {  // Only Numbers
+						nScore = nScore - nLength;
+					}
+					if (nRepChar > 0) {  // Same character exists more than once
+						nScore = nScore - nRepInc;
+					}
+					if (nConsecAlphaUC > 0) {  // Consecutive Uppercase Letters exist
+					nScore = nScore - (nConsecAlphaUC * nMultConsecAlphaUC);
+					}
+					if (nConsecAlphaLC > 0) {  // Consecutive Lowercase Letters exist
+						nScore = nScore - (nConsecAlphaLC * nMultConsecAlphaLC);
+					}
+					if (nConsecNumber > 0) {  // Consecutive Numbers exist
+						nScore = nScore - (nConsecNumber * nMultConsecNumber);
+					}
+					if (nSeqAlpha > 0) {  // Sequential alpha strings exist (3 characters or more)
+						nScore = nScore - (nSeqAlpha * nMultSeqAlpha);
+					}
+					if (nSeqNumber > 0) {  // Sequential numeric strings exist (3 characters or more)
+						nScore = nScore - (nSeqNumber * nMultSeqNumber);
+					}
+					if (nSeqSymbol > 0) {  // Sequential symbol strings exist (3 characters or more)
+						nScore = nScore - (nSeqSymbol * nMultSeqSymbol);
+					}
+
+					/* Determine complexity based on overall score */
+					if (nScore > 100)
+					{
+						nScore = 100;
+					}else if(nScore < 0)
+					{
+						nScore = 0;
+					}
+					nScore_total = nScore + nScore_total;
+				   }else{
+					nScore = 0;
+				   }
+				}
+			}
+		}
+		websWrite(stream, "\"%d\"", (int)(nScore_total/unit));
+
+		app_method_hit = 1;
+	}
+	/* [GET] [QIS] start_autodet */
+	else if (strcmp(func, "start_autodet") == 0) {
+#if 0 //ASUSWRT
+		nvram_set("autodet_state", "");
+		notify_rc_after_period_wait("start_autodet", 0);
+#else
+		system("killall -9 auto_det");
+		system("/userfs/bin/auto_det &");
+#endif
+		app_method_hit = 1;
+	}
+	/* [GET] [WAN] WAN IP address */
+	else if (strcmp(func, "wanlink") == 0) {
+		//wanlink(); //wanlink_hook() -> ASUSWRT
+		char tmp[32], prefix[32];
+		int wan_state = -1, wan_sbstate = -1, wan_auxstate = -1;
+		int unit, status = 0;
+		char *statusstr[2] = { "Disconnected", "Connected" };
+		char *type;
+		char wan_proto[8];
+		char ip[18] = "0.0.0.0";
+		char netmask[18] = "0.0.0.0";
+		char gateway[18] = "0.0.0.0";
+		char dns[64] = "0.0.0.0";
+		unsigned int lease = 0, expires = 0;
+		char *xtype = "";
+		char xip[18] = "0.0.0.0";
+		char xnetmask[18] = "0.0.0.0";
+		char xgateway[18] = "0.0.0.0";
+		char xdns[32] = "0.0.0.0";
+		unsigned int xlease = 0, xexpires = 0;
+
+		unit = wan_primary_ifunit();
+
+		memset(tmp, 0, sizeof(tmp));
+		memset(wan_proto, 0, sizeof(wan_proto));
+		wan_prefix(unit, prefix);
+
+		wan_state = tcapi_get_int(WANDUCK, strcat_r(prefix, "state_t", tmp));
+		wan_sbstate = tcapi_get_int(WANDUCK, strcat_r(prefix, "sbstate_t", tmp));
+		wan_auxstate = tcapi_get_int(WANDUCK, strcat_r(prefix, "auxstate_t", tmp));
+
+		// wan_proto = nvram_safe_get(strcat_r(prefix, "proto", tmp));
+		tcapi_get(WANDUCK, strcat_r(prefix, "proto", tmp), wan_proto);
+
+		if (dualwan_unit__usbif(unit)) {
+			if(wan_state == WAN_STATE_INITIALIZING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_CONNECTING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_DISCONNECTED){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_STOPPED){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_DISABLED){
+				status = 0;
+			}
+			else{
+				status = 1;
+			}
+		}
+		else if(wan_state == WAN_STATE_DISABLED){
+			status = 0;
+		}
+	// DSLTODO, need a better integration
+#ifdef RTCONFIG_DSL
+		// if dualwan & enable lan port as wan
+		// it always report disconnected
+		//Some AUXSTATE is displayed for reference only
+		else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) {
+			status = 0;
+		}
+#else
+		//Some AUXSTATE is displayed for reference only
+		else if(wan_auxstate == WAN_AUXSTATE_NOPHY && (tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOLINK)) {
+			status = 0;
+		}
+#endif
+		else if(wan_auxstate == WAN_AUXSTATE_NO_INTERNET_ACTIVITY&&(tcapi_get_int(WANDUCK, "web_redirect")&WEBREDIRECT_FLAG_NOINTERNET)) {
+			status = 0;
+		}
+		else if(!strcmp(wan_proto, "pppoe")
+				// || !strcmp(wan_proto, "pptp")
+				// || !strcmp(wan_proto, "l2tp")
+				)
+		{
+			if(wan_state == WAN_STATE_INITIALIZING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_CONNECTING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_DISCONNECTED){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_STOPPED && wan_sbstate != WAN_STOPPED_REASON_PPP_LACK_ACTIVITY){
+				status = 0;
+			}
+			else{
+				status = 1;
+			}
+		}
+		else{
+			if(wan_state == WAN_STATE_STOPPED && wan_sbstate == WAN_STOPPED_REASON_INVALID_IPADDR){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_INITIALIZING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_CONNECTING){
+				status = 0;
+			}
+			else if(wan_state == WAN_STATE_DISCONNECTED){
+				status = 0;
+			}
+			else {
+				lease = nvram_get_int(strcat_r(prefix, "lease", tmp));
+				// treat short lease time as disconnected
+				if(!strcmp(wan_proto, "dhcp") &&	//DHCP
+					lease <= 60 &&
+					is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)))
+				) {
+					status = 0;
+				}
+				else {
+					status = 1;
+				}
+			}
+		}
+
+#ifdef RTCONFIG_USB_MODEM
+		if (dualwan_unit__usbif(unit))
+			type = "USB Modem";
+		else
+#endif
+			type = wan_proto;
+
+		if(status != 0){
+			strncpy(ip, nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)), sizeof(ip)-1);
+			strncpy(netmask, nvram_safe_get(strcat_r(prefix, "netmask", tmp)), sizeof(netmask)-1);
+			strncpy(gateway, nvram_safe_get(strcat_r(prefix, "gateway", tmp)), sizeof(gateway)-1);
+			strncpy(dns, nvram_safe_get(strcat_r(prefix, "dns", dns)), sizeof(dns)-1);
+			lease = nvram_get_int(strcat_r(prefix, "lease", tmp));
+			if (lease > 0)
+				expires = nvram_get_int(strcat_r(prefix, "expires", tmp)) - uptime();
+		}
+
+		if(argv[0] == NULL){
+			websWrite(stream, "function wanlink_status() { return %d;}\n", status);
+			websWrite(stream, "function wanlink_statusstr() { return '%s';}\n", statusstr[status]);
+			websWrite(stream, "function wanlink_type() { return '%s';}\n", type);
+			websWrite(stream, "function wanlink_ipaddr() { return '%s';}\n", ip);
+			websWrite(stream, "function wanlink_netmask() { return '%s';}\n", netmask);
+			websWrite(stream, "function wanlink_gateway() { return '%s';}\n", gateway);
+			websWrite(stream, "function wanlink_dns() { return '%s';}\n", dns);
+			websWrite(stream, "function wanlink_lease() { return %d;}\n", lease);
+			websWrite(stream, "function wanlink_expires() { return %d;}\n", expires);
+			websWrite(stream, "function is_private_subnet() { return '%d';}\n", is_private_subnet(ip));
+		}else if(!strcmp(argv[0],"status"))
+			websWrite(stream, "\"%d\"", status);
+		else if(!strcmp(argv[0],"statusstr"))
+			websWrite(stream, "\"%s\"", statusstr[status]);
+		else if(!strcmp(argv[0],"type"))
+			websWrite(stream, "\"%s\"", type);
+		else if(!strcmp(argv[0],"ipaddr"))
+			websWrite(stream, "\"%s\"", ip);
+		else if(!strcmp(argv[0],"netmask"))
+			websWrite(stream, "\"%s\"", netmask);
+		else if(!strcmp(argv[0],"gateway"))
+			websWrite(stream, "\"%s\"", gateway);
+		else if(!strcmp(argv[0],"dns"))
+			websWrite(stream, "\"%s\"", dns);
+		else if(!strcmp(argv[0],"lease"))
+			websWrite(stream, "\"%d\"", lease);
+		else if(!strcmp(argv[0],"expires"))
+			websWrite(stream, "\"%d\"", expires);
+		else if(!strcmp(argv[0],"private_subnet"))
+			websWrite(stream, "\"%d\"", is_private_subnet(ip));
+
+#if 0//Note: not support VPN + DHCP Connection currently
+		if (strcmp(wan_proto, "pppoe") == 0
+			//|| strcmp(wan_proto, "pptp") == 0
+			//|| strcmp(wan_proto, "l2tp") == 0
+			)
+		{
+			char node[MAXLEN_NODE_NAME];
+			int dhcpenable = 0;
+			sprintf(node, "Wan_PVC%d", unit);
+			tcapi_get(node, "PPPGETIP", tmp);
+			dhcpenable = strcmp(tmp, "Dynamic") ? 0 : 1;
+			xtype = (dhcpenable == 0) ? "static" :
+				(strcmp(wan_proto, "pppoe") == 0 && tcapi_match(node, "vpndhcp", "0")) ? "" : /* zeroconf */
+				"dhcp";
+			strncpy(xip, nvram_safe_get(strcat_r(prefix, "xipaddr", tmp)), sizeof(xip)-1);
+			strncpy(xnetmask, nvram_safe_get(strcat_r(prefix, "xnetmask", tmp)), sizeof(xnetmask)-1);
+			strncpy(xgateway, nvram_safe_get(strcat_r(prefix, "xgateway", tmp)), sizeof(xgateway)-1);
+			strncpy(xdns, nvram_safe_get(strcat_r(prefix, "xdns", tmp)), sizeof(xdns)-1);
+			xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
+			if (xlease > 0)
+				xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
+		}
+#endif
+
+		if(argv[0] == NULL){
+			websWrite(stream, "function wanlink_xtype() { return '%s';}\n", xtype);
+			websWrite(stream, "function wanlink_xipaddr() { return '%s';}\n", xip);
+			websWrite(stream, "function wanlink_xnetmask() { return '%s';}\n", xnetmask);
+			websWrite(stream, "function wanlink_xgateway() { return '%s';}\n", xgateway);
+			websWrite(stream, "function wanlink_xdns() { return '%s';}\n", xdns);
+			websWrite(stream, "function wanlink_xlease() { return %d;}\n", xlease);
+			websWrite(stream, "function wanlink_xexpires() { return %d;}\n", xexpires);
+		}else if(!strcmp(argv[0],"xtype"))
+			websWrite(stream, "\"%s\"", xtype);
+		else if(!strcmp(argv[0],"xipaddr"))
+			websWrite(stream, "\"%s\"", xip);
+		else if(!strcmp(argv[0],"xnetmask"))
+			websWrite(stream, "\"%s\"", xnetmask);
+		else if(!strcmp(argv[0],"xgateway"))
+			websWrite(stream, "\"%s\"", xgateway);
+		else if(!strcmp(argv[0],"xdns"))
+			websWrite(stream, "\"%s\"", xdns);
+		else if(!strcmp(argv[0],"xlease"))
+			websWrite(stream, "\"%d\"", xlease);
+		else if(!strcmp(argv[0],"xexpires"))
+			websWrite(stream, "\"%d\"", xexpires);
+
+		app_method_hit = 1;
+	}
+	/* DUT_RT_CheckAsusModel */
+	else if (strcmp(func, "check_asus_model") == 0) 
+	{
+#ifdef RTCONFIG_HTTPS
+		if (check_model_name()){
+			websWrite(stream, "\"1\"");
+		}else{
+			websWrite(stream, "\"0\"");
+		}
+#else
+		websWrite(stream, "\"1\"");
+#endif
+		app_method_hit = 1;
+	}
+	/* DUT_RT_DHCPLeaseList */
+	else if (strcmp(func, "dhcpLeaseMacList") == 0) 
+	{
+		//IP_dhcpLeaseInfo()
+		char buf[256]={0},mac[17], ip[16],expire[10], hostname[32];
+		char *str;
+
+		
+		FILE *fp = fopen("/etc/udhcp_lease", "r");
+		if(fp)
+		{
+			websWrite(stream, "[");
+			while (fgets(buf, 256, fp)){
+				memset(mac, 0, sizeof(mac));
+				memset(ip, 0, sizeof(ip));
+				memset(expire, 0, sizeof(expire));
+				memset(hostname, 0, sizeof(hostname));
+				sscanf(buf, "%s %s %s %s",mac, ip, expire, hostname);
+
+				// Get the whole hostname including space
+				if(strlen(hostname)) {
+					str = strstr(buf, hostname);
+					if(str && (*(str+strlen(str)-1) == 0x0a || *(str+strlen(str)-1) == 0x0d)){
+						*(str+strlen(str)-1)=0x0;
+						snprintf(hostname, sizeof(hostname), "%s", str);
+					}
+					char_to_ascii_safe(buf, hostname, strlen(hostname));
+					websWrite(stream,"[\"%s\", \"%s\"],", ip, buf);
+				}
+				else
+				{
+					//error record in buf ex. [00:00:00:00:00:00 192.168.1.108 3935]
+				}
+			}
+			fclose(fp);
+			websWrite(stream, "[\"\",\"\"]]");
+		}
+		else
+		{
+			websWrite(stream, "[[\"\", \"\"]]");
+		}
+
+		app_method_hit = 1;
+	}
+	/* DUT_RT_BWDPI_ClientList */
+	else if (strcmp(func, "bwdpi_device_info") == 0) 
+	{ //ej_bwdpi_device() -> ASUSWRT
+#if 0
+		int retval = 0;
+		char *hwaddr;
+
+		// get device info of someone.
+		hwaddr = websGetVar(wp, "client", "");
+		
+		//_dprintf("[httpd] history: hwaddr=%s.\n", hwaddr);
+		get_device_hook(hwaddr, &retval, wp);
+#endif
+		websWrite(stream, "\"\"");
+
+		app_method_hit = 2;
+	}
+	/* DUT_RT_GetBandwidthMonitor */
+	else if (strcmp(func, "bwdpi_status") == 0) 
+	{ //ej_bwdpi_status() -> ASUSWRT
+		websWrite(stream, "\"\"");
+
+		app_method_hit = 2;
+	}
+
+get_api_fail:
+	if (app_method_hit == 0)
+		//websWrite(stream,"");       //Not Support
+		_dprintf("app_call: %s(%s): Not yet support\n", func, argv[0]);
+	else if (app_method_hit == 2)
+		//websWrite(stream,"");       //DSL model not support
+		_dprintf("app_call: %s(%s): DSL model not support\n", func, argv[0]);
+
+	if(strcmp(func, "nvram_get") == 0)
+		websWrite(stream,"\"" );
+	else if(argv[0] != NULL && strcmp(argv[0], "appobj") == 0)
+		websWrite(stream,"}" );
+}
+
+static void do_appGet_cgi (asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char *pattern = NULL, *saveptr = NULL;
+	int firstRow=1;
+	char wp[1024] = {0}; //If too small, may cause boa crash
+
+	pattern = get_param(g_var_post, "hook");
+	//_dprintf("do_appGet_cgi: pattern_t=%s\n", pattern);
+	char *pattern_t = strtok_r(pattern, ";", &saveptr);
+
+	websWrite(wp,"{\n" );
+
+	while (pattern_t != NULL){
+		if (firstRow == 1)
+			firstRow = 0;
+		else
+			websWrite(wp, ",\n");
+
+		//websWrite(wp,"\"%s\":", pattern_t);
+
+		app_call(pattern_t, wp);
+
+		pattern_t = strtok_r(NULL, ";", &saveptr);
+	}
+
+	websWrite(wp,"\n}\n" );
+}
+
+static void do_appGet_image_path_cgi (asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char wp[128] = {0};
+
+	websWrite(wp,"{\n" );
+
+	websWrite(wp, "\"IMAGE_MODEL_PRODUCT\":\"%s\",\n", IMAGE_MODEL_PRODUCT);
+	websWrite(wp, "\"IMAGE_WANUNPLUG\":\"\",\n"); //not support now
+	websWrite(wp, "\"IMAGE_ROUTER_MODE\":\"%s\",\n", IMAGE_ROUTER_MODE);
+	websWrite(wp, "\"IMAGE_REPEATER_MODE\":\"%s\",\n", IMAGE_REPEATER_MODE);
+	websWrite(wp, "\"IMAGE_AP_MODE\":\"%s\",\n", IMAGE_AP_MODE);
+	websWrite(wp, "\"IMAGE_MEDIA_BRIDGE_MODE\":\"\"\n"); //not support now
+
+	websWrite(wp,"\n}\n" );
+}
+
+static void do_upload_cgi (asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	//dbgprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+	eval("/usr/script/upload_config.sh");
+	system("reboot");
 }
 
 static void wanstate (asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -7582,6 +12760,45 @@ static void wanstate (asp_reent* reent, const asp_text* params, asp_text* ret)
 	// return 0;
 }
 
+static void set_current_active_wan (asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char unit[4];
+	if( tcapi_get_int("Wanduck_Common", "wan_primary") >=  WAN_UNIT_PTM0 ) {
+		snprintf(unit, sizeof(unit), "%d", tcapi_get_int("Wanduck_Common", "wan_primary"));
+		tcapi_set("WebCurSet_Entry", "wan_pvc", unit);
+		tcapi_set("WebCurSet_Entry", "wan_pvc_ext", "0");
+		dbgprintf("[%s(%d)] force set wan_pvc = %s, wan_pvc_ext = 0\n", __FUNCTION__, __LINE__, unit);
+	} else {
+		tcapi_set("WebCurSet_Entry", "wan_pvc", "0");
+		dbgprintf("[%s(%d)] wan_pvc = 0\n", __FUNCTION__, __LINE__);
+	}
+
+	return;
+	
+}
+
+static void wl_nband_info (asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char buf[12];
+	char value[MAX_VALUE];
+	char *wl2g = NULL;
+	char *wl5g = NULL;
+	memset(buf, 0, sizeof(buf));
+	tcapi_get("SysInfo_Entry", "rc_support", value);
+	wl2g = strstr(value, "2.4G");
+	wl5g = strstr(value, "5G");
+	
+	sprintf(buf, "[");
+	if(wl2g != NULL) {
+		strcat(buf, "\"2\"");
+	}
+	if(wl5g != NULL) {
+		strcat(buf, ",\"1\"");
+	}
+	strcat(buf, "]");
+	asp_send_response (NULL,buf,strlen(buf));
+	
+}
 //for single wan
 static void disable_other_wan (asp_reent* reent, const asp_text* params, asp_text* ret)
 {
@@ -7598,6 +12815,7 @@ static void disable_other_wan (asp_reent* reent, const asp_text* params, asp_tex
 	//int service_num = szServiceNum? atoi(szServiceNum): -1;
 	int j;
 #endif
+	char brif[8];
 
 	if(wanVCFlag && !strcmp(wanVCFlag, "3")) {	// apply wan
 		if(!tcapi_get("WebCurSet_Entry", "wan_pvc", tmp)) {
@@ -7662,6 +12880,18 @@ static void disable_other_wan (asp_reent* reent, const asp_text* params, asp_tex
 							if(tcapi_match(prefix, "Active", "Yes")) {
 								system(cmd);
 								tcapi_set(prefix, "Active", "No");
+
+								if(tcapi_match(prefix, "ISP", "3"))	//reset bridge
+								{
+									snprintf(brif, sizeof(brif), "br%d", tcapi_get_int(prefix, "bridge_lan_port"));
+									snprintf(cmd, sizeof(cmd), "brctl delif %s nas%d_%d", brif, i, j);
+									system(cmd);
+									snprintf(cmd, sizeof(cmd), "brctl delif %s lan%d", brif, tcapi_get_int(prefix, "bridge_lan_port"));
+									system(cmd);									
+									snprintf(cmd, sizeof(cmd), "brctl addif br0 lan%d", tcapi_get_int(prefix, "bridge_lan_port"));
+									system(cmd);									
+								}
+								
 								memset(cmd, 0, sizeof(cmd));
 								sprintf(cmd, "/usr/bin/smuxctl rem nas%d_%d", i, j);
 								system(cmd);
@@ -7672,6 +12902,18 @@ static void disable_other_wan (asp_reent* reent, const asp_text* params, asp_tex
 						sprintf(prefix, "Wan_PVC%d", i);
 						snprintf(cmd, sizeof(cmd)-1, "/usr/script/wan_stop.sh %d %d", i, 0);
 						if(tcapi_match(prefix, "Active", "Yes")) {
+
+							if(tcapi_match(prefix, "ISP", "3"))	//reset bridge
+							{
+								snprintf(brif, sizeof(brif), "br%d", tcapi_get_int(prefix, "bridge_lan_port"));
+								snprintf(cmd, sizeof(cmd), "brctl delif %s nas%d", brif, i);
+								system(cmd);
+								snprintf(cmd, sizeof(cmd), "brctl delif %s lan%d", brif, tcapi_get_int(prefix, "bridge_lan_port"));
+								system(cmd);									
+								snprintf(cmd, sizeof(cmd), "brctl addif br0 lan%d", tcapi_get_int(prefix, "bridge_lan_port"));
+								system(cmd);									
+							}
+							
 							system(cmd);
 							tcapi_set(prefix, "Active", "No");
 						#if RTCONFIG_USB_MODEM
@@ -8491,7 +13733,7 @@ static void login_state_hook (asp_reent* reent, const asp_text* params, asp_text
 {
 	// unsigned int ip, login_ip, login_port;
 	unsigned int login_ip = 0;
-	char ip_str[16], login_ip_str[16];
+	char ip_str[16];
 	time_t login_timestamp;
 	// struct in_addr now_ip_addr, login_ip_addr;
 	struct in_addr login_ip_addr;
@@ -8500,6 +13742,10 @@ static void login_state_hook (asp_reent* reent, const asp_text* params, asp_text
 	const int VALUELEN = 18;
 	char buffer[MAX], values[6][VALUELEN];
 	char wp[256] = {0};
+	asus_token_t *token = NULL;
+
+	if(!reent || !(reent->server_env))
+		return;
 
 	// ip = getpeerip(wp);
 	//csprintf("ip = %u\n",ip);
@@ -8513,17 +13759,14 @@ static void login_state_hook (asp_reent* reent, const asp_text* params, asp_text
 
 	// login_ip = (unsigned int)atoll(nvram_safe_get("login_ip"));
 	// login_ip_addr.s_addr = login_ip;
-	memset(login_ip_str, 0, sizeof(login_ip_str));
-	// strcpy(login_ip_str, inet_ntoa(login_ip_addr));
-	tcapi_get("WebCurSet_Entry", "login_ip_tmp", login_ip_str);
-	if(inet_aton(login_ip_str, &login_ip_addr))
+	token = SEARCH_TOKEN_LST_BY_CLITYPE(CLI_TYPE_BROWSER);
+	if(!token)
+		return;
+	
+	if(inet_aton(token->ipaddr, &login_ip_addr))
 		login_ip = login_ip_addr.s_addr;
-//	login_timestamp = (unsigned long)atol(nvram_safe_get("login_timestamp"));
-	// login_timestamp = strtoul(nvram_safe_get("login_timestamp"), NULL, 10);
-	tcapi_get("WebCurSet_Entry", "login_uptime", buffer);
-	login_timestamp = strtoul(buffer, NULL, 10);
-	// login_port = (unsigned int)atol(nvram_safe_get("login_port"));
-	// login_port = (unsigned int)server_port;
+
+	login_timestamp = token->login_timestamp;
 
 	FILE *fp = fopen("/proc/net/arp", "r");
 	if (fp){
@@ -8548,18 +13791,17 @@ static void login_state_hook (asp_reent* reent, const asp_text* params, asp_text
 	}
 
 	// if (ip != 0 && login_ip == ip && login_port != 0 && login_port == http_port) {
-	if (!strcmp(ip_str, login_ip_str) ) {
+	if (!strcmp(ip_str, token->ipaddr) ) {
 		websWrite(wp, "function is_logined() { return 1; }\n");
 		websWrite(wp, "function login_ip_dec() { return '%u'; }\n", login_ip);
-		websWrite(wp, "function login_ip_str() { return '%s'; }\n", login_ip_str);
+		websWrite(wp, "function login_ip_str() { return '%s'; }\n", token->ipaddr);
 		websWrite(wp, "function login_ip_str_now() { return '%s'; }\n", ip_str);
 
 		if (values[3] != NULL)
 			websWrite(wp, "function login_mac_str() { return '%s'; }\n", values[3]);
 		else
 			websWrite(wp, "function login_mac_str() { return ''; }\n");
-//		time(&login_timestamp);
-		login_timestamp = uptime();
+		token->login_timestamp = uptime();
 	}
 	else{
 		websWrite(wp, "function is_logined() { return 0; }\n");
@@ -8568,7 +13810,7 @@ static void login_state_hook (asp_reent* reent, const asp_text* params, asp_text
 		if ((unsigned long)(now-login_timestamp) > 60)	//one minitues
 			websWrite(wp, "function login_ip_str() { return '0.0.0.0'; }\n");
 		else
-			websWrite(wp, "function login_ip_str() { return '%s'; }\n", login_ip_str);
+			websWrite(wp, "function login_ip_str() { return '%s'; }\n", token->ipaddr);
 
 		websWrite(wp, "function login_ip_str_now() { return '%s'; }\n", ip_str);
 
@@ -8767,7 +14009,7 @@ static void dump_fb_fail_content( void )
 	sprintf(buf, "Rx AGC(ADSL): %s\n", tmp_val);
 	asp_send_response(NULL, buf, strlen(buf));
 
-#ifdef TCSUPPORT_CPU_MT7510
+#if defined(TCSUPPORT_CPU_MT7510) || defined(TCSUPPORT_CPU_RT63365) || defined(TCSUPPORT_CPU_RT63368)
 	memset(tmp_val, 0, sizeof(tmp_val));
 	tcapi_get_string("Adsl_Entry", "dslx_adsl_esnp", tmp_val);
 	sprintf(buf, "ESNP - Enhanced Sudden Noise Protection(ADSL): %s\n", tmp_val);
@@ -8907,6 +14149,33 @@ static void dump_fb_fail_content( void )
 	memset(tmp_val, 0, sizeof(tmp_val));
 	tcapi_get_string("WebCurSet_Entry", "dslup_counter", tmp_val);
 	sprintf(buf, " / %s\n", tmp_val);
+	asp_send_response(NULL, buf, strlen(buf));
+
+	memset(tmp_val, 0, sizeof(tmp_val));
+	tcapi_get_string("DslDiag_Entry", "dslx_diag_enable", tmp_val);
+	snprintf(buf, sizeof(buf), "DSL Line Diagnostic: %s\n", tmp_val);
+	asp_send_response(NULL, buf, strlen(buf));
+
+	memset(tmp_val, 0, sizeof(tmp_val));
+	tcapi_get_string("DslDiag_Entry", "dslx_diag_duration", tmp_val);
+	if(strcmp(tmp_val, "0") == 0)
+	{
+		memset(tmp_val, 0, sizeof(tmp_val));
+		tcapi_get_string("GUITemp_Entry0", "fb_tmp_availability", tmp_val);
+		if(strncmp(tmp_val, "Occasional_interruptions", 4) == 0)
+		{
+			snprintf(tmp_val, sizeof(tmp_val), "86400");
+		}
+		else if(strncmp(tmp_val, "Frequent_interruptions", 4) == 0)
+		{
+			snprintf(tmp_val, sizeof(tmp_val), "43200");
+		}
+		else
+		{
+			snprintf(tmp_val, sizeof(tmp_val), "3600");
+		}
+	}
+	snprintf(buf, sizeof(buf), "Diagnostic Duration: %s\n", tmp_val);
 	asp_send_response(NULL, buf, strlen(buf));
 
 	sprintf(buf, "System Up time: %s\n", up_time);
@@ -9236,12 +14505,46 @@ static void ej_dump(asp_reent* reent, const asp_text* params, asp_text* ret) {
 		dump_file(wp, filename);
 	}
 #endif
+#ifdef TCSUPPORT_WEBMON
+	else if(!strcmp(file, "web_history.log")){
+		get_web_history_table(wp);
+		sprintf(filename, "/tmp/web_history.txt");
+		dump_file(wp, filename);
+	}
+#endif
 	else {
 		sprintf(filename, "/tmp/%s", file);
 		dump_file(wp, filename);
 	}
 
 	return;
+}
+
+void websRedirect_iframe(char *wp, char *url)
+{
+        char value[8] = {0};
+
+        websWrite(wp, "<html><head>\r\n");
+
+        if(strchr(url, '>') || strchr(url, '<'))
+        {
+                websWrite(wp,"<script>parent.location.href='/index.asp';</script>\n");
+        }
+        else
+        {
+#ifdef RTCONFIG_HTTPS
+                if(do_ssl){
+                        websWrite(wp, "<meta http-equiv=\"refresh\" content=\"0; url=https://%s/%s\">\r\n", gethost, url);
+                }else
+#endif
+                {
+                        tcapi_get("Lan_Entry", "IP", value);
+                        websWrite(wp, "<meta http-equiv=\"refresh\" content=\"0; url=http://%s/%s\">\r\n", value, url);
+                }
+        }
+
+        websWrite(wp, "<meta http-equiv=\"Content-Type\" content=\"text/html\">\r\n");
+        websWrite(wp, "</head></html>\r\n");
 }
 
 void sys_script(char *name) {
@@ -9264,6 +14567,29 @@ void sys_script(char *name) {
 		system("echo  > /tmp/syscmd.log\n");
 	   }
      }
+}
+
+void websApply(char *wp, char *url)
+{
+#ifdef TRANSLATE_ON_FLY
+	do_ej(url, wp);
+	websDone(wp, 200);
+#else   // define TRANSLATE_ON_FLY
+
+	FILE *fp;
+	char buf[MAX_LINE_SIZE];
+
+	fp = fopen(url, "r");
+
+	if (fp==NULL) return;
+
+	while (fgets(buf, sizeof(buf), fp))
+	{
+		websWrite(wp, buf);
+	}
+
+	fclose(fp);
+#endif
 }
 
 int gen_modemlog(void)
@@ -9514,10 +14840,7 @@ static void get_DSL_WAN_list(asp_reent* reent, const asp_text* params, asp_text*
 			tcapi_get(node, "Active", value);
 			websWrite(wp, "[\"%s\", ", value);
 
-			if(i)
-				websWrite(wp, "\"Bridge #%d\", ", i);
-			else
-				websWrite(wp, "\"Internet\", ");
+			websWrite(wp, "\"PVC %d\", ", i + 1);
 
 			memset(value, 0, sizeof(value));
 			tcapi_get(node, "VPI", value);
@@ -9626,7 +14949,6 @@ static void WOL_Invoke(asp_reent* reent, const asp_text* params, asp_text* ret)
 	system(cmd);
 }
 
-const char cl_cache_path[] = "/var/tmp/cl_cache";
 /*******************************************************************
 * NAME: ClientList_Refresh
 * AUTHOR: Andy Chiu
@@ -10050,6 +15372,61 @@ static void dhcpLeaseMacList(asp_reent* reent, const asp_text* params, asp_text*
 		websWrite(wp, "[['', '']]");
 	}
 }
+
+#ifdef ASUS_LOGIN_SESSION
+/*******************************************************************
+* NAME: IP_dhcpLeaseInfo
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/12/03
+* DESCRIPTION: get dhcp lease info ['ip', 'host name'], ['', '']
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:
+*******************************************************************/
+static void IP_dhcpLeaseInfo(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char buf[256]={0},mac[17], ip[16],expire[10], hostname[32];
+	char wp[1024];
+	char *str;
+
+	
+	FILE *fp = fopen("/etc/udhcp_lease", "r");
+	if(fp)
+	{
+		websWrite(wp, "[");
+		while (fgets(buf, 256, fp)){
+			memset(mac, 0, sizeof(mac));
+			memset(ip, 0, sizeof(ip));
+			memset(expire, 0, sizeof(expire));
+			memset(hostname, 0, sizeof(hostname));
+			sscanf(buf, "%s %s %s %s",mac, ip, expire, hostname);
+
+			// Get the whole hostname including space
+			if(strlen(hostname)) {
+				str = strstr(buf, hostname);
+				if(str && (*(str+strlen(str)-1) == 0x0a || *(str+strlen(str)-1) == 0x0d)){
+					*(str+strlen(str)-1)=0x0;
+					snprintf(hostname, sizeof(hostname), "%s", str);
+				}
+				char_to_ascii_safe(buf, hostname, strlen(hostname));
+				websWrite(wp,"['%s', '%s'],", ip, buf);
+			}
+			else
+			{
+				//error record in buf ex. [00:00:00:00:00:00 192.168.1.108 3935]
+			}
+		}
+		fclose(fp);
+		websWrite(wp, "['','']]");
+	}
+	else
+	{
+		websWrite(wp, "[['', '']]");
+	}
+}
+#endif
+
 /*******************************************************************
 * NAME: tcWebApi_MatchThenWrite
 * AUTHOR: Sam Wen
@@ -10308,6 +15685,11 @@ static void do_vpnupload_cgi(asp_reent* reent, const asp_text* params, asp_text*
 	}
 	fclose(fpSrc);
 	fclose(fpDst);
+
+#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
+	if(!check_if_dir_exist(OVPN_FS_PATH))
+		mkdir(OVPN_FS_PATH, S_IRWXU);
+#endif
 
 	if(1) {
 		sprintf(node, "OpenVPN_Entry%ld", unit+CLIENT_IF_START);
@@ -10676,6 +16058,320 @@ static void stop_dsl_diag(asp_reent* reent, const asp_text* params, asp_text* re
 }
 #endif
 
+#ifdef ASUS_BUSYBOX_NEW
+static void get_isp_dhcp_opt_list(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char *name;
+	FILE* fpIsp;
+	char bufIsp[512], wp[1024];
+
+	fpIsp = fopen("/tmp/etc/ISP_DHCP_Opt_List.txt","r");
+	if (fpIsp != NULL)
+	{
+	  // read out UTF-8 3 bytes header
+	        fread(bufIsp,3,1,fpIsp);
+		while(!feof(fpIsp))
+		{
+			char* ret_fgets;
+			ret_fgets = fgets(bufIsp,sizeof(bufIsp),fpIsp);
+			if (ret_fgets != NULL)
+			{
+				websWrite(wp, bufIsp);
+				websWrite(wp, "\n");
+			}
+		}
+		fclose(fpIsp);
+	}
+	return 0;	
+}
+#endif
+
+#ifdef ASUS_LOGIN_SESSION
+/*******************************************************************
+* NAME: http_login_header
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/12/11
+* DESCRIPTION: send login http header
+* INPUT: token: string
+* OUTPUT:
+* RETURN:
+* NOTE: Andy Chiu, 2016/01/04. Add AiHOMEAPILevel, Httpd_AiHome_Ver and Model_Name.
+*	      Andy Chiu, 2016/01/07. Modify send reply function. use req to detect which way to send packe
+*******************************************************************/
+int http_login_header(const char *token, request *req)
+{
+	char buf[2048] = {0}, tmp[256] = {0}, product_name[64] = {0};
+	char *p = buf;
+	char HTTP_OK[] = "HTTP/1.0 200 OK\r\n";
+	strcat(p, HTTP_OK);
+	p += strlen(HTTP_OK);
+
+	char DATA[] = "Date: "
+		"                             "
+		"\r\n";
+	rfc822_time_buf(DATA + 6, 0);
+	strcat(p, DATA);
+	p += strlen(DATA);
+
+	//Add AiHOMEAPILevel
+	memset(tmp, 0, sizeof(tmp));
+	snprintf(tmp, sizeof(tmp), "AiHOMEAPILevel: %d\r\n", EXTEND_AIHOME_API_LEVEL);
+	strcat(p, tmp);
+	p += strlen(tmp);
+
+	//Add Httpd_AiHome_Ver
+	memset(tmp, 0, sizeof(tmp));
+	snprintf(tmp, sizeof(tmp), "Httpd_AiHome_Ver: %d\r\n", EXTEND_HTTPD_AIHOME_VER);
+	strcat(p, tmp);
+	p += strlen(tmp);
+
+	//Add Model_Name
+	memset(tmp, 0, sizeof(tmp));
+	tcapi_get("SysInfo_Entry", "ProductName", product_name);
+	snprintf(tmp, sizeof(tmp), "Model_Name: %s\r\n", product_name);
+	strcat(p, tmp);
+	p += strlen(tmp);	
+
+	char CONTENT_TYPE[64];
+	if(charset){
+		sprintf(CONTENT_TYPE,"Content-type: text/html;charset=%s\r\n",charset);
+	}
+	else{
+		/*default char set: ISO-8859-1*/
+		sprintf(CONTENT_TYPE,"Content-type: text/html;charset=ISO-8859-1\r\n");
+	}
+/*pork 20090309 added over*/
+	strcat(p, CONTENT_TYPE);
+	p += strlen(CONTENT_TYPE);
+
+	char set_cookie[256];
+	if(token)
+	{
+		sprintf(set_cookie, "Set-Cookie: asus_token=%s; HttpOnly;\r\n", token);
+	}
+
+	strcat(p, set_cookie);
+	p += strlen(set_cookie);
+	
+	strcat(p, "Connection: close\r\n\r\n");
+	
+	if(req)
+	{
+		if(req_write(req,  buf))
+		return -1;
+	}
+	else
+	{
+		if(asp_send_response(NULL, buf, strlen(buf)))
+			return -1;
+	}
+
+	return 0;
+}
+
+/*******************************************************************
+* NAME: send_login_packet
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/01/06
+* DESCRIPTION: send login packet
+* INPUT: req: pointer of request; error_status: error code; cur_page: path of current page; next_page: path of next_page
+* OUTPUT:
+* RETURN:
+* NOTE: Andy Chiu, 2016/01/07. Modify send reply function. websWrite() would make boa crash.
+*******************************************************************/
+void send_login_packet(request *req, const int error_status, char *cur_page, char *next_page)
+{
+	int fromapp = 0;
+	char wp[2048], *page = NULL;
+	char dst_page[256] = {0};
+	asus_token_t *token = NULL;
+	char *buff[256] = {0};
+	CLIENT_TYPE cli_type;
+
+	if(!req)
+		return;
+
+	SQUASH_KA(req);	
+	req->response_status = R_REQUEST_OK;
+	
+	cli_type = check_client_type(req->header_user_agent);
+
+	//send login header. If error_status is zero, auth is successful.
+	if(!error_status)
+	{
+		token = add_asus_token(cli_type, generate_token(buff, sizeof(buff)), req->remote_ip_addr);
+	}
+
+	//auth success but can't generate token.
+	if(!error_status && !token)
+		return;
+	
+	http_login_header(token? token->token: NULL, NULL);
+
+	//Andy Chiu, 2016/01/05. Check APP
+	if(cli_type != CLI_TYPE_BROWSER)
+			fromapp = 1;		
+
+	//send content
+	if(!fromapp)
+	{	
+		//send content
+		websWrite(wp, "<HTML><HEAD>\n");
+
+		page = error_status? cur_page: next_page;
+		
+		if(page)
+		{
+			decode_uri(page);
+			
+			//check the page path.
+			if(!strstr(page, "Main_Login.asp") && !strstr(page, "QIS"))
+			{		
+				if(strncmp(page, "cgi-bin", 7) && strncmp(page, "/cgi-bin", 8))
+					strcpy(dst_page, "cgi-bin/");
+				else
+					strcpy(dst_page, "");
+			}
+			
+			if(page[0] == '/')
+				strncat(dst_page, page + 1, sizeof(dst_page) - strlen(dst_page) - 1);
+			else
+				strncat(dst_page, page, sizeof(dst_page) - strlen(dst_page) - 1);
+				
+
+			//Andy Chiu, 2016/01/04. Modify the redirect page function without java script for security issue.
+			if(!error_status)
+			{
+				websWrite(wp, "<meta http-equiv=\"refresh\" content=\"0; url=%s\">\n", dst_page);
+			}
+			else
+			{
+				websWrite(wp, "<meta http-equiv=\"refresh\" content=\"0; url=%s?error_status=%d", dst_page, error_status);
+				if(next_page)
+				{
+					websWrite(wp, "&next_page=%s", next_page);
+				}
+				websWrite(wp, "\">\n");
+				
+			}
+		}
+		websWrite(wp, "</HEAD></HTML>\n");
+	}
+	else
+	{
+		if(!error_status)
+		{
+			websWrite(wp, "{\n\"asus_token\":\"%s\"\n}\n", token->token);
+		}
+		else
+		{
+			websWrite(wp, "{\n\"error_status\":\"%d\"\n}\n", error_status);
+		}
+	}
+}
+
+/*******************************************************************
+* NAME: do_login
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/12/11
+* DESCRIPTION: handle login
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE: Andy Chiu, 2016/01/04. Modify the redirect web page function.
+*	      Andy Chiu, 2016/01/05. Add APP reply
+*******************************************************************/
+static void do_login(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char *decode_buf = NULL;
+	int len;
+	s_param **auth;
+	int err_code = 0;
+	char username[129], password[129];
+	char *login_auth = get_param(g_var_post, "login_authorization");	
+	time_t dt;
+	char log[128] = {0};
+	login_retry_t *retry = NULL;
+	request *req;
+	long cur_time;
+
+	if(!reent || !reent->server_env)
+		return;
+	
+	req = reent->server_env;
+	
+	//Get Account 
+	tcapi_get("Account_Entry0", "username", username);
+	tcapi_get("Account_Entry0", "web_passwd", password);
+	
+	
+	//decode login_auth by base64
+	decode_uri(login_auth);
+	decode_buf = rfc822_base64(login_auth, strlen(login_auth), &len);
+	
+	//parser the decoded string.
+	auth = param_line (decode_buf, ':', ';');
+	
+	if(auth)
+	{
+		if(!strcmp(auth[0]->name, username) && !strcmp(auth[0]->value, password))
+		{
+			snprintf(log, sizeof(log), "User [%s] logged in from [%s] via WEB\n", auth[0]->name, reent->server_env->remote_ip_addr);
+			openlog("TCSysLog WEB", 0, LOG_LOCAL2);
+			syslog(LOG_INFO, log);
+			closelog();
+
+			//remove item in retry list
+			rm_retry_in_list(req->remote_ip_addr);			
+		}
+		else {
+			err_code = ACCOUNTFAIL;
+			cur_time = uptime();
+
+			retry = search_retry_list(req->remote_ip_addr);
+			//dump_retry(retry);
+			
+			if(!retry)
+			{
+				retry = add_login_retry(req->remote_ip_addr);
+			}
+			else
+			{
+				if(retry->last_login_timestamp > 0 && ((cur_time - retry->last_login_timestamp) > 60))
+				{
+					retry->try_num = 0;
+				}
+				retry->last_login_timestamp = cur_time;
+			}
+
+			++ (retry->try_num);
+			if(retry->try_num >= DEFAULT_LOGIN_MAX_NUM)
+			{
+				retry->try_num = 0;
+				retry->is_lock = 1;
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+				NOTIFY_EVENT_T *e = initial_nt_event();
+				e->event = ADMIN_LOGIN_FAIL_LAN_WEB_EVENT;
+				snprintf(e->msg, sizeof(e->msg), "%s", reent->server_env->remote_ip_addr);
+				send_trigger_event(e);
+				nt_event_free(e);
+#endif
+				err_code = LOGINLOCK;
+			}
+			
+			snprintf(log, sizeof(log), "User [%s] from [%s] failed to log in via WEB.\n", auth[0]->name, reent->server_env->remote_ip_addr);
+			openlog("TCSysLog WEB", 0, LOG_LOCAL2);
+			syslog(LOG_INFO, log);
+			closelog();
+		}
+		
+		free_param(auth);
+	}
+	free(decode_buf);
+	
+	send_login_packet(reent->server_env, err_code, get_param(g_var_post, "current_page"), get_param(g_var_post, "next_page"));
+}
+
 static int get_nat_vserver_table(char *wp)
 {
 	FILE *fp;
@@ -10750,3 +16446,276 @@ static int get_nat_vserver_table(char *wp)
 
 	return ret;
 }
+
+#ifdef TCSUPPORT_WEBMON
+void StampToDate(unsigned long timestamp, char *date)
+{
+	struct tm *local;
+	time_t now;
+
+	now = timestamp;
+	local = localtime(&now);
+	strftime(date, 30, "%Y-%m-%d %H:%M:%S", local);
+}
+
+void ipSearchMac(char *ipaddr, char *macaddr)
+{
+	FILE *fp=NULL;
+	char s[512], addr[32], hwtype[32], hwaddr[32], flags[32], iface[32];
+	int find = 0;
+
+	if((fp = popen("/sbin/arp -n", "r")) != NULL) {
+		while(fgets(s, sizeof(s), fp)) {
+			if(sscanf(s, "%s\t\t%s\t%s\t%s\t%s", addr, hwtype, hwaddr, flags, iface) != 5) continue;
+			if(strcmp(ipaddr, addr) == 0){
+				sprintf(macaddr, "%s", hwaddr);
+				find = 1;
+				break;
+			}
+		}
+		pclose(fp);
+
+		if(find == 0)
+			tcdbg_printf("%s: cannot find MAC, ip = %s\n", __FUNCTION__, ipaddr);
+	}
+}
+
+void get_web_history_table(char *wp)
+{
+	FILE *f=NULL, *fp=NULL;
+	char s[512], ip[64], mac[32], val[256];
+	unsigned long time;
+	char date[30];
+	int i = 0, find = 0;
+
+	fp = fopen("/tmp/web_history.txt", "w");
+	if(fp)
+	{
+		fprintf(fp, "Access Time\t\tIP Address\tMAC Address\t\tDomain Name\r\n");
+		if ((f = fopen("/proc/webmon_recent_domains", "r")) != NULL) {
+			while(fgets(s, sizeof(s), f)) {
+				find = 0;
+				if(sscanf(s, "%lu\t\t%s\t%s", &time, ip, val) != 3) continue;
+				for(i=0; i<512; i++)
+				{
+					if(strlen(landev[i].ipaddr) == 0) break;
+					if(strcmp(ip, landev[i].ipaddr) == 0){
+						sprintf(mac, "%s", landev[i].mac);
+						find = 1;
+						break;
+					}
+					//tcdbg_printf("%s: found, landev[%d].ipaddr=%s\n", __FUNCTION__, i, landev[i].ipaddr);
+				}
+				if(find == 0) {
+					ipSearchMac(ip, mac);
+					i = i % 512; //more than 512, it'll re-start
+					sprintf(landev[i].ipaddr, "%s", ip);
+					sprintf(landev[i].mac, "%s", mac);
+					//tcdbg_printf("%s: No records, find landev[%d].ipaddr=%s, landev[%d].mac=%s\n", __FUNCTION__, i, landev[i].ipaddr, i, landev[i].mac);
+				}
+				StampToDate(time, date);
+				if(strlen(mac))
+					fprintf(fp, "%s\t%s\t%s\t%s\r\n", date, ip, mac, val);
+				else
+					fprintf(fp, "%s\t%s\t%s\t%s\r\n", date, ip, ip, val);
+			}
+			fclose(f);
+		}
+		fclose(fp);
+	}
+}
+#endif
+
+#endif
+
+
+/*******************************************************************
+* NAME: get_iptv_wan_list_ad
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/05/09
+* DESCRIPTION: get active wan pvc list of ADSL
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:
+*******************************************************************/
+static void get_iptv_wan_list_ad(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char node_name[64] = {0};	
+	char buf[1024]={0};
+	char tmp[512]={0}, tmp2[64];
+	int i, flag = 0;
+
+	for(i = 0; i < 8; ++i)
+	{
+		snprintf(node_name, sizeof(node_name), "Wan_PVC%d", i);
+		if(tcapi_match(node_name, "Active", "Yes"))
+		{
+			if(flag)
+				snprintf(tmp2, sizeof(tmp2), ",%d", i);
+			else
+			{
+				flag = 1;
+				snprintf(tmp2, sizeof(tmp2), "%d", i);
+			}
+			strcat(tmp, tmp2);
+		}
+	}
+
+	websWrite(buf, "%s", tmp);
+}
+
+#if defined(TCSUPPORT_WAN_PTM) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+/*******************************************************************
+* NAME: get_iptv_wan_list_vd
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/05/09
+* DESCRIPTION: get active wan pvc list of VDSL
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:
+*******************************************************************/
+static void get_iptv_wan_list_vd(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char node_name[64] = {0};	
+	char buf[1024]={0};
+	char tmp[512]={0}, tmp2[64];
+	int i, flag = 0;
+
+	for(i = 0; i < 8; ++i)
+	{
+		snprintf(node_name, sizeof(node_name), "WanExt_PVC8e%d", i);
+		if(tcapi_match(node_name, "Active", "Yes"))
+		{
+			if(flag)
+				snprintf(tmp2, sizeof(tmp2), ",%d", i);
+			else
+			{
+				flag = 1;
+				snprintf(tmp2, sizeof(tmp2), "%d", i);
+			}
+			strcat(tmp, tmp2);
+		}
+	}
+
+	websWrite(buf, "%s", tmp);
+}
+#endif
+
+#if defined(TCSUPPORT_WAN_ETHER) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+/*******************************************************************
+* NAME: get_iptv_wan_list_eth
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/05/09
+* DESCRIPTION: get active wan pvc list of Ethernet WAN
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:
+*******************************************************************/
+static void get_iptv_wan_list_eth(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char node_name[64] = {0};	
+	char buf[1024]={0};
+	char tmp[512]={0}, tmp2[64];
+	int i, flag = 0;
+
+	for(i = 0; i < 8; ++i)
+	{
+		snprintf(node_name, sizeof(node_name), "WanExt_PVC10e%d", i);
+		if(tcapi_match(node_name, "Active", "Yes"))
+		{
+			if(flag)
+				snprintf(tmp2, sizeof(tmp2), ",%d", i);
+			else
+			{
+				flag = 1;
+				snprintf(tmp2, sizeof(tmp2), "%d", i);
+			}
+			strcat(tmp, tmp2);
+		}
+	}
+
+	websWrite(buf, "%s", tmp);
+}
+#endif
+
+#ifdef TCSUPPORT_WAN_ETHER_LAN
+/*******************************************************************
+* NAME: available_eth_lan_wan_port
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/05/11
+* DESCRIPTION: get available LAN port for ethernet LAN WAN mode
+* INPUT:
+* OUTPUT:
+* RETURN:
+* NOTE:
+*******************************************************************/
+static void available_eth_lan_wan_port(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char tmp[128], tmp2[64], node[32],  buf[2048];
+	int pvc = -1, i, j, lan[4], brlan, flag;
+	const char *wan[] = {"wan_primary", "wan_secondary"};
+	
+	//init lan port list
+	memset(lan, sizeof(lan), 0);
+
+	if(!tcapi_get("Dualwan_Entry", "wans_dualwan", tmp) && strstr(tmp, "dsl"))
+	{		
+		for(j = 0; j < 2; ++j)
+		{
+			if(!tcapi_get("Wanduck_Common", wan[j], tmp) && (!strcmp(tmp, "0") || !strcmp(tmp, "8")))
+			{
+				pvc = atoi(tmp);
+				for(i = 0; i < 8; ++i)
+				{
+					if(!pvc)	//ATM
+					{
+						snprintf(node, sizeof(node), "Wan_PVC%d", i);
+					}
+					else if(pvc == 8)	//PTM
+					{
+						snprintf(node, sizeof(node), "Wan_PVC8e%d", i);
+					}
+
+					if(tcapi_match(node, "Active", "Yes") && tcapi_match(node, "ISP", "3"))	//active and bridge mode
+					{
+						brlan = tcapi_get_int(node, "bridge_lan_port");
+						if(brlan > 0 && brlan <= 4)
+						{
+							lan[brlan -1] = 1;
+						}
+					}
+				}
+
+				flag = 0;
+				memset(tmp, sizeof(tmp), 0);
+				
+				for(i = 0; i < 4; ++i)
+				{
+					if(!lan[i])
+					{
+						if(!flag)
+						{
+							snprintf(tmp, sizeof(tmp), "%d", i + 1);
+							flag = 1;
+						}		
+						else
+						{
+							snprintf(tmp2, sizeof(tmp2), ",%d", i + 1);
+							strcat(tmp, tmp2);
+						}
+					}
+				}
+
+				websWrite(buf, "%s", tmp);
+				return;			
+			}
+		}
+	}
+	else
+		websWrite(buf, "1,2,3,4");
+		
+}
+#endif

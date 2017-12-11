@@ -86,7 +86,7 @@ int create_smbclientconf(Config *config)
         nvp =  my_malloc(file_size);
         //2014.10.20 by sherry malloc申请内存是否成功
         if(nvp==NULL)
-            return  NULL;
+            return  -1;
         fread(nvp, file_size, sizeof(char), fp1);
         fclose(fp1);
 #else
@@ -97,7 +97,7 @@ int create_smbclientconf(Config *config)
         nvp = my_malloc(strlen(tmp) + 1);
         //2014.10.20 by sherry malloc申请内存是否成功
         if(nvp==NULL)
-            return NULL;
+            return -1;
         sprintf(nvp, "%s", tmp);
 #else
         nvp = strdup(nvram_safe_get("cloud_sync"));//其他的
@@ -269,7 +269,7 @@ void init_global_var()
         g_pSyncList = (sync_list **)malloc(sizeof(sync_list *) * num);
         //2014.10.20 by sherry malloc申请内存是否成功
         if(g_pSyncList==NULL)
-            return NULL;
+            return;
         memset(g_pSyncList, 0, sizeof(g_pSyncList));
 
         ServerNode_del = NULL;
@@ -301,7 +301,7 @@ void init_global_var()
                 char *base_path_tmp = my_malloc(sizeof(smb_config.multrule[i]->client_root_path));
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(base_path_tmp==NULL)
-                    return NULL;
+                    return;
                 sprintf(base_path_tmp, "%s", smb_config.multrule[i]->client_root_path);
                 replace_char_in_str(base_path_tmp, '_', '/');
                 snprintf(g_pSyncList[i]->up_item_file, 255, "%s/%s_up_item", g_pSyncList[i]->temp_path, base_path_tmp);
@@ -399,12 +399,12 @@ void add_socket_item(char *buf, int i)
         newNode = (Node *)malloc(sizeof(Node));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(newNode==NULL)
-            return NULL;
+            return;
         memset(newNode, 0, sizeof(Node));
         newNode->cmdName = my_malloc(strlen(buf) + 1);
         //2014.10.20 by sherry malloc申请内存是否成功
         if(newNode->cmdName==NULL)
-            return NULL;
+            return;
         //memset(newNode->cmdName, '\0', sizeof(newNode->cmdName));
         sprintf(newNode->cmdName, "%s", buf);
 
@@ -443,7 +443,7 @@ int deal_dragfolder_to_socketlist(char *dir, int index)
                         fullname = my_malloc(strlen(dir) + strlen(ent->d_name) + 2);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(fullname==NULL)
-                            return NULL;
+                            return -1;
                         sprintf(fullname, "%s/%s", dir, ent->d_name);
                         if(test_if_dir(fullname) == 1)
                         {
@@ -485,7 +485,7 @@ int socket_check(char *dir, char *name, int index)
         char *fullpath = my_malloc(strlen(dir) + strlen(name) + 1);
         //2014.10.20 by sherry malloc申请内存是否成功
         if(fullpath==NULL)
-            return NULL;
+            return -1;
         sprintf(fullpath, "%s/%s", dir,name);
 
         printf("fullpath = %s\n", fullpath);
@@ -499,30 +499,30 @@ int socket_check(char *dir, char *name, int index)
                         sock_buf = my_malloc(strlen(pTemp->cmdName) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(sock_buf==NULL)
-                            return NULL;
+                            return -1;
                         sprintf(sock_buf, "%s", pTemp->cmdName);
                         char *ret = strchr(sock_buf, '\n');
                         part_one = my_malloc(strlen(sock_buf) - strlen(ret) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(part_one==NULL)
-                            return NULL;
+                            return -1;
                         snprintf(part_one, strlen(sock_buf) - strlen(ret) + 1, "%s", sock_buf);
                         char *ret1 = strchr(ret + 1, '\n');
                         part_two = my_malloc(strlen(ret + 1) - strlen(ret1) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(part_two==NULL)
-                            return NULL;
+                            return -1;
                         snprintf(part_two, strlen(ret + 1) - strlen(ret1) + 1, "%s", ret + 1);
                         char *ret2 = strchr(ret1 + 1, '\n');
                         part_three = my_malloc(strlen(ret1 + 1) - strlen(ret2) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(part_three==NULL)
-                            return NULL;
+                            return -1;
                         snprintf(part_three,strlen(ret1 + 1) - strlen(ret2) + 1, "%s", ret1 + 1);
                         part_four = my_malloc(strlen(ret2 + 1) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(part_four==NULL)
-                            return NULL;
+                            return -1;
                         snprintf(part_four,strlen(ret2 + 1) + 1, "%s", ret2 + 1);
 
                        //printf("1:%s\n", part_one);
@@ -535,22 +535,22 @@ int socket_check(char *dir, char *name, int index)
                                 dir1 = my_malloc(strlen(part_two) + strlen(part_four) + 1);
                                 //2014.10.20 by sherry malloc申请内存是否成功
                                 if(dir1==NULL)
-                                    return NULL;
+                                    return -1;
                                 dir2 = my_malloc(strlen(part_three) + strlen(part_four) + 1);
                                 //2014.10.20 by sherry malloc申请内存是否成功
                                 if(dir2==NULL)
-                                    return NULL;
+                                    return -1;
                         }
                         else if(!strncmp(part_one, "rename", 6))
                         {
                                 dir1 = my_malloc(strlen(part_two) + strlen(part_three) + 1);
                                 //2014.10.20 by sherry malloc申请内存是否成功
                                 if(dir1==NULL)
-                                    return NULL;
+                                    return -1;
                                 dir2 = my_malloc(strlen(part_two) + strlen(part_four) + 1);
                                 //2014.10.20 by sherry malloc申请内存是否成功
                                 if(dir2==NULL)
-                                    return NULL;
+                                    return -1;
                         }
                         p = strstr(dir1, fullpath);
                         q = strstr(dir2, fullpath);
@@ -575,11 +575,11 @@ int socket_check(char *dir, char *name, int index)
                         dir1 = my_malloc(strlen(dir) + 3);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(dir1==NULL)
-                            return NULL;
+                            return -1;
                         dir2 = my_malloc(strlen(dir) + 3);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(dir2==NULL)
-                            return NULL;
+                            return -1;
                         sprintf(dir1, "\n%s\n", dir);
                         sprintf(dir2, "\n%s/", dir);
 
@@ -626,11 +626,11 @@ int moveFolder(char *old_dir, char *new_dir, int index)
                                 char *old_fullname = my_malloc(strlen(old_dir) + strlen(ent->d_name) + 2);
                                 //2014.10.20 by sherry malloc申请内存是否成功
                                 if(old_fullname==NULL)
-                                    return NULL;
+                                    return -1;
                                 char *new_fullname = my_malloc(strlen(new_dir) + strlen(ent->d_name) + 2);
                                 //2014.10.20 by sherry malloc申请内存是否成功
                                 if(new_fullname==NULL)
-                                    return NULL;
+                                    return -1;
 
                                 sprintf(new_fullname, "%s/%s", new_dir, ent->d_name);
                                 sprintf(old_fullname, "%s/%s", old_dir, ent->d_name);
@@ -726,14 +726,14 @@ int cmd_parser(char *cmd, int index)
         temp = my_malloc((size_t)(strlen(ch) + 1));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(temp==NULL)
-            return NULL;
+            return -1;
         strcpy(temp, ch);
         p = strchr(temp, '\n');
 
         path = my_malloc((size_t)(strlen(temp) - strlen(p) + 1));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(path==NULL)
-            return NULL;
+            return -1;
 
         if(p != NULL)
                 snprintf(path, strlen(temp) - strlen(p) + 1, "%s", temp);
@@ -767,7 +767,7 @@ int cmd_parser(char *cmd, int index)
                 oldpath = my_malloc((size_t)(strlen(p) - strlen(p1) + 1));
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(oldpath==NULL)
-                    return NULL;
+                    return -1;
 
                 if(p1 != NULL)
                         snprintf(oldpath, strlen(p) - strlen(p1) + 1, "%s", p);
@@ -792,7 +792,7 @@ int cmd_parser(char *cmd, int index)
                 fullname = my_malloc(strlen(path) + strlen(filename) + 2);
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(fullname==NULL)
-                    return NULL;
+                    return -1;
                 if(filename[0] == '.' || (strstr(path,"/.")) != NULL)
                 {
                         free(temp);
@@ -809,7 +809,7 @@ int cmd_parser(char *cmd, int index)
                 cmp_name = my_malloc((size_t)(strlen(path) + strlen(newname) + 2));
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(cmp_name==NULL)
-                    return NULL;
+                    return -1;
                 sprintf(cmp_name, "%s/%s", path, newname);
         }
         else
@@ -817,7 +817,7 @@ int cmd_parser(char *cmd, int index)
                 cmp_name = my_malloc((size_t)(strlen(path) + strlen(filename) + 2));
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(cmp_name==NULL)
-                    return NULL;
+                    return -1;
                 sprintf(cmp_name, "%s/%s", path, filename);
         }
 
@@ -1165,11 +1165,11 @@ int cmd_parser(char *cmd, int index)
                         mv_newpath = my_malloc((size_t)(strlen(path) + strlen(oldname) + 2));
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(mv_newpath==NULL)
-                            return NULL;
+                            return -1;
                         mv_oldpath = my_malloc((size_t)(strlen(oldpath) + strlen(oldname) + 2));
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(mv_oldpath==NULL)
-                            return NULL;
+                            return -1;
                         sprintf(mv_newpath, "%s/%s", path, oldname);
                         sprintf(mv_oldpath, "%s/%s", oldpath, oldname);
                         free(oldpath);
@@ -1179,11 +1179,11 @@ int cmd_parser(char *cmd, int index)
                         mv_newpath = my_malloc((size_t)(strlen(path)+strlen(newname)+2));
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(mv_newpath==NULL)
-                            return NULL;
+                            return -1;
                         mv_oldpath = my_malloc((size_t)(strlen(path)+strlen(oldname)+2));
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(mv_oldpath==NULL)
-                            return NULL;
+                            return -1;
                         sprintf(mv_newpath, "%s/%s", path, newname);
                         sprintf(mv_oldpath, "%s/%s", path, oldname);
                 }
@@ -1327,7 +1327,7 @@ int add_all_download_only_socket_list(char *cmd, const char *dir, int index)
                 fullname = my_malloc((size_t)(strlen(dir)+strlen(ent->d_name)+2));
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(fullname==NULL)
-                    return NULL;
+                    return -1;
 
                 sprintf(fullname, "%s/%s", dir, ent->d_name);
 
@@ -1398,7 +1398,7 @@ int download_only_add_socket_item(char *cmd, int index)
         temp = my_malloc((size_t)(strlen(ch) + 1));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(temp==NULL)
-            return NULL;
+            return -1;
 
         strcpy(temp, ch);
         p = strchr(temp, '\n');
@@ -1406,7 +1406,7 @@ int download_only_add_socket_item(char *cmd, int index)
         path = my_malloc((size_t)(strlen(temp) - strlen(p) + 1));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(path==NULL)
-            return NULL;
+            return -1;
 
         //DEBUG("path = %s\n",path);
 
@@ -1436,7 +1436,7 @@ int download_only_add_socket_item(char *cmd, int index)
                 oldpath = my_malloc((size_t)(strlen(p) - strlen(p1) + 1));
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(oldpath==NULL)
-                    return NULL;
+                    return -1;
 
                 if(p1 != NULL)
                         snprintf(oldpath,strlen(p) - strlen(p1) + 1, "%s", p);
@@ -1461,11 +1461,11 @@ int download_only_add_socket_item(char *cmd, int index)
                 fullname = my_malloc((size_t)(strlen(path) + strlen(newname) + 2));
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(fullname==NULL)
-                    return NULL;
+                    return -1;
                 old_fullname = my_malloc((size_t)(strlen(path) + strlen(oldname) + 2));
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(old_fullname==NULL)
-                    return NULL;
+                    return -1;
                 sprintf(fullname,"%s/%s",path,newname);
                 sprintf(old_fullname,"%s/%s",path,oldname);
                 free(path);
@@ -1475,11 +1475,11 @@ int download_only_add_socket_item(char *cmd, int index)
                 fullname = my_malloc((size_t)(strlen(path) + strlen(oldname) + 2));
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(fullname==NULL)
-                    return NULL;
+                    return -1;
                 old_fullname = my_malloc((size_t)(strlen(oldpath) + strlen(oldname) + 2));
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(old_fullname==NULL)
-                    return NULL;
+                    return -1;
                 sprintf(fullname, "%s/%s", path, oldname);
                 sprintf(old_fullname, "%s/%s", oldpath, oldname);
                 free(oldpath);
@@ -1490,7 +1490,7 @@ int download_only_add_socket_item(char *cmd, int index)
                 fullname = my_malloc((size_t)(strlen(path) + strlen(filename) + 2));
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(fullname==NULL)
-                    return NULL;
+                    return -1;
                 sprintf(fullname, "%s/%s", path, filename);
                 free(path);
         }
@@ -1646,12 +1646,12 @@ int add_socket_item_for_rename(char *buf, int i)
         newNode = (Node *)malloc(sizeof(Node));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(newNode==NULL)
-            return NULL;
+            return -1;
         memset(newNode, 0, sizeof(Node));
         newNode->cmdName = my_malloc(strlen(buf) + 1);
         //2014.10.20 by sherry malloc申请内存是否成功
         if(newNode->cmdName==NULL)
-            return NULL;
+            return -1;
         sprintf(newNode->cmdName, "%s", buf);
 
         //newNode->re_cmd = NULL;
@@ -1706,7 +1706,7 @@ void set_re_cmd(char *oldpath, char *oldpath_1, char *oldpath_2, char *newpath, 
                         socket_new = str_replace(start, len, socket_old, newpath_1);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(socket_new==NULL)
-                            return NULL;
+                            return;
                         free(pTemp->cmdName);
                         pTemp->cmdName = my_malloc(strlen(socket_new) + 1);
                         sprintf(pTemp->cmdName, "%s", socket_new);
@@ -1718,12 +1718,12 @@ void set_re_cmd(char *oldpath, char *oldpath_1, char *oldpath_2, char *newpath, 
                         socket_new = str_replace(start, len, socket_old, newpath_2);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(socket_new==NULL)
-                            return NULL;
+                            return;
                         free(pTemp->cmdName);
                         pTemp->cmdName = my_malloc(strlen(socket_new) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(pTemp->cmdName==NULL)
-                            return NULL;
+                            return;
                         sprintf(pTemp->cmdName, "%s", socket_new);
                 }
 
@@ -1743,7 +1743,7 @@ void set_re_cmd(char *oldpath, char *oldpath_1, char *oldpath_2, char *newpath, 
                         item->path = my_malloc(strlen(socket_new) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(item->path==NULL)
-                            return NULL;
+                            return;
                         sprintf(item->path, "%s", socket_new);
                 }
                 item = item->next;
@@ -1777,13 +1777,13 @@ int handle_rename_socket(char *buf, int i)
         temp = my_malloc((size_t)(strlen(ch) + 1));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(temp==NULL)
-            return NULL;
+            return -1;
         strcpy(temp, ch);
         p = strchr(temp, '\n');
         path = my_malloc((size_t)(strlen(temp) - strlen(p) + 1));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(p == NULL)
-                return NULL;
+                return -1;
         snprintf(path, strlen(temp) - strlen(p) + 1, "%s", temp);
         p++;
         char *p1 = NULL;
@@ -1796,27 +1796,27 @@ int handle_rename_socket(char *buf, int i)
         oldpath = my_malloc((size_t)(strlen(path) + strlen(oldname) + 2));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(oldpath==NULL)
-            return NULL;
+            return -1;
         oldpath_1 = my_malloc((size_t)(strlen(path) + strlen(oldname) + 3));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(oldpath_1==NULL)
-            return NULL;
+            return -1;
         oldpath_2 = my_malloc((size_t)(strlen(path) + strlen(oldname) + 3));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(oldpath_2==NULL)
-            return NULL;
+            return -1;
         newpath = my_malloc((size_t)(strlen(path) + strlen(newname) + 2));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(newpath==NULL)
-            return NULL;
+            return -1;
         newpath_1 = my_malloc((size_t)(strlen(path) + strlen(newname) + 3));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(newpath_1==NULL)
-            return NULL;
+            return -1;
         newpath_2 = my_malloc((size_t)(strlen(path) + strlen(newname) + 3));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(newpath_2==NULL)
-            return NULL;
+            return -1;
         sprintf(oldpath, "%s/%s", path, oldname);
         sprintf(oldpath_1, "%s/%s\n", path, oldname);
         sprintf(oldpath_2, "%s/%s/", path, oldname);
@@ -2510,7 +2510,7 @@ int sync_server_to_local_perform(Browse *perform_br,Local *perform_lo,int index)
                                 //2014.10.17 by sherry  ，判断malloc是否成功
                                 if(localpath==NULL)
                                 {
-                                    return NULL;
+                                    return -1;
                                 }
                                 action_item *item;
                                 item = get_action_item("download", filelongurl, g_pSyncList[index]->unfinished_list, index);
@@ -2600,7 +2600,7 @@ int sync_server_to_local_perform(Browse *perform_br,Local *perform_lo,int index)
                         char *localpath = my_malloc(strlen(smb_config.multrule[index]->client_root_path) + strlen(folderlongurl) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(localpath==NULL)
-                            return NULL;
+                            return -1;
                         char *p = folderlongurl;
                         p = p + strlen(smb_config.multrule[index]->server_root_path);
                         sprintf(localpath,"%s%s",smb_config.multrule[index]->client_root_path, p);
@@ -2697,7 +2697,7 @@ int sync_server_to_local_perform(Browse *perform_br,Local *perform_lo,int index)
                                 //2014.10.17 by sherry  ，判断malloc是否成功
                                 if(localpath==NULL)
                                 {
-                                    return NULL;
+                                    return -1;
                                 }
                                 DEBUG("%s\n", localpath);
 
@@ -2903,7 +2903,7 @@ int do_unfinished(int index)
                         //2014.10.17 by sherry  ，判断malloc是否成功
                         if(localpath==NULL)
                         {
-                            return NULL;
+                            return -1;
                         }
                         DEBUG("localpath = %s\n", localpath);
                         if(is_local_space_enough(filetmp, index))
@@ -2941,7 +2941,7 @@ int do_unfinished(int index)
                         path_temp = my_malloc(strlen(p->path) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(path_temp==NULL)
-                            return NULL;
+                            return -1;
                         sprintf(path_temp,"%s", p->path);
                         ret = SMB_upload(p->path, index);
                         DEBUG("********* upload ret = %d\n",ret);
@@ -3187,12 +3187,12 @@ int getCloudInfo(char *URL, int index)
                         FolderTmp = (CloudFile *)malloc(sizeof(struct node));
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(FolderTmp==NULL)
-                            return NULL;
+                            return -1;
                         memset(FolderTmp, 0, sizeof(FolderTmp));
                         FolderTmp->filename = my_malloc(strlen(dirptr->name) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
                         if(FolderTmp->filename==NULL)
-                            return NULL;
+                            return -1;
                         sprintf(FolderTmp->filename, "%s", dirptr->name);
 
                         char *shorturl = reduce_memory(URL, index, 0);
@@ -3207,7 +3207,7 @@ int getCloudInfo(char *URL, int index)
                             FolderTmp->href = my_malloc(strlen(FolderTmp->filename) + 2);
                             //2014.10.20 by sherry malloc申请内存是否成功
                             if(FolderTmp->href==NULL)
-                                return NULL;
+                                return -1;
                             sprintf(FolderTmp->href, "/%s", FolderTmp->filename);
                         }else
                         {
@@ -3215,7 +3215,7 @@ int getCloudInfo(char *URL, int index)
                             FolderTmp->href = my_malloc(strlen(shorturl) + strlen(FolderTmp->filename) + 2);
                             //2014.10.20 by sherry malloc申请内存是否成功
                             if(FolderTmp->href==NULL)
-                                return NULL;
+                                return -1;
                             sprintf(FolderTmp->href, "%s/%s", shorturl, FolderTmp->filename);
                             free(shorturl);
                         }
@@ -3330,7 +3330,7 @@ int browse_to_tree(char *parenthref, Server_TreeNode *node, int index)
         tempnode->parenthref = my_malloc((size_t)(strlen(parenthref) + 1));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(tempnode->parenthref==NULL)
-            return NULL;
+            return -1;
 
         br = browseFolder(parenthref, index);
         sprintf(tempnode->parenthref, "%s", parenthref);
@@ -3550,7 +3550,7 @@ int ChangeFile_modtime(char *localfilepath, time_t modtime, int index)
         ub = (struct utimbuf *)malloc(sizeof(struct utimbuf));
         //2014.10.20 by sherry malloc申请内存是否成功
         if(ub==NULL)
-            return NULL;
+            return -1;
 
         ub->actime = modtime;
         ub->modtime = modtime;
@@ -3631,7 +3631,7 @@ int initMyLocalFolder(Server_TreeNode *servertreenode,int index)
                         //2014.10.17 by sherry  ，判断malloc是否成功
                         if(createpath==NULL)
                         {
-                            return NULL;
+                            return -1;
                         }
                         if(NULL == opendir(createpath)){
                                 if(wait_handle_socket(index))
@@ -3660,7 +3660,7 @@ int initMyLocalFolder(Server_TreeNode *servertreenode,int index)
                                 //2014.10.17 by sherry  ，判断malloc是否成功
                                 if(createpath==NULL)
                                 {
-                                    return NULL;
+                                    return -1;
                                 }
                                 if(wait_handle_socket(index))
                                 {
@@ -3885,8 +3885,8 @@ int is_server_exist(char *localpath, int index)
 
         char *temp = my_malloc(strlen(localpath) - strlen(p) + 1);
         //2014.10.20 by sherry malloc申请内存是否成功
-        if(temp==NULL)
-            return NULL;
+//        if(temp==NULL)
+//            return NULL;
         snprintf(temp, strlen(localpath) - strlen(p) + 1, "%s", localpath);
         //printf("temp = %s\n", temp);
 
@@ -4354,10 +4354,10 @@ int sync_server_to_local_init(Browse *perform_br, Local *perform_lo, int index)
                                 {
                                         char *localpath = serverpath_to_localpath(filelongurl, index);
                                         //2014.10.17 by sherry  ，判断malloc是否成功
-                                        if(localpath==NULL)
-                                        {
-                                            return NULL;
-                                        }
+//                                        if(localpath==NULL)
+//                                        {
+//                                            return NULL;
+//                                        }
                                         add_action_item("createfile", localpath, g_pSyncList[index]->server_action_list);
 
                                         ret = SMB_download(filelongurl, index);
@@ -4501,10 +4501,10 @@ int sync_server_to_local_init(Browse *perform_br, Local *perform_lo, int index)
                                         {
                                                 char *localpath = serverpath_to_localpath(filelongurl, index);
                                                 //2014.10.17 by sherry  ，判断malloc是否成功
-                                                if(localpath==NULL)
-                                                {
-                                                    return NULL;
-                                                }
+//                                                if(localpath==NULL)
+//                                                {
+//                                                    return NULL;
+//                                                }
 
                                                 if(wait_handle_socket(index))
                                                 {
@@ -4590,10 +4590,10 @@ int sync_server_to_local_init(Browse *perform_br, Local *perform_lo, int index)
 
                                 char *localpath = serverpath_to_localpath(folderlongurl, index);
                                 //2014.10.17 by sherry  ，判断malloc是否成功
-                                if(localpath==NULL)
-                                {
-                                    return NULL;
-                                }
+//                                if(localpath==NULL)
+//                                {
+//                                    return NULL;
+//                                }
                                 int exist = is_server_exist(localpath, index);
                                 if(exist)
                                 {
@@ -4695,8 +4695,8 @@ int sync_server_to_local_init(Browse *perform_br, Local *perform_lo, int index)
 
                                         char *localpath = serverpath_to_localpath(folderlongurl, index);
                                         //2014.10.17 by sherry  ，判断malloc是否成功
-                                        if(localpath==NULL)
-                                            return NULL;
+//                                        if(localpath==NULL)
+//                                            return NULL;
                                         int exist = is_server_exist(localpath, index);
                                         if(exist)
                                         {
@@ -4737,17 +4737,17 @@ Local *Find_Floor_Dir(const char *path)
         foldernum = 0;
         local = (Local *)malloc(sizeof(Local));
         //2014.10.20 by sherry malloc申请内存是否成功
-        if(local==NULL)
-            return NULL;
+//        if(local==NULL)
+//            return NULL;
         memset(local,0,sizeof(Local));
         localfloorfile = (LocalFile *)malloc(sizeof(LocalFile));
         //2014.10.20 by sherry malloc申请内存是否成功
-        if(localfloorfile==NULL)
-            return NULL;
+//        if(localfloorfile==NULL)
+//            return NULL;
         localfloorfolder = (LocalFolder *)malloc(sizeof(LocalFolder));
         //2014.10.20 by sherry malloc申请内存是否成功
-        if(localfloorfolder==NULL)
-            return NULL;
+//        if(localfloorfolder==NULL)
+//            return NULL;
         memset(localfloorfolder,0,sizeof(localfloorfolder));
         memset(localfloorfile,0,sizeof(localfloorfile));
 
@@ -4784,8 +4784,8 @@ Local *Find_Floor_Dir(const char *path)
                 len = strlen(path) + strlen(ent->d_name) + 2;
                 fullname = my_malloc(len);
                 //2014.10.20 by sherry malloc申请内存是否成功
-                if(fullname==NULL)
-                    return NULL;
+//                if(fullname==NULL)
+//                    return NULL;
                 sprintf(fullname, "%s/%s", path, ent->d_name);
 
                 //printf("folder fullname = %s\n",fullname);
@@ -4795,17 +4795,17 @@ Local *Find_Floor_Dir(const char *path)
                 {
                         localfloorfoldertmp = (LocalFolder *)malloc(sizeof(LocalFolder));
                         //2014.10.20 by sherry malloc申请内存是否成功
-                        if(localfloorfoldertmp==NULL)
-                            return NULL;
+//                        if(localfloorfoldertmp==NULL)
+//                            return NULL;
                         memset(localfloorfoldertmp, 0, sizeof(localfloorfoldertmp));
                         localfloorfoldertmp->path = my_malloc(strlen(fullname) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
-                        if(localfloorfoldertmp->path==NULL)
-                            return NULL;
+//                        if(localfloorfoldertmp->path==NULL)
+//                            return NULL;
                         localfloorfoldertmp->name = my_malloc(strlen(ent->d_name) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
-                        if(localfloorfoldertmp->name==NULL)
-                            return NULL;
+//                        if(localfloorfoldertmp->name==NULL)
+//                            return NULL;
                         sprintf(localfloorfoldertmp->name, "%s", ent->d_name);
                         sprintf(localfloorfoldertmp->path, "%s", fullname);
 
@@ -4827,17 +4827,17 @@ Local *Find_Floor_Dir(const char *path)
 
                         localfloorfiletmp = (LocalFile *)malloc(sizeof(LocalFile));
                         //2014.10.20 by sherry malloc申请内存是否成功
-                        if(localfloorfiletmp==NULL)
-                            return NULL;
+//                        if(localfloorfiletmp==NULL)
+//                            return NULL;
                         memset(localfloorfiletmp, 0, sizeof(localfloorfiletmp));
                         localfloorfiletmp->path = my_malloc(strlen(fullname) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
-                        if(localfloorfiletmp->path==NULL)
-                            return NULL;
+//                        if(localfloorfiletmp->path==NULL)
+//                            return NULL;
                         localfloorfiletmp->name = my_malloc(strlen(ent->d_name) + 1);
                         //2014.10.20 by sherry malloc申请内存是否成功
-                        if(localfloorfiletmp->name==NULL)
-                            return NULL;
+//                        if(localfloorfiletmp->name==NULL)
+//                            return NULL;
 
                         unsigned long msec = buf.st_mtime;
                         localfloorfiletmp->modtime = msec;
@@ -4881,8 +4881,8 @@ int sync_server_to_local(Server_TreeNode *treenode, int (*sync_fuc)(Browse*, Loc
         DEBUG("treenode->parenthref=%s\n",treenode->parenthref);
         char *localpath = serverpath_to_localpath(treenode->parenthref, index);
         //2014.10.17 by sherry  ，判断malloc是否成功
-        if(localpath==NULL)
-            return NULL;
+//        if(localpath==NULL)
+//            return NULL;
         DEBUG("localpath=%s\n",localpath);
         DEBUG("Find_Floor_Dir\n");
         localnode = Find_Floor_Dir(localpath);
@@ -4955,8 +4955,8 @@ void handle_quit_upload()
                                 }
                                 buf = my_malloc((size_t)(filesize + 1));
                                 //2014.10.20 by sherry malloc申请内存是否成功
-                                if(buf==NULL)
-                                    return NULL;
+//                                if(buf==NULL)
+//                                    return NULL;
                                 fscanf(fp, "%s", buf);
                                 fclose(fp);
                                 
@@ -5139,8 +5139,8 @@ void sig_handler (int signum)
                                         char *filename;
                                         filename = my_malloc(strlen(smb_config.multrule[0]->mount_path) + 24);
                                         //2014.10.20 by sherry malloc申请内存是否成功
-                                        if(filename==NULL)
-                                            return NULL;
+//                                        if(filename==NULL)
+//                                            return NULL;
                                         sprintf(filename,"%s/.sambaclient_tokenfile", smb_config.multrule[0]->mount_path);
                                         remove(filename);
                                         free(filename);

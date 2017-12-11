@@ -125,7 +125,7 @@ function initial(){
 		show_wl_maclist_x(); 
 
 	showWLMACList();
-	if(band5g_support == -1)
+	if(!wl_info.band5g_support)
 		$("wl_unit_field").style.display = "none";
 }
 function show_wl_maclist_x(){

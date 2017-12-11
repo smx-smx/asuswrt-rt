@@ -179,6 +179,9 @@ struct tcapi_tuple wlan_configuration_router_defaults[] = {
 	{"WLan_WDS", "Wds0Key", ""},
 	{"WLan_WDS", "WdsDefaultKeyID", "1"},
 	*/
+	{"WLan_Entry", "bw_enabled", "0"}, /* Bandwidth Limiter */
+	{"WLan_Entry", "bw_dl", ""},       /* Bandwidth Limiter */
+	{"WLan_Entry", "bw_ul", ""},       /* Bandwidth Limiter */
 	{"WLan_Entry", "RADIUS_Server", ""},
 	{"WLan_Entry", "RADIUS_Port", "1812"},
 //	{"WLan_Entry", "RADIUS_Key", "ralink"},	//parameter name in the Web GUI.
@@ -589,7 +592,7 @@ struct tcapi_tuple wlan_configuration_router_defaults[] = {
 	{"WLan_Common", "RTSThreshold", "2347"},
 	{"WLan_Common", "FragThreshold", "2346"},
 	{"WLan_Common", "TxBurst", "1"},
-#if defined(DSL_N55U_D1) || defined (DSL_N10_C1)  || defined (DSL_N10P_C1) || defined (DSL_N12E_C1) || defined (DSL_N10_D1) || defined (DSL_N14U) || defined (DSL_N14U_B1)
+#if defined(MT7612E) || defined(DSL_N55U_D1) || defined (DSL_N10_C1)  || defined (DSL_N10P_C1) || defined (DSL_N12E_C1) || defined (DSL_N10_D1) || defined (DSL_N14U) || defined (DSL_N14U_B1)
 	{"WLan_Common", "ED_MODE", "2"},
 #endif
 	{"WLan_Common", "EDCCA_AP_STA_TH", "255"},
@@ -657,6 +660,9 @@ struct tcapi_tuple wlan_configuration_router_defaults[] = {
 	{"WLan_WDS", "WdsList", ""},
 	{"WLan_WDS", "WdsKey", ""},
 	*/
+	{"WLan_Entry", "bw_enabled", "0"}, /* Bandwidth Limiter */
+	{"WLan_Entry", "bw_dl", ""},       /* Bandwidth Limiter */
+	{"WLan_Entry", "bw_ul", ""},       /* Bandwidth Limiter */
 	{"WLan_Entry", "RADIUS_Server", ""},
 	{"WLan_Entry", "RADIUS_Port", "1812"},
 	{"WLan_Entry", "RADIUS_Key1", ""},	//parameter name in the Web GUI.
@@ -761,6 +767,9 @@ struct tcapi_tuple wlan_MBSSID_system_defaults[] = {
 	{"WLan_Entry", "bss_enabled", "0"},
 	{"WLan_Entry", "wl_maclist", ""},
 	{"WLan_Entry", "phrase_x", ""},
+	{"WLan_Entry", "bw_enabled", "0"},
+	{"WLan_Entry", "bw_dl", ""},
+	{"WLan_Entry", "bw_ul", ""},
 	{NULL, NULL, NULL }
 };
 /*Multiple BSSID*/

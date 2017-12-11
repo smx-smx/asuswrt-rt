@@ -244,7 +244,7 @@ static int checkusername(unsigned char *username, unsigned int userlen) {
 				svr_ses.addrstring);
 		send_msg_userauth_failure(0, 1);
 #ifdef RTCONFIG_PROTECTION_SERVER
-		struct state_report ssh;
+		STATE_REPORT_T ssh;
 		char info[64];
 		char *addrport;
 		char *addr;
@@ -257,7 +257,7 @@ static int checkusername(unsigned char *username, unsigned int userlen) {
 		strcpy(ssh.ip_addr, token);
 		ssh.loginType = PROTECTION_SERVICE_SSH;
 		strcpy(ssh.note, "From dropbear , LOGIN FAIL");
-		send_socket(ssh);
+		send_protect_event(ssh);
 #endif
 		return DROPBEAR_FAILURE;
 	}

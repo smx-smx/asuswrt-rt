@@ -66,6 +66,22 @@ var overlib_str = new Array();	//Viz add 2011.06 for record longer portrange val
 var dsl_DataRateDown = parseInt("<% tcWebApi_get("Info_Adsl","DataRateDown","s") %>".replace("kbps",""));
 var dsl_DataRateUp = parseInt("<% tcWebApi_get("Info_Adsl","DataRateUp","s") %>".replace("kbps",""));
 
+var GN_with_BandwidthLimeter = false;
+var gn_array_2g_length = gn_array_2g.length;
+for(var i=0;i<gn_array_2g_length;i++){
+	if(gn_array_2g[i][18] == "1"){	//GN with Bandwidth Limiter 
+		GN_with_BandwidthLimeter = true;
+	}	
+}
+if(wl_info.band5g_support){
+	var gn_array_5g_length = gn_array_5g.length;	
+	for(var j=0;j<gn_array_5g_length;j++){
+		if(gn_array_5g[j][18] == "1"){	//GN with Bandwidth Limiter 
+			GN_with_BandwidthLimeter = true;
+		}	
+	}
+}
+
 function initial(){
 	show_menu();
 
@@ -138,8 +154,8 @@ function initial(){
 }
 
 function init_changeScale(){
-	var upload = parseInt("<% tcWebApi_get("QoS_Entry0","qos_obw","s") %>");
-	var download = parseInt("<% tcWebApi_get("QoS_Entry0","qos_ibw","s") %>");	
+	var upload = "<% tcWebApi_get("QoS_Entry0","qos_obw","s") %>";
+	var download = "<% tcWebApi_get("QoS_Entry0","qos_ibw","s") %>";
 	if((WebCurSet_dev_pvc == "0" || WebCurSet_dev_pvc == "8") && ((!upload || upload == "0") && (!download || download == "0"))){
 		document.form.obw.value = dsl_DataRateUp/1024;
 		document.form.ibw.value = dsl_DataRateDown/1024;
@@ -147,12 +163,12 @@ function init_changeScale(){
 	else{
 		if(!upload)	upload = 0;
 		
-		document.form.obw.value = parseInt(upload/1024);
+		document.form.obw.value = upload/1024;
 		
 		if(!download) download = 0;
 		
-		document.form.ibw.value = parseInt(download/1024);
-	}	
+		document.form.ibw.value = download/1024;
+	}
 }
 
 function changeScale(_obj_String){
@@ -276,8 +292,11 @@ function change_qos_type(value){
 		}
 		//show_settings("NonAdaptive");
 	}
-
 	document.form.qos_type.value = value;
+	
+	if(value != 2 && GN_with_BandwidthLimeter){
+		alert("Guest Network > Bandwidth Limiter will be Disabled.");		/* Untranslated */
+	}
 }
 </script>
 </head>
@@ -356,7 +375,7 @@ function change_qos_type(value){
 														<ul>
 															<!--li><%tcWebApi_get("String_Entry","EzQoS_desc_Adaptive","s")%></li-->
 															<li><%tcWebApi_get("String_Entry","EzQoS_desc_Traditional","s")%></li>
-															<li><span style="font-size:14px;font-weight:bolder">Bandwidth Limiter</span> helps you to control download and upload max speed of your cleint devices.</li><!--untranslated string-->
+															<li><span style="font-size:14px;font-weight:bolder">Bandwidth Limiter</span> helps you to control download and upload max speed of your client devices.</li><!--untranslated string-->
 														</ul>
 														To enable QoS function, click the QoS slide switch and fill in the upload and download.<!--unstranlated string-->
 														</div>
@@ -405,6 +424,10 @@ function change_qos_type(value){
 															document.form.obw.parentNode.parentNode.style.display = "none";
 															document.form.ibw.parentNode.parentNode.style.display = "none";
 															document.getElementById('qos_type_tr').style.display = "none";
+															
+															if(GN_with_BandwidthLimeter){
+																alert("Guest Network > Bandwidth Limiter will be Disabled.");		/* Untranslated */
+															}
 														 },
 														 {
 															switch_on_container_path: '/switcherplugin/iphone_switch_container_off.png'

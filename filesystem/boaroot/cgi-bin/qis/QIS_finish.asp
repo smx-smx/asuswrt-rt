@@ -33,13 +33,27 @@ var dsltmp_dsl_early_restart = "<%tcWebApi_get("GUITemp_Entry0","dsltmp_dsl_earl
 var with_wan_setting = "<% tcWebApi_get("GUITemp_Entry0","with_wan_setting","s") %>";
 var model_name = "<%tcWebApi_get("String_Entry","Web_Title2","s")%>";
 
+var isWLclient = function () {  //detect login client is by wireless or wired
+	<% login_state_hook(); %>
+	var wireless = [<% wl_auth_list(); %>];	// [[MAC, associated, authorized], ...]
+	if(wireless.length > 0) {
+		for(var i = 0; i < wireless.length; i++) {
+			if(wireless[i][0].toUpperCase() == login_mac_str().toUpperCase()) {
+				return true;  //wireless
+			}
+		}
+	}
+	return false; //wired
+};
+
 var iptv_atm_pvc_str_title = "";
 var iptv_atm_pvc_str = "";
 var iptv_ptm_pvc_str_title = "";
 var iptv_ptm_pvc_str = "";
 var dsltmp_cfg_iptv_pvclist = decodeURIComponent('<%tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist", "s")%>');
 var iptv_num_pvc_val = "<% tcWebApi_get("GUITemp_Entry0","dsltmp_cfg_iptv_num_pvc","s") %>";
-
+var dsltmp_cfg_ispservice = "<% tcWebApi_get("GUITemp_Entry0","dsltmp_cfg_ispservice","s") %>";
+var iptv_with_bridge = false;
 
 //udpate iptv information
 if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
@@ -61,38 +75,40 @@ if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
 			iptv_ptm_pvc_str += " + ";
 		}
 		dsltmp_cfg_iptv_pvclist_col = dsltmp_cfg_iptv_pvclist_row[i].split('>');
-		for(j=0; j<dsltmp_cfg_iptv_pvclist_col.length; j++){
-			switch(j) {
-				case 0:	//vpi
-					iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[j] + "/";
-					break;
-				case 1:	//vci
-					iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[j] + ",";
-					break;
-				case 2:	//proto
-					if(dsltmp_cfg_iptv_pvclist_col[j] == 3) {
-						iptv_atm_pvc_str += "Bridged, ";
-						iptv_ptm_pvc_str += "Bridged, ";
-					}
-					else {
-						iptv_atm_pvc_str += ", ";
-						iptv_ptm_pvc_str += ", ";
-					}
-					break;
-				case 3:	//encap
-					if(dsltmp_cfg_iptv_pvclist_col[j] == 1)
-						iptv_atm_pvc_str += "VC-Mux";
-					else
-						iptv_atm_pvc_str += "LLC";
-					break;
-				case 4:	//vlan id
-					if(dsltmp_cfg_iptv_pvclist_col[j] != "") {
-						iptv_atm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
-						iptv_ptm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
-					}
-					break;
-			}
+
+		//Protocol
+		if(dsltmp_cfg_iptv_pvclist_col[2] == 2) {
+			iptv_atm_pvc_str += "MER, ";
+			iptv_ptm_pvc_str += "Automatic IP ";
 		}
+		else if(dsltmp_cfg_iptv_pvclist_col[2] == 1) {
+			iptv_atm_pvc_str += "PPPoA, ";
+			iptv_ptm_pvc_str += " ";
+		}
+		else if(dsltmp_cfg_iptv_pvclist_col[2] == 0) {
+			iptv_atm_pvc_str += "PPPoE, ";
+			iptv_ptm_pvc_str += "PPPoE ";
+		}
+		else {  //3
+			iptv_atm_pvc_str += "Bridge, ";
+			iptv_ptm_pvc_str += "Bridge ";
+			iptv_with_bridge = true;
+		}
+		//vpi
+		iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[0] + "/";
+		//vci
+		iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[1] + ", ";
+		//encap
+		if(dsltmp_cfg_iptv_pvclist_col[3] == 1)
+			iptv_atm_pvc_str += "VC-Mux ";
+		else
+			iptv_atm_pvc_str += "LLC ";
+		//VLAN ID
+		if(dsltmp_cfg_iptv_pvclist_col[4] != "") {
+			iptv_atm_pvc_str += "VLAN ID: " + dsltmp_cfg_iptv_pvclist_col[4];
+			iptv_ptm_pvc_str += "VLAN ID: " + dsltmp_cfg_iptv_pvclist_col[4];
+		}
+
 	}
 }
 
@@ -130,8 +146,9 @@ function QKfinish_load_body(){
 		$("#ssid5_block")[0].style.display = "none";
 		$("#key5_block")[0].style.display = "none";
 		$("#security5_block")[0].style.display = "none";
+		document.getElementById("areaHint_top").style.display = "";
 	}
-	else{
+	else{		
 		if(auth_mode == "OPEN"){
 			$("#security5")[0].innerHTML = "Open System";
 			$("#key5_block")[0].style.display = "none";
@@ -147,6 +164,7 @@ function QKfinish_load_body(){
 			$("#key5_block")[0].style.display = "none";
 			$("#security5_block")[0].style.display = "none";
 		}
+		document.getElementById("areaHint_top").style.display = "none";
 	}
 
 	$("#mac_item")[0].innerHTML = "MAC";
@@ -205,6 +223,14 @@ function QKfinish_load_body(){
 			document.getElementById("iptv_service").style.display = "";
 			document.getElementById("iptv_pvc_item").innerHTML = iptv_atm_pvc_str_title;
 			document.getElementById("iptv_pvc").innerHTML = iptv_atm_pvc_str;
+			if(iptv_with_bridge && dsltmp_cfg_ispservice.search("MOD") >= 0){	//MOD IPTV with wan type : Bridge 
+				document.getElementById("iptv_pvc_stb_port").style.display = "";
+				document.getElementById("iptv_pvc_stb_port").innerHTML = "<br>Please connect the MOD(STB) to LAN Port 1";	//Viz
+			}
+			else if(iptv_with_bridge){
+				document.getElementById("iptv_pvc_stb_port").style.display = "";
+				document.getElementById("iptv_pvc_stb_port").innerHTML = "<br>Please connect the IPTV STB to LAN Port 1";	//Viz
+			}
 		}
 	}
 	else //PTM
@@ -223,6 +249,14 @@ function QKfinish_load_body(){
 			document.getElementById("iptv_service").style.display = "";
 			document.getElementById("iptv_pvc_item").innerHTML = iptv_ptm_pvc_str_title;
 			document.getElementById("iptv_pvc").innerHTML = iptv_ptm_pvc_str;
+			if(iptv_with_bridge && dsltmp_cfg_ispservice.search("MOD") >= 0){	//MOD IPTV with wan type : Bridge 
+				document.getElementById("iptv_pvc_stb_port").style.display = "";
+				document.getElementById("iptv_pvc_stb_port").innerHTML = "<br>Please connect the MOD(STB) to LAN Port 1";	//Viz
+			}
+			else if(iptv_with_bridge){
+				document.getElementById("iptv_pvc_stb_port").style.display = "";
+				document.getElementById("iptv_pvc_stb_port").innerHTML = "<br>Please connect the IPTV STB to LAN Port 1";	//Viz
+			}
 		}
 	}
 
@@ -250,11 +284,219 @@ function goHome(){
 	{
 		wait_time += 30;
 	}
-
-	parent.showLoading(wait_time);
-	setTimeout("redirect();", wait_time*1000);
-	document.redirectForm.submit();
+	
+	document.getElementById('loadingIcon').style.display = '';
+	document.getElementById("nextButton").disabled = true;
+	
+	if(isWLclient()){		
+		setTimeout("showWlHint();", 3000);
+		document.redirectForm.submit();		
+	}
+	else{
+		setTimeout("redirect()", wait_time*1000);
+		document.redirectForm.submit();
+		
+	}		
 }
+
+function showWlHint(updateFlag){
+	
+	//var isSwMode = function(mode){}
+	var wl_nband_title = (function(){
+		String.prototype.toArray = function(){
+			var ret = eval(this.toString());
+			if(Object.prototype.toString.apply(ret) === '[object Array]')
+				return ret;
+			return [];
+		}
+
+		var wl_nband_title = [];
+		var wl_nband_array = '<% wl_nband_info(); %>'.toArray();	//"['2','1','1']"
+		var band2g_count = 0;
+		var band5g_count = 0;
+		for (var j=0; j<wl_nband_array.length; j++) {
+			if(wl_nband_array[j] == '2'){
+				band2g_count++;
+				wl_nband_title.push("2.4 GHz-" + band2g_count);
+			}
+			else if(wl_nband_array[j] == '1'){
+				band5g_count++;
+				wl_nband_title.push("5 GHz-" + band5g_count);
+			}
+		}
+		if(wl_nband_title.indexOf("2.4 GHz-2") == -1) wl_nband_title[wl_nband_title.indexOf("2.4 GHz-1")] = "2.4 GHz";
+		if(wl_nband_title.indexOf("5 GHz-2") == -1) wl_nband_title[wl_nband_title.indexOf("5 GHz-1")] = "5 GHz";
+
+		return wl_nband_title;
+	})();
+
+	var genWlObj = (function(){
+		var wlObj = [];
+		var wlUnit = function(_band, _ssid, _key){
+			this.band = _band;
+			this.ssid = _ssid;
+			this.key = _key;
+		}
+
+		var ssid_nvram = [decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl0_ssid","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl1_ssid","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl2_ssid","s") %>')];
+		var auth_nvram = [decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl0_auth_mode_x","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl1_auth_mode_x","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl2_auth_mode_x","s") %>')];
+		var key_nvram = [decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl0_wpa_psk","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl1_wpa_psk","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl2_wpa_psk","s") %>')];
+		/*var smart_connect_nvram = '<% nvram_get("smart_connect_x"); %>';*/
+
+		var ssid_param = [decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl0_ssid","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl1_ssid","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl2_ssid","s") %>')];
+		var auth_param = [decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl0_auth_mode_x","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl1_auth_mode_x","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl2_auth_mode_x","s") %>')];
+		var key_param = [decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl0_wpa_psk","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl1_wpa_psk","s") %>'), decodeURIComponent('<% tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_wl2_wpa_psk","s") %>')];
+
+		var applyParam = {
+			unit: decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","wl_unit","s") %>'),
+			ssid: decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","wl_ssid","s") %>'),
+			auth: decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","wl_auth_mode_x","s") %>'),
+			key: decodeURIComponent('<% tcWebApi_char_to_ascii("WLan_Entry","wl_wpa_psk","s") %>')
+		}
+
+		// original profile
+		for(var i=0; i<wl_nband_title.length; i++){
+			wlObj.push(new wlUnit(wl_nband_title[i], ssid_nvram[i], (auth_nvram[i] == "OPEN") ? "" : key_nvram[i]));
+		}
+
+		if(applyParam.ssid != ""){
+			// handle wl
+			wlObj[applyParam.unit].ssid = applyParam.ssid;
+			wlObj[applyParam.unit].key = (applyParam.auth == "OPEN") ? "" : applyParam.key;				
+		}
+		else{
+			// handle wlX
+			for(var i=0; i<wlObj.length; i++){
+				if(ssid_param[i] != ""){
+					wlObj[i].ssid = ssid_param[i];
+					wlObj[i].key = (auth_param[i] == "OPEN") ? "" : key_param[i];
+				}
+			}			
+		}
+
+		return wlObj;
+	})();
+
+	(function(wlObj){
+		if(wlObj.length == 0 || typeof wlObj == "undefined") return false;
+
+		var wlHintCss = "";
+		wlHintCss += "<style type='text/css'>"
+		// Desktop style sheet
+		wlHintCss += "#wlHint{";
+		wlHintCss += "font-family: Arial;";
+		wlHintCss += "background:url(/images/New_ui/login_bg.png) #283437 no-repeat;";
+		wlHintCss += "background-size: 1280px 1076px;";
+		wlHintCss += "z-index:9999;";
+		wlHintCss += "position:absolute;";
+		wlHintCss += "left:0;";
+		wlHintCss += "top:0;";
+		wlHintCss += "width:100%;";
+		wlHintCss += "height:100%;";
+		wlHintCss += "background-position: center 0%;";
+		wlHintCss += "margin: 0px;";
+		wlHintCss += "}.prod_madelName{";
+		wlHintCss += "font-size: 26pt;";
+		wlHintCss += "color:#fff;";
+		wlHintCss += "margin-top: 10px;";
+		wlHintCss += "}.nologin{";
+		wlHintCss += "word-break: break-all;";
+		wlHintCss += "margin:10px 0px 0px 78px;";
+		wlHintCss += "background-color:rgba(255,255,255,0.2);";
+		wlHintCss += "padding:20px;";
+		wlHintCss += "line-height:36px;";
+		wlHintCss += "border-radius: 5px;";
+		wlHintCss += "width: 480px;";
+		wlHintCss += "border: 0;";
+		wlHintCss += "color:#fff;";
+		wlHintCss += "color:#000\9;"; /* IE6 IE7 IE8 */
+		wlHintCss += "font-size:16pt;";
+		wlHintCss += "}.div_table{";
+		wlHintCss += "display:table;";
+		wlHintCss += "}.div_tr{";
+		wlHintCss += "display:table-row;";
+		wlHintCss += "}.div_td{";
+		wlHintCss += "display:table-cell;";
+		wlHintCss += "}.title_gap{";
+		wlHintCss += "margin:20px 0px 0px 78px;";
+		wlHintCss += "width: 480px;";
+		wlHintCss += "font-size: 16pt;";
+		wlHintCss += "color:#fff;";
+		wlHintCss += "}.main_field_gap{";
+		wlHintCss += "margin:100px auto 0;";
+		wlHintCss += "}b{color:#00BBFF;";
+		wlHintCss += "}.title_name{";
+		wlHintCss += "font-size: 40pt;";
+		wlHintCss += "color:#93d2d9;";
+		wlHintCss += "}.img_gap{";
+		wlHintCss += "padding-right:30px;";
+		wlHintCss += "vertical-align:middle;";
+		wlHintCss += "}.yellow{";
+		wlHintCss += "color:#FC0;";
+		wlHintCss += "}.login_img{";
+		wlHintCss += "width:43px;";
+		wlHintCss += "height:43px;";
+		wlHintCss += "background-image: url('images/New_ui/icon_titleName.png');";
+		wlHintCss += "background-repeat: no-repeat;}";
+		// Mobile style sheet
+		wlHintCss += "@media screen and (max-width: 1000px){";
+		if(top.location.pathname.search("QIS") != -1){
+			wlHintCss += "#wlHint{background:url('/images/qis/pattern3-3_10_A15.png'),url('/images/qis/pattern3_05_4.png'),url('/images/qis/mainimage_img4.png') #1D1E1F no-repeat;";
+			wlHintCss += "background-size:auto;}b{color:#279FD9;}";
+		}
+		wlHintCss += ".prod_madelName{";
+		wlHintCss += "font-size: 13pt;";
+		wlHintCss += "}.nologin{";
+		wlHintCss += "margin-left:10px;";
+		wlHintCss += "padding:10px;";
+		wlHintCss += "line-height:18pt;";
+		wlHintCss += "width: 100%;";
+		wlHintCss += "font-size:14px;";
+		wlHintCss += "}.main_field_gap{";
+		wlHintCss += "width:82%;";
+		wlHintCss += "margin:10px 0 0 15px;";
+		wlHintCss += "}.title_name{";
+		wlHintCss += "font-size:20pt;";
+		wlHintCss += "margin-left:15px;";
+		wlHintCss += "}.login_img{";
+		wlHintCss += "background-size: 75%;";
+		wlHintCss += "}.img_gap{";
+		wlHintCss += "padding-right:0;";
+		wlHintCss += "vertical-align:middle;";
+		wlHintCss += "}.title_gap{";
+		wlHintCss += "margin:15px 0px 0px 15px;";
+		wlHintCss += "width: 100%;";
+		wlHintCss += "font-size: 12pt;";
+		wlHintCss += "}}";
+		wlHintCss += "</style>";
+
+		var wlHintJs = '<script>setInterval(function(){var a;if(window.XMLHttpRequest)a=new XMLHttpRequest;else{if(!window.ActiveXObject)return!1;a=new ActiveXObject("Microsoft.XMLHTTP")}a.onreadystatechange=function(){4==a.readyState&&200==a.status&&(top.location.href="/index2.asp")},a.open("GET","/httpd_check.asp",!0),a.send(null)},3e3);<\x2Fscript>';
+
+		var wlHintHtml = '';
+		wlHintHtml += '<meta content="telephone=no" name="format-detection"><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">';
+		wlHintHtml += '<div id="wlHint">';
+		wlHintHtml += '<div class="div_table main_field_gap">';
+		wlHintHtml += '<div class="div_tr">';
+		wlHintHtml += '<div class="prod_madelName"><div class="title_name"><div class="div_td img_gap"><div class="login_img"></div></div><div class="div_td"><%tcWebApi_get("String_Entry","Web_Title2","s")%></div></div></div>';
+		wlHintHtml += '<div id="login_filed">';
+		wlHintHtml += "<div class=\"p1 title_gap\"><%tcWebApi_get("String_Entry","DrSurf_sweet_advise1","s")%></div>";
+
+		if(typeof updateFlag != "undefined") wlHintHtml += "<div class='p1 title_gap yellow'>Firmware upgrade is done.</div>";
+
+		for(var i=0; i<wlObj.length; i++){
+			wlHintHtml += '<div class="p1 title_gap">'+ wlObj[i].band +'</div>';
+			wlHintHtml += '<div class="nologin">';
+			wlHintHtml += '<%tcWebApi_get("String_Entry","QIS_finish_wireless_item1","s")%>: <b>';
+			wlHintHtml += wlObj[i].ssid + '</b><br>';
+			wlHintHtml += '<%tcWebApi_get("String_Entry","Network_key","s")%>: <b>';
+			wlHintHtml += (wlObj[i].key == "") ? "Open System" : wlObj[i].key;
+			wlHintHtml += '</b></div>';
+		}
+		wlHintHtml += '</div></div></div></div>';
+
+		top.document.write(wlHintCss + wlHintJs + wlHintHtml);
+	})(genWlObj);
+}	
 </script>
 </head>
 <body onLoad="QKfinish_load_body();" >
@@ -441,6 +683,7 @@ else
 		<th width="180"><span id="iptv_pvc_item"></span></th>
 		<td class="QISformtd">
 			<span id="iptv_pvc"></span>
+			<span id="iptv_pvc_stb_port" style="color:#FC0;display:none;"></span>
 		</td>
 	</tr>
 	<tr>
@@ -459,8 +702,17 @@ else
 		</td>
 	</tr>
 </table>
-<div class="apply_gen" style="margin-top:5px">
-	<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" onclick="goHome();" class="button_gen">
+<div class="apply_gen" style="margin-top:15px;margin-bottom:25px">
+	<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "Main_alert_proceeding_desc3", "s") %>" onclick="goHome();" class="button_gen">
+	<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif"></span>
+</div>
+
+<div id="AreaHint" style="margin-left:5px;">
+	<div id="areaHint_top" style="display:none; width: 720px; *width: 710px; height: 80px;"></div>
+	<div><img style="width: 720px; *width: 710px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+	<div id="main_manual" style="padding-left:20px;margin-top:10px">
+		<span><% tcWebApi_Get("String_Entry", "ASUS_Registration", "s") %></span>
+	</div>  
 </div>
 </div>
 </body>

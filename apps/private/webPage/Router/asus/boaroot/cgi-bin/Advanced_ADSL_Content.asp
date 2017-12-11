@@ -16,6 +16,8 @@ tcWebApi_set("Adsl_Entry","vdsl_rx_agc","vdsl_rx_agc")
 tcWebApi_set("Adsl_Entry","vdsl_upbo","vdsl_upbo")
 if tcWebApi_get("WebCustom_Entry", "isMT7510", "h") = "Yes" then
 	tcWebApi_set("Adsl_Entry","dslx_adsl_esnp","dslx_adsl_esnp")
+elseif tcWebApi_get("WebCustom_Entry", "ADSLChip", "h") = "Yes" then
+	tcWebApi_set("Adsl_Entry","dslx_adsl_esnp","dslx_adsl_esnp")
 end if
 tcWebApi_set("Adsl_Entry","dslx_vdsl_esnp","dslx_vdsl_esnp")
 tcWebApi_set("Adsl_Entry","dslx_sra","dslx_sra")
@@ -68,7 +70,15 @@ var log_lineState;
 var log_SNRMarginDown;
 var init_dla_enable = "<%tcWebApi_get("Adsl_Entry", "dslx_dla_enable", "s")%>";
 init_dla_enable = (init_dla_enable.length > 0)?init_dla_enable:1;
-	
+
+var display_dslx_adsl_esnp = 0;
+<%if tcWebApi_get("WebCustom_Entry","isMT7510","h") = "Yes" then%>
+display_dslx_adsl_esnp = 1;
+<%elseif tcWebApi_get("WebCustom_Entry","ADSLChip","h") = "Yes" then%>
+display_dslx_adsl_esnp = 1;
+<%end if%>
+
+
 function initial(){
 	show_menu();
 	remove_rx_agc_option();
@@ -82,6 +92,14 @@ function initial(){
 	hide_nonstd_vectoring(<% tcWebApi_get("Adsl_Entry","dslx_vdsl_vectoring","s") %>);
 	<%end if%>
 	modify_AnnexType_option();
+	if(display_dslx_adsl_esnp == 1)
+	{
+		document.getElementById("show_dslx_adsl_esnp").style.display = "";
+	}
+	else
+	{
+		document.getElementById("show_dslx_adsl_esnp").style.display = "none";
+	}
 	setTimeout("update_current_SNR_margin();", 3000);
 }
 
@@ -391,6 +409,13 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 <div class="formfontdesc"><%tcWebApi_get("String_Entry","dslsetting_disc0","s")%></div>
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+<thead>
+	<tr>
+		<td colspan="2">
+			Common Settings
+		</td>	
+	</tr>		
+</thead>	
 <tr>
 <th width="30%"><%tcWebApi_get("String_Entry","dslsetting_disc1","s")%></th>
 <td>
@@ -456,20 +481,6 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 </td>
 </tr>
 
-<%if tcWebApi_get("WebCustom_Entry","ADSLChip","h") = "Yes" then%>
-<tr>
-<th>Country-Specific Setting</th>
-<td>
-	<SELECT name="dslx_testlab" class="input_option" onchange="hideXDSLSetting(this.value);">
-		<option value="disable" <% if tcWebApi_get("Adsl_Entry","dslx_testlab","h") = "disable" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
-		<option value="GB" <% if tcWebApi_get("Adsl_Entry","dslx_testlab","h") = "GB" then asp_Write("selected") end if %>>United Kingdom</option>
-		<option value="AU" <% if tcWebApi_get("Adsl_Entry","dslx_testlab","h") = "AU" then asp_Write("selected") end if %>>Australia</option>
-		<option value="BR" style="display:none;" <% if tcWebApi_get("Adsl_Entry","dslx_testlab","h") = "BR" then asp_Write("selected") end if %>>Telefonica Brazil</option>
-	</SELECT>
-</td>
-</tr>
-<%end if%>
-
 <tr>
 	<th>
 		<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,12);">Dynamic Line Adjustment (DLA)</a>
@@ -484,183 +495,6 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 
 <tr>
 <th>
-<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,1);"><%tcWebApi_get("String_Entry","dslsetting_Stability_Adj","s")%> (ADSL)</a>
-</th>
-<td>
-	<span id="dslx_snrm_offset_read" name="dslx_snrm_offset_read" style="display:none;color:#FFFFFF;"></span>
-	<select id="dslx_snrm_offset" class="input_option" name="dslx_snrm_offset" style="display:none;">
-		<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
-		<option value="5120" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "5120" then asp_Write("selected") end if %>>10 dB</option>
-		<option value="4608" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "4608" then asp_Write("selected") end if %>>9 dB</option>
-		<option value="4096" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "4096" then asp_Write("selected") end if %>>8 dB</option>
-		<option value="3584" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "3584" then asp_Write("selected") end if %>>7 dB</option>
-		<option value="3072" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "3072" then asp_Write("selected") end if %>>6 dB</option>
-		<option value="2560" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "2560" then asp_Write("selected") end if %>>5 dB</option>
-		<option value="2048" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "2048" then asp_Write("selected") end if %>>4 dB</option>
-		<option value="1536" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "1536" then asp_Write("selected") end if %>>3 dB</option>
-		<option value="1024" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "1024" then asp_Write("selected") end if %>>2 dB</option>
-		<option value="512" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "512" then asp_Write("selected") end if %>>1 dB</option>
-		<option value="-512" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-512" then asp_Write("selected") end if %>>-1 dB</option>
-		<option value="-1024" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-1024" then asp_Write("selected") end if %>>-2 dB</option>
-		<option value="-1536" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-1536" then asp_Write("selected") end if %>>-3 dB</option>
-		<option value="-2048" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-2048" then asp_Write("selected") end if %>>-4 dB</option>
-		<option value="-2560" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-2560" then asp_Write("selected") end if %>>-5 dB</option>
-		<option value="-3072" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-3072" then asp_Write("selected") end if %>>-6 dB</option> 
-		<option value="-3584" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-3584" then asp_Write("selected") end if %>>-7 dB</option> 
-		<option value="-4096" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-4096" then asp_Write("selected") end if %>>-8 dB</option> 
-		<option value="-4608" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-4608" then asp_Write("selected") end if %>>-9 dB</option> 
-		<option value="-5120" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-5120" then asp_Write("selected") end if %>>-10 dB</option>
-	</select>
-	<span id="id_sta_adj_adsl" style="display:none;margin-left:10px;"></span>
-</td>
-</tr>
-
-<tr>
-<th>
-<a id="adsl_rx_agc_desc" class="hintstyle" href="javascript:void(0);" onClick="openHint(25,15);">Rx AGC GAIN Adjustment (ADSL)</a>
-</th>
-<td>
-	<select id="adsl_rx_agc" class="input_option" name="adsl_rx_agc">
-		<option value="Default" <% if tcWebApi_get("Adsl_Entry","adsl_rx_agc","h") = "Default" then asp_Write("selected") end if %>>Default</option>
-		<option value="Stable" <% if tcWebApi_get("Adsl_Entry","adsl_rx_agc","h") = "Stable" then asp_Write("selected") end if %>>Stable</option>
-		<option value="High Performance" <% if tcWebApi_get("Adsl_Entry","adsl_rx_agc","h") = "High Performance" then asp_Write("selected") end if %>>High Performance</option>
-	</select>
-</td>
-</tr>
-
-<%if tcWebApi_get("WebCustom_Entry","havePtm","h") = "Yes" then%>
-<tr>
-<th>
-<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,6);"><%tcWebApi_get("String_Entry","dslsetting_Stability_Adj","s")%> (VDSL)</a>
-</th>
-<td>
-	<select id="" class="input_option" name="vdsl_snrm_offset">
-		<option value="32767" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "32767" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
-		<option value="2048" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "2048" then asp_Write("selected") end if %>>4 dB</option>
-		<option value="2560" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "2560" then asp_Write("selected") end if %>>5 dB</option>
-		<option value="3072" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "3072" then asp_Write("selected") end if %>>6 dB</option>
-		<option value="3584" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "3584" then asp_Write("selected") end if %>>7 dB</option>
-		<option value="4096" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "4096" then asp_Write("selected") end if %>>8 dB</option>
-		<option value="4608" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "4608" then asp_Write("selected") end if %>>9 dB</option>
-		<option value="5120" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "5120" then asp_Write("selected") end if %>>10 dB</option>
-		<option value="5632" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "5632" then asp_Write("selected") end if %>>11 dB</option>
-		<option value="6144" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "6144" then asp_Write("selected") end if %>>12 dB</option>
-		<option value="6656" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "6656" then asp_Write("selected") end if %>>13 dB</option>
-		<option value="7168" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "7168" then asp_Write("selected") end if %>>14 dB</option>
-		<option value="7680" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "7680" then asp_Write("selected") end if %>>15 dB</option>
-		<option value="8192" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "8192" then asp_Write("selected") end if %>>16 dB</option>
-		<option value="8704" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "8704" then asp_Write("selected") end if %>>17 dB</option>
-		<option value="9216" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "9216" then asp_Write("selected") end if %>>18 dB</option>
-		<option value="9728" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "9728" then asp_Write("selected") end if %>>19 dB</option>
-		<option value="10240" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "10240" then asp_Write("selected") end if %>>20 dB</option>
-		<option value="10752" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "10752" then asp_Write("selected") end if %>>21 dB</option>
-		<option value="11264" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "11264" then asp_Write("selected") end if %>>22 dB</option>
-		<option value="11776" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "11776" then asp_Write("selected") end if %>>23 dB</option>
-		<option value="12288" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "12288" then asp_Write("selected") end if %>>24 dB</option>
-		<option value="12800" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "12800" then asp_Write("selected") end if %>>25 dB</option>
-		<option value="13312" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "13312" then asp_Write("selected") end if %>>26 dB</option>
-		<option value="13824" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "13824" then asp_Write("selected") end if %>>27 dB</option>
-		<option value="14336" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "14336" then asp_Write("selected") end if %>>28 dB</option>
-		<option value="14848" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "14848" then asp_Write("selected") end if %>>29 dB</option>
-		<option value="15360" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "15360" then asp_Write("selected") end if %>>30 dB</option>
-	</select>
-	<span id="id_sta_adj_vdsl" style="display:none;margin-left:10px;"></span>
-</td>
-</tr>
-<%end if%>
-
-<%if tcWebApi_get("WebCustom_Entry","havePtm","h") = "Yes" then%>
-<%if tcWebApi_get("Adsl_Entry","vdtxpwrtestmode","h") = "1" then%>
-<!--vdsl_tx_gain_off-->
-<tr>
-<th>
-<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,8);">Tx Power Control (VDSL)</a>
-</th>
-<td>
-	<select id="" class="input_option" name="vdsl_tx_gain_off">
-		<option value="32767" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "32767" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
-		<option value="30" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "30" then asp_Write("selected") end if %>>3 dB</option>
-		<option value="20" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "20" then asp_Write("selected") end if %>>2 dB</option>
-		<option value="10" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "10" then asp_Write("selected") end if %>>1 dB</option>
-		<option value="0" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "0" then asp_Write("selected") end if %>>0 dB</option>
-		<option value="-10" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-10" then asp_Write("selected") end if %>>-1 dB</option>
-		<option value="-20" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-20" then asp_Write("selected") end if %>>-2 dB</option>
-		<option value="-30" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-30" then asp_Write("selected") end if %>>-3 dB</option>
-		<option value="-40" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-40" then asp_Write("selected") end if %>>-4 dB</option>
-		<option value="-50" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-50" then asp_Write("selected") end if %>>-5 dB</option>
-		<option value="-60" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-60" then asp_Write("selected") end if %>>-6 dB</option>
-		<option value="-70" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-70" then asp_Write("selected") end if %>>-7 dB</option>
-	</select>
-</td>
-</tr>
-<%end if%>
-<%end if%>
-
-<%if tcWebApi_get("WebCustom_Entry","havePtm","h") = "Yes" then%>
-<!--vdsl_rx_agc-->
-<tr>
-<th>
-<a id="vdsl_rx_agc_desc" class="hintstyle" href="javascript:void(0);" onClick="openHint(25,9);">Rx AGC GAIN Adjustment (VDSL)</a>
-</th>
-<td>
-	<select id="vdsl_rx_agc" class="input_option" name="vdsl_rx_agc">
-		<option value="65535" <% if tcWebApi_get("Adsl_Entry","vdsl_rx_agc","h") = "65535" then asp_Write("selected") end if %>>Default</option>
-		<option value="394" <% if tcWebApi_get("Adsl_Entry","vdsl_rx_agc","h") = "394" then asp_Write("selected") end if %>>Stable</option>
-		<option value="550" <% if tcWebApi_get("Adsl_Entry","vdsl_rx_agc","h") = "550" then asp_Write("selected") end if %>>High Performance</option>
-	</select>
-</td>
-</tr>
-<%end if%>
-
-<%if tcWebApi_get("WebCustom_Entry","havePtm","h") = "Yes" then%>
-<!--upbo stands for upstream power back off-->
-<tr>
-<th>
-<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,10);">UPBO - Upstream Power Back Off (VDSL)</a>
-</th>
-<td>
-	<select id="" class="input_option" name="vdsl_upbo">
-		<option value="auto" <% if tcWebApi_get("Adsl_Entry","vdsl_upbo","h") = "auto" then asp_Write("selected") end if %>><% tcWebApi_Get("String_Entry", "Auto", "s") %></option>
-		<option value="on" <% if tcWebApi_get("Adsl_Entry","vdsl_upbo","h") = "on" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Enabled","s")%></option>
-		<option value="off" <% if tcWebApi_get("Adsl_Entry","vdsl_upbo","h") = "off" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
-	</select>
-</td>
-</tr>
-<%end if%>
-
-<%if tcWebApi_get("WebCustom_Entry","isMT7510","h") = "Yes" then%>
-<!--esnp stands for enhanced sudden noise protection-->
-<tr>
-<th>
-<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,18);">ESNP - Enhanced Sudden Noise Protection (ADSL)</a>
-</th>
-<td>
-	<select id="dslx_adsl_esnp" class="input_option" name="dslx_adsl_esnp">
-		<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_adsl_esnp","h") = "0" then asp_Write("selected") end if %>>Default</option>
-		<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_adsl_esnp","h") = "1" then asp_Write("selected") end if %>>Stable</option>
-	</select>
-</td>
-</tr>
-<%end if%>
-
-<%if tcWebApi_get("WebCustom_Entry","havePtm","h") = "Yes" then%>
-<!--esnp stands for enhanced sudden noise protection-->
-<tr>
-<th>
-<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,18);">ESNP - Enhanced Sudden Noise Protection (VDSL)</a>
-</th>
-<td>
-	<span id="dslx_vdsl_esnp_read" name="dslx_vdsl_esnp_read" style="display:none;color:#FFFFFF;"></span>
-	<select id="dslx_vdsl_esnp" class="input_option" name="dslx_vdsl_esnp">
-		<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_esnp","h") = "0" then asp_Write("selected") end if %>>Default</option>
-		<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_esnp","h") = "1" then asp_Write("selected") end if %>>Stable</option>
-	</select>
-</td>
-</tr>
-<%end if%>
-
-<tr>
-<th>
 <a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,2);"><%tcWebApi_get("String_Entry","dslsetting_SRA","s")%></a>
 </th>
 <td>
@@ -670,33 +504,6 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 	</select>
 </td>
 </tr>
-<tr>
-<th>
-<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,4);">Bitswap (ADSL)</a>
-</th>
-<td>
-	<select id="" class="input_option" name="dslx_bitswap">
-		<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_bitswap","h") = "1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Enabled","s")%></option>
-		<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_bitswap","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
-	</select>
-</td>
-</tr>
-
-<%if tcWebApi_get("WebCustom_Entry","havePtm","h") = "Yes" then%>
-<%if tcWebApi_get("WebCustom_Entry","isMT7510","h") = "Yes" then%>
-<tr>
-<th>
-<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,4);">Bitswap (VDSL)</a>
-</th>
-<td>
-	<select id="" class="input_option" name="dslx_vdsl_bitswap">
-		<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_bitswap","h") = "1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Enabled","s")%></option>
-		<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_bitswap","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
-	</select>
-</td>
-</tr>
-<%end if%>
-<%end if%>
 
 <%if tcWebApi_get("WebCustom_Entry", "isSharePVCSupport", "h") = "Yes" then%>
 <tr>
@@ -709,22 +516,6 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 			<option value="0" <% if tcWebApi_get("Wan_Common","sharepvc","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
 		</select>
 	</td>
-</tr>
-<%end if%>
-
-<%if tcWebApi_get("WebCustom_Entry","havePtm","h") = "Yes" then%>
-<tr>
-<th>
-<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,7);">VDSL Profile</a>
-</th>
-<td>
-	<select id="" class="input_option" name="vdsl_profile">
-		<option value="0" <% if tcWebApi_get("Adsl_Entry","vdsl_profile","h") = "0" then asp_Write("selected") end if %>>30a multi mode</option>
-		<option value="1" <% if tcWebApi_get("Adsl_Entry","vdsl_profile","h") = "1" then asp_Write("selected") end if %>>17a multi mode</option>
-		<option value="2" <% if tcWebApi_get("Adsl_Entry","vdsl_profile","h") = "2" then asp_Write("selected") end if %>>12a multi mode</option>
-		<option value="3" <% if tcWebApi_get("Adsl_Entry","vdsl_profile","h") = "3" then asp_Write("selected") end if %>>8a multi mode</option>
-	</select>
-</td>
 </tr>
 <%end if%>
 
@@ -756,31 +547,274 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 </tr>
 <%end if%>
 
-<%if tcWebApi_get("WebCustom_Entry", "isGVectorSupport", "h") = "Yes" then%>
-<tr>
-	<th>
-		<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,16);">G.vector (G.993.5)</a>
-	</th>
-	<td>
-		<select id="" class="input_option" name="dslx_vdsl_vectoring" onchange="hide_nonstd_vectoring(this.value);">
-			<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_vectoring","h") = "1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Enabled","s")%></option>
-			<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_vectoring","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
-		</select>
-	</td>
-</tr>
-<tr id="nonstd_vectoring">
-	<th>
-		<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,17);">Non-standard G.vector (G.993.5)</a>
-	</th>
-	<td>
-		<select id="" class="input_option" name="dslx_vdsl_nonstd_vectoring">
-			<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_nonstd_vectoring","h") = "1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Enabled","s")%></option>
-			<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_nonstd_vectoring","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
-		</select>
-	</td>
-</tr>
-<%end if%>
 </table>
+
+<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="margin-top:10px;">
+<thead>
+	<tr>
+		<td colspan="2">
+			ADSL Settings
+		</td>	
+	</tr>		
+</thead>
+
+	<%if tcWebApi_get("WebCustom_Entry","ADSLChip","h") = "Yes" then%>
+	<tr>
+		<th>Country-Specific Setting</th>
+		<td>
+			<select name="dslx_testlab" class="input_option" onchange="hideXDSLSetting(this.value);">
+				<option value="disable" <% if tcWebApi_get("Adsl_Entry","dslx_testlab","h") = "disable" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
+				<option value="GB" <% if tcWebApi_get("Adsl_Entry","dslx_testlab","h") = "GB" then asp_Write("selected") end if %>>United Kingdom</option>
+				<option value="AU" <% if tcWebApi_get("Adsl_Entry","dslx_testlab","h") = "AU" then asp_Write("selected") end if %>>Australia</option>
+				<option value="BR" style="display:none;" <% if tcWebApi_get("Adsl_Entry","dslx_testlab","h") = "BR" then asp_Write("selected") end if %>>Telefonica Brazil</option>
+			</select>
+		</td>
+	</tr>
+	<%end if%>
+
+	<tr>
+		<th>
+			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,1);"><%tcWebApi_get("String_Entry","dslsetting_Stability_Adj","s")%></a>
+		</th>
+		<td>
+			<span id="dslx_snrm_offset_read" name="dslx_snrm_offset_read" style="display:none;color:#FFFFFF;"></span>
+			<select id="dslx_snrm_offset" class="input_option" name="dslx_snrm_offset" style="display:none;">
+				<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
+				<option value="5120" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "5120" then asp_Write("selected") end if %>>10 dB</option>
+				<option value="4608" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "4608" then asp_Write("selected") end if %>>9 dB</option>
+				<option value="4096" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "4096" then asp_Write("selected") end if %>>8 dB</option>
+				<option value="3584" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "3584" then asp_Write("selected") end if %>>7 dB</option>
+				<option value="3072" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "3072" then asp_Write("selected") end if %>>6 dB</option>
+				<option value="2560" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "2560" then asp_Write("selected") end if %>>5 dB</option>
+				<option value="2048" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "2048" then asp_Write("selected") end if %>>4 dB</option>
+				<option value="1536" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "1536" then asp_Write("selected") end if %>>3 dB</option>
+				<option value="1024" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "1024" then asp_Write("selected") end if %>>2 dB</option>
+				<option value="512" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "512" then asp_Write("selected") end if %>>1 dB</option>
+				<option value="-512" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-512" then asp_Write("selected") end if %>>-1 dB</option>
+				<option value="-1024" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-1024" then asp_Write("selected") end if %>>-2 dB</option>
+				<option value="-1536" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-1536" then asp_Write("selected") end if %>>-3 dB</option>
+				<option value="-2048" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-2048" then asp_Write("selected") end if %>>-4 dB</option>
+				<option value="-2560" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-2560" then asp_Write("selected") end if %>>-5 dB</option>
+				<option value="-3072" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-3072" then asp_Write("selected") end if %>>-6 dB</option> 
+				<option value="-3584" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-3584" then asp_Write("selected") end if %>>-7 dB</option> 
+				<option value="-4096" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-4096" then asp_Write("selected") end if %>>-8 dB</option> 
+				<option value="-4608" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-4608" then asp_Write("selected") end if %>>-9 dB</option> 
+				<option value="-5120" <% if tcWebApi_get("Adsl_Entry","dslx_snrm_offset","h") = "-5120" then asp_Write("selected") end if %>>-10 dB</option>
+			</select>
+			<span id="id_sta_adj_adsl" style="display:none;margin-left:10px;"></span>
+		</td>
+	</tr>
+	<tr>
+		<th>
+			<a id="adsl_rx_agc_desc" class="hintstyle" href="javascript:void(0);" onClick="openHint(25,15);">Rx AGC GAIN Adjustment</a>
+		</th>
+		<td>
+			<select id="adsl_rx_agc" class="input_option" name="adsl_rx_agc">
+				<option value="Default" <% if tcWebApi_get("Adsl_Entry","adsl_rx_agc","h") = "Default" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","Setting_factorydefault_value","s")%></option>
+				<option value="Stable" <% if tcWebApi_get("Adsl_Entry","adsl_rx_agc","h") = "Stable" then asp_Write("selected") end if %>>Stable</option>
+				<option value="High Performance" <% if tcWebApi_get("Adsl_Entry","adsl_rx_agc","h") = "High Performance" then asp_Write("selected") end if %>>High Performance</option>
+			</select>
+		</td>
+	</tr>
+
+	<!--esnp stands for enhanced sudden noise protection-->
+	<tr id="show_dslx_adsl_esnp">
+		<th>
+			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,18);">ESNP - Enhanced Sudden Noise Protection</a>
+		</th>
+		<td>
+			<select id="dslx_adsl_esnp" class="input_option" name="dslx_adsl_esnp">
+				<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_adsl_esnp","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","Setting_factorydefault_value","s")%></option>
+				<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_adsl_esnp","h") = "1" then asp_Write("selected") end if %>>Stable</option>
+			</select>
+		</td>
+	</tr>
+
+	<tr>
+		<th>
+			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,4);">Bitswap</a>
+		</th>
+		<td>
+			<select id="" class="input_option" name="dslx_bitswap">
+				<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_bitswap","h") = "1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Enabled","s")%></option>
+				<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_bitswap","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
+			</select>
+		</td>
+	</tr>
+</table>
+
+<%if tcWebApi_get("WebCustom_Entry","havePtm","h") = "Yes" then%>
+<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="margin-top:10px;">
+<thead>
+	<tr>
+		<td colspan="2">
+			VDSL Settings
+		</td>	
+	</tr>		
+</thead>
+
+	<tr>
+		<th>
+			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,7);">VDSL Profile</a>
+		</th>
+		<td>
+			<select id="" class="input_option" name="vdsl_profile">
+				<option value="0" <% if tcWebApi_get("Adsl_Entry","vdsl_profile","h") = "0" then asp_Write("selected") end if %>>30a multi mode</option>
+				<option value="1" <% if tcWebApi_get("Adsl_Entry","vdsl_profile","h") = "1" then asp_Write("selected") end if %>>17a multi mode</option>
+				<option value="2" <% if tcWebApi_get("Adsl_Entry","vdsl_profile","h") = "2" then asp_Write("selected") end if %>>12a multi mode</option>
+				<option value="3" <% if tcWebApi_get("Adsl_Entry","vdsl_profile","h") = "3" then asp_Write("selected") end if %>>8a multi mode</option>
+			</select>
+		</td>
+	</tr>
+
+	<tr>
+		<th>
+			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,6);"><%tcWebApi_get("String_Entry","dslsetting_Stability_Adj","s")%></a>
+		</th>
+		<td>
+			<select id="" class="input_option" name="vdsl_snrm_offset">
+				<option value="32767" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "32767" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
+				<option value="2048" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "2048" then asp_Write("selected") end if %>>4 dB</option>
+				<option value="2560" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "2560" then asp_Write("selected") end if %>>5 dB</option>
+				<option value="3072" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "3072" then asp_Write("selected") end if %>>6 dB</option>
+				<option value="3584" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "3584" then asp_Write("selected") end if %>>7 dB</option>
+				<option value="4096" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "4096" then asp_Write("selected") end if %>>8 dB</option>
+				<option value="4608" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "4608" then asp_Write("selected") end if %>>9 dB</option>
+				<option value="5120" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "5120" then asp_Write("selected") end if %>>10 dB</option>
+				<option value="5632" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "5632" then asp_Write("selected") end if %>>11 dB</option>
+				<option value="6144" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "6144" then asp_Write("selected") end if %>>12 dB</option>
+				<option value="6656" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "6656" then asp_Write("selected") end if %>>13 dB</option>
+				<option value="7168" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "7168" then asp_Write("selected") end if %>>14 dB</option>
+				<option value="7680" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "7680" then asp_Write("selected") end if %>>15 dB</option>
+				<option value="8192" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "8192" then asp_Write("selected") end if %>>16 dB</option>
+				<option value="8704" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "8704" then asp_Write("selected") end if %>>17 dB</option>
+				<option value="9216" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "9216" then asp_Write("selected") end if %>>18 dB</option>
+				<option value="9728" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "9728" then asp_Write("selected") end if %>>19 dB</option>
+				<option value="10240" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "10240" then asp_Write("selected") end if %>>20 dB</option>
+				<option value="10752" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "10752" then asp_Write("selected") end if %>>21 dB</option>
+				<option value="11264" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "11264" then asp_Write("selected") end if %>>22 dB</option>
+				<option value="11776" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "11776" then asp_Write("selected") end if %>>23 dB</option>
+				<option value="12288" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "12288" then asp_Write("selected") end if %>>24 dB</option>
+				<option value="12800" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "12800" then asp_Write("selected") end if %>>25 dB</option>
+				<option value="13312" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "13312" then asp_Write("selected") end if %>>26 dB</option>
+				<option value="13824" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "13824" then asp_Write("selected") end if %>>27 dB</option>
+				<option value="14336" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "14336" then asp_Write("selected") end if %>>28 dB</option>
+				<option value="14848" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "14848" then asp_Write("selected") end if %>>29 dB</option>
+				<option value="15360" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "15360" then asp_Write("selected") end if %>>30 dB</option>
+			</select>
+			<span id="id_sta_adj_vdsl" style="display:none;margin-left:10px;"></span>
+		</td>
+	</tr>
+	
+	<!--vdsl_rx_agc-->
+	<tr>
+		<th>
+			<a id="vdsl_rx_agc_desc" class="hintstyle" href="javascript:void(0);" onClick="openHint(25,9);">Rx AGC GAIN Adjustment</a>
+		</th>
+		<td>
+			<select id="vdsl_rx_agc" class="input_option" name="vdsl_rx_agc">
+				<option value="65535" <% if tcWebApi_get("Adsl_Entry","vdsl_rx_agc","h") = "65535" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","Setting_factorydefault_value","s")%></option>
+				<option value="394" <% if tcWebApi_get("Adsl_Entry","vdsl_rx_agc","h") = "394" then asp_Write("selected") end if %>>Stable</option>
+				<option value="550" <% if tcWebApi_get("Adsl_Entry","vdsl_rx_agc","h") = "550" then asp_Write("selected") end if %>>High Performance</option>
+			</select>
+		</td>
+	</tr>
+	
+	<!--upbo stands for upstream power back off-->
+	<tr>
+		<th>
+			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,10);">UPBO - Upstream Power Back Off</a>
+		</th>
+		<td>
+			<select id="" class="input_option" name="vdsl_upbo">
+				<option value="auto" <% if tcWebApi_get("Adsl_Entry","vdsl_upbo","h") = "auto" then asp_Write("selected") end if %>><% tcWebApi_Get("String_Entry", "Auto", "s") %></option>
+				<option value="on" <% if tcWebApi_get("Adsl_Entry","vdsl_upbo","h") = "on" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Enabled","s")%></option>
+				<option value="off" <% if tcWebApi_get("Adsl_Entry","vdsl_upbo","h") = "off" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
+			</select>
+		</td>
+	</tr>
+	
+	<!--esnp stands for enhanced sudden noise protection-->
+	<tr>
+		<th>
+			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,18);">ESNP - Enhanced Sudden Noise Protection</a>
+		</th>
+		<td>
+			<span id="dslx_vdsl_esnp_read" name="dslx_vdsl_esnp_read" style="display:none;color:#FFFFFF;"></span>
+			<select id="dslx_vdsl_esnp" class="input_option" name="dslx_vdsl_esnp">
+				<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_esnp","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","Setting_factorydefault_value","s")%></option>
+				<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_esnp","h") = "1" then asp_Write("selected") end if %>>Stable</option>
+			</select>
+		</td>
+	</tr>
+	
+	<%if tcWebApi_get("WebCustom_Entry","isMT7510","h") = "Yes" then%>
+	<tr>
+		<th>
+			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,4);">Bitswap</a>
+		</th>
+		<td>
+			<select id="" class="input_option" name="dslx_vdsl_bitswap">
+				<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_bitswap","h") = "1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Enabled","s")%></option>
+				<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_bitswap","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
+			</select>
+		</td>
+	</tr>
+<%end if%>
+
+	<%if tcWebApi_get("Adsl_Entry","vdtxpwrtestmode","h") = "1" then%>
+	<!--vdsl_tx_gain_off-->
+	<tr>
+		<th>
+			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,8);">Tx Power Control</a>
+		</th>
+		<td>
+			<select id="" class="input_option" name="vdsl_tx_gain_off">
+				<option value="32767" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "32767" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
+				<option value="30" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "30" then asp_Write("selected") end if %>>3 dB</option>
+				<option value="20" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "20" then asp_Write("selected") end if %>>2 dB</option>
+				<option value="10" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "10" then asp_Write("selected") end if %>>1 dB</option>
+				<option value="0" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "0" then asp_Write("selected") end if %>>0 dB</option>
+				<option value="-10" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-10" then asp_Write("selected") end if %>>-1 dB</option>
+				<option value="-20" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-20" then asp_Write("selected") end if %>>-2 dB</option>
+				<option value="-30" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-30" then asp_Write("selected") end if %>>-3 dB</option>
+				<option value="-40" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-40" then asp_Write("selected") end if %>>-4 dB</option>
+				<option value="-50" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-50" then asp_Write("selected") end if %>>-5 dB</option>
+				<option value="-60" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-60" then asp_Write("selected") end if %>>-6 dB</option>
+				<option value="-70" <% if tcWebApi_get("Adsl_Entry","vdsl_tx_gain_off","h") = "-70" then asp_Write("selected") end if %>>-7 dB</option>
+			</select>
+		</td>
+	</tr>
+	<%end if%>
+	
+	<%if tcWebApi_get("WebCustom_Entry", "isGVectorSupport", "h") = "Yes" then%>
+	<tr>
+		<th>
+			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,16);">G.vector (G.993.5)</a>
+		</th>
+		<td>
+			<select id="" class="input_option" name="dslx_vdsl_vectoring" onchange="hide_nonstd_vectoring(this.value);">
+				<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_vectoring","h") = "1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Enabled","s")%></option>
+				<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_vectoring","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
+			</select>
+		</td>
+	</tr>
+	<tr id="nonstd_vectoring">
+		<th>
+			<a class="hintstyle" href="javascript:void(0);" onClick="openHint(25,17);">Non-standard G.vector (G.993.5)</a>
+		</th>
+		<td>
+			<select id="" class="input_option" name="dslx_vdsl_nonstd_vectoring">
+				<option value="1" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_nonstd_vectoring","h") = "1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Enabled","s")%></option>
+				<option value="0" <% if tcWebApi_get("Adsl_Entry","dslx_vdsl_nonstd_vectoring","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
+			</select>
+		</td>
+	</tr>
+	<%end if%>
+
+</table>
+<%end if%>	<!-- VDSL havePTM-->
+
 <INPUT TYPE="HIDDEN" NAME="saveFlag" VALUE="0">
 <INPUT TYPE="HIDDEN" NAME="vdtxpwrtestmodeFlag" VALUE="0">
 <div class="apply_gen">

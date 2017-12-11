@@ -19,6 +19,8 @@
 #include <unistd.h>
 #include <stdarg.h>
 
+#include "mem_pool.h"
+
 //#define NVRAM_ 1
 
 #define CMD_SPLIT "\n"
@@ -60,6 +62,9 @@ typedef cJSON *(*proc_pt)(char *filename);
 //#define TEST 1
 #define RENAME_F
 #define TOKENFILE 1
+#define MEM_POOL_ENABLE 1
+
+
 
 pthread_t newthid1,newthid2,newthid3;
 pthread_cond_t cond,cond_socket,cond_log;
@@ -152,7 +157,8 @@ struct queue_entry
     struct queue_entry * next_ptr;   /* Pointer to next entry */
     //int type;
     //char filename[256];
-    char cmd_name[1024];
+    //char cmd_name[1024];
+    char *cmd_name;
     char *re_cmd;
     int is_first;
     //int id;
@@ -170,6 +176,7 @@ typedef struct queue_struct *queue_t;
 
 queue_entry_t SocketActionTmp;
 
+#ifdef OAuth1
 /*####auth*/
 typedef struct Authentication
 {
@@ -181,7 +188,15 @@ typedef struct Authentication
 }Auth;
 
 Auth *auth;
+#else
+typedef struct Authentication
+{
+    char *oauth_token;
+}Auth;
 
+Auth *auth;
+
+#endif
 typedef struct Account_info
 {
     char usr[256];
@@ -248,7 +263,11 @@ sync_list **g_pSyncList;
 
 char *search_newpath(char *href,int index);
 Browse *browseFolder(char *URL);
+#ifdef OAuth1
 char *makeAuthorize(int flag);
+#else
+char *makeAuthorize();
+#endif
 int get_request_token();
 int parse(char *filename,int flag);
 char *parse_login_page();
@@ -305,6 +324,8 @@ int sync_initial_again(int index);
 
 int api_metadata_test_dir(char *phref,proc_pt cmd_data);
 int cJSON_printf_dir(cJSON *json);
+char *get_server_exist(char *temp_name,int index);
+void updata_socket_list(char *temp_name,char *new_name,int i);
 
 #if TOKENFILE
 int disk_change;

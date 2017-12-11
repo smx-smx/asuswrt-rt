@@ -113,6 +113,8 @@ function check_return_code(){
                 show_alert_block("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2","s")%>");
 	else if(this.ddns_return_code =='connect_fail')
                 show_alert_block("<%tcWebApi_get("String_Entry","qis_fail_desc7","s")%>");
+	else if(this.ddns_return_code =='Updating' || this.ddns_return_code =='ddns_query')
+		show_alert_block("Still query ASUS DDNS registration status. Please wait.");
 	else if(this.ddns_return_code !='')
 		show_alert_block("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2","s")%>");
 

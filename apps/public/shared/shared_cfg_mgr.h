@@ -237,6 +237,8 @@ extern int pids(char *appname);
 extern char *psname(int pid, char *buffer, int maxlen);
 extern int pidof(const char *name);
 extern int killall(const char *name, int sig);
+extern void killall_tk(const char *name);	//Andy Chiu, 2015/02/03
+extern void kill_pidfile_tk(const char *pidfile);	//Andy Chiu, 2015/02/03
 
 
 // files.c

@@ -9,7 +9,7 @@
 <link type="text/css" rel="stylesheet" href="/qis/qis_style.css">
 <link type="text/css" rel="stylesheet" href="/form_style.css">
 <style>
-	.test_css{
+.test_css{
 	padding-left:10px;
 	font-size:13px;
 	font-weight:bolder;
@@ -27,9 +27,12 @@ var extend_autodet = 1;
 var linkup_autodet = 0;
 var AnnexSwitch_count = 0;
 var AnnexSwitch_enable = 1;
-var wan_type = "<%tcWebApi_get("AutoPVC_Common","Detect_XDSL","s")%>";
+var wan_type = "<%tcWebApi_get("AutoPVC_Common","Detect_XDSL","s")%>";	// ATM | PTM
+var wan_type_info = "<%tcWebApi_get("Info_Adsl","xDSLmode","s")%>";	// ADSL | VDSL
+var wan_type_compare = (wan_type_info=="VDSL")? "PTM":"ATM"; 
 var dsl_autodet_state = "<% tcWebApi_get("AutoPVC_Common","dsltmp_autodet_state","s") %>";
 var dsl_line_state = "<% tcWebApi_get("Info_Adsl","lineState","s") %>";
+var AnnexTypeA_orig = "<%tcWebApi_get("Adsl_Entry","ANNEXTYPEA","s")%>";
 var w_Setting = "<%tcWebApi_get("SysInfo_Entry","w_Setting","s")%>";
 
 var makeRequest = {
@@ -68,13 +71,13 @@ var makeRequest = {
 function QKDetect_load_body(){
 	parent.set_step("t1");
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_detect_sanglass","s")%>";
-	if(parent.autodet_annex_counter > 0){	//trigger dsl autodetect again after switch Annex mode
+	if(parent.autodet_annex_counter > 0 || wan_type != wan_type_compare){	//trigger dsl autodetect again after switch Annex mode || Detect_XDSL not matched to xDSLmode
 		var update_dsl_info = function(){
 			makeRequest.start('/cgi-bin/start_dsl_autodet.asp', function(){}, update_dsl_info);
 		};
-		setTimeout(update_dsl_info, 700);
+		setTimeout(update_dsl_info, 100);
 	}		
-	getWANStatus();
+	setTimeout("getWANStatus()", 700);
 }
 function getWANStatus(){
 	$.ajax({
@@ -85,20 +88,32 @@ function getWANStatus(){
 			setTimeout("getWANStatus();", 1000);
 		},
 		success: function(response){
-			if( dsl_line_state == "up") {
-				if(dsl_autodet_state == "pppoe" || dsl_autodet_state == "pppoa")
-					redirect_page("ppp_cfg");
-				else if(dsl_autodet_state == "dhcp")
-					redirect_page("mer_cfg");
-				else if(dsl_autodet_state == "Fail"){
-					if(wan_type == "ATM")
-						redirect_page("manual_setting");
-					else
-						redirect_page("PTM_manual_setting");
-				}
-				else if(wan_type == "PTM")
+			
+			if(dsl_autodet_state == "Fail"){
+				if(wan_type_info == "VDSL"){	//wan_type == "PTM"
 					redirect_page("PTM_manual_setting");
-				else {
+				}	
+				else{
+					redirect_page("manual_setting");
+				}						
+			}
+			
+			
+			if( dsl_line_state == "up"){
+
+				if(wan_type_info == "VDSL"){	//wan_type == "PTM"
+					redirect_page("PTM_manual_setting");
+				}	
+				else if(wan_type_info == "ADSL" && (AnnexTypeA_orig == "ANNEX B" || AnnexTypeA_orig == "ANNEX B/J" || AnnexTypeA_orig == "ANNEX B/J/M")){	//wan_type == "ATM"	
+					redirect_page("manual_setting");
+				}	
+				else if(dsl_autodet_state == "pppoe" || dsl_autodet_state == "pppoa"){
+					redirect_page("ppp_cfg");
+				}	
+				else if(dsl_autodet_state == "dhcp"){
+					redirect_page("mer_cfg");
+				}	
+				else{
 					AnnexSwitch_enable = 0;
 					linkup_autodet = 1;
 
@@ -109,11 +124,11 @@ function getWANStatus(){
 							Redirect_count -= 3;
 						}
 						else{
-							if(wan_type == "ATM"){
-								document.form.action = "QIS_manual_setting.asp";
+							if(wan_type_info == "VDSL"){	//wan_type == "PTM"
+								document.form.action = "QIS_PTM_manual_setting.asp";
 							}
 							else{
-								document.form.action = "QIS_PTM_manual_setting.asp";
+								document.form.action = "QIS_manual_setting.asp";
 							}
 							document.form.submit();
 							return;
@@ -123,7 +138,7 @@ function getWANStatus(){
 					setTimeout('getWANStatus();', 5000);
 				}
 			}
-			else if ((dsl_line_state == "initializing") || (dsl_line_state == "wait_for_init")) {
+			else if ((dsl_line_state == "initializing")){
 				if(linkup_autodet == 1) {	//up -> down, restart auto det
 					linkup_autodet = 0;
 					Redirect_count = 0;
@@ -135,8 +150,8 @@ function getWANStatus(){
 				setTimeout('getWANStatus();', 5000);
 			}
 			else if ( (AnnexSwitch_enable == 1) &&
-				((dsl_line_state == "down") || (dsl_line_state == ""))
-			) {
+				((dsl_line_state == "down") || (dsl_line_state == "") || (dsl_line_state == "wait for init"))
+			){
 				if(linkup_autodet == 1) {	//up -> down, restart auto det
 					linkup_autodet = 0;
 					Redirect_count = 0;
@@ -145,7 +160,7 @@ function getWANStatus(){
 				}
 
 				++AnnexSwitch_count;
-				if(AnnexSwitch_count >= 12){	//12*5 = 180 sec = 1 min
+				if(AnnexSwitch_count >= 18){	//18*5 = 90 sec = 1.5 min
 					AnnexSwitch_count = 0;
 					++parent.autodet_annex_counter;
 					if(parent.autodet_annex_counter <= 3 && parent.model_name != "DSL-N66U" && parent.model_name != "DSL-N12U-C1" && parent.model_name != "DSL-N12U-D1"){	//MODELDEP : Skip DSL-N66U, DSL-N12U-C1, DSL-N12U-D1
@@ -180,35 +195,36 @@ function getWANStatus(){
 
 function set_state_info(state){
 	switch(state) {				
-		case "":
-			document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Link down (DSL LED Off)</span><br><br>";
-			document.getElementById("LED_state").style.display = "";		
-			document.getElementById("no_cable").style.display = "";
-			break;
-		case "down":
-			document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Link down (DSL LED Off)</span><br><br>";
-			document.getElementById("LED_state").style.display = "";		
-			document.getElementById("no_cable").style.display = "";
-			break;
-		case "wait_for_init":
-			document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Wait for init (DSL LED Flashing)</span><br><br>";
-			document.getElementById("LED_state").style.display = "";		
-			document.getElementById("no_cable").style.display = "none";
-			break;
-		case "initializing":
-			document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Initializing (DSL LED Flashing)</span><br><br>";
-			document.getElementById("LED_state").style.display = "";		
-			document.getElementById("no_cable").style.display = "none";
-			break;
-		case "up":
-			document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Link up (DSL LED On)</span><br><br>";
-			document.getElementById("LED_state").style.display = "";		
-			document.getElementById("no_cable").style.display = "none";
-			break;
-		default:	//include ""
-			document.getElementById("LED_state").style.display = "none";		
-			document.getElementById("no_cable").style.display = "none";
-			break;
+				case "":
+								document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Link down (DSL LED Off)</span><br><br>";
+								document.getElementById("LED_state").style.display = "";		
+								document.getElementById("no_cable").style.display = "";
+								break;
+				case "down":
+								document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Link down (DSL LED Off)</span><br><br>";
+								document.getElementById("LED_state").style.display = "";		
+								document.getElementById("no_cable").style.display = "";
+								break;
+				case "wait for init":
+								document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Wait for init (DSL LED Flashing)</span><br><br>";
+								document.getElementById("LED_state").style.display = "";		
+								document.getElementById("no_cable").style.display = "none";
+								break;
+				case "initializing":
+								document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Initializing (DSL LED Flashing)</span><br><br>";
+								document.getElementById("LED_state").style.display = "";		
+								document.getElementById("no_cable").style.display = "none";
+								break;
+				case "up":
+								document.getElementById("LED_state").innerHTML = "<%tcWebApi_get("String_Entry","adsl_link_sts_in","s")%> : <span style=\"color:#FFCC00;\">Link up (DSL LED On)</span><br><br>";
+								document.getElementById("LED_state").style.display = "";		
+								document.getElementById("no_cable").style.display = "none";
+								break;
+				default:	//include ""
+								document.getElementById("LED_state").style.display = "none";		
+								document.getElementById("no_cable").style.display = "none";
+								break;
+								
 	}
 }
 

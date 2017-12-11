@@ -61,20 +61,6 @@
 
 #define MAX_TCAPI_TIME	10
 
-#if defined(TCSUPPORT_BB_NAND) || defined(TCSUPPORT_BOOTROM_LARGE_SIZE)
-#define MTD_DATA_AREA_OFFSET 0x0001ffa0L
-#define TCBOOT_MODEL_NAME_OFFSET 0x0001ff24L
-#define TCBOOT_CALIBRATION_FIRST_OFFSET 		0x0001fb00L
-#define TCBOOT_CALIBRATION_SECOND_OFFSET 		0x0001fd00L
-#define TCBOOT_BOOTLOADER_VERSION_OFFSET		0x0001FF9DL
-#else
-#define MTD_DATA_AREA_OFFSET 0x0000ffa0L
-#define TCBOOT_MODEL_NAME_OFFSET 0x0000ff24L
-#define TCBOOT_CALIBRATION_FIRST_OFFSET 		0x0000fb00L
-#define TCBOOT_CALIBRATION_SECOND_OFFSET 		0x0000fd00L
-#define TCBOOT_BOOTLOADER_VERSION_OFFSET		0x0000FF9DL
-#endif
-
 #define VSLN66U_WAN_NUM	4
 
 #define TCSUPPORT_GETNODE_ENHANCE	1
@@ -103,6 +89,7 @@
 #define CUSTOMER_DEF_ROMFILE_PATH 	"/tmp/customer_defaultromfile"
 
 #define UPLOAD_ROMFILE_PATH	"/var/tmp/up_romfile.cfg"
+#define UPLOAD_COMPRESSROMFILE_PATH	"/var/tmp/up_romfile.cfg.gz"
 #define RUNNING_ROMFILE_PATH 	"/dev/mtdblock1"
 #define BK_WEBINFO_PATH	"/tmp/web.xml"
 #define TMP_CONF	"/tmp/tmp.conf"
@@ -211,6 +198,8 @@
 #define QOS_COMMON "Common"
 #define QOS_ENTRY0 "Entry0"
 
+#define VPNC_NODE "VPNC"
+
 #define MAXSIZE	160
 #define QM_LEN	2
 
@@ -230,6 +219,7 @@
 #define CREATE_ROMFILE_ERR_MSG "Fail to create the romfile!!!\n"
 
 #define UPGRADE_ROMFILE_CMD	"/userfs/bin/mtd %s write /tmp/var/romfile.cfg romfile"
+#define UPGRADE_COMPRESSROMFILE_CMD	"/userfs/bin/mtd %s write /tmp/var/romfile.cfg.gz romfile"
 
 #define ATM_VC_NUM			8
 #if (defined(TCSUPPORT_WAN_ETHER) || defined(TCSUPPORT_WAN_PTM)) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)

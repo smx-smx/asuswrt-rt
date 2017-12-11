@@ -88,15 +88,12 @@ function check_wan_state(){
 
 function updateUSBStatus(){	
 	if((rc_support.search("usbX") == -1 || rc_support.search("usbX1") >= 0) && usb_path1.search("storage") == -1){	//single USB port		
-		document.getElementById("storage_ready").style.display = "none";
 		document.getElementById("be_lack_storage").style.display = "";
 	}
 	else if(rc_support.search("usbX2") >= 0 && (usb_path1.search("storage") == -1 && usb_path2.search("storage") == -1)){	//two USBport
-		document.getElementById("storage_ready").style.display = "none";
 		document.getElementById("be_lack_storage").style.display = "";
 	} 
 	else{		
-		document.getElementById("storage_ready").style.display = "";
 		document.getElementById("be_lack_storage").style.display = "none";
 	}					
 }
@@ -232,7 +229,7 @@ function change_dsl_diag_enable(value) {
 </div>
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
-<form METHOD="POST" name="adv_adsl" ACTION="/cgi-bin/start_apply.asp" target="hidden_frame">
+<form method="POST" name="adv_adsl" action="/start_apply.asp" target="hidden_frame">
 <input type="hidden" name="current_page" value="Advanced_Feedback.asp">
 <input type="hidden" name="PM_attach_syslog" value="<% tcWebApi_Get("PushMail_Entry", "PM_attach_syslog", "s") %>">
 <input type="hidden" name="PM_attach_cfgfile" value="<% tcWebApi_Get("PushMail_Entry", "PM_attach_cfgfile", "s") %>">
@@ -281,7 +278,7 @@ function change_dsl_diag_enable(value) {
 </td>
 </tr>
 <tr>
-<th>Name of the Subscribed Plan/Service/Package *</th>
+<th>Subscribed Plan/Service/Package *</th>
 <td>
 	<input type="text" name="fb_Subscribed_Info" maxlength="50" class="input_25_table" value="">
 </td>
@@ -309,7 +306,6 @@ function change_dsl_diag_enable(value) {
 		<input type="radio" name="dslx_diag_enable" class="input" value="1" onclick="change_dsl_diag_enable(1);"><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
 		<input type="radio" name="dslx_diag_enable" class="input" value="0" onclick="change_dsl_diag_enable(0);" checked><%tcWebApi_get("String_Entry","checkbox_No","s")%>
 		<br>	
-		<span id="storage_ready" style="display:none;color:#FC0">* USB disk is ready.</span>
 		<span id="be_lack_storage" style="display:none;color:#FC0">* No USB disk plug-in.</span>
 	</td>
 </tr>

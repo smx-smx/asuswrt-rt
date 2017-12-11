@@ -14,6 +14,7 @@ char username[256];
 char password[256];
 
 int is_renamed = 1;
+int access_token_expired;
 
 char *Clientfp="*";
 double start_time;
@@ -86,7 +87,7 @@ char *write_error_message(char *format,...)
 {
     int size=256;
     char *p=(char *)malloc(size);
-    memset(p,0,sizeof(p));
+    memset(p,0,size);
     va_list ap;
     va_start(ap,format);
     vsnprintf(p,size,format,ap);
@@ -152,7 +153,7 @@ char *parse_name_from_path(const char *path)
     p++;
 
     name = (char *)malloc(sizeof(char)*(strlen(p)+2));
-    memset(name,0,sizeof(name));
+    memset(name,0,strlen(p)+2);
 
     strcpy(name,p);
 
@@ -447,7 +448,7 @@ cJSON *dofile(char *filename)
     else
         return NULL;
 }
-
+#ifdef OAuth1
 int open_login_page_first()
 {
     char Myurl[MAXSIZE];
@@ -459,9 +460,9 @@ int open_login_page_first()
     wd_DEBUG("Myurl:%s\n",Myurl);
     CURL *curl;
     CURLcode res;
-    FILE *fp,*fp1;
+    FILE *fp;
 
-    curl_global_init(CURL_GLOBAL_ALL);
+    //curl_global_init(CURL_GLOBAL_ALL);
     curl=curl_easy_init();
     if(curl){
         struct curl_slist *headers_l=NULL;
@@ -507,6 +508,7 @@ int open_login_page_first()
         if(fp==NULL){
             curl_easy_cleanup(curl);
             curl_slist_free_all(headers_l);
+            //curl_global_cleanup();
             return -1;
         }
         curl_easy_setopt(curl,CURLOPT_CONNECTTIMEOUT,60);
@@ -517,6 +519,7 @@ int open_login_page_first()
         curl_easy_cleanup(curl);
         curl_slist_free_all(headers_l);
         if(res != 0){
+            //curl_global_cleanup();
             wd_DEBUG("open_login_page [%d] failed!\n",res);
             return -1;
         }
@@ -524,7 +527,7 @@ int open_login_page_first()
     else
         wd_DEBUG("url is wrong!!!");
 
-    curl_global_cleanup();
+    //curl_global_cleanup();
 
 
 }
@@ -545,7 +548,7 @@ int
     //printf("data=%s\n",data);
     //char *data=parse_login_page();
 
-    curl_global_init(CURL_GLOBAL_ALL);
+    //curl_global_init(CURL_GLOBAL_ALL);
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,buf);
 
@@ -571,19 +574,28 @@ int
 
         if(fp==NULL){
             curl_easy_cleanup(curl);
+            curl_slist_free_all(headerlist);
+            free(data);
+            //curl_global_cleanup();
             return -1;
         }
 
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
 
         res=curl_easy_perform(curl);
-        if(res != 0){
-            wd_DEBUG("login_first [%d] failed!\n",res);
-            return -1;
-        }
+
         curl_easy_cleanup(curl);
         fclose(fp);
         curl_slist_free_all(headerlist);
+        //curl_global_cleanup();
+
+        if(res != 0){
+
+            free(data);
+            wd_DEBUG("login_first [%d] failed!\n",res);
+            return -1;
+        }
+
     }
     free(data);
     return 0;
@@ -598,7 +610,7 @@ char *parse_login_page()
     char cont[256]="\0";
     char *data=NULL;
     data=(char *)malloc(sizeof(char *)*1024);
-    memset(data,0,sizeof(data));
+    memset(data,0,1024);
     char *url="https://www.dropbox.com/1/oauth/authorize";
     sprintf(cont,"%s?oauth_token=%s",url,auth->tmp_oauth_token);
     //sprintf(cont,"%s?oauth_token=%s",url,"s1unnz0qytb4j35");
@@ -625,8 +637,13 @@ char *parse_login_page()
     char *pwd_tmp=oauth_url_escape(asus_cfg.pwd);
     //sprintf(data,"t=%s&lhs_type=default&cont=%s&signup_tag=oauth&signup_data=177967&login_email=%s&login_password=%s&%s&%s&%s",
     //        buff,oauth_url_escape(cont),oauth_url_escape(info->usr),oauth_url_escape(info->pwd),"login_submit=1","remember_me=on","login_submit_dummy=Sign+in");
+#if 1
     sprintf(data,"t=%s&lhs_type=default&cont=%s&signup_tag=oauth&signup_data=177967&login_email=%s&login_password=%s&%s&%s&%s",
             buff,cont_tmp,usr_tmp,pwd_tmp,"login_submit=1","remember_me=on","login_submit_dummy=Sign+in");
+#else
+    sprintf(data,"t=%s&cont=%s&signup_tag=oauth&signup_data=177967&display=desktop&login_email=%s&login_password=%s&%s&%s&%s",
+            buff,cont_tmp,usr_tmp,pwd_tmp,"login_submit=1","remember_me=on","login_submit_dummy=Sign+in");
+#endif
     //printf("m=%s\nbuff=%s\ndata=%s\n",m,buff,data);
     fclose(fp);
     free(cont_tmp);
@@ -659,7 +676,7 @@ char *parse_cookie()
     //printf("buf=%s\n",buf);
     char *cookie;
     cookie=malloc(128);
-    memset(cookie,0,sizeof(cookie));
+    memset(cookie,0,128);
     p=strtok(buf,m);
 
     int i=0;
@@ -699,17 +716,25 @@ int login_second()
     //sprintf(Myurl,"%s%s%s","https://www.dropbox.com/login?cont=https%3A//www.dropbox.com/1/oauth/authorize%3Foauth_token\%3D",auth->tmp_oauth_token,"&signup_tag=oauth&signup_data=177967");
     //char *data=parse_login_page();
     char *data=malloc(256);
-    memset(data,0,sizeof(data));
+    memset(data,0,256);
     char *cookie=parse_cookie();
+#if 1
     sprintf(data,"t=%s&allow_access=Allow&oauth_token=%s&display&osx_protocol",cookie,auth->tmp_oauth_token);
+#else
+    sprintf(data,"t=%s&allow_access=Allow&saml_assertion&embedded&osx_protocol&oauth_token=%s&display&oauth_callback&user_id=150377145",cookie,auth->tmp_oauth_token);
+#endif
     //sprintf(Myurl,"%s?%s%s","https://www.dropbox.com/1/oauth/authorize","oauth_token=",auth->tmp_oauth_token);
+#if 1
     sprintf(Myurl,"%s","https://www.dropbox.com/1/oauth/authorize");
+#else
+    sprintf(Myurl,"%s","https://www.dropbox.com/1/oauth/authorize_submit");
+#endif
     struct curl_slist *headerlist=NULL;
     static const char buf[]="Expect:";
     //printf("data=%s\n",data);
     //char *data=parse_login_page();
 
-    curl_global_init(CURL_GLOBAL_ALL);
+    //curl_global_init(CURL_GLOBAL_ALL);
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,buf);
 
@@ -739,19 +764,173 @@ int login_second()
 
         if(fp==NULL){
             curl_easy_cleanup(curl);
+            free(data);
+            free(cookie);
+            curl_slist_free_all(headerlist);
+            //curl_global_cleanup();
             return -1;
         }
 
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
 
         res=curl_easy_perform(curl);
-        if(res != 0){
-            wd_DEBUG("login_second [%d] failed!\n",res);
-            return -1;
-        }
+
         curl_easy_cleanup(curl);
         fclose(fp);
         curl_slist_free_all(headerlist);
+        //curl_global_cleanup();
+        if(res != 0){
+            free(data);
+            free(cookie);
+            wd_DEBUG("login_second [%d] failed!\n",res);
+            return -1;
+        }
+
+    }
+
+    free(data);
+    free(cookie);
+    return 0;
+}
+
+char *pare_login_second_response()
+{
+    FILE *f=fopen(Con(TMP_R,xmldate3.xml),"rb");fseek(f,0,SEEK_END);long len=ftell(f);fseek(f,0,SEEK_SET);
+    char *data=malloc(len+1);fread(data,1,len,f);fclose(f);
+    char *s="name=\"user_id\" value=\"";
+    char *sb="\"";
+    char *p = NULL;
+    char *pt = NULL;
+    char *user_id = NULL;
+    int user_id_length;
+    p=strstr(data,s);
+    if(p!=NULL){
+        //printf("buf=%s\n",buf);
+        p+=strlen(s);
+        pt = strstr(p,sb);
+        user_id_length = strlen(p) - strlen(pt);
+        user_id = malloc(user_id_length+1);
+        memset(user_id,0,user_id_length+1);
+        printf("p=%s\n",p);
+        printf("pt=%s\n",pt);
+        snprintf(user_id,user_id_length+1,"%s",p);
+    }
+    my_free(data);
+
+
+//    FILE *fp = NULL;
+//    fp = fopen(Con(TMP_R,xmldate3.xml),"r");
+//    char buf[512] ="\0";
+//    char *s="name=\"user_id\" value=\"";
+//    char *sb="\"";
+//    char *p = NULL;
+//    char *pt = NULL;
+//    char *user_id = NULL;
+//    int user_id_length;
+//    while(!feof(fp)){
+//        fgets(buf,512,fp);
+//        printf("buf=%s\n",buf);
+//        p=strstr(buf,s);
+//        if(p!=NULL){
+//            printf("buf=%s\n",buf);
+//            p+=strlen(s);
+//            pt = strstr(p,sb);
+//            user_id_length = strlen(p) - strlen(pt);
+//            user_id = malloc(user_id_length+1);
+//            memset(user_id,0,user_id_length+1);
+//            printf("p=%s\n",p);
+//            printf("pt=%s\n",pt);
+//            snprintf(user_id,user_id_length+1,"%s",p);
+//            break;
+//        }
+//    }
+//    fclose(fp);
+    wd_DEBUG("user_id = %s\n",user_id);
+    return user_id;
+}
+
+int login_second_submit()
+{
+    CURL *curl;
+    CURLcode res;
+    FILE *fp;
+    char Myurl[MAXSIZE]="\0";
+    //char url[]="https://www.box.net/api/1.0/auth/";
+    //sprintf(Myurl,"%s%s%s","https://www.dropbox.com/login?cont=https%3A//www.dropbox.com/1/oauth/authorize%3Foauth_token\%3D",auth->tmp_oauth_token,"&signup_tag=oauth&signup_data=177967");
+    //char *data=parse_login_page();
+    char *data=malloc(256);
+    memset(data,0,256);
+    char *cookie=parse_cookie();
+    char *user_id = pare_login_second_response();
+#if 0
+    sprintf(data,"t=%s&allow_access=Allow&oauth_token=%s&display&osx_protocol",cookie,auth->tmp_oauth_token);
+#else
+    sprintf(data,"t=%s&allow_access=Allow&saml_assertion&embedded&osx_protocol&oauth_token=%s&display&oauth_callback&user_id=%s",cookie,auth->tmp_oauth_token,user_id);
+#endif
+    //sprintf(Myurl,"%s?%s%s","https://www.dropbox.com/1/oauth/authorize","oauth_token=",auth->tmp_oauth_token);
+#if 0
+    sprintf(Myurl,"%s","https://www.dropbox.com/1/oauth/authorize");
+#else
+    sprintf(Myurl,"%s","https://www.dropbox.com/1/oauth/authorize_submit");
+#endif
+    free(user_id);
+    struct curl_slist *headerlist=NULL;
+    static const char buf[]="Expect:";
+    //printf("data=%s\n",data);
+    //char *data=parse_login_page();
+
+    //curl_global_init(CURL_GLOBAL_ALL);
+    curl=curl_easy_init();
+    headerlist=curl_slist_append(headerlist,buf);
+
+    if(curl){
+        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl,CURLOPT_URL,Myurl);
+        //curl_easy_setopt(curl,CURLOPT_URL,url);
+        //curl_easy_setopt(curl,CURLOPT_VERBOSE,1);
+        curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,data);
+
+
+        curl_easy_setopt(curl,CURLOPT_COOKIEFILE,Con(TMP_R,cookie_login.txt));//send first saved cookie
+        curl_easy_setopt(curl,CURLOPT_COOKIEJAR,Con(TMP_R,tmp/cookie_login_3.txt));
+
+
+        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,0);
+
+
+#ifdef SKIP_HOSTNAME_VERFICATION
+        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,0L);
+#endif
+
+        fp=fopen(Con(TMP_R,xmldate4.xml),"w");
+
+
+        if(fp==NULL){
+            curl_easy_cleanup(curl);
+            free(data);
+            free(cookie);
+            curl_slist_free_all(headerlist);
+            //curl_global_cleanup();
+            return -1;
+        }
+
+        curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
+
+        res=curl_easy_perform(curl);
+
+        curl_easy_cleanup(curl);
+        fclose(fp);
+        curl_slist_free_all(headerlist);
+        //curl_global_cleanup();
+        if(res != 0){
+            free(data);
+            free(cookie);
+            wd_DEBUG("login_second_submit [%d] failed!\n",res);
+            return -1;
+        }
+
     }
 
     free(data);
@@ -799,6 +978,7 @@ int get_access_token()
         return -1;
     return 0;
 }
+#endif
 int api_accout_info()
 {
     CURL *curl;
@@ -806,7 +986,11 @@ int api_accout_info()
     FILE *fp;
     char *header;
     static const char buf[]="Expect:";
+#ifdef OAuth1
     header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
@@ -819,7 +1003,7 @@ int api_accout_info()
         //curl_easy_setopt(curl,CURLOPT_POSTFIELDS,"");
         //curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,0);
         fp=fopen(Con(TMP_R,data_3.txt),"w");
-        curl_easy_setopt(curl,CURLOPT_TIMEOUT,20);
+        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
         res=curl_easy_perform(curl);
 
@@ -843,11 +1027,15 @@ int api_metadata_one(char *phref,cJSON *(*cmd_data)(char *filename))
     char *myUrl;
     char *phref_tmp=oauth_url_escape(phref);
     myUrl=(char *)malloc(sizeof(char)*(strlen(phref_tmp)+128));
-    memset(myUrl,0,sizeof(myUrl));
+    memset(myUrl,0,strlen(phref_tmp)+128);
     sprintf(myUrl,"%s%s","https://api.dropbox.com/1/metadata/dropbox",phref_tmp);
     free(phref_tmp);
     char *header;
+#ifdef OAuth1
     header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
@@ -862,7 +1050,7 @@ int api_metadata_one(char *phref,cJSON *(*cmd_data)(char *filename))
         //curl_easy_setopt(curl,CURLOPT_POSTFIELDS,"");
         //curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,0);
         fp=fopen(Con(TMP_R,data_one.txt),"w");
-        curl_easy_setopt(curl,CURLOPT_TIMEOUT,20);
+        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
         res=curl_easy_perform(curl);
 
@@ -895,10 +1083,14 @@ int api_metadata_test_dir(char *phref,proc_pt cmd_data)
     FILE *hd;
     char *myUrl;
     myUrl=(char *)malloc(sizeof(char)*(strlen(phref)+128));
-    memset(myUrl,0,sizeof(myUrl));
+    memset(myUrl,0,strlen(phref)+128);
     sprintf(myUrl,"%s%s%s","https://api.dropbox.com/1/metadata/dropbox",phref,"?list=false&include_deleted=true");
     char *header;
+#ifdef OAuth1
     header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
@@ -969,10 +1161,14 @@ int api_metadata_test(char *phref)
     FILE *fp;
     char *myUrl;
     myUrl=(char *)malloc(sizeof(char)*(strlen(phref)+128));
-    memset(myUrl,0,sizeof(myUrl));
-    sprintf(myUrl,"%s%s%s","https://api.dropbox.com/1/metadata/dropbox",phref,"?list=false&include_deleted=true");
+    memset(myUrl,0,strlen(phref)+128);
+    sprintf(myUrl,"%s%s%s","https://api.dropbox.com/1/metadata/dropbox",phref,"?list=true&include_deleted=true");
     char *header;
+#ifdef OAuth1
     header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
@@ -1008,16 +1204,23 @@ int api_metadata(char *phref,proc_pt cmd_data)
     CURL *curl;
     CURLcode res;
     FILE *fp;
+    FILE *hd;
     char *myUrl;
     char *phref_tmp=oauth_url_escape(phref);
     //wd_DEBUG("get %s metadata\n",phref);
     myUrl=(char *)malloc(sizeof(char)*(strlen(phref_tmp)+128));
-    memset(myUrl,0,sizeof(myUrl));
+    memset(myUrl,0,strlen(phref_tmp)+128);
 
     sprintf(myUrl,"%s%s","https://api.dropbox.com/1/metadata/dropbox",phref_tmp);
+    //sprintf(myUrl,"%s","https://sp.yostore.net/member/requestservicegateway/");
     free(phref_tmp);
     char *header;
+#ifdef OAuth1
     header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
+    //curl_global_init(CURL_GLOBAL_ALL);
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
@@ -1033,18 +1236,42 @@ int api_metadata(char *phref,proc_pt cmd_data)
         //curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,0);
         //fp=fopen("/tmp/data_5.txt","w");
         fp=fopen(Con(TMP_R,data_5.txt),"w");
-        curl_easy_setopt(curl,CURLOPT_TIMEOUT,20);
+        hd=fopen(Con(TMP_R,data_check_access_token.txt),"w");
+        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
+        curl_easy_setopt(curl,CURLOPT_WRITEHEADER,hd);
         res=curl_easy_perform(curl);
 
+        //wd_DEBUG("res = %d\n",res);
         curl_easy_cleanup(curl);
         fclose(fp);
         curl_slist_free_all(headerlist);
+        //curl_global_cleanup();
         if(res!=0){
+            fclose(hd);
             free(header);
             free(myUrl);
-            wd_DEBUG("api_metadata [%d] failed!\n",res);
+            wd_DEBUG("api_metadata %s [%d] failed!\n",phref,res);
             return -1;
+        }
+        else
+        {
+            rewind(hd);
+            char tmp[256]="\0";
+            fgets(tmp,sizeof(tmp),hd);
+            wd_DEBUG("tmp:%s\n",tmp);
+            if(strstr(tmp,"401")!=NULL)
+            {
+                write_log(S_ERROR,"Access token has expired,please re-authenticate!","",0);
+                exit_loop = 1;
+                access_token_expired = 1;
+                fclose(hd);
+                free(header);
+                free(myUrl);
+                return -1;
+            }
+            fclose(hd);
+
         }
     }
     free(myUrl);
@@ -1079,13 +1306,17 @@ int api_move(char *oldname,char *newname,int index,int is_changed_time,char *new
     char *oldname_tmp=oauth_url_escape(oldname);
     char *newname_tmp=oauth_url_escape(newname);
     data=(char*)malloc(sizeof(char *)*(64+strlen(oldname_tmp)+strlen(newname_tmp)));
-    memset(data,0,sizeof(data));
+    memset(data,0,64+strlen(oldname_tmp)+strlen(newname_tmp));
 
     sprintf(data,"root=%s&from_path=%s&to_path=%s","dropbox",oldname_tmp,newname_tmp);
     free(oldname_tmp);
     free(newname_tmp);
     static const char buf[]="Expect:";
+#ifdef OAuth1
     header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
@@ -1098,7 +1329,7 @@ int api_move(char *oldname,char *newname,int index,int is_changed_time,char *new
         curl_easy_setopt(curl,CURLOPT_POSTFIELDS,data);
         //curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,0);
         fp=fopen(Con(TMP_R,data_4.txt),"w");
-        curl_easy_setopt(curl,CURLOPT_TIMEOUT,20);
+        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
         curl_easy_setopt(curl,CURLOPT_WRITEHEADER,hd);
         res=curl_easy_perform(curl);
@@ -1238,7 +1469,25 @@ int api_move(char *oldname,char *newname,int index,int is_changed_time,char *new
                     }
                     free(localpath);
                 }
-
+            }
+            else if(strstr(tmp,"403")!=NULL)
+            {
+                //cJSON *json = dofile(Con(TMP_R,data_4.txt));
+                char *server_conflcit_name=get_server_exist(newname,index);
+                printf("server_conflict_name=%s\n",server_conflcit_name);
+                if(server_conflcit_name)
+                {
+                    deal_big_low_conflcit(server_conflcit_name,oldname,newname,newname_r,index);
+                    free(server_conflcit_name);
+                }
+                else
+                {
+                    fclose(hd);
+                    free(header);
+                    free(data);
+                    return -1;
+                }
+                //cJSON_Delete(json);
             }
         }
     }
@@ -1266,7 +1515,7 @@ int api_download(char *fullname,char *filename,int index)
 
     char *temp_suffix = ".asus.td";
     char *Localfilename_tmp=(char *)malloc(sizeof(char)*(strlen(fullname)+strlen(temp_suffix)+2));
-    memset(Localfilename_tmp,0,sizeof(Localfilename_tmp));
+    memset(Localfilename_tmp,0,strlen(fullname)+strlen(temp_suffix)+2);
     sprintf(Localfilename_tmp,"%s%s",fullname,temp_suffix);
     CURL *curl;
     CURLcode res;
@@ -1277,13 +1526,17 @@ int api_download(char *fullname,char *filename,int index)
     char *myUrl;
     char *filename_tmp=oauth_url_escape(filename);
     myUrl=(char *)malloc(sizeof(char)*(strlen(filename_tmp)+128));
-    memset(myUrl,0,sizeof(myUrl));
+    memset(myUrl,0,strlen(filename_tmp)+128);
 
     sprintf(myUrl,"%s%s","https://api-content.dropbox.com/1/files/dropbox",filename_tmp);
     free(filename_tmp);
     char *header;
     static const char buf[]="Expect:";
+#ifdef OAuth1
     header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
@@ -1361,41 +1614,60 @@ int api_download(char *fullname,char *filename,int index)
     free(Localfilename_tmp);
     free(header);
     free(myUrl);
-    if(finished_initial)
+    /*if(finished_initial)
         write_log(S_SYNC,"","",index);
     else
-        write_log(S_INITIAL,"","",index);
+        write_log(S_INITIAL,"","",index);*/
     return 0;
 }
-int get_file_size(char *filename)
+
+//int get_file_size(char *filename)
+//{
+//    int file_len = 0;
+//    int fd = 0;
+
+//    fd = open(filename, O_RDONLY);
+//    if(fd < 0)
+//    {
+//        perror("open");
+//        /*
+//         fix below bug:
+//            1.create file a;
+//            2.rename a-->b;
+//            final open() 'a' failed ,will exit();
+//        */
+//        //exit(-1);
+//        return -1;
+//    }
+
+//    file_len = lseek(fd, 0, SEEK_END);
+//    //wd_DEBUG("file_len is %d\n",file_len);
+//    if(file_len < 0)
+//    {
+//        perror("lseek");
+//        exit(-1);
+//    }
+//    close(fd);
+//    return file_len;
+//}
+
+long long int
+        get_file_size(const char *file)
 {
-    int file_len = 0;
-    int fd = 0;
+    struct stat file_info;
 
-    fd = open(filename, O_RDONLY);
-    if(fd < 0)
-    {
-        perror("open");
-        /*
-         fix below bug:
-            1.create file a;
-            2.rename a-->b;
-            final open() 'a' failed ,will exit();
-        */
-        //exit(-1);
-        return -1;
-    }
+    if( !(file || *file) )
+        return 0;
 
-    file_len = lseek(fd, 0, SEEK_END);
-    //wd_DEBUG("file_len is %d\n",file_len);
-    if(file_len < 0)
-    {
-        perror("lseek");
-        exit(-1);
-    }
-    close(fd);
-    return file_len;
+    if( file[0] == '-' )
+        return 0;
+
+    if( stat(file, &file_info) == -1 )
+        return 0;
+    else
+        return(file_info.st_size);
 }
+
 int api_upload_put_test(char *filename,char *serverpath,int flag)
 {
     CURL *curl;
@@ -1419,11 +1691,15 @@ int api_upload_put_test(char *filename,char *serverpath,int flag)
     filesize = filesize / 1024 / 1024;
 
     fp_1=fopen(filename,"rb");
-    int size=get_file_size(filename);
+    long long int size=get_file_size(filename);
 
     char *header;
     static const char buf[]="Content-Type: test/plain";
+#ifdef OAuth1
     header=makeAuthorize(4);
+#else
+    header=makeAuthorize(2);
+#endif
     struct curl_slist *headerlist=NULL;
     char header_l[]="Content-Length: ";
     char header1_l[128]="\0";
@@ -1515,11 +1791,15 @@ int api_upload_put(char *filename,char *serverpath,int flag,int index)
         return LOCAL_FILE_LOST;
     }
 
-    int size=get_file_size(filename);
+    long long int size=get_file_size(filename);
     //printf("size=%d,filesize=%lu\n",size,filesize);
     char *header;
     static const char buf[]="Content-Type: test/plain";
+#ifdef OAuth1
     header=makeAuthorize(4);
+#else
+    header=makeAuthorize(2);
+#endif
     struct curl_slist *headerlist=NULL;
     char header_l[]="Content-Length: ";
     char header1_l[128]="\0";
@@ -1683,11 +1963,15 @@ int api_upload_post()
     filesize = filesize / 1024 / 1024;
 
     fp_1=fopen("cookie_login.txt","rb+");
-    int size=get_file_size("cookie_login.txt");
+    long long int size=get_file_size("cookie_login.txt");
     wd_DEBUG("size=%d,filesize=%lu\n",size,filesize);
     char *header;
     static const char buf[]="Content-Type: test/plain";
+#ifdef OAuth1
     header=makeAuthorize(4);
+#else
+    header=makeAuthorize(2);
+#endif
     struct curl_slist *headerlist=NULL;
     char header_l[]="Content-Length: ";
     char header1_l[128]="\0";
@@ -1814,7 +2098,11 @@ int api_upload_chunk_put(char *buffer,char *upload_id,unsigned long offset,unsig
     FILE *fp_2;
     fp_2=fopen(Con(TMP_R,swap),"w+");
     char *header;
+#ifdef OAuth1
     header=makeAuthorize(4);
+#else
+    header=makeAuthorize(2);
+#endif
 
     fwrite(buffer,4000000/10,10,fp_2);
     rewind(fp_2);
@@ -1825,7 +2113,7 @@ int api_upload_chunk_put(char *buffer,char *upload_id,unsigned long offset,unsig
     curl=curl_easy_init();
     //char myUrl[2046]="\0";
     char *myUrl=(char *)malloc(2046);
-    memset(myUrl,0,sizeof(myUrl));
+    memset(myUrl,0,2046);
     //char range[256] = {0};
     if( upload_id ==NULL )
         sprintf(myUrl,"%s?%s","https://api-content.dropbox.com/1/chunked_upload",header);
@@ -1939,7 +2227,7 @@ char *get_upload_id()
     char *p=NULL,*m=NULL;
     char *upload_id;
     upload_id=(char *)malloc(sizeof(char *)*512);
-    memset(upload_id,0,sizeof(upload_id));
+    memset(upload_id,0,512);
     fgets(buff,sizeof(buff),fp);
     p=strstr(buff,"upload_id");
     p=p+strlen("upload_id")+4;
@@ -1963,14 +2251,18 @@ int api_upload_chunk_commit(char *upload_id,char *filename,int flag,int index)
     FILE *fp;
     FILE *fp_hd;
     char *header;
+#ifdef OAuth1
     header=makeAuthorize(4);
+#else
+    header=makeAuthorize(2);
+#endif
     CURL *curl;
     CURLcode res;
     struct curl_slist *headerlist=NULL;
 
     curl=curl_easy_init();
     char *data=malloc(256);
-    memset(data,0,sizeof(data));
+    memset(data,0,256);
     if(flag)
         sprintf(data,"upload_id=%s",upload_id);
     else
@@ -1997,7 +2289,7 @@ int api_upload_chunk_commit(char *upload_id,char *filename,int flag,int index)
         //curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE,(curl_off_t)0);
         fp=fopen(Con(TMP_R,upload_chunk_commit.txt),"w");
         //curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,my_write_func);
-        curl_easy_setopt(curl,CURLOPT_TIMEOUT,20);
+        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
 
         fp_hd=fopen(Con(TMP_R,upload_header.txt),"w+");
@@ -2076,6 +2368,7 @@ int api_upload_chunk_commit(char *upload_id,char *filename,int flag,int index)
                     return SERVER_SPACE_NOT_ENOUGH;
                 }
             }
+            fclose(fp_hd);
         }
     }
     return 0;
@@ -2087,7 +2380,7 @@ int api_upload_chunk_commit(char *upload_id,char *filename,int flag,int index)
 */
 int is_server_enough(char *filename)
 {
-    unsigned long size_lo=get_file_size(filename);
+    long long int size_lo=get_file_size(filename);
     if(size_lo == -1)
         return -1;
     int status;
@@ -2141,10 +2434,10 @@ int add_upload_chunked_info(char *filename,char *upload_id,unsigned long offset,
     upload_chunk = (Upload_chunked *)malloc(sizeof(Upload_chunked));
     memset(upload_chunk,0,sizeof(upload_chunk));
     upload_chunk->filename = (char *)malloc(sizeof(char)*(strlen(filename)+1));
-    memset(upload_chunk->filename,'\0',sizeof(upload_chunk->filename));
+    memset(upload_chunk->filename,'\0',strlen(filename)+1);
     sprintf(upload_chunk->filename,"%s",filename);
     upload_chunk->upload_id = (char *)malloc(sizeof(char)*(strlen(upload_id)+1));
-    memset(upload_chunk->upload_id,'\0',sizeof(upload_chunk->upload_id));
+    memset(upload_chunk->upload_id,'\0',strlen(upload_id)+1);
     sprintf(upload_chunk->upload_id,"%s",upload_id);
     upload_chunk->chunk = chunk;
     upload_chunk->offset = offset;
@@ -2161,7 +2454,7 @@ int api_upload_chunk_continue(char *filename,int index,int flag,char *serverpath
     FILE *fp_1;
     char *upload_id = (char *)malloc(sizeof(char)*(strlen(upload_chunk->upload_id)+1));
     time_t expires = upload_chunk->expires;
-    memset(upload_id,'\0',sizeof(upload_id));
+    memset(upload_id,'\0',strlen(upload_chunk->upload_id)+1);
     sprintf(upload_id,"%s",upload_chunk->upload_id);
     char *buffer = malloc(4000000);
     fp_1=fopen(filename,"r");
@@ -2176,7 +2469,7 @@ int api_upload_chunk_continue(char *filename,int index,int flag,char *serverpath
     chunk = upload_chunk->chunk;
     while(chunk+offset <= size)
     {
-        memset(buffer,0,sizeof(buffer));
+        memset(buffer,0,4000000);
         fread(buffer,sizeof(buffer)/10,10,fp_1);
         res=api_upload_chunk_put(buffer,upload_id,offset,chunk,index,filename);
         if(res != 0)
@@ -2192,7 +2485,7 @@ int api_upload_chunk_continue(char *filename,int index,int flag,char *serverpath
         chunk=chunk+offset;
     }
     offset = size-chunk;
-    memset(buffer,0,sizeof(buffer));
+    memset(buffer,0,4000000);
     fread(buffer,sizeof(buffer)/10,10,fp_1);
     res = api_upload_chunk_put(buffer,upload_id,offset,chunk,index,filename);
     if(res != 0)
@@ -2238,7 +2531,7 @@ int api_upload_chunk(char *filename,int index,int flag,char *serverpath,unsigned
         return -1;
     }
     char *buffer = malloc(4000000);
-    memset(buffer,0,sizeof(buffer));
+    memset(buffer,0,4000000);
     fread(buffer,sizeof(buffer)/10,10,fp_1);
     //fwrite(buffer,sizeof(buffer)/10,10,fp_2);
     //rewind(fp_2);
@@ -2259,7 +2552,11 @@ int api_upload_chunk(char *filename,int index,int flag,char *serverpath,unsigned
 */
     upload_id = get_upload_id();
     if(upload_id == NULL)
+    {
+        fclose(fp_1);
+        free(buffer);
         return -1;
+    }
     cJSON *json = dofile(Con(TMP_R,upload_chunk_1.txt));
     time_t mtime=cJSON_printf_expires(json);
     cJSON_Delete(json);
@@ -2268,7 +2565,7 @@ int api_upload_chunk(char *filename,int index,int flag,char *serverpath,unsigned
     chunk = offset;
     while(chunk+offset <= size)
     {
-        memset(buffer,0,sizeof(buffer));
+        memset(buffer,0,4000000);
         fread(buffer,sizeof(buffer)/10,10,fp_1);
         res=api_upload_chunk_put(buffer,upload_id,offset,chunk,index,filename);
         if(res != 0)
@@ -2289,7 +2586,7 @@ int api_upload_chunk(char *filename,int index,int flag,char *serverpath,unsigned
         chunk=chunk+offset;
     }
     offset=size-chunk;
-    memset(buffer,0,sizeof(buffer));
+    memset(buffer,0,4000000);
     fread(buffer,sizeof(buffer)/10,10,fp_1);
     res=api_upload_chunk_put(buffer,upload_id,offset,chunk,index,filename);
     if(res!=0)
@@ -2368,10 +2665,9 @@ int upload_file(char *filename,char *serverpath,int flag,int index)
     unsigned long MAX_FILE_SIZE=140*1000*1000;
 
     int res=0;
-
     write_log(S_UPLOAD,"",filename,index);
 
-    unsigned long size = get_file_size(filename);
+    long long int size = get_file_size(filename);
     if( size == -1)
     {
         if(access(filename,F_OK) != 0)
@@ -2426,10 +2722,10 @@ int upload_file(char *filename,char *serverpath,int flag,int index)
             return res;
         }
     }
-    if(finished_initial)
+    /*if(finished_initial)
         write_log(S_SYNC,"","",index);
     else
-        write_log(S_INITIAL,"","",index);
+        write_log(S_INITIAL,"","",index);*/
     return 0;
     //fclose(fp_2);
 
@@ -2441,13 +2737,17 @@ int api_delete(char *herf,int index)
     FILE *fp;
     char *herf_tmp=oauth_url_escape(herf);
     char *data=(char *)malloc(sizeof(char)*(strlen(herf_tmp)+64));
-    memset(data,0,sizeof(data));
+    memset(data,0,strlen(herf_tmp)+64);
 
     sprintf(data,"%s%s","root=dropbox&path=",herf_tmp);
     free(herf_tmp);
     //char data[]="root=dropbox&path=/main.py";
     char *header;
+#ifdef OAuth1
     header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
@@ -2460,7 +2760,7 @@ int api_delete(char *herf,int index)
         curl_easy_setopt(curl,CURLOPT_POSTFIELDS,data);
         //curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,0);
         fp=fopen(Con(TMP_R,api_delete.txt),"w");
-        curl_easy_setopt(curl,CURLOPT_TIMEOUT,20);
+        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
         res=curl_easy_perform(curl);
 
@@ -2509,11 +2809,15 @@ int api_create_folder(char *localpath,char *foldername)
     //char data[]="root=dropbox&path=/main";
     char *foldername_tmp=oauth_url_escape(foldername);
     char *data=(char *)malloc(sizeof(char)*(strlen(foldername_tmp)+32));
-    memset(data,0,sizeof(data));
+    memset(data,0,strlen(foldername_tmp)+32);
     sprintf(data,"%s%s","root=dropbox&path=",foldername_tmp);
     free(foldername_tmp);
     char *header;
+#ifdef OAuth1
     header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
@@ -2526,7 +2830,7 @@ int api_create_folder(char *localpath,char *foldername)
         curl_easy_setopt(curl,CURLOPT_POSTFIELDS,data);
         //curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,0);
 
-        curl_easy_setopt(curl,CURLOPT_TIMEOUT,20);
+        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
         curl_easy_setopt(curl,CURLOPT_WRITEHEADER,fp_hd);
         res=curl_easy_perform(curl);
@@ -2540,6 +2844,39 @@ int api_create_folder(char *localpath,char *foldername)
             free(data);
             wd_DEBUG("create %s failed,is [%d] !\n",foldername,res);
             return res;
+        }
+        else
+        {
+            /*deal big or small case sentive problem,will return 403*/
+            if(parse_create_folder(Con(TMP_R,create_folder_header.txt)))
+            {
+#ifndef MULTI_PATH
+                char *server_conflcit_name=get_server_exist(foldername,0);
+                if(server_conflcit_name)
+                {
+                    char *local_conflcit_name = serverpath_to_localpath(server_conflcit_name,0);
+                    char *g_newname = get_confilicted_name_case(local_conflcit_name,1);
+                    my_free(local_conflcit_name);
+
+                    updata_socket_list(localpath,g_newname,0);
+
+                    if(access(localpath,0) == 0)
+                    {
+                        add_action_item("rename",g_newname,g_pSyncList[0]->server_action_list);
+                        rename(localpath,g_newname);
+                    }
+
+                    char *s_newname = localpath_to_serverpath(g_newname,0);
+                    int status=0;
+                    do
+                    {
+                        status = api_create_folder(g_newname,s_newname);
+                    }while(status != 0 && !exit_loop);
+                    my_free(g_newname);
+                    my_free(s_newname);
+                }
+#endif
+            }
         }
     }
     free(header);
@@ -2691,6 +3028,7 @@ void init_globar_var()
     disk_change = 0;
 #endif
     upload_chunk = NULL;
+    access_token_expired = 0;
     exit_loop = 0;
     stop_progress = 0;
     finished_initial=0;
@@ -2903,8 +3241,9 @@ int sync_initial()
 //            for(i=0;i<asus_cfg.dir_number;i++)
 //            {
 //                SearchServerTree(g_pSyncList[i]->ServerRootNode);
-//                free_server_tree(g_pSyncList[i]->ServerRootNode);
+//                //free_server_tree(g_pSyncList[i]->ServerRootNode);
 //            }
+            //exit(0);
             usleep(1000*200);
             if(status != 0)
                 continue;
@@ -2981,7 +3320,7 @@ int sync_local_with_server(Server_TreeNode *treenode,int(* sync_fun)(Server_Tree
     if(strcmp(treenode->parenthref,"/") == 0)
     {
         localpath = (char *)malloc(sizeof(char)*(asus_cfg.prule[index]->base_path_len+asus_cfg.prule[index]->rooturl_len+2));
-        memset(localpath,'\0',sizeof(localpath));
+        memset(localpath,'\0',asus_cfg.prule[index]->base_path_len+asus_cfg.prule[index]->rooturl_len+2);
         sprintf(localpath,"%s%s",asus_cfg.prule[index]->base_path,asus_cfg.prule[index]->rooturl);
     }
     else
@@ -3465,7 +3804,14 @@ int sync_local_with_server_perform(Server_TreeNode *treenode,Browse *perform_br,
             }
             add_action_item("remove",localfiletmp->path,g_pSyncList[index]->server_action_list);
 
-            unlink(localfiletmp->path);
+            //[bug][fix]:local file size > cloud space,then the local file will be unlink
+            action_item *pp;
+            pp = get_action_item("upload",localfiletmp->path,
+                                 g_pSyncList[index]->up_space_not_enough_list,index);
+            if(pp == NULL)
+            {
+                unlink(localfiletmp->path);
+            }
 
             localfiletmp = localfiletmp->next;
         }
@@ -3551,7 +3897,14 @@ int sync_local_with_server_perform(Server_TreeNode *treenode,Browse *perform_br,
 
                 add_action_item("remove",localfiletmp->path,g_pSyncList[index]->server_action_list);
 
-                unlink(localfiletmp->path);
+                //[bug][fix]:local file size > cloud space,then the local file will be unlink
+                action_item *pp;
+                pp = get_action_item("upload",localfiletmp->path,
+                                     g_pSyncList[index]->up_space_not_enough_list,index);
+                if(pp == NULL)
+                {
+                    unlink(localfiletmp->path);
+                }
 
             }
             else
@@ -3825,13 +4178,17 @@ time_t api_getmtime(char *phref,cJSON *(*cmd_data)(char *filename))
     char *myUrl;
     char *phref_tmp=oauth_url_escape(phref);
     myUrl=(char *)malloc(sizeof(char)*(strlen(phref_tmp)+128));
-    memset(myUrl,0,sizeof(myUrl));
+    memset(myUrl,0,strlen(phref_tmp)+128);
     sprintf(myUrl,"%s%s","https://api.dropbox.com/1/metadata/dropbox",phref_tmp);
     free(phref_tmp);
     char *header;
     FILE *hd;
     hd=fopen(Con(TMP_R,api_getmime.txt),"w+");
+#ifdef OAuth1
     header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
@@ -3846,7 +4203,7 @@ time_t api_getmtime(char *phref,cJSON *(*cmd_data)(char *filename))
         //curl_easy_setopt(curl,CURLOPT_POSTFIELDS,"");
         //curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,0);
         fp=fopen(Con(TMP_R,mtime.txt),"w");
-        curl_easy_setopt(curl,CURLOPT_TIMEOUT,20);
+        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
         curl_easy_setopt(curl,CURLOPT_WRITEHEADER,hd);
         res=curl_easy_perform(curl);
@@ -4072,6 +4429,66 @@ int is_server_exist(char *path,char *temp_name,int index)
     return 0;
 
 }
+
+char *get_server_exist(char *temp_name,int index)
+{
+    char *path;
+    char *p = strrchr(temp_name,'/');
+    path = my_str_malloc(strlen(temp_name)-strlen(p)+1);
+    snprintf(path,strlen(temp_name)-strlen(p)+1,"%s",temp_name);
+
+    int status;
+    FileList_one = (CloudFile *)malloc(sizeof(CloudFile));
+    memset(FileList_one,0,sizeof(CloudFile));
+
+    FileList_one->href = NULL;
+    FileList_one->name = NULL;
+
+    FileTail_one = FileList_one;
+    FileTail_one->next = NULL;
+    wd_DEBUG("get_server_exist path:%s\n",path);
+    status=api_metadata_one(path,dofile);
+    if(status == -1)
+    {
+        free_CloudFile_item(FileList_one);
+        free(path);
+        return NULL;
+    }
+    char *temp_name_g = my_str_malloc(strlen(temp_name)+1);
+    sprintf(temp_name_g,"%s",temp_name);
+
+    CloudFile *de_filecurrent;
+    de_filecurrent=FileList_one->next;
+    while(de_filecurrent != NULL)
+    {
+        if(de_filecurrent->href != NULL)
+        {
+            wd_DEBUG("de_filecurrent->href:%s\n",de_filecurrent->href);
+            wd_DEBUG("temp_name           :%s\n",temp_name);
+            char *tmp_href = my_str_malloc(strlen(de_filecurrent->href)+1);
+            strcpy(tmp_href,de_filecurrent->href);
+            if(strcmp(de_filecurrent->href,temp_name) != 0 && (status=strcmp(strlwr(tmp_href),strlwr(temp_name_g)))==0)
+            {
+                char *conflict_name = my_str_malloc(strlen(de_filecurrent->href)+1);
+                strcpy(conflict_name,de_filecurrent->href);
+                free_CloudFile_item(FileList_one);
+                free(path);
+                free(temp_name_g);
+                free(tmp_href);
+                return conflict_name;
+            }
+            else
+                free(tmp_href);
+
+        }
+        de_filecurrent = de_filecurrent->next;
+    }
+//    free_CloudFile_item(FileList_one);
+//    return 0;
+
+}
+
+#if 0
 char *change_server_same_name(char *fullname,int index){
 
     int i = 1;
@@ -4152,6 +4569,52 @@ char *change_server_same_name(char *fullname,int index){
     return temp_name;
 
 }
+#endif
+
+char *change_server_same_name(char *fullname,int index)
+{
+    char *newname;
+    char *tmp_name = malloc(strlen(fullname)+1);
+    memset(tmp_name,0,strlen(fullname)+1);
+    sprintf(tmp_name,"%s",fullname);
+    int is_folder = test_if_dir(fullname);
+    int exist;
+    int len;
+    char *filename;
+    char *path;
+
+    filename = parse_name_from_path(fullname);
+    len = strlen(filename);
+
+    path = my_str_malloc((size_t)(strlen(fullname)-len+1));
+
+    wd_DEBUG("fullname = %s\n",fullname);
+
+    snprintf(path,strlen(fullname)-len+1,"%s",fullname);
+
+    while(!exit_loop)
+    {
+        newname = get_confilicted_name(tmp_name,is_folder);
+        //printf("confilicted_name=%s\n",confilicted_name);
+        exist = is_server_exist(path,newname,index);
+        if(exist == 1)
+        {
+            my_free(tmp_name);
+            tmp_name = malloc(strlen(newname)+1);
+            memset(tmp_name,0,strlen(newname)+1);
+            sprintf(tmp_name,"%s",newname);
+            my_free(newname);
+            //have_same = 1;
+        }
+        else
+            break;
+    }
+    my_free(path);
+    my_free(filename);
+    my_free(tmp_name);
+    return newname;
+}
+
 int the_same_name_compare(LocalFile *localfiletmp,CloudFile *filetmp,int index,int is_init)
 {
 
@@ -4166,7 +4629,30 @@ int the_same_name_compare(LocalFile *localfiletmp,CloudFile *filetmp,int index,i
         {
             if(newer_file_ret == 0) //local file is change
             {
-                char *newname=change_local_same_name(localfiletmp->path);
+                //char *newname=change_local_same_name(localfiletmp->path);
+                char *newname;
+                char *tmp_name = malloc(strlen(localfiletmp->path)+1);
+                memset(tmp_name,0,strlen(localfiletmp->path)+1);
+                sprintf(tmp_name,"%s",localfiletmp->path);
+
+                while(!exit_loop)
+                {
+                    newname = get_confilicted_name(tmp_name,0);
+                    //printf("confilicted_name=%s\n",confilicted_name);
+                    if(access(newname,F_OK) == 0)
+                    {
+                        my_free(tmp_name);
+                        tmp_name = malloc(strlen(newname)+1);
+                        memset(tmp_name,0,strlen(newname)+1);
+                        sprintf(tmp_name,"%s",newname);
+                        my_free(newname);
+                        //have_same = 1;
+                    }
+                    else
+                        break;
+                }
+                my_free(tmp_name);
+
                 rename(localfiletmp->path,newname);
                char *err_msg = write_error_message("%s is download from server,%s is local file and rename from %s",localfiletmp->path,newname,localfiletmp->path);
                 write_trans_excep_log(localfiletmp->path,3,err_msg);
@@ -4617,6 +5103,7 @@ char *get_path_from_socket(char *cmd,int index)
 }
 void show(queue_entry_t pTemp)
 {
+    wd_DEBUG(">>>>>>show socketlist>>>>>>>>>>>>>\n");
     while(pTemp!=NULL)
     {
         wd_DEBUG(">>>>>>>>>>>>>>>>>>>>>>>>>\n");
@@ -4747,8 +5234,8 @@ char *search_newpath(char *href,int index)
             wd_DEBUG("333\n");
             char *pTemp_t=(char *)malloc(sizeof(char)*(strlen(href)+1+1));
             char *oldpath_t=(char *)malloc(sizeof(char)*(strlen(mv_oldpath)+1+1));
-            memset(pTemp_t,'\0',sizeof(pTemp_t));
-            memset(oldpath_t,'\0',sizeof(oldpath_t));
+            memset(pTemp_t,'\0',strlen(href)+1+1);
+            memset(oldpath_t,'\0',strlen(mv_oldpath)+1+1);
             sprintf(pTemp_t,"%s/",href);
             sprintf(oldpath_t,"%s/",mv_oldpath);
 
@@ -4761,7 +5248,7 @@ char *search_newpath(char *href,int index)
                 p_t=p_t+strlen(oldpath_t);
                 wd_DEBUG("p_t=%s\n",p_t);
                 ret_p = (char *)malloc(sizeof(char) * (strlen(mv_newpath)+strlen(p_t) + 1 +1));
-                memset(ret_p,'\0',sizeof(ret_p));
+                memset(ret_p,'\0',strlen(mv_newpath)+strlen(p_t) + 1 +1);
                 sprintf(ret_p,"%s/%s",mv_newpath,p_t);
                 wd_DEBUG("ret_p = %s\n",ret_p);
                 flag_r = 1;
@@ -4846,7 +5333,7 @@ char *get_socket_filename(char *cmd)
 
     p++;
     filename = (char *)malloc(sizeof(char)*(strlen(p)+2));
-    memset(filename,'\0',sizeof(filename));
+    memset(filename,'\0',strlen(p)+2);
     sprintf(filename,"%s",p);
     return filename;
 }
@@ -5031,7 +5518,7 @@ int check_localpath_is_socket(int index,char *ParentHerf,char *Fname,char *fulln
 
             char *local_p1 = (char *)malloc(sizeof(char)*(strlen(ParentHerf)+1+strlen(Fname)+1+1));
 
-            memset(local_p1,'\0',sizeof(local_p1));
+            memset(local_p1,'\0',strlen(ParentHerf)+1+strlen(Fname)+1+1);
 
             sprintf(local_p1,"\n%s\n%s",ParentHerf,Fname);
 
@@ -5045,7 +5532,7 @@ int check_localpath_is_socket(int index,char *ParentHerf,char *Fname,char *fulln
             {
                 char *filename = get_socket_filename(pTemp->cmd_name);
                 char *local_p2 = (char *)malloc(sizeof(char)*(strlen(pTemp->re_cmd)+strlen(filename)+2));
-                memset(local_p2,'\0',sizeof(local_p2));
+                memset(local_p2,'\0',strlen(pTemp->re_cmd)+strlen(filename)+2);
                 sprintf(local_p2,"%s%s",pTemp->re_cmd,filename);
                 free(filename);
 
@@ -5067,7 +5554,263 @@ int check_localpath_is_socket(int index,char *ParentHerf,char *Fname,char *fulln
 
     //show(g_pSyncList[i]->SocketActionList->head);
 }
+int check_socket_parser(char *cmd,int index,char *re_cmd,char *str_path,char *so_filename,char *sn_filename)
+{
+//    if(strstr(cmd,"conflict") != NULL)
+//        return 0;
+    if( !strncmp(cmd,"exit",4))
+    {
+        wd_DEBUG("exit socket\n");
+        return 0;
+    }
 
+    if(!strncmp(cmd,"rmroot",6))
+    {
+        g_pSyncList[index]->no_local_root = 1;
+        return 0;
+    }
+
+    char cmd_name[64]="\0";
+    char *path;
+    char *temp;
+    char filename[256]="\0";
+    char oldname[256]="\0",newname[256]="\0";
+    char *oldpath;
+    char *ch;
+
+    ch = cmd;
+    int i = 0;
+    //while(*ch != '@')
+    while(*ch != '\n')
+    {
+        i++;
+        ch++;
+    }
+
+    memcpy(cmd_name, cmd, i);
+
+    char *p = NULL;
+    ch++;
+    i++;
+
+    temp = my_str_malloc((size_t)(strlen(ch)+1));
+
+    strcpy(temp,ch);
+    //p = strchr(temp,'@');
+    p = strchr(temp,'\n');
+
+    path = my_str_malloc((size_t)(strlen(temp)- strlen(p)+1));
+
+
+    if(p!=NULL)
+        snprintf(path,strlen(temp)- strlen(p)+1,"%s",temp);
+
+    p++;
+    if(strncmp(cmd_name, "rename",strlen("rename")) == 0)
+    {
+        char *p1 = NULL;
+
+        //p1 = strchr(p,'@');
+        p1 = strchr(p,'\n');
+
+        if(p1 != NULL)
+            strncpy(oldname,p,strlen(p)- strlen(p1));
+
+        p1++;
+
+        strcpy(newname,p1);
+
+        wd_DEBUG("cmd_name: [%s],path: [%s],oldname: [%s],newname: [%s]\n",cmd_name,path,oldname,newname);
+
+        if(newname[0] == '.' || (strstr(path,"/.")) != NULL)
+        {
+            free(temp);
+            free(path);
+            return 0;
+        }
+    }
+    else if(strncmp(cmd_name, "move",strlen("move")) == 0)
+    {
+        char *p1 = NULL;
+
+        //p1 = strchr(p,'@');
+        p1 = strchr(p,'\n');
+
+        oldpath = my_str_malloc((size_t)(strlen(p)- strlen(p1)+1));
+
+        if(p1 != NULL)
+            snprintf(oldpath,strlen(p)- strlen(p1)+1,"%s",p);
+
+        p1++;
+
+        strcpy(oldname,p1);
+
+        wd_DEBUG("cmd_name: [%s],path: [%s],oldpath: [%s],oldname: [%s]\n",cmd_name,path,oldpath,oldname);
+
+
+        if(oldname[0] == '.' || (strstr(path,"/.")) != NULL)
+        {
+            free(temp);
+            free(path);
+            free(oldpath);
+            return 0;
+        }
+    }
+    else
+    {
+        strcpy(filename,p);
+
+        wd_DEBUG("cmd_name: [%s],path: [%s],filename: [%s]\n",cmd_name,path,filename);
+
+        if(filename[0] == '.' || (strstr(path,"/.")) != NULL)
+        {
+            free(temp);
+            free(path);
+            return 0;
+        }
+    }
+
+    free(temp);
+
+    if( strcmp(cmd_name, "createfile") == 0 || strcmp(cmd_name, "dragfile") == 0 )
+    {}
+    else if( strcmp(cmd_name, "modify") == 0 )
+    {
+        if(re_cmd)
+        {
+            if(strcmp(re_cmd,str_path) == 0 && strcmp(filename,so_filename)==0)
+            {
+                pthread_mutex_lock(&mutex_socket);
+//                my_free(cmd);
+//                cmd = my_str_malloc(512);
+                memset(cmd,0,1024);
+                sprintf(cmd,"%s%s%s%s%s",cmd_name,CMD_SPLIT,path,CMD_SPLIT,sn_filename);
+                pthread_mutex_unlock(&mutex_socket);
+            }
+        }
+        else
+        {
+            if(strcmp(path,str_path) == 0 && strcmp(filename,so_filename)==0)
+            {
+                pthread_mutex_lock(&mutex_socket);
+//                my_free(cmd);
+//                cmd = my_str_malloc(512);
+                memset(cmd,0,1024);
+                sprintf(cmd,"%s%s%s%s%s",cmd_name,CMD_SPLIT,path,CMD_SPLIT,sn_filename);
+                pthread_mutex_unlock(&mutex_socket);
+            }
+        }
+    }
+    else if(strcmp(cmd_name, "delete") == 0  || strcmp(cmd_name, "remove") == 0)
+    {
+        if(strcmp(path,str_path) == 0 && strcmp(filename,so_filename)==0)
+        {
+            pthread_mutex_lock(&mutex_socket);
+//            my_free(cmd);
+//            cmd = my_str_malloc(512);
+            memset(cmd,0,1024);
+            sprintf(cmd,"%s%s%s%s%s",cmd_name,CMD_SPLIT,path,CMD_SPLIT,sn_filename);
+            pthread_mutex_unlock(&mutex_socket);
+        }
+    }
+    else if(strncmp(cmd_name, "move",strlen("move")) == 0 || strncmp(cmd_name, "rename",strlen("rename")) == 0)
+    {
+        if(strncmp(cmd_name, "rename",strlen("rename")) == 0)
+        {
+            if(re_cmd)
+            {
+                if(strcmp(re_cmd,str_path) == 0 && strcmp(oldname,so_filename)==0)
+                {
+                    pthread_mutex_lock(&mutex_socket);
+//                    my_free(cmd);
+//                    cmd = my_str_malloc(512);
+                    memset(cmd,0,1024);
+                    sprintf(cmd,"%s%s%s%s%s%s%s",cmd_name,CMD_SPLIT,path,CMD_SPLIT,sn_filename,CMD_SPLIT,newname);
+                    pthread_mutex_unlock(&mutex_socket);
+                }
+            }
+            else
+            {
+                if(strcmp(path,str_path) == 0 && strcmp(oldname,so_filename)==0)
+                {
+                    pthread_mutex_lock(&mutex_socket);
+                    //my_free(cmd);
+                    //cmd = my_str_malloc(512);
+                    memset(cmd,0,1024);
+                    sprintf(cmd,"%s%s%s%s%s%s%s",cmd_name,CMD_SPLIT,path,CMD_SPLIT,sn_filename,CMD_SPLIT,newname);
+                    //printf("cmd=%s\n",cmd);
+                    pthread_mutex_unlock(&mutex_socket);
+                }
+            }
+        }
+        else
+        {
+            if(re_cmd)
+            {
+                if(strcmp(re_cmd,str_path) == 0 && strcmp(oldname,so_filename)==0)
+                {
+                    pthread_mutex_lock(&mutex_socket);
+//                    my_free(cmd);
+//                    cmd = my_str_malloc(512);
+                    memset(cmd,0,1024);
+                    sprintf(cmd,"%s%s%s%s%s%s%s",cmd_name,CMD_SPLIT,path,CMD_SPLIT,oldpath,CMD_SPLIT,sn_filename);
+                    pthread_mutex_unlock(&mutex_socket);
+                }
+            }
+            else
+            {
+                if(strcmp(oldpath,str_path) == 0 && strcmp(oldname,so_filename)==0)
+                {
+                    pthread_mutex_lock(&mutex_socket);
+//                    my_free(cmd);
+//                    cmd = my_str_malloc(512);
+                    memset(cmd,0,1024);
+                    sprintf(cmd,"%s%s%s%s%s%s%s",cmd_name,CMD_SPLIT,path,CMD_SPLIT,oldpath,CMD_SPLIT,sn_filename);
+                    pthread_mutex_unlock(&mutex_socket);
+                }
+            }
+            my_free(oldpath);
+        }
+    }
+    else if( strcmp(cmd_name,"dragfolder") == 0)
+    {}
+    else if(strcmp(cmd_name, "createfolder") == 0)
+    {}
+    free(path);
+    return 0;
+
+}
+void updata_socket_list(char *temp_name,char *new_name,int i)
+{
+    char *path;
+    char *old_filename;
+    char *p = strrchr(temp_name,'/');
+    path = my_str_malloc(strlen(temp_name)-strlen(p)+1);
+    snprintf(path,strlen(temp_name)-strlen(p)+1,"%s",temp_name);
+    p++;
+    old_filename = my_str_malloc(strlen(p)+1);
+    sprintf(old_filename,"%s",p);
+
+    p = NULL;
+    char *new_filename;
+    p = strrchr(new_name,'/');
+    p++;
+    new_filename = my_str_malloc(strlen(p)+1);
+    sprintf(new_filename,"%s",p);
+
+    wd_DEBUG("*****************updata_socket_list***************\n");
+    queue_entry_t pTemp = g_pSyncList[i]->SocketActionList->head->next_ptr;//head is current socket,updata from next begin
+    while(pTemp!=NULL)
+    {
+        check_socket_parser(pTemp->cmd_name,i,pTemp->re_cmd,path,old_filename,new_filename);
+        pTemp = pTemp->next_ptr;
+    }
+    my_free(path);
+    my_free(old_filename);
+    my_free(new_filename);
+
+    show(g_pSyncList[i]->SocketActionList->head);
+}
 
 void set_re_cmd(char *buf,char *oldpath,char *newpath)
 {
@@ -5096,8 +5839,8 @@ void set_re_cmd(char *buf,char *oldpath,char *newpath)
             wd_DEBUG("path:%s\n",oldpath);
             char *pTemp_t=(char *)malloc(sizeof(char)*(strlen(socket_path)+1+1));
             char *oldpath_t=(char *)malloc(sizeof(char)*(strlen(oldpath)+1+1));
-            memset(pTemp_t,'\0',sizeof(pTemp_t));
-            memset(oldpath_t,'\0',sizeof(oldpath_t));
+            memset(pTemp_t,'\0',strlen(socket_path)+1+1);
+            memset(oldpath_t,'\0',strlen(oldpath)+1+1);
             sprintf(pTemp_t,"%s/",socket_path);
             sprintf(oldpath_t,"%s/",oldpath);
             char *p_t=NULL;
@@ -5112,7 +5855,7 @@ void set_re_cmd(char *buf,char *oldpath,char *newpath)
                         {
                             p_t=p_t+strlen(oldpath);
                             pTemp->re_cmd = (char *)malloc(sizeof(char) * (strlen(newpath)+strlen(p_t) + 1));
-                            memset(pTemp->re_cmd,'\0',sizeof(pTemp->re_cmd));
+                            memset(pTemp->re_cmd,'\0',strlen(newpath)+strlen(p_t) + 1);
                             sprintf(pTemp->re_cmd,"%s%s",newpath,p_t);
                         }
                         else
@@ -5131,11 +5874,11 @@ void set_re_cmd(char *buf,char *oldpath,char *newpath)
                         {
                             p_t+=strlen(oldpath);
                             char *p_tt=(char *)malloc(sizeof(char)*(strlen(p_t)+1));
-                            memset(p_tt,'\0',sizeof(p_tt));
+                            memset(p_tt,'\0',strlen(p_t)+1);
                             sprintf(p_tt,"%s",p_t);
                             free(pTemp->re_cmd);
                             pTemp->re_cmd = (char *)malloc(sizeof(char) * (strlen(newpath)+strlen(p_tt) + 1));
-                            memset(pTemp->re_cmd,'\0',sizeof(pTemp->re_cmd));
+                            memset(pTemp->re_cmd,'\0',strlen(newpath)+strlen(p_tt) + 1);
                             sprintf(pTemp->re_cmd,"%s%s",newpath,p_tt);
                             free(p_tt);
                         }
@@ -5415,8 +6158,21 @@ int add_socket_item(char *buf){
     //receve_socket = 1;
     g_pSyncList[i]->receve_socket = 1;
     pthread_mutex_unlock(&mutex_receve_socket);
+
+#if MEM_POOL_ENABLE
+    SocketActionTmp = mem_alloc(16);
+#else
     SocketActionTmp = malloc (sizeof (struct queue_entry));
+#endif
+
+    //SocketActionTmp = malloc (sizeof (struct queue_entry));
     memset(SocketActionTmp,0,sizeof(struct queue_entry));
+    int len = strlen(buf)+1;
+#if MEM_POOL_ENABLE
+    SocketActionTmp->cmd_name = mem_alloc(len);
+#else
+    SocketActionTmp->cmd_name = (char *)calloc(len,sizeof(char));
+#endif
     sprintf(SocketActionTmp->cmd_name,"%s",buf);
     SocketActionTmp->re_cmd = NULL;
     SocketActionTmp->is_first = 0;
@@ -5645,6 +6401,9 @@ void clean_up()
     }
     free(g_pSyncList);
 
+#if MEM_POOL_ENABLE
+    mem_pool_destroy();
+#endif
 
     wd_DEBUG("clean up end !!!\n");
 
@@ -5716,32 +6475,53 @@ void *SyncServer()
 
             if(exit_loop == 0)
             {
-                g_pSyncList[i]->ServerRootNode = create_server_treeroot();
+                int get_serlist_fail_time = 0;
+                do
+                {
+                    g_pSyncList[i]->ServerRootNode = create_server_treeroot();
 #ifdef MULTI_PATH
-                status = browse_to_tree(asus_cfg.prule[i]->rooturl,g_pSyncList[i]->ServerRootNode);
+                    status = browse_to_tree(asus_cfg.prule[i]->rooturl,g_pSyncList[i]->ServerRootNode);
 #else
-                status = browse_to_tree("/",g_pSyncList[i]->ServerRootNode);
+                    status = browse_to_tree("/",g_pSyncList[i]->ServerRootNode);
 #endif
 #ifdef __DEBUG__
-                SearchServerTree(g_pSyncList[i]->ServerRootNode);
+                    SearchServerTree(g_pSyncList[i]->ServerRootNode);
 #endif
-                /*
+                    /*
                 for(i=0;i<asus_cfg.dir_number;i++)
                 {
                     SearchServerTree(g_pSyncList[i]->ServerRootNode);
                     free_server_tree(g_pSyncList[i]->ServerRootNode);
                 }
                 */
+                    if(status != 0)
+                    {
+                        wd_DEBUG("get ServerList ERROR! \n");
+                        get_serlist_fail_time ++;
+                        free_server_tree(g_pSyncList[i]->ServerRootNode);
+                        g_pSyncList[i]->ServerRootNode = NULL;
+                    }
+
+
+                }while(status!=0 && get_serlist_fail_time < 5 && exit_loop == 0 && g_pSyncList[i]->receve_socket == 0);
                 if (status != 0)
                 {
 
-                    wd_DEBUG("get ServerList ERROR! \n");
+                    //wd_DEBUG("get ServerList ERROR! \n");
 
                     /*auth again:
                         for the token not work!
                     */
-                    if(exit_loop == 0)
-                        do_auth();
+#ifdef OAuth1
+                    if(g_pSyncList[i]->receve_socket == 0)
+                    {
+                        if(exit_loop == 0)
+                            do_auth();
+                    }
+#endif
+                    /*for get serverlist fail,then mem will updata*/
+                    //free_server_tree(g_pSyncList[i]->ServerRootNode);
+                    //g_pSyncList[i]->ServerRootNode = NULL;
 
                     /*first_sync:
                         after the initial finish,the serverlist is change so force to run server sync;
@@ -6199,6 +6979,7 @@ int download_only_add_socket_item(char *cmd,int index)
     if( !strncmp(cmd_name,"copyfile",strlen("copyfile")) )
     {
         add_action_item("copyfile",fullname,g_pSyncList[index]->copy_file_list);
+        free(fullname);
         return 0;
     }
 
@@ -6218,6 +6999,23 @@ int download_only_add_socket_item(char *cmd,int index)
             //pthread_mutex_lock(&mutex);
             del_action_item("copyfile",fullname,g_pSyncList[index]->copy_file_list);
         }
+    }
+    else if( strcmp(cmd_name, "cancelcopy") == 0 )
+    {
+        action_item *item;
+
+        item = get_action_item("copyfile",fullname,g_pSyncList[index]->copy_file_list,index);
+
+        if(item != NULL)
+        {
+
+            wd_DEBUG("##### delete copyfile %s ######\n",fullname);
+
+            //pthread_mutex_lock(&mutex);
+            del_action_item("copyfile",fullname,g_pSyncList[index]->copy_file_list);
+        }
+        free(fullname);
+        return 0;
     }
     else if( strcmp(cmd_name, "remove") == 0  || strcmp(cmd_name, "delete") == 0)
     {
@@ -6356,9 +7154,18 @@ void *Socket_Parser()
                         {
                             pthread_mutex_lock(&mutex_socket);
                             socket_execute = queue_dequeue(g_pSyncList[i]->SocketActionList);
-                            if(socket_execute->re_cmd)
-                                free(socket_execute->re_cmd);
-                            free(socket_execute);
+
+#if MEM_POOL_ENABLE
+                    mem_free(socket_execute->cmd_name);
+                    mem_free(socket_execute->re_cmd);
+                    mem_free(socket_execute);
+#else
+                    if(socket_execute->re_cmd)
+                        free(socket_execute->re_cmd);
+                    if(socket_execute->cmd_name)
+                        free(socket_execute->cmd_name);
+                    free(socket_execute);
+#endif
                             //printf("del socket item ok\n");
                             pthread_mutex_unlock(&mutex_socket);
                         }
@@ -6445,9 +7252,17 @@ void *Socket_Parser()
                             wd_DEBUG("del socket item ok?\n");
                             pthread_mutex_lock(&mutex_socket);
                             socket_execute = queue_dequeue(g_pSyncList[i]->SocketActionList);
-                            if(socket_execute->re_cmd)
-                                free(socket_execute->re_cmd);
-                            free(socket_execute);
+#if MEM_POOL_ENABLE
+                    mem_free(socket_execute->cmd_name);
+                    mem_free(socket_execute->re_cmd);
+                    mem_free(socket_execute);
+#else
+                    if(socket_execute->re_cmd)
+                        free(socket_execute->re_cmd);
+                    if(socket_execute->cmd_name)
+                        free(socket_execute->cmd_name);
+                    free(socket_execute);
+#endif
                             wd_DEBUG("del socket item ok\n");
                             pthread_mutex_unlock(&mutex_socket);
                         }
@@ -6456,12 +7271,17 @@ void *Socket_Parser()
                             wd_DEBUG("del socket item ok?\n");
                             pthread_mutex_lock(&mutex_socket);
                             socket_execute = queue_dequeue_t(g_pSyncList[i]->SocketActionList);
-                            if(socket_execute != NULL)
-                            {
-                                if(socket_execute->re_cmd)
-                                    free(socket_execute->re_cmd);
-                                free(socket_execute);
-                            }
+#if MEM_POOL_ENABLE
+                    mem_free(socket_execute->cmd_name);
+                    mem_free(socket_execute->re_cmd);
+                    mem_free(socket_execute);
+#else
+                    if(socket_execute->re_cmd)
+                        free(socket_execute->re_cmd);
+                    if(socket_execute->cmd_name)
+                        free(socket_execute->cmd_name);
+                    free(socket_execute);
+#endif
                             wd_DEBUG("del socket item ok\n");
                             pthread_mutex_unlock(&mutex_socket);
                         }
@@ -6520,8 +7340,8 @@ void *Socket_Parser()
 }
 int cmd_parser(char *cmd,int index,char *re_cmd)
 {
-    if(strstr(cmd,"conflict") != NULL)
-        return 0;
+//    if(strstr(cmd,"conflict") != NULL)
+//        return 0;
     if( !strncmp(cmd,"exit",4))
     {
 
@@ -6700,6 +7520,24 @@ int cmd_parser(char *cmd,int index,char *re_cmd)
 
             del_action_item("copyfile",cmp_name,g_pSyncList[index]->copy_file_list);
         }
+    }
+    else if( strcmp(cmd_name, "cancelcopy") == 0 )
+    {
+        action_item *item;
+
+        item = get_action_item("copyfile",cmp_name,g_pSyncList[index]->copy_file_list,index);
+
+        if(item != NULL)
+        {
+
+            wd_DEBUG("##### delete copyfile %s ######\n",cmp_name);
+
+            del_action_item("copyfile",cmp_name,g_pSyncList[index]->copy_file_list);
+        }
+        free(path);
+        free(cmp_name);
+        free(fullname);
+        return 0;
     }
     else if( strcmp(cmd_name, "remove") == 0  || strcmp(cmd_name, "delete") == 0)
     {
@@ -7028,7 +7866,19 @@ int cmd_parser(char *cmd,int index,char *re_cmd)
 
         sprintf(fullname,"%s/%s",path,filename);
         char *serverpath=localpath_to_serverpath(fullname,index);
+
+        char *serverpath_1=localpath_to_serverpath(path,index);
+        if(is_server_exist(serverpath_1,serverpath,index) == 0)
+        {
+            my_free(serverpath_1);
+            my_free(serverpath);
+            free(fullname);
+            free(path);
+            return 0;
+        }
+
         status=api_delete(serverpath,index);
+
         if(status != 0)
         {
 
@@ -7055,7 +7905,7 @@ int cmd_parser(char *cmd,int index,char *re_cmd)
             if(re_cmd)
             {
                 fullname_t = (char *)malloc(sizeof(char)*(strlen(re_cmd)+strlen(oldname)+1));
-                memset(fullname_t,'\0',sizeof(fullname_t));
+                memset(fullname_t,'\0',strlen(re_cmd)+strlen(oldname)+1);
                 sprintf(fullname_t,"%s%s",re_cmd,oldname);
             }
         }
@@ -7068,7 +7918,7 @@ int cmd_parser(char *cmd,int index,char *re_cmd)
             if(re_cmd)
             {
                 fullname_t = (char *)malloc(sizeof(char)*(strlen(re_cmd)+strlen(newname)+1));
-                memset(fullname_t,'\0',sizeof(fullname_t));
+                memset(fullname_t,'\0',strlen(re_cmd)+strlen(newname)+1);
                 sprintf(fullname_t,"%s%s",re_cmd,newname);
             }
         }
@@ -7355,7 +8205,7 @@ int deal_dragfolder_to_socketlist(char *dir,int index)
                 continue;
             char *fullname;
             fullname = (char *)malloc(sizeof(char)*(strlen(dir)+strlen(ent->d_name)+2));
-            memset(fullname,'\0',sizeof(fullname));
+            memset(fullname,'\0',strlen(dir)+strlen(ent->d_name)+2);
 
             sprintf(fullname,"%s/%s",dir,ent->d_name);
             if(test_if_dir(fullname) == 1)
@@ -7397,7 +8247,7 @@ int dragfolder_rename(char *dir,int index,time_t server_mtime)
                 continue;
             char *fullname;
             fullname = (char *)malloc(sizeof(char)*(strlen(dir)+strlen(ent->d_name)+2));
-            memset(fullname,'\0',sizeof(fullname));
+            memset(fullname,'\0',strlen(dir)+strlen(ent->d_name)+2);
 
             sprintf(fullname,"%s/%s",dir,ent->d_name);
             if(test_if_dir(fullname) == 1)
@@ -7467,12 +8317,12 @@ int dragfolder_old_dir(char *dir,int index,char *old_dir)
                 continue;
             char *fullname;
             fullname = (char *)malloc(sizeof(char)*(strlen(dir)+strlen(ent->d_name)+2));
-            memset(fullname,'\0',sizeof(fullname));
+            memset(fullname,'\0',strlen(dir)+strlen(ent->d_name)+2);
             sprintf(fullname,"%s/%s",dir,ent->d_name);
 
             char *fullname_r;
             fullname_r = (char *)malloc(sizeof(char)*(strlen(old_dir)+strlen(ent->d_name)+2));
-            memset(fullname_r,'\0',sizeof(fullname_r));
+            memset(fullname_r,'\0',strlen(old_dir)+strlen(ent->d_name)+2);
             sprintf(fullname_r,"%s/%s",old_dir,ent->d_name);
 
             status = check_localpath_is_socket(index,dir,ent->d_name,fullname);
@@ -7592,7 +8442,7 @@ int dragfolder(char *dir,int index)
                 continue;
             char *fullname;
             fullname = (char *)malloc(sizeof(char)*(strlen(dir)+strlen(ent->d_name)+2));
-            memset(fullname,'\0',sizeof(fullname));
+            memset(fullname,'\0',strlen(dir)+strlen(ent->d_name)+2);
 
             sprintf(fullname,"%s/%s",dir,ent->d_name);
 
@@ -7894,10 +8744,8 @@ void stop_process_clean_up(){
     //free_disk_struc(&follow_disk_info_start);
     //free_disk_struc(&config_disk_info_start);
 
-    unlink(general_log);
-    free(auth);
-
-
+    if(!access_token_expired)
+        unlink(general_log);
 }
 char *change_local_same_file(char *oldname,int index)
 {
@@ -8034,6 +8882,7 @@ int check_link_internet()
         write_log(S_SYNC,"","",i);
     }
 }
+#ifdef OAuth1
 int do_auth()
 {
     int curl_res=0;
@@ -8059,6 +8908,7 @@ int do_auth()
         if(exit_loop)
             return auth_ok;
         curl_res = get_request_token();
+
         if(curl_res == -1)
         {
             error_time++;
@@ -8094,6 +8944,16 @@ int do_auth()
             //enter_sleep_time(5);
             continue;
         }
+        curl_res = login_second_submit();
+        if(curl_res == -1)
+        {
+            error_time++;
+
+            //usleep(5000*1000);
+            //enter_sleep_time(5);
+            continue;
+        }
+
         curl_res=get_access_token();
         if(curl_res == -1 || curl_res > 0)
         {
@@ -8119,6 +8979,7 @@ int do_auth()
 
     return auth_ok;
 }
+#endif
 int f_exists(const char *path)	// note: anything but a directory
 {
         struct stat st;
@@ -8130,6 +8991,12 @@ void clean_sys_data()
         unlink("/tmp/smartsync/.logs/dropbox");
     //my_mkdir("/tmp/smartsync_app");
     //system("touch /tmp/smartsync_app/dropbox_client_start");
+}
+
+void db_disbale_access_token()
+{
+    my_free(auth->oauth_token);
+    my_free(auth);
 }
 
 int main(int args,char *argc[])
@@ -8145,6 +9012,7 @@ int main(int args,char *argc[])
     int res;
     res = curl_global_init(CURL_GLOBAL_DEFAULT);
 */
+    curl_global_init(CURL_GLOBAL_ALL);
     sigemptyset(&bset);
     sigaddset(&bset,SIGUSR1);
     sigaddset(&bset,SIGUSR2);
@@ -8190,8 +9058,13 @@ int main(int args,char *argc[])
 
 
     read_config();
-
+#ifdef OAuth1
     auth_flag = do_auth();
+#else
+    auth_flag = 1;
+    auth->oauth_token = my_str_malloc(strlen(asus_cfg.pwd)+1);
+    sprintf(auth->oauth_token,"%s",asus_cfg.pwd);
+#endif
 
     if(auth_flag)
     {
@@ -8205,6 +9078,8 @@ int main(int args,char *argc[])
         pthread_join(sig_thread,NULL);
         stop_process_clean_up();
     }
+    db_disbale_access_token();
+    curl_global_cleanup();
 
     //detect_client();
 ////#ifdef NVRAM_
@@ -8229,6 +9104,8 @@ int main(int args,char *argc[])
     strcpy(info->usr,"m15062346679@163.com");
     strcpy(info->pwd,"123abc,./");
     */
+    //printf("%s\n",get_confilicted_name_case("/tmp/mnt/ASD/new_inotify/cookie_login(case-conflict).txt",0));
+    //printf("%s\n",get_confilicted_name_first("/tmp/mnt/ASD/new_inotify/cookie_login.txt",0));
     //is_server_enough("/111");
     //get_upload_id();
     /*
@@ -8243,23 +9120,23 @@ int main(int args,char *argc[])
     //init_globar_var();
     //read_config();
     //create_sync_list();
-    api_metadata_test("/sync2/test_dd");
+    //api_metadata_test("/Photo");
     //api_metadata_test("/main");
-    //api_move("/t1/aa","/t1/bb",0,0,NULL);
+    //api_move("/11.txt","/fb.txt",0,0,NULL);
     //api_download();
-    //api_upload_put("/tmp/mnt/ASD/我是test.txt","/我是test.txt");
+    //api_upload_put("/tmp/mnt/ASD/My410Sync/Music/ssss",oauth_url_escape("/My410Sync/Music/ssss"),0,0);
     //api_upload_post();//failing
     // ChangeFile_modtime("/tmp/mnt/ASD/lighttpd_0.0.0.1_mipsel.ipk",112);
     //api_upload_put_test("/tmp/mnt/ASD/aicloud_1.0.0.4_mipsel.ipk","/aicloud_1.0.0.4_mipsel.ipk",1);
     //is_server_enough("/tmp/mnt/ASD/GPL_aicloud.0.0.2.tar.gz");
-    //upload_file("/tmp/mnt/ASD/111/111%2222#$%d",oauth_url_escape("/111/111%2222#$%d"),0,0);
+    upload_file("/tmp/mnt/ASD/My410Sync/aicloud_1.0.0.10-0-gd8a47cb_mipsel.ipk",oauth_url_escape("/aicloud_1.0.0.10-0-gd8a47cb_mipsel.ipk"),0,0);
     //change_local_same_file("111",1);
     //printf("name=%s\n",oauth_url_escape("111%20aaa"));
     //api_getmtime("/111/51515151",dofile);
     //get_upload_id();
     //api_upload_chunk_commit("IuKV3xLGtsaW3zDc9ax3Og","aicloud_1.0.0.5_mipsel.ipk");
-    //api_delete();
-    //api_create_folder("/tmp/mnt/ASD/111/","/sync2/111");
+    //api_delete("/fb.txt",0);
+    //api_create_folder("/tmp/mnt/ASD/music/","/music");
     //parse_create_folder("/tmp/dropbox/create_folder_header.txt");
 
     /*
@@ -8322,6 +9199,7 @@ int main(int args,char *argc[])
     free(header);
     */
 }
+#ifdef OAuth1
 int get_request_token(){
 
     CURL *curl;
@@ -8356,9 +9234,11 @@ int get_request_token(){
     }
     free(header);
 
-    parse(Con(TMP_R,data_1.txt),1);
+    if(parse(Con(TMP_R,data_1.txt),1) == -1)
+        return -1;
     return 0;
 }
+
 int cgi_init(char *query)
         //int cgi_init()
 {
@@ -8388,6 +9268,7 @@ int cgi_init(char *query)
     wd_DEBUG("CGI[value] :%s %s %d\n", auth->oauth_token_secret,auth->oauth_token,auth->uid);
     return 0;
 }
+
 int parse(char *filename,int flag)
 {
 
@@ -8399,7 +9280,7 @@ int parse(char *filename,int flag)
     char tmp_data[256]="\0";
     fgets(tmp_data,sizeof(tmp_data),fp);
     wd_DEBUG("%s\n",tmp_data);
-    if(strstr(tmp_data,"error")==NULL)
+    if(strstr(tmp_data,"error")==NULL && tmp_data != NULL&&strlen(tmp_data) > 0)
     {
         switch(flag)
         {
@@ -8428,11 +9309,40 @@ int parse(char *filename,int flag)
     }
     else
     {
+        fclose(fp);
         return -1;
     }
 
 
 }
+#endif
+char *makeAuthorize(int flag)
+{
+    char *header = NULL;
+    char http_basic_authentication[] = "Authorization: Bearer ";
+    char URI_Query_Parameter[] = "access_token=";
+    int header_len ;
+    switch(flag)
+    {
+    case 1:
+        header_len = strlen(http_basic_authentication) + strlen(auth->oauth_token) +1;
+        header = my_str_malloc(header_len);
+        sprintf(header,"%s%s",http_basic_authentication,auth->oauth_token);
+        break;
+    case 2:
+        header_len = strlen(URI_Query_Parameter) + strlen(auth->oauth_token) +1;
+        header = my_str_malloc(header_len);
+        sprintf(header,"%s%s",URI_Query_Parameter,auth->oauth_token);
+        break;
+    default:
+        break;
+    }
+    //sprintf(header,"%s%s",http_basic_authentication,auth->oauth_token);
+    //sprintf(header,"%s%s","access_token=","XDwYx52HJBYAAAAAAAABcY809z2fKmv_xai8IZXzYmZKcIADF9elZ55nmeUNR_m2");
+    wd_DEBUG("makeAuthorize>%s\n",header);
+    return header;
+}
+#ifdef OAuth1
 char *makeAuthorize(int flag)
 {
     char *header = NULL;
@@ -8453,6 +9363,7 @@ char *makeAuthorize(int flag)
     if(flag==1)
         snprintf(prekey,128,"%s","5vq8jog8wgpx1p0&");
     else if(flag==2)
+        //snprintf(prekey,128,"%s%s","5vq8jog8wgpx1p0&","YXG59mgidir11f6b");
         snprintf(prekey,128,"%s%s","5vq8jog8wgpx1p0&",auth->tmp_oauth_token_secret);
     else if(flag==3)
     {
@@ -8514,8 +9425,10 @@ char *makeAuthorize(int flag)
         snprintf(header,1024,"Authorization:OAuth oauth_consumer_key=\"%s\",oauth_signature_method=\"%s\",oauth_signature=\"%s\",oauth_timestamp=\"%s\",oauth_nonce=\"%s\",oauth_version=\"1.0\""
                  ,"qah4ku73k3qmigj",header_signature_method,header_signature,header_timestamp,header_nonce);
     else if(flag==2)
-        snprintf(header,1024,"Authorization:OAuth oauth_consumer_key=\"%s\",oauth_token=\"%s\",oauth_signature_method=\"%s\",oauth_signature=\"%s\",oauth_timestamp=\"%s\",oauth_nonce=\"%s\",oauth_version=\"1.0\""
-                 ,"qah4ku73k3qmigj",auth->tmp_oauth_token,header_signature_method,header_signature,header_timestamp,header_nonce);
+//        snprintf(header,1024,"Authorization:OAuth oauth_consumer_key=\"%s\",oauth_token=\"%s\",oauth_signature_method=\"%s\",oauth_signature=\"%s\",oauth_timestamp=\"%s\",oauth_nonce=\"%s\",oauth_version=\"1.0\""
+ //                ,"qah4ku73k3qmigj","AIZpfQv7qYwuDotM",header_signature_method,header_signature,header_timestamp,header_nonce);
+    snprintf(header,1024,"Authorization:OAuth oauth_consumer_key=\"%s\",oauth_token=\"%s\",oauth_signature_method=\"%s\",oauth_signature=\"%s\",oauth_timestamp=\"%s\",oauth_nonce=\"%s\",oauth_version=\"1.0\""
+             ,"qah4ku73k3qmigj",auth->tmp_oauth_token,header_signature_method,header_signature,header_timestamp,header_nonce);
     else if(flag==3)
     {
 #ifndef TEST
@@ -8547,6 +9460,7 @@ char *makeAuthorize(int flag)
     //free(test_key);
     return header;
 }
+#endif
 Browse *browseFolder(char *URL){
     //printf("browseFolder URL = %s\n",URL);
     int status;
@@ -8701,7 +9615,17 @@ void queue_destroy (queue_t q)
             queue_entry_t next = q->head;
             q->head = next->next_ptr;
             next->next_ptr = NULL;
+
+#if MEM_POOL_ENABLE
+            mem_free(next->cmd_name);
+            mem_free(next->re_cmd);
+            mem_free (next);
+#else
+            if(next->re_cmd)
+                free(next->re_cmd);
+            free(next->cmd_name);
             free (next);
+#endif
         }
         q->head = q->tail = NULL;
         free (q);
@@ -8740,8 +9664,8 @@ action_item *check_action_item(const char *action,const char *oldpath,action_ite
     {
         char *pTemp_t=(char *)malloc(sizeof(char)*(strlen(p->path)+1+1));
         char *oldpath_t=(char *)malloc(sizeof(char)*(strlen(oldpath)+1+1));
-        memset(pTemp_t,'\0',sizeof(pTemp_t));
-        memset(oldpath_t,'\0',sizeof(oldpath_t));
+        memset(pTemp_t,'\0',strlen(p->path)+1+1);
+        memset(oldpath_t,'\0',strlen(oldpath)+1+1);
         sprintf(pTemp_t,"%s/",p->path);
         sprintf(oldpath_t,"%s/",oldpath);
         char *p_t = NULL;
@@ -8752,11 +9676,11 @@ action_item *check_action_item(const char *action,const char *oldpath,action_ite
             {
                 p_t+=strlen(oldpath);
                 char *p_tt=(char *)malloc(sizeof(char)*(strlen(p_t)+1));
-                memset(p_tt,'\0',sizeof(p_tt));
+                memset(p_tt,'\0',strlen(p_t)+1);
                 sprintf(p_tt,"%s",p_t);
                 free(p->path);
                 p->path = (char *)malloc(sizeof(char) * (strlen(newpath)+strlen(p_tt) + 1));
-                memset(p->path,'\0',sizeof(p->path));
+                memset(p->path,'\0',strlen(newpath)+strlen(p_tt) + 1);
                 sprintf(p->path,"%s%s",newpath,p_tt);
                 free(p_tt);
             }
@@ -8835,8 +9759,8 @@ int add_action_item(const char *action,const char *path,action_item *head){
     memset(p2,'\0',sizeof(action_item));
     p2->action = (char *)malloc(sizeof(char)*(strlen(action)+1));
     p2->path = (char *)malloc(sizeof(char)*(strlen(path)+1));
-    memset(p2->action,'\0',sizeof(p2->action));
-    memset(p2->path,'\0',sizeof(p2->path));
+    memset(p2->action,'\0',strlen(action)+1);
+    memset(p2->path,'\0',strlen(path)+1);
 
     sprintf(p2->action,"%s",action);
     sprintf(p2->path,"%s",path);
@@ -10404,3 +11328,101 @@ int create_shell_file(){
 
 #endif
 #endif
+
+void deal_big_low_conflcit(char *server_conflict_name,char *oldname,char *newname,char *newname_r,int index)
+{
+    /*get conflict name*/
+
+    char *local_conflcit_name = serverpath_to_localpath(server_conflict_name,index);
+//    char *tmp_name = malloc(strlen(local_conflcit_name)+1);
+//    memset(tmp_name,0,strlen(local_conflcit_name)+1);
+//    sprintf(tmp_name,"%s",local_conflcit_name);
+    char *g_newname = NULL;
+    int is_folder = test_if_dir(local_conflcit_name);
+
+    g_newname = get_confilicted_name_case(local_conflcit_name,is_folder);
+
+    wd_DEBUG("case-conflict=%s\n",g_newname);
+    my_free(local_conflcit_name);
+
+
+//    char *prefix_name = get_prefix_name(tmp_name,is_folder);//a.txt --> a
+
+//    g_newname = get_confilicted_name_first(tmp_name,is_folder);//a.txt-->a(case-conflict).txt
+
+//    if(access(g_newname,F_OK) == 0)//a(case-conflict).txt-->a(case-conflict(n)).txt
+//    {
+//        my_free(tmp_name);
+//        tmp_name = malloc(strlen(g_newname)+1);
+//        memset(tmp_name,0,strlen(g_newname)+1);
+//        sprintf(tmp_name,"%s",g_newname);
+//        my_free(g_newname);
+//        while(!exit_loop)
+//        {
+//            g_newname = get_confilicted_name_second(tmp_name,is_folder,prefix_name);
+//            //printf("confilicted_name=%s\n",confilicted_name);
+//            if(access(g_newname,F_OK) == 0)
+//            {
+//                my_free(tmp_name);
+//                tmp_name = malloc(strlen(g_newname)+1);
+//                memset(tmp_name,0,strlen(g_newname)+1);
+//                sprintf(tmp_name,"%s",g_newname);
+//                my_free(g_newname);
+//                //have_same = 1;
+//            }
+//            else
+//                break;
+//        }
+//        my_free(tmp_name);
+//    }else
+//    {
+//        my_free(tmp_name);
+//    }
+//    my_free(prefix_name);
+
+//    while(!exit_loop)
+//    {
+//        g_newname = get_confilicted_name(tmp_name,is_folder);
+//        //printf("confilicted_name=%s\n",confilicted_name);
+//        if(access(g_newname,F_OK) == 0)
+//        {
+//            my_free(tmp_name);
+//            tmp_name = malloc(strlen(g_newname)+1);
+//            memset(tmp_name,0,strlen(g_newname)+1);
+//            sprintf(tmp_name,"%s",g_newname);
+//            my_free(g_newname);
+//            //have_same = 1;
+//        }
+//        else
+//            break;
+//    }
+//    my_free(tmp_name);
+
+    char *localname;
+    /*rename local conflict name to newname*/
+    if(newname_r == NULL)
+    {
+        localname = serverpath_to_localpath(newname,index);
+    }
+    else
+        localname = newname_r;
+
+    updata_socket_list(localname,g_newname,index);
+
+    if(access(localname,F_OK) == 0)
+    {
+        add_action_item("rename",g_newname,g_pSyncList[index]->server_action_list);
+        rename(localname,g_newname);
+    }
+
+    if(newname_r == NULL)
+        my_free(localname);
+    /*reback to deal rename a--> bb(1)*/
+    char *s_newname = localpath_to_serverpath(g_newname,index);
+    my_free(g_newname);
+    int status = 0;
+    do{
+        status = api_move(oldname,s_newname,index,1,NULL);
+    }while(status != 0 && !exit_loop);
+    my_free(s_newname);
+}

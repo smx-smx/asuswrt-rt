@@ -24,35 +24,37 @@ var printer_model_array = parent.printer_models();
 var printer_pool_array = parent.printer_pool();
 var printer_order = parent.get_clicked_device_order();
 
+<% login_state_hook(); %>
+
 function initial(){
 	if(printer_model_array.length > 0 ) {
 		showtext($("printerModel"), printer_manufacturer_array[printer_order]+" "+printer_model_array[printer_order]);
 		
 		if(printer_pool_array[printer_order] != ""){
-			showtext($("printerStatus"), '<%tcWebApi_get("String_Entry","CTL_Enabled","s")%>');
-			$("printer_button").style.display = "";
-			$("button_descrition").style.display = "";
+			showtext(document.getElementById("printerStatus"), '<%tcWebApi_get("String_Entry","CTL_Enabled","s")%>');
+			document.getElementById("printer_button").style.display = "";
+			document.getElementById("button_descrition").style.display = "";
 		}
 		else{
-			showtext($("printerStatus"), '<%tcWebApi_get("String_Entry","CTL_Disabled","s")%>');
-			$("printer_button").style.display = "none";
-			$("button_descrition").style.display = "none";
+			showtext(document.getElementById("printerStatus"), '<%tcWebApi_get("String_Entry","CTL_Disabled","s")%>');
+			document.getElementById("printer_button").style.display = "none";
+			document.getElementById("button_descrition").style.display = "none";
 		}
 	}
 	else
-		showtext($("printerStatus"), '<% translate_x("System_Internet_Details_Item5_desc2"); %>');
+		showtext(document.getElementById("printerStatus"), '<% translate_x("System_Internet_Details_Item5_desc2"); %>');
 
 	if('<% tcWebApi_get("USB_Entry", "mfp_ip_monopoly", "s") %>' != "" &&
 		"<% tcWebApi_get("USB_Entry", "mfp_ip_monopoly", "s") %>" != "N/A" &&
-		'<% tcWebApi_get("USB_Entry", "mfp_ip_monopoly", "s") %>' != parent.login_ip_str()){
-		$("monoBtn").style.display = "none";
-		$("monoDesc").style.display = "";
- 		$("monoP").style.width = "";
- 		$("monoP").style.float = "";
+		'<% tcWebApi_get("USB_Entry", "mfp_ip_monopoly", "s") %>' != login_ip_str()){
+		document.getElementById("monoBtn").style.display = "none";
+		document.getElementById("monoDesc").style.display = "";
+		document.getElementById("monoP").style.width = "";
+		document.getElementById("monoP").style.float = "";
 	}
 	else{
-		$("monoBtn").style.display = "";
-		$("monoDesc").style.display = "none";
+		document.getElementById("monoBtn").style.display = "";
+		document.getElementById("monoDesc").style.display = "none";
 	}
 
 	addOnlineHelp($("faq"), ["monopoly", "mode"]);
@@ -98,7 +100,7 @@ function cleanTask(){
 	<tr id="printer_button" style="display:none;">
 		<td style="padding:5px 10px 5px 15px;">
 			<p class="formfonttitle_nwm" id="monoP" style="width:138px;"><%tcWebApi_get("String_Entry","Printing_button_item","s")%></p>
-			<input id="monoBtn" type="button" class="button_gen" value="<%tcWebApi_get("String_Entry","btn_Enabled","s")%>" onclick="cleanTask();">
+			<input id="monoBtn" type="button" class="button_gen" value="<%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_button1name","s")%>" onclick="cleanTask();">
 			<p id="monoDesc" style="padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px;"><% tcWebApi_get("USB_Entry", "mfp_ip_monopoly", "s") %></p>
 			<img style="margin-top:5px;" src="/images/New_ui/networkmap/linetwo2.png">
 		</td>

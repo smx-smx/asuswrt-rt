@@ -48,14 +48,16 @@ function initial(){
 
 	switch(valid_is_wan_ip(wanlink_ipaddr())){
 		/* private */
-		case 0: 
-			if(https_port == 443)
-				$("accessMethod").innerHTML = '<%tcWebApi_Get("String_Entry", "aicloud_disk_case0", "s")%>';
-			else{
-				$("accessMethod").innerHTML = '<%tcWebApi_Get("String_Entry", "aicloud_disk_case0", "s")%>';
-				$('cloud_url').href = "https://router.asus.com:" + https_port;
-				$('cloud_url').innerHTML = "https://router.asus.com:" + https_port;
+		case 0:			
+			//- router mode
+			var aicloud_url = "https://router.asus.com";
+
+			if(https_port != 443){
+				aicloud_url += ":" + https_port;
 			}
+
+			document.getElementById("accessMethod").innerHTML = "<%tcWebApi_Get("String_Entry", "AiCloud_enter", "s")%> : <a id=\"cloud_url\" style=\"font-weight: bolder;text-decoration: underline;\" href=\"" + aicloud_url + "\" target=\"_blank\">" + aicloud_url + "</a>";
+			
 			break;
 		/* public */
 		case 1:
@@ -77,7 +79,8 @@ function initial(){
 
 	cal_agreement_block();
 
-	$("rrsLink").style.display = "none";
+	if(rrsut_support == -1)
+		document.getElementById("rrsLink").style.display = "none";
 }
 
 function valid_is_wan_ip(ip_obj){

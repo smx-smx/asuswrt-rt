@@ -1,7 +1,7 @@
-/lib/modules/usbhost/nls_utf8.ko:	
-
 /lib/modules/usbhost/cdc_ncm.ko:	/lib/modules/usbhost/usbnet.ko \
 	/lib/modules/usbhost/usbcore.ko
+
+/lib/modules/usbhost/nls_utf8.ko:	
 
 /lib/modules/usbhost/cdc_mbim.ko:	/lib/modules/usbhost/cdc_ncm.ko \
 	/lib/modules/usbhost/usbnet.ko \
@@ -96,13 +96,12 @@
 
 /lib/modules/usbhost/usbnet.ko:	/lib/modules/usbhost/usbcore.ko
 
+/lib/modules/mt7603eap.ko:	/lib/modules/tccicmd.ko \
+	/lib/modules/tcledctrl.ko
+
 /lib/modules/rt5592ap.ko:	/lib/modules/tccicmd.ko \
 	/lib/modules/tcledctrl.ko \
 	/lib/modules/module_sel.ko
-
-/lib/modules/mt7603eap.ko:	/lib/modules/rt5592ap.ko \
-	/lib/modules/tccicmd.ko \
-	/lib/modules/tcledctrl.ko
 
 /lib/modules/2.6.22.15/kernel/net/ipv6/netfilter/ip6table_filter.ko:	/lib/modules/2.6.22.15/kernel/net/ipv6/netfilter/ip6_tables.ko
 
@@ -119,9 +118,9 @@
 
 /lib/modules/usbhost/ext2.ko:	/lib/modules/usbhost/mbcache.ko
 
-/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebt_vlan.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
-
 /lib/modules/2.6.22.15/kernel/net/netfilter/nf_conntrack_ftp.ko:	
+
+/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebt_vlan.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
 
 /lib/modules/brg_shortcut.ko:	
 
@@ -129,9 +128,9 @@
 
 /lib/modules/2.6.22.15/kernel/net/ipv6/netfilter/nf_conntrack_ipv6.ko:	
 
-/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebt_dnat.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
-
 /lib/modules/2.6.22.15/kernel/net/ipv4/netfilter/ipt_REJECT.ko:	
+
+/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebt_dnat.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
 
 /lib/modules/module_sel.ko:	
 
@@ -141,15 +140,15 @@
 
 /lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko:	
 
-/lib/modules/2.6.22.15/kernel/net/sunrpc/sunrpc.ko:	
-
 /lib/modules/tc3162l2sar.ko:	/lib/modules/raeth.ko \
 	/lib/modules/tccicmd.ko \
 	/lib/modules/tcledctrl.ko
 
-/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtable_broute.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
+/lib/modules/2.6.22.15/kernel/net/sunrpc/sunrpc.ko:	
 
 /lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebt_ip6.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
+
+/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtable_broute.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
 
 /lib/modules/usbhost/usbcore.ko:	
 
@@ -158,9 +157,9 @@
 
 /lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebt_ftos.ko:	/lib/modules/2.6.22.15/kernel/net/bridge/netfilter/ebtables.ko
 
-/lib/modules/usbhost/cdc-acm.ko:	/lib/modules/usbhost/usbcore.ko
-
 /lib/modules/usbhost/sd_mod.ko:	/lib/modules/usbhost/scsi_mod.ko
+
+/lib/modules/usbhost/cdc-acm.ko:	/lib/modules/usbhost/usbcore.ko
 
 /lib/modules/2.6.22.15/kernel/net/sched/act_mirred.ko:	
 

@@ -18,7 +18,6 @@ load_parameters_to_generic()
 <link href="/NM_style.css" rel="stylesheet" type="text/css" />
 <link href="/form_style.css" rel="stylesheet" type="text/css" />
 <script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/ajax.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/jquery.js"></script>
 <style type="text/css">
@@ -126,7 +125,7 @@ function initial(){
 		document.form.wl_subunit.value = -1;
 	*/
 	
-	if(band5g_support != -1){
+	if(wl_info.band5g_support){
 		document.getElementById("t0").style.display = "";
 		document.getElementById("t1").style.display = "";
 		
@@ -156,7 +155,7 @@ function tabclickhandler(wl_unit){
 		return false;	
 	}
 	else{
-		if(band5g_support == -1){
+		if(!wl_info.band5g_support){
 			redirect();
 		}
 		else{

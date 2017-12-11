@@ -14,7 +14,7 @@ End If
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
-<title>ASUS <% tcWebApi_get("SysInfo_Entry","ProductName","s") %> <% tcWebApi_get("SysInfo_Entry","ProductTitle","s") %> - Bandwidth Limiter</title><!--untranslated-->
+<title>ASUS <% tcWebApi_get("SysInfo_Entry","ProductName","s") %> <% tcWebApi_get("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","Bandwidth_Limiter","s")%></title>
 <link rel="stylesheet" type="text/css" href="/ParentalControl.css">
 <link rel="stylesheet" type="text/css" href="/index_style.css"> 
 <link rel="stylesheet" type="text/css" href="/form_style.css">
@@ -105,7 +105,7 @@ function deleteRow_main(obj){
 	for(i=0;i<qos_bw_rulelist_row.length;i++){
 		var qos_bw_rulelist_col = qos_bw_rulelist_row[i].split(">");	
 			if(qos_bw_rulelist_col[1] != target_mac){
-				var string_temp = qos_bw_rulelist_row[i].substring(0,qos_bw_rulelist_row[i].length-1) + priority;	// reorder priority number
+				var string_temp = qos_bw_rulelist_row[i].substring(0,qos_bw_rulelist_row[i].length-qos_bw_rulelist_col[4].length) + priority;	// reorder priority number
 				priority++;	
 				
 				if(qos_bw_rulelist_temp == ""){
@@ -122,13 +122,22 @@ function deleteRow_main(obj){
 	genMain_table();
 }
 
-function addRow_main(obj, length){	
+function addRow_main(obj, length){
+	if(document.form.PC_devicename.value == "" || document.getElementById("download_rate").value == "" || document.getElementById("upload_rate").value == ""){
+		return true;
+	}
+	
 	var enable_checkbox = $j(obj.parentNode).siblings()[0].children[0];
 	var invalid_char = "";
 	var qos_bw_rulelist_row =  qos_bw_rulelist.split("<");
 	var max_priority = 0;
 	if(qos_bw_rulelist != "")
 		max_priority = qos_bw_rulelist_row.length;	
+	
+	if(qos_bw_rulelist_row.length >= length){
+		alert("<%tcWebApi_get("String_Entry","JS_itemlimit1","s")%> " + length + " <%tcWebApi_get("String_Entry","JS_itemlimit2","s")%>");
+		return false;   
+	}	
 	
 	if(!validator.string(document.form.PC_devicename))
 		return false;
@@ -158,8 +167,8 @@ function addRow_main(obj, length){
 		return false;
 	}
 	
-	if(document.getElementById("download_rate").value < 1){
-		alert("The minimum value is 1 Mbps");
+	if(document.getElementById("download_rate").value.split(".").length > 2 || document.getElementById("download_rate").value < 0.1){
+		alert("<%tcWebApi_get("String_Entry","min_bound","s")%> : 0.1 Mb/s");
 		document.getElementById("download_rate").focus();
 		return false;
 	}
@@ -170,8 +179,8 @@ function addRow_main(obj, length){
 		return false;
 	}
 	
-	if(document.getElementById("upload_rate").value < 1){
-		alert("The minimum value is 1 Mbps");
+	if(document.getElementById("upload_rate").value.split(".").length > 2 || document.getElementById("upload_rate").value < 0.1){
+		alert("<%tcWebApi_get("String_Entry","min_bound","s")%> : 0.1 Mb/s");
 		document.getElementById("upload_rate").focus();
 		return false;
 	}
@@ -246,8 +255,8 @@ function genMain_table(){
 	code += '<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" onclick="pullLANIPList(this);" title="<%tcWebApi_get("String_Entry","select_client","s")%>" onmouseover="over_var=1;" onmouseout="over_var=0;">';
 	code += '<div id="ClientList_Block_PC" class="ClientList_Block_PC" style="margin-top:25px;margin-left:10px;"></div>';	
 	code += '</td>';
-	code += '<td style="border-bottom:2px solid #000;text-align:left;"><input type="text" id="download_rate" class="input_12_table" maxlength="12" onkeypress="return validator.isNumberFloat(this, event);"> Mb/s</td>';
-	code += '<td style="border-bottom:2px solid #000;text-align:left;"><input type="text" id="upload_rate" class="input_12_table" maxlength="12" onkeypress="return validator.isNumberFloat(this, event);"> Mb/s</td>';
+	code += '<td style="border-bottom:2px solid #000;text-align:left;"><input type="text" id="download_rate" class="input_12_table" maxlength="12" onkeypress="return bandwidth_code(this, event);"> Mb/s</td>';
+	code += '<td style="border-bottom:2px solid #000;text-align:left;"><input type="text" id="upload_rate" class="input_12_table" maxlength="12" onkeypress="return bandwidth_code(this, event);"> Mb/s</td>';
 	code += '<td style="border-bottom:2px solid #000;"><input class="url_btn" type="button" onclick="addRow_main(this, 32)" value=""></td>';
 	code += '</tr>';
 	
@@ -294,6 +303,25 @@ function genMain_table(){
 	code += '</table>';
 	document.getElementById('mainTable').innerHTML = code;
 	showLANIPList();
+}
+
+function bandwidth_code(o,event){
+	var keyPressed = event.keyCode ? event.keyCode : event.which;
+	var target = o.value.split(".");
+	
+	if (validator.isFunctionButton(event))
+		return true;	
+		
+	if((keyPressed == 46) && (target.length > 1))
+		return false;
+
+	if((target.length > 1) && (target[1].length > 0))
+		return false;	
+		
+	if ((keyPressed == 46) || (keyPressed > 47 && keyPressed < 58))
+		return true;
+	else
+		return false;		
 }
 
 function showLANIPList(){
@@ -430,13 +458,13 @@ function enable_check(obj){
 									<table width="730px">
 										<tr>
 											<td align="left" class="formfonttitle">
-												<div  style="width:400px"><%tcWebApi_get("String_Entry","menu5_3_2","s")%> - Bandwidth Limiter</div><!--untranslated-->
+												<div  style="width:400px"><%tcWebApi_get("String_Entry","menu5_3_2","s")%> - <%tcWebApi_get("String_Entry","Bandwidth_Limiter","s")%></div>
 											</td>
 											<td align="right">
 												<div>
 													<select onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option">
 														<option value="1" ><%tcWebApi_get("String_Entry","Adaptive_QoS_Conf","s")%></option>
-														<option value="2" selected>Bandwidth Limiter</option><!--untranslated-->											
+														<option value="2" selected><%tcWebApi_get("String_Entry","Bandwidth_Limiter","s")%></option>	
 													</select>	    
 												</div>
 											</td>
@@ -452,8 +480,7 @@ function enable_check(obj){
 											</td>
 											<td>&nbsp;&nbsp;</td>
 											<td style="font-size: 14px;">
-												<!--untranslated-->
-												<div>Bandwidth Limiter allows you to control the max connection speed of the client device. You can select the host name from target or fill in IP address / IP Range / MAC address for limited speed profile setting.</div>
+												<div><%tcWebApi_get("String_Entry","Bandwidth_Limiter_hint","s")%></div>
 											</td>
 										</tr>
 									</table>

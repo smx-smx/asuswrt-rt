@@ -34,7 +34,53 @@
 #include <linux/netfilter_ipv4/ipt_weburl.h>
 
 #include "regexp/regexp.h"
+#ifndef CONFIG_IP_NF_MATCH_WEBMON
 #include "regexp/tree_map.h"
+#else
+/* tree_map structs / prototypes */
+typedef struct long_tree_map_node
+{
+	unsigned long key;
+	void* value;
+
+	signed char balance;
+	struct long_tree_map_node* left;
+	struct long_tree_map_node* right;
+} long_map_node;
+
+typedef struct
+{
+	long_map_node* root;
+	unsigned long num_elements;
+
+}long_map;
+typedef struct
+{
+	long_map lm;
+	unsigned char store_keys;
+	unsigned long num_elements;
+
+}string_map;
+#define DESTROY_MODE_FREE_VALUES 	21
+/*
+ * for convenience & backwards compatibility alias _string_map_ functions to
+ *  _map_ functions since string map is used more often than long map
+ */
+#define initialize_map		initialize_string_map
+#define set_map_element		set_string_map_element
+#define get_map_element		get_string_map_element
+#define remove_map_element	remove_string_map_element
+#define get_map_keys		get_string_map_keys
+#define get_map_values		get_string_map_values
+#define destroy_map		destroy_string_map
+extern string_map* initialize_string_map(unsigned char store_keys);
+extern void* set_string_map_element(string_map* map, const char* key, void* value);
+extern void* get_string_map_element(string_map* map, const char* key);
+extern void* remove_string_map_element(string_map* map, const char* key);
+extern char** get_string_map_keys(string_map* map, unsigned long* num_keys_returned);
+extern void** get_string_map_values(string_map* map, unsigned long* num_values_returned);
+extern void** destroy_string_map(string_map* map, int destruction_type, unsigned long* num_destroyed);
+#endif
 
 
 #include <linux/ip.h>

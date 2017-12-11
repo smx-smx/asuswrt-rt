@@ -15,6 +15,7 @@ int pptp_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
 #ifdef RTCONFIG_VPNC
 #define VPNC_CONF_PATH "/etc/vpnc.conf"
 int vpnc_init(void);
+int vpnc_boot(mxml_node_t *top);
 int vpnc_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
 int vpnc_write(mxml_node_t *top, mxml_node_t *parant);
 #endif

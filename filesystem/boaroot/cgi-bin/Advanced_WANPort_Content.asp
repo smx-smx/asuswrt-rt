@@ -64,6 +64,7 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script>
 var wans_caps = '<%tcWebApi_Get("Dualwan_Entry", "wans_cap", "s")%>';
+var wans_lanport_available = [<% available_eth_lan_wan_port() %>];
 var wans_dualwan_orig = '<%tcWebApi_Get("Dualwan_Entry", "wans_dualwan", "s")%>';
 var wans_routing_rulelist_array = '<%tcWebApi_clean_get("Dualwan_Entry", "wans_routing_rulelist", "s")%>';
 var wans_flag;
@@ -290,6 +291,10 @@ function addWANOption(obj, wanscapItem){
 
 function changeWANProto(obj){
 
+	document.getElementById("wans_lanport1_unavailable").style.display = "none";
+	document.getElementById("wans_lanport2_unavailable").style.display = "none";
+	document.getElementById("button_gen_div").style.display = "";
+
 	if(wans_flag == 1){	//dual WAN enabled
 		if(document.form.wans_primary.value == document.form.wans_second.value){
 			if(obj.name == "wans_primary"){	//Primary WAN changed to switch Secondary WAN
@@ -362,10 +367,27 @@ function changeWANProto(obj){
 		appendLANoption1(document.form.wans_primary);		//Viz: seems useless
 }
 
+function load_wans_lanport(obj, obj2){
+	free_options(obj);
+	if(wans_lanport_available.length > 0){
+		for(var i=0; i<wans_lanport_available.length; i++){
+			if(wans_lanport_available[i] == "<% tcWebApi_Get("Dualwan_Entry", "wans_lanport", "s") %>")
+				add_option(obj, "LAN Port "+wans_lanport_available[i], wans_lanport_available[i], 1);
+			else
+				add_option(obj, "LAN Port "+wans_lanport_available[i], wans_lanport_available[i], 0);
+		}		
+	}
+	else{		
+		obj2.style.display = "";
+		document.getElementById("button_gen_div").style.display = "none";
+	}	
+}
+
 function appendLANoption1(obj){
 	if(obj.value == "lan"){
 		if(document.form.wans_lanport1){
 			document.form.wans_lanport1.style.display = "";
+			load_wans_lanport(document.form.wans_lanport1, document.getElementById("wans_lanport1_unavailable"));
 		}
 	}
 	else if(document.form.wans_lanport1){
@@ -377,6 +399,7 @@ function appendLANoption2(obj){
 	if(obj.value == "lan"){
 		if(document.form.wans_lanport2){
 			document.form.wans_lanport2.style.display = "";
+			load_wans_lanport(document.form.wans_lanport2, document.getElementById("wans_lanport2_unavailable"));
 		}
 	}
 	else if(document.form.wans_lanport2){
@@ -864,24 +887,16 @@ function add_option_count(obj, obj_t, selected_flag){
 												<th><%tcWebApi_Get("String_Entry", "dualwan_primary", "s")%></th>
 												<td>
 													<select name="wans_primary" class="input_option" onchange="changeWANProto(this);"></select>
-													<select id="wans_lanport1" name="wans_lanport1" class="input_option" style="margin-left:7px;display:none;">
-														<option value="1" <% if tcWebApi_Get("Dualwan_Entry", "wans_lanport", "h") = "1" then asp_Write("selected") end if %>>LAN Port 1</option>
-														<option value="2" <% if tcWebApi_Get("Dualwan_Entry", "wans_lanport", "h") = "2" then asp_Write("selected") end if %>>LAN Port 2</option>
-														<option value="3" <% if tcWebApi_Get("Dualwan_Entry", "wans_lanport", "h") = "3" then asp_Write("selected") end if %>>LAN Port 3</option>
-														<option value="4" <% if tcWebApi_Get("Dualwan_Entry", "wans_lanport", "h") = "4" then asp_Write("selected") end if %>>LAN Port 4</option>
-													</select>
+													<select id="wans_lanport1" name="wans_lanport1" class="input_option" style="margin-left:7px;display:none;"></select>
+													<span id="wans_lanport1_unavailable" style="display:none;"><br><%tcWebApi_get("String_Entry","FW_note","s")%> LAN ports are not available now because all of them have been set to IPTV PVC.</span>
 												</td>
 											</tr>
 											<tr>
 												<th><%tcWebApi_Get("String_Entry", "dualwan_secondary", "s")%></th>
 												<td>
 													<select name="wans_second" class="input_option" onchange="changeWANProto(this);"></select>
-													<select id="wans_lanport2" name="wans_lanport2" class="input_option" style="margin-left:7px;display:none;">
-														<option value="1" <% if tcWebApi_Get("Dualwan_Entry", "wans_lanport", "h") = "1" then asp_Write("selected") end if %>>LAN Port 1</option>
-														<option value="2" <% if tcWebApi_Get("Dualwan_Entry", "wans_lanport", "h") = "2" then asp_Write("selected") end if %>>LAN Port 2</option>
-														<option value="3" <% if tcWebApi_Get("Dualwan_Entry", "wans_lanport", "h") = "3" then asp_Write("selected") end if %>>LAN Port 3</option>
-														<option value="4" <% if tcWebApi_Get("Dualwan_Entry", "wans_lanport", "h") = "4" then asp_Write("selected") end if %>>LAN Port 4</option>
-													</select>
+													<select id="wans_lanport2" name="wans_lanport2" class="input_option" style="margin-left:7px;display:none;"></select>
+													<span id="wans_lanport2_unavailable" style="display:none;"><br><%tcWebApi_get("String_Entry","FW_note","s")%> LAN ports are not available now because all of them have been set to IPTV PVC.</span>
 												</td>
 											</tr>
 											<tr id="wans_mode_tr">
@@ -1043,7 +1058,7 @@ function add_option_count(obj, obj_t, selected_flag){
 
 										<!-- manually assigned the DHCP List end-->
 
-										<div class="apply_gen">
+										<div id="button_gen_div" class="apply_gen">
 											<input class="button_gen" onclick="applyRule()" type="button" value="<%tcWebApi_get("String_Entry","CTL_apply","s")%>"/>
 										</div>
 									</td>

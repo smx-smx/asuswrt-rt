@@ -95,6 +95,10 @@ If Request_Form("SaveHttps") = "1" Then
 	tcWebApi_Commit("Https_Entry")
 End if
 
+If Request_Form("SaveSSHd") = "1" Then
+	update_variables()
+End if
+
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -403,16 +407,22 @@ function uiSave() {
 			}
 		}
 		
-		if(document.form.sshd_enable[0].checked){
-			if(!validate_range(document.form.sshd_port, 1, 65535))
-				return false;
-		}
-		else{
+		if(ssh_support != -1){
+			if(document.form.sshd_enable[0].checked){
+				if(!validate_range(document.form.sshd_port, 1, 65535))
+					return false;
+			}
+			else{
 				document.form.sshd_port.disabled = true;
 				document.form.sshd_pass[0].disabled = true;
 				document.form.sshd_pass[1].disabled = true;
 				document.form.sshd_authkeys.disabled = true;
-		}
+			}  
+    	
+    			document.form.action_script.value = "restart_ssh";
+			document.form.action_mode.value = "apply";
+			document.form.SaveSSHd.value = 1;
+		}	
 		
 	}
 	else
@@ -438,8 +448,7 @@ function uiSave() {
 
         document.form.RadioButtonFlag.value = 1;
         document.form.SaveTime.value = 1;
-        if(ssh_support != -1)
-        	document.form.SaveSSHd.value = 1;
+        
         if(telnet_support != -1)
         	document.form.SaveTelnetd.value = 1;
         <%if tcWebApi_Get("WebCustom_Entry", "isSwapFileSupport", "h") = "Yes" then%>
@@ -556,10 +565,10 @@ function validForm(){
 	                return false;
         	}
 
-		//confirm common string combination     #JS_common_passwd#
+		//confirm common string combination
 		var is_common_string = check_common_string(document.form.uiViewTools_Password.value, "httpd_password");
 		if(document.form.uiViewTools_Password.value.length > 0 && is_common_string){
-			if(confirm("<% tcWebApi_get("String_Entry","JS_common_passwd","s") %>")){
+			if(!confirm("<% tcWebApi_get("String_Entry","JS_common_passwd","s") %>")){
 				document.form.uiViewTools_Password.focus();
 				document.form.uiViewTools_Password.select();
 				return false;   
@@ -896,6 +905,8 @@ function updateDateTime()
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
 <FORM METHOD="POST" ACTION="/cgi-bin/Advanced_System_Content.asp" name="form" target="hidden_frame">
+<INPUT TYPE="HIDDEN" NAME="action_script" VALUE="">
+<INPUT TYPE="HIDDEN" NAME="action_mode" VALUE="">
 <INPUT TYPE="HIDDEN" NAME="accountFlag" VALUE="0">
 <INPUT TYPE="HIDDEN" NAME="adminFlag" VALUE="0">
 <INPUT TYPE="HIDDEN" NAME="passwdFlag" VALUE="0">

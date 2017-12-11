@@ -41,8 +41,8 @@ function initial(){
 		inputCtrl(document.form.webdav_lock_interval, 0);
 	}
 
-	//if('<% nvram_get("rrsut"); %>' != '1')
-		$("rrsLink").style.display = "none";
+	if(rrsut_support == -1)
+                document.getElementById("rrsLink").style.display = "none";
 
 }
 

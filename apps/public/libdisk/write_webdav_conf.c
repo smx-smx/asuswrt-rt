@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 	fprintf(fp, "server.errorfile-prefix=\"/usr/lighttpd/css/status-\"\n");
 	fprintf(fp, "dir-listing.activate=\"disable\"\n");
 	fprintf(fp, "server.syslog=\"/tmp/lighttpd/syslog.log\"\n");
-	fprintf(fp, "router.product-image=\"/boaroot/html/images/Model_producticon.png\"\n");
+	fprintf(fp, "router.product-image=\"/boaroot/html/images/Model_product.png\"\n");
  	//fprintf(fp, "aicloud.version=\"2.0.1.1\"\n");
 	fprintf(fp, "router.app_installation-url=\"cgi-bin/APP_Installation.asp\"\n");
 	fprintf(fp, "aicloud.max-sharelink=5\n");

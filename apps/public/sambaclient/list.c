@@ -239,7 +239,7 @@ int add_action_item(const char *action, const char *path, action_item *head)
         //2014.10.17 by sherry malloc申请内存是否成功
         if(p2->action==NULL||p2->path==NULL)
         {
-            return NULL;
+            return -1;
         }
         sprintf(p2->action, "%s", action);
         sprintf(p2->path,   "%s", path);
@@ -260,7 +260,7 @@ int test_if_download_temp_file(char *filename)
         //2014.10.17 by sherry malloc申请内存是否成功
         if(temp_suffix==NULL)
         {
-            return NULL;
+            return -1;
         }
         strcpy(temp_suffix, ".asus.td");
 
@@ -526,7 +526,7 @@ int get_path_to_index(char *path)
         //2014.10.17 by sherry malloc申请内存是否成功
         if(root_path==NULL)
         {
-            return NULL;
+            return -1;
         }
         temp = my_nstrchr('/', path, 5);
         if(temp == NULL)
@@ -601,7 +601,7 @@ void del_download_only_action_item(const char *action,const char *path,action_it
         cmp_name = my_malloc((size_t)(strlen(path)+2));
         //2014.10.17 by sherry malloc申请内存是否成功
         if(cmp_name==NULL)
-            return NULL;
+            return;
         sprintf(cmp_name,"%s/",path);    //add for delete folder and subfolder in download only socket list
 
         while(p1 != NULL)
@@ -609,7 +609,7 @@ void del_download_only_action_item(const char *action,const char *path,action_it
                 p1_cmp_name = my_malloc((size_t)(strlen(p1->path)+2));
                 //2014.10.17 by sherry malloc申请内存是否成功
                 if(p1_cmp_name==NULL)
-                    return NULL;
+                    return;
                 sprintf(p1_cmp_name,"%s/",p1->path);      //add for delete folder and subfolder in download only socket list
                 //DEBUG("del_download_only_sync_item  p1->name = %s\n",p1->name);
                 //DEBUG("del_download_only_sync_item  cmp_name = %s\n",cmp_name);
@@ -660,7 +660,7 @@ int add_all_download_only_dragfolder_socket_list(const char *dir,int index)
                 fullname = my_malloc((size_t)(strlen(dir)+strlen(ent->d_name)+2));
                 //2014.10.17 by sherry malloc申请内存是否成功
                 if(fullname==NULL)
-                    return NULL;
+                    return -1;
 
 
                 sprintf(fullname,"%s/%s",dir,ent->d_name);
@@ -702,7 +702,7 @@ void del_all_items(char *dir,int index)
                         fullname = my_malloc(len);
                         //2014.10.17 by sherry malloc申请内存是否成功
                         if(fullname==NULL)
-                            return NULL;
+                            return;
                         sprintf(fullname,"%s/%s",dir,ent->d_name);
 
                         if(test_if_dir(fullname) == 1)

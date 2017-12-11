@@ -79,7 +79,7 @@ static int rctest_main(int argc, char *argv[])
 #ifdef RTCONFIG_WEBDAV
 		else if (strcmp(argv[1], "webdav") == 0) {
 			if(on == 1)
-				start_webdav();
+				start_webdav();				
 			else if(on == 2) {	//restart
 				stop_webdav();
 				sleep(1);
@@ -88,6 +88,7 @@ static int rctest_main(int argc, char *argv[])
 			else
 				stop_webdav();
 			tcapi_commit("Firewall");
+			tcapi_commit("Upnpd");
 		}
 #endif
 #ifdef RTCONFIG_CLOUDSYNC
@@ -267,7 +268,9 @@ static const applets_t applets[] = {
 	{ "disk_monitor",		diskmon_main			},
 #endif
 	{ "service",			service_main			},
-
+#ifdef RTCONFIG_LETSENCRYPT
+	{ "le_acme",				le_acme_main			},
+#endif
 	{NULL, NULL}
 };
 

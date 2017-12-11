@@ -247,8 +247,6 @@ int	initandparserfile(void)
 		res = tcapi_get("LanguageSwitch_Entry", "Type", str_type);
 		if(!res && strlen(str_type) > 0 )
 			break;
-		
-		tcdbg_printf("[%s, %d]get lang failed!\n", __FUNCTION__, __LINE__);
 		sleep(1);
 	}
 	
@@ -263,7 +261,6 @@ int	initandparserfile(void)
 			res = tcapi_get("WebCurSet_Entry", "detected_lang_type", str_type);
 			if(!res && strlen(str_type) > 0 )
 				break;
-			tcdbg_printf("[%s, %d]get lang failed!\n", __FUNCTION__, __LINE__);
 			sleep(1);
 		}
 		if (strlen(str_type))

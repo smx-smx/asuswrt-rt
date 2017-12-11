@@ -219,6 +219,14 @@ function split_cert_key(){
 	document.TR_form.tr_ckey5.value = document.TR_form.tr_client_key.value.substring(2500,3000);
 }
 
+/* password item show or not */
+function TR_pass_checked(obj){
+	if(obj.name == "TR_ACSPassword")
+		switchType(obj, document.TR_form.show_TR_ACSPassword.checked, true);
+	else	//TR_ACSPassword
+		switchType(obj, document.TR_form.show_TR_ConnectionRequestPassword.checked, true);	
+}
+
 </script>
 </head>
 <body onload="trinit();" onunLoad="return unload_body();">
@@ -341,7 +349,7 @@ function split_cert_key(){
 	<tr>
 	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","CWMP_URL","s")%></a></th>
 	<td>
-		<input name="TR_ACSURL" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_acs_url", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_acs_url", "s") end if%>" size="64" maxlength="256" class="input_32_table">
+		<input name="TR_ACSURL" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_acs_url", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_acs_url", "s") end if%>" maxlength="256" class="input_32_table">
 		<span id="cert_text" onclick="set_cert();" style="text-decoration:underline;cursor:pointer;">Import Certificate</span>
 	</td>
 	</tr>
@@ -349,19 +357,20 @@ function split_cert_key(){
 	<tr>
 	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Username_in","s")%></a></th>
 	<td>
-		<input name="TR_ACSUserName" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_username", "h") <> "N/A" then tcWebApi_get("TR069_Entry",  "tr_username", "s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
+		<input name="TR_ACSUserName" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_username", "h") <> "N/A" then tcWebApi_get("TR069_Entry",  "tr_username", "s") end if%>" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
 	</td>
 	</tr>
 
 	<tr>
 	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Password_in","s")%></a></th>
 	<td>
-		<input name="TR_ACSPassword" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_passwd", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_passwd", "s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
+		<input type="password" autocapitalization="off" autocomplete="off" name="TR_ACSPassword" value="<%if tcWebApi_get("TR069_Entry", "tr_passwd", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_passwd", "s") end if%>" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
+		<div style="margin:-25px 0px 5px 355px;"><input type="checkbox" name="show_TR_ACSPassword" onclick="TR_pass_checked(document.TR_form.TR_ACSPassword);"><%tcWebApi_get("String_Entry","QIS_show_pass","s")%></div>
 	</td>
 	</tr>
 </table>
 
-<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="margin-top:10px;">
 <thead>
 <tr>
           <td colspan="2"><%tcWebApi_get("String_Entry","CWMP_Conn_Info","s")%></td>
@@ -370,19 +379,20 @@ function split_cert_key(){
 	<tr>
 	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Username_in","s")%></a></th>
 	<td>
-		<input name="TR_ConnectionRequestUserName" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_conn_username", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_conn_username", "s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
+		<input name="TR_ConnectionRequestUserName" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_conn_username", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_conn_username", "s") end if%>" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
 	</td>
 	</tr>
 
 	<tr>
 	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","HSDPAC_Password_in","s")%></a></th>
 	<td>
-		<input name="TR_ConnectionRequestPassword" type="text" value="<%if tcWebApi_get("TR069_Entry", "tr_conn_passwd", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_conn_passwd" ,"s") end if%>" size="32" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
+		<input type="password" autocapitalization="off" autocomplete="off" name="TR_ConnectionRequestPassword" value="<%if tcWebApi_get("TR069_Entry", "tr_conn_passwd", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_conn_passwd" ,"s") end if%>" maxlength="256" class="input_32_table" onKeyPress="return is_string(this, event);">
+		<div style="margin:-25px 0px 5px 355px;"><input type="checkbox" name="show_TR_ConnectionRequestPassword" onclick="TR_pass_checked(document.TR_form.TR_ConnectionRequestPassword);"><%tcWebApi_get("String_Entry","QIS_show_pass","s")%></div>
 	</td>
 	</tr>
 </table>
 
-<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="margin-top:10px;">
 <thead>
 <tr>
           <td colspan="2"><%tcWebApi_get("String_Entry","CWMP_Periodic_Inform","s")%></td>
@@ -399,7 +409,7 @@ function split_cert_key(){
 	<tr>
 	<th><a class="hintstyle" href="javascript:void(0);"><%tcWebApi_get("String_Entry","Interval","s")%></a></th>
 	<td>
-		<input type="text" name="TR_PeriodInterval" value="<%if tcWebApi_get("TR069_Entry", "tr_inform_interval", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_inform_interval", "s") end if%>" size="9" maxlength="9" class="input_12_table">
+		<input type="text" name="TR_PeriodInterval" value="<%if tcWebApi_get("TR069_Entry", "tr_inform_interval", "h") <> "N/A" then tcWebApi_get("TR069_Entry", "tr_inform_interval", "s") end if%>" maxlength="9" class="input_12_table">
 	</td>
 	</tr>
 </table>

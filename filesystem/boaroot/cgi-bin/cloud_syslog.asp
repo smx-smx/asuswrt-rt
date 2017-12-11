@@ -27,8 +27,8 @@
 function initial(){
 	show_menu();
 
-	//if('<% nvram_get("rrsut"); %>' != '1')
-		$("rrsLink").style.display = "none";
+	if(rrsut_support == -1)
+                document.getElementById("rrsLink").style.display = "none";
 }
 </script>
 </head>

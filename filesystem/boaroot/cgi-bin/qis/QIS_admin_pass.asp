@@ -33,12 +33,27 @@ function QKinternettype_load_body(){
 
 	if (dsl_support != -1) {
 		var detect_status = '<% tcWebApi_get("AutoPVC_Common","dsltmp_autodet_state","s") %>';
-		var wan_type = "<%tcWebApi_get("AutoPVC_Common","Detect_XDSL","s")%>";
+		var wan_type = "<%tcWebApi_get("AutoPVC_Common","Detect_XDSL","s")%>";	//ATM | PTM
+		var wan_type_info = "<%tcWebApi_get("Info_Adsl","xDSLmode","s")%>";			//ADSL | VDSL
+		var AnnexTypeA_orig = "<%tcWebApi_get("Adsl_Entry","ANNEXTYPEA","s")%>";
+		
+		if (detect_status == "Fail") {
+			if(wan_type_info == "VDSL"){	//wan_type == "PTM"
+				document.form.next_page.value = "QIS_PTM_manual_setting.asp";
+			}	
+			else{
+				document.form.next_page.value = "QIS_manual_setting.asp";
+			}	
+		}
 
 		if ((detect_status == "initializing") || (detect_status == "wait_for_init") ||
 			(detect_status == "up") || (detect_status == "down") || (detect_status == "")) {
-			if(detect_status == "up" && wan_type == "PTM"){
+			
+			if(detect_status == "up" && wan_type_info == "VDSL"){	//wan_type == "PTM"
 				document.form.next_page.value = "QIS_PTM_manual_setting.asp";
+			}
+			else if(detect_status == "up" && wan_type_info == "ADSL" && (AnnexTypeA_orig == "ANNEX B" || AnnexTypeA_orig == "ANNEX B/J" || AnnexTypeA_orig == "ANNEX B/J/M")){	//wan_type == "ATM"
+				document.form.next_page.value = "QIS_manual_setting.asp";
 			}
 			else{
 				document.form.next_page.value = "QIS_detect.asp";
@@ -50,14 +65,9 @@ function QKinternettype_load_body(){
 		else if (detect_status == "dhcp") { //2:MER/Automatic IP
 			document.form.next_page.value = "QIS_mer_cfg.asp";
 		}
-		else if (detect_status == "Fail") {
-			if(wan_type == "ATM")
-				document.form.next_page.value = "QIS_manual_setting.asp";
-			else
-				document.form.next_page.value = "QIS_PTM_manual_setting.asp";
-		}
-		else
+		else{
 			document.form.next_page.value = "QIS_detect.asp";
+		}	
 	}	
 }
 
@@ -129,10 +139,10 @@ function submitForm(){
 		return false;
 	}
 
-	//confirm common string combination     #JS_common_passwd#
+	//confirm common string combination
 	var is_common_string = check_common_string(document.form.uiViewPassword.value, "httpd_password");
 	if(document.form.uiViewPassword.value.length > 0 && is_common_string){
-		if(confirm("<% tcWebApi_get("String_Entry","JS_common_passwd","s") %>")){
+		if(!confirm("<% tcWebApi_get("String_Entry","JS_common_passwd","s") %>")){
 			document.form.uiViewPassword.focus();
 			document.form.uiViewPassword.select();
 			return false;   

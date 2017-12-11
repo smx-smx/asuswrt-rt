@@ -5,6 +5,9 @@
 #include "libtcapi.h"
 #include "tcapi.h"
 
+#define MAX_MULTI_BUF    500
+#define MAX_MULTI_COUNT  32
+
 int tcapi_get_int(char* node, char* attr)
 {
 	char buf[16] = {0};
@@ -156,7 +159,8 @@ int _tcapi_set_list(char* base_node, char* base_attr
 	else	//varied node, fixed attr
 		strncpy(attr, base_attr, MAXLEN_ATTR_NAME-1);
 
-	if(!strcmp(base_attr, "MULTIFILTER_MACFILTER_DAYTIME")
+	if(!strcmp(base_attr, "MULTIFILTER_DEVICENAME")
+		|| !strcmp(base_attr, "MULTIFILTER_MACFILTER_DAYTIME")
 		|| !strcmp(base_attr, "qos_bw_rulelist")
 	)
 		pch_start = list_value;	//first
@@ -182,7 +186,9 @@ int _tcapi_set_list(char* base_node, char* base_attr
 		}
 
 		if(*(pch_start+1)) {
-			if(!strcmp(base_attr, "MULTIFILTER_MACFILTER_DAYTIME"))
+			if(!strcmp(base_attr, "MULTIFILTER_DEVICENAME"))
+				pch_end = strchr(pch_start+1,'>');
+			else if(!strcmp(base_attr, "MULTIFILTER_MACFILTER_DAYTIME"))
 				pch_end = strchr(pch_start+1,'#');
 			else
 				pch_end = strchr(pch_start+1,'<');
@@ -200,9 +206,10 @@ int _tcapi_set_list(char* base_node, char* base_attr
 			_dprintf("set %s=%s\n", attr, value);
 			tcapi_set(node, attr, value);
 		}
-		else {
-			_dprintf("set %s=\"\"\n", attr);
-			tcapi_set(node, attr, "");
+		else { //when the first attribute is '<', also need to add
+			sprintf(value, "%s", pch_start);
+			pch_start = NULL;
+			tcapi_set(node, attr, value);
 		}
 	}
 	return 0;
@@ -241,11 +248,17 @@ int _tcapi_x_list(int type, char* target_list, char* list_value, size_t len)
 		list_type = TCAPI_LIST_TYPE_ATTR;
 		list_num = 32;
 	}
+	else if(!strcmp(target_list, "MULTIFILTER_DEVICENAME")) {
+		snprintf(base_node, sizeof(base_node), "Parental_Entry");
+		snprintf(base_attr, sizeof(base_attr), target_list);
+		list_type = TCAPI_LIST_TYPE_ATTR;
+		list_num = 32;
+	}
 	else if(!strcmp(target_list, "MULTIFILTER_MACFILTER_DAYTIME")) {
 		snprintf(base_node, sizeof(base_node), "Parental_Entry");
 		snprintf(base_attr, sizeof(base_attr), target_list);
 		list_type = TCAPI_LIST_TYPE_ATTR;
-		list_num = 36; /* (14*24*7+(24*7-1))/500=17633/500=35.xxx */
+		list_num = 49; /* (9*12*7*32+31+48)/500=24272/500=48.xxx */
 	}
 	else {
 		_dprintf("\nadd %s handler!!!\n\n", target_list);
@@ -258,6 +271,114 @@ int _tcapi_x_list(int type, char* target_list, char* list_value, size_t len)
 		return _tcapi_set_list(base_node, base_attr, list_type, list_num, list_value);
 }
 
+int _tcapi_set_xattr(const char* target_node, char* attr, char* value, size_t len)
+{
+	int i = 0;
+	int cnt = 0;
+	char xnode[MAXLEN_NODE_NAME];
+	char xattr[MAXLEN_ATTR_NAME];
+	char xValue[2048];
+	char multiattr[MAXLEN_ATTR_NAME];
+	char buf[MAXLEN_TCAPI_MSG];
+	char *p;
+	
+	strncpy(xnode, target_node, MAXLEN_NODE_NAME-1);
+	strncpy(xattr, attr, MAXLEN_ATTR_NAME-2);
+	p = value;
+
+	if (len > (MAX_MULTI_COUNT * MAX_MULTI_BUF))
+		return -1;
+
+	//clean all data
+	for(i = 0; i < MAX_MULTI_COUNT; i++) {
+		if (i == 0) {
+			snprintf(multiattr, sizeof(multiattr), "%s", xattr);
+		}
+		else {
+			snprintf(multiattr, sizeof(multiattr), "%s%d", xattr, i);
+		}
+		if (tcapi_get(xnode, multiattr, xValue) == TCAPI_PROCESS_OK) {
+			tcapi_set(xnode, multiattr, "");
+		}
+	}
+
+	while( len > MAX_MULTI_BUF ) {
+		memset(buf, 0, sizeof(buf)); 
+		memcpy(buf, p, MAX_MULTI_BUF);
+		if (cnt == 0) {
+			snprintf(multiattr, sizeof(multiattr), "%s", xattr);
+		}
+		else {
+			snprintf(multiattr, sizeof(multiattr), "%s%d", xattr, cnt);
+		}
+		//_dprintf("###[%s(%d)]: buf=%s\n", __FUNCTION__, __LINE__, buf);
+		tcapi_set(xnode, multiattr, buf);
+		len -= MAX_MULTI_BUF;
+		p += MAX_MULTI_BUF;
+		cnt++;
+	} 
+
+	if (len > 0) {
+		memset(buf, 0, sizeof(buf)); 
+		memcpy(buf, p, len);
+		//_dprintf("###[%s(%d)]: buf=%s\n", __FUNCTION__, __LINE__, buf);
+		if (cnt == 0) {
+			snprintf(multiattr, sizeof(multiattr), "%s", xattr);
+		}
+		else {
+			snprintf(multiattr, sizeof(multiattr), "%s%d", xattr, cnt);
+		}
+		tcapi_set(xnode, multiattr, buf);
+	}
+	
+	return 0;
+}
+
+int _tcapi_get_xattr(const char* target_node, char* attr, char* value, size_t len)
+{
+	char xnode[MAXLEN_NODE_NAME];
+	char xattr[MAXLEN_ATTR_NAME];
+	char xValue[MAXLEN_TCAPI_MSG * MAX_MULTI_COUNT];
+	char multiattr[MAXLEN_ATTR_NAME];
+	int i;
+	int ret = -1;
+
+	strncpy(xnode, target_node, MAXLEN_NODE_NAME-1);
+	strncpy(xattr, attr, MAXLEN_ATTR_NAME-2);
+
+	for(i = 0; i < MAX_MULTI_COUNT; i++)	{
+
+		if (i == 0) {
+			snprintf(multiattr, sizeof(multiattr), "%s", xattr);
+		}
+		else {
+			snprintf(multiattr, sizeof(multiattr), "%s%d", xattr, i);
+		}
+
+		memset(xValue, 0, sizeof(xValue));
+		ret = tcapi_get(xnode, multiattr, xValue);
+		switch(ret) {
+			case TCAPI_PROCESS_OK:
+				//_dprintf("[%s(%d)][Get] %s %s=%s\n", __FUNCTION__, __LINE__, xnode, multiattr, xValue);
+				if( (len - strlen(value) -1) > strlen(xValue) )
+					strcat(value, xValue);
+				else
+					return -1;
+				break;
+			case TCAPI_NONE_NODE:
+			case TCAPI_NONE_ATTR:
+			default:
+				if(i) {
+					//_dprintf("[%s(%d)][FinallyGet] %s\n", __FUNCTION__, __LINE__, value);
+					return 0;
+				} else
+					return -1;
+		}
+	}
+	return 0;
+	
+}
+
 int tcapi_get_list(char* target_list, char* list_value, size_t len)
 {
 	return _tcapi_x_list(TCAPI_GET_CMD, target_list, list_value, len);
@@ -266,4 +387,14 @@ int tcapi_get_list(char* target_list, char* list_value, size_t len)
 int tcapi_set_list(char* target_list, char* list_value)
 {
 	return _tcapi_x_list(TCAPI_SET_CMD, target_list, list_value, 0);
+}
+
+int tcapi_get_multiattr(char* target_node, char* attr, char* value, size_t len)
+{
+	return _tcapi_get_xattr(target_node, attr, value, len);
+}
+
+int tcapi_set_multiattr(char* target_node, char* attr, char* value, size_t len)
+{
+	return _tcapi_set_xattr(target_node, attr, value, len);
 }

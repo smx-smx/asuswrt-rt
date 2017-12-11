@@ -66,7 +66,6 @@ End If
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
-<script language="JavaScript" type="text/javascript" src="/ajax.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script>
 <!--[if !IE]>-->

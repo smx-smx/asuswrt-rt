@@ -1,0 +1,7 @@
+all: $(EXECS)
+	$(MAKE) -C log_daemon
+	$(MAKE) -C commands
+
+clean:
+	$(MAKE) -C log_daemon clean
+	$(MAKE) -C commands clean

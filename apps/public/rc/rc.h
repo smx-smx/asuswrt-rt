@@ -433,6 +433,7 @@ extern int write_vpn_resolv(FILE*);
 //static inline void start_vpn_eas() { }
 //#define write_vpn_resolv(f) (0)
 extern void create_openvpn_passwd();
+extern void add_openvpn_account(const char *path, const char *fname);
 #endif
 
 // tr069.c
@@ -554,6 +555,17 @@ enum BTNSETUP_STATE
 	BTNSETUP_DATAEXCHANGE_EXTEND,
 	BTNSETUP_FINISH
 };
+#endif
+
+#ifdef RTCONFIG_LETSENCRYPT
+// letsencrypt.c
+extern int start_letsencrypt(void);
+extern int stop_letsencrypt(void);
+extern int le_acme_main(int argc, char **argv);
+extern int copy_le_certificate(char *dst_cert, char *dst_key);
+extern int is_correct_le_certificate(char *cert_path);
+#define HTTPD_CERT	"/etc/cert.pem"
+#define HTTPD_KEY	"/etc/key.pem"
 #endif
 
 #endif	/* __RC_H__ */

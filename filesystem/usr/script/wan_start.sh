@@ -43,7 +43,7 @@ if [ "$i" = "12" ]; then
 else
 	isLAN_ETHERWAN=0
 fi
-	
+
 if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" != "" ] && [ "$TCSUPPORT_WAN_PTM" != "" -o "$TCSUPPORT_WAN_ETHER" != "" ] ;then
 	if [ "$isPTMETHER" = "1" ] ; then
 		org_i=$i
@@ -104,28 +104,6 @@ fi
 #		exit 0
 #	fi
 #fi
-
-if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" != "" ] && [ "$TCSUPPORT_WAN_PTM" != "" -o "$TCSUPPORT_WAN_ETHER" != "" ] ;then
-	if [ "$isPTMETHER" = "1" ] ; then
-		if [ "$serv_num" != "0" ]; then
-			isIPTV=1
-		else
-			isIPTV=0
-		fi
-	else
-		if [ "$i" != "0" ]; then
-			isIPTV=1
-		else
-			isIPTV=0
-		fi
-	fi
-else
-	if [ "$i" != "0"  -a "$isPTMETHER" = "0" ]; then
-		isIPTV=1
-	else
-		isIPTV=0
-	fi
-fi
 
 # WAN_STATE_CONNECTING
 if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" != "" ] && [ "$TCSUPPORT_WAN_PTM" != "" -o "$TCSUPPORT_WAN_ETHER" != "" ] ;then
@@ -248,39 +226,72 @@ if [ $ISP = "0" ] ; then
 		if [ "$wan_hostname" != "" ] ; then
 			UDHCPC_PARAM="-H $wan_hostname"
 		fi
-		if [ "$DHCP_clientid" != "" ] ; then
-			UDHCPC_PARAM="$UDHCPC_PARAM -c $DHCP_clientid"
-		fi
-		if [ "$TCSUPPORT_UNIQUEMAC" != "" ] ;then
-			if [ "$UNIQUEMAC_FLAG" = "1" ]; then
-				if [ "$DEFAULTROUTE" = "Yes" ] ; then
-					#/sbin/udhcpc -i nas$i -s /sbin/udhcpc_wan -p /var/run/udhcpc-nas$i.pid -m $UNIQUE_MAC $UDHCPC_PARAM &
-					/sbin/udhcpc -i nas$i -s /usr/script/udhcpc.sh -p /var/run/udhcpc-nas$i.pid -m $UNIQUE_MAC $UDHCPC_PARAM &
-				else
-					/sbin/udhcpc -i nas$i -s /usr/script/udhcpc_nodef.sh -p /var/run/udhcpc-nas$i.pid -m $UNIQUE_MAC $UDHCPC_PARAM &
-				fi
-			else	
-				if [ "$WAN_MAC" != "" ]; then
+               if [ "$ASUS_BUSYBOX_NEW" != "" ]  ; then
+			if [ "$dhcp_vendorid" != "" ] ; then
+				UDHCPC_PARAM="$UDHCPC_PARAM -V $dhcp_vendorid"
+			fi
+			if [ "$dhcp_clientid_val" != "" ] ; then
+				UDHCPC_PARAM="$UDHCPC_PARAM -x $dhcp_clientid_val"
+			fi
+			if [ "$TCSUPPORT_UNIQUEMAC" != "" ] ;then
+				if [ "$UNIQUEMAC_FLAG" = "1" ]; then
 					if [ "$DEFAULTROUTE" = "Yes" ] ; then
-						#/sbin/udhcpc -i nas$i -s /sbin/udhcpc_wan -p /var/run/udhcpc-nas$i.pid -m $WAN_MAC $UDHCPC_PARAM &
-						/sbin/udhcpc -i nas$i -s /usr/script/udhcpc.sh -p /var/run/udhcpc-nas$i.pid -m $WAN_MAC $UDHCPC_PARAM &
+						/sbin/udhcpc -i nas$i -s /usr/script/udhcpc.sh -p /var/run/udhcpc-nas$i.pid -a $UNIQUE_MAC $UDHCPC_PARAM &
 					else
-						/sbin/udhcpc -i nas$i -s /usr/script/udhcpc_nodef.sh -p /var/run/udhcpc-nas$i.pid -m $WAN_MAC $UDHCPC_PARAM &
+						/sbin/udhcpc -i nas$i -s /usr/script/udhcpc_nodef.sh -p /var/run/udhcpc-nas$i.pid -a $UNIQUE_MAC $UDHCPC_PARAM &
+					fi
+				else	
+					if [ "$WAN_MAC" != "" ]; then
+						if [ "$DEFAULTROUTE" = "Yes" ] ; then
+							/sbin/udhcpc -i nas$i -s /usr/script/udhcpc.sh -p /var/run/udhcpc-nas$i.pid -a $WAN_MAC $UDHCPC_PARAM &
+						else
+							/sbin/udhcpc -i nas$i -s /usr/script/udhcpc_nodef.sh -p /var/run/udhcpc-nas$i.pid -a $WAN_MAC $UDHCPC_PARAM &
+						fi
+					fi
+				fi
+			else
+				if [ "$TCSUPPORT_WPA_SUPPLICANT" = "" ] || [ "$IPOE_DOT1X_STATUS" != "Enable" ];then
+					if [ "$WAN_MAC" != "" ]; then
+						if [ "$DEFAULTROUTE" = "Yes" ] ; then
+							/sbin/udhcpc -i nas$i -s /usr/script/udhcpc.sh -p /var/run/udhcpc-nas$i.pid -a $WAN_MAC $UDHCPC_PARAM &
+						else
+							/sbin/udhcpc -i nas$i -s /usr/script/udhcpc_nodef.sh -p /var/run/udhcpc-nas$i.pid -a $WAN_MAC $UDHCPC_PARAM &
+						fi
 					fi
 				fi
 			fi
-		else
-			if [ "$TCSUPPORT_WPA_SUPPLICANT" = "" ] || [ "$IPOE_DOT1X_STATUS" != "Enable" ];then
-				if [ "$WAN_MAC" != "" ]; then
+               else
+			if [ "$dhcp_clientid" != "" ] ; then
+				UDHCPC_PARAM="$UDHCPC_PARAM -c $DHCP_clientid"
+			fi
+			if [ "$TCSUPPORT_UNIQUEMAC" != "" ] ;then
+				if [ "$UNIQUEMAC_FLAG" = "1" ]; then
 					if [ "$DEFAULTROUTE" = "Yes" ] ; then
-						#/sbin/udhcpc -i nas$i -s /sbin/udhcpc_wan -p /var/run/udhcpc-nas$i.pid -m $WAN_MAC $UDHCPC_PARAM &
-						/sbin/udhcpc -i nas$i -s /usr/script/udhcpc.sh -p /var/run/udhcpc-nas$i.pid -m $WAN_MAC $UDHCPC_PARAM &
+						/sbin/udhcpc -i nas$i -s /usr/script/udhcpc.sh -p /var/run/udhcpc-nas$i.pid -m $UNIQUE_MAC $UDHCPC_PARAM &
 					else
-						/sbin/udhcpc -i nas$i -s /usr/script/udhcpc_nodef.sh -p /var/run/udhcpc-nas$i.pid -m $WAN_MAC $UDHCPC_PARAM &
+						/sbin/udhcpc -i nas$i -s /usr/script/udhcpc_nodef.sh -p /var/run/udhcpc-nas$i.pid -m $UNIQUE_MAC $UDHCPC_PARAM &
+					fi
+				else	
+					if [ "$WAN_MAC" != "" ]; then
+						if [ "$DEFAULTROUTE" = "Yes" ] ; then
+							/sbin/udhcpc -i nas$i -s /usr/script/udhcpc.sh -p /var/run/udhcpc-nas$i.pid -m $WAN_MAC $UDHCPC_PARAM &
+						else
+							/sbin/udhcpc -i nas$i -s /usr/script/udhcpc_nodef.sh -p /var/run/udhcpc-nas$i.pid -m $WAN_MAC $UDHCPC_PARAM &
+						fi
+					fi
+				fi
+			else
+				if [ "$TCSUPPORT_WPA_SUPPLICANT" = "" ] || [ "$IPOE_DOT1X_STATUS" != "Enable" ];then
+					if [ "$WAN_MAC" != "" ]; then
+						if [ "$DEFAULTROUTE" = "Yes" ] ; then
+							/sbin/udhcpc -i nas$i -s /usr/script/udhcpc.sh -p /var/run/udhcpc-nas$i.pid -m $WAN_MAC $UDHCPC_PARAM &
+						else
+							/sbin/udhcpc -i nas$i -s /usr/script/udhcpc_nodef.sh -p /var/run/udhcpc-nas$i.pid -m $WAN_MAC $UDHCPC_PARAM &
+						fi
 					fi
 				fi
 			fi
-		fi
+               fi
 
 		# Set dns info
 		if [ "$DNS_type" = "1" ] ; then
@@ -671,6 +682,9 @@ elif [ $ISP = "2" ] ; then
 		kill -9 `cat /var/run/ppp$k.pid`
 	fi
 
+	if [ -n "$wan_pppoe_hostuniq" ] ; then
+		PPP_PARAM="$PPP_PARAM host-uniq $wan_pppoe_hostuniq"
+	fi
 	PPP_PARAM="$PPP_PARAM $wan_pppoe_options"
 	pppd $PPP_PARAM &
 	echo $! > /var/run/ppp$k.pid
@@ -805,13 +819,18 @@ setCloneMAC
 	/sbin/ifconfig nas$i 0.0.0.0
 	WAN_IF=nas$i
 
-	if [ "$isIPTV" = "1" ]; then
-		brctl addif br1 $WAN_IF
+	brctl addif $br_ifname $WAN_IF
+	brctl delif  br0 lan$bridge_lan_port
+	brctl addif $br_ifname lan$bridge_lan_port	
+
+	#These setting should not be used anymore.
+	#if [ "$isIPTV" = "No" ]; then		
+		#brctl addif br1 $WAN_IF
 		#Arcadyan require bridge WAN port to all LAN port in the xDSL and Ethernet WAN bridge mode for their testing.
-		brctl addif br0 $WAN_IF
-	else
-		brctl addif br0 $WAN_IF
-	fi
+		#brctl addif br0 $WAN_IF
+	#else
+		#brctl addif br0 $WAN_IF
+	#fi
 
 	#ebtables -t filter -A INPUT -i nas$i -p IPv4 --ip-proto 17 --ip-dport 67 -j DROP
 	#ebtables -t filter -A INPUT -i nas$i -p IPv6 --ip6-proto 17 --ip6-dport 547 -j DROP
@@ -835,12 +854,12 @@ fi
 #fi
 
 #echo "======pppoe-relay start======="
-if [ "$isIPTV" = "0" ]; then
+if [ "$isIPTV" = "No" ]; then
 /usr/script/start_pppoe_relay.sh $i &
 fi
 #echo "======pppoe-relay end======="
 
-if [ "$isIPTV" = "1" ]; then
+if [ "$isIPTV" = "Yes" ]; then
 	# restart IPTV
 	#this case means the model including Ethernet WAN.
 	if [ "$TCSUPPORT_MTK_INTERNAL_ETHER_SWITCH" = "" ]; then

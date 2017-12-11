@@ -436,6 +436,10 @@ add_option (char *p[], int line, int unit)
 	{
 		tcapi_set(node, "cipher", p[1]);
 	}
+	else if (streq (p[0], "auth") && p[1])
+	{
+		tcapi_set(node, "digest", p[1]);
+	}
 	else if (streq (p[0], "verb") && p[1])
 	{
 		tcapi_set(node, "loglevel", p[1]);
@@ -669,6 +673,7 @@ void reset_client_setting(int unit){
 	tcapi_set(node, "hmac", "-1");
 	tcapi_set(node, "retry", "-1");
 	tcapi_set(node, "cipher", "default");
+	tcapi_set(node, "digest", "default");
 	tcapi_set(node, "tlsremote", "0");
 	tcapi_set(node, "common_name", "");
 	tcapi_set(node, "userauth", "0");
@@ -712,6 +717,8 @@ void parse_openvpn_status(int unit){
 	char buf[512];
 	char *token;
 	char node[MAXLEN_NODE_NAME];
+	char value[MAXLEN_TCAPI_MSG];
+	enum { TLS, SECRET, CUSTOM } cryptMode = CUSTOM;
 
 	sprintf(buf, "/etc/openvpn/server%d/status", unit);
 	fpi = fopen(buf, "r");
@@ -721,12 +728,21 @@ void parse_openvpn_status(int unit){
 
 	snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit + SERVER_IF_START);
 
+	CLEAR(value);
+	tcapi_get(node, "crypt", value);
+	if ( strstr(value, "tls") )
+		cryptMode = TLS;
+	else if ( strstr(value, "secret") )
+		cryptMode = SECRET;
+	else if ( strstr(value, "custom") )
+		cryptMode = CUSTOM;
+
 	if(fpi && fpo) {
 		while(!feof(fpi)){
 			CLEAR(buf);
 			if (!fgets(buf, sizeof(buf), fpi))
 				break;
-			if(!strncmp(buf, "CLIENT_LIST", 11)) {
+			if(!strncmp(buf, "CLIENT_LIST", 11) && cryptMode == TLS) {
 				//printf("%s", buf);
 				token = strtok(buf, ",");	//CLIENT_LIST
 				token = strtok(NULL, ",");	//Common Name
@@ -756,6 +772,20 @@ void parse_openvpn_status(int unit){
 					fprintf(fpo, "%s", token);
 				else
 					fprintf(fpo, "NoUsername");
+			}
+			else if(!strncmp(buf, "REMOTE", 6) && cryptMode == SECRET) {
+				token = strtok(buf, ",");	//REMOTE,
+				token = strtok(NULL, ",");	//Real Address
+				if(token)
+					fprintf(fpo, "%s ", token);
+				else
+					fprintf(fpo, "NoRealAddress ");
+
+				CLEAR(value);
+				tcapi_get(node, "remote", value);
+				fprintf(fpo, "%s ", value);
+				fprintf(fpo, "Static_Key");
+				break;
 			}
 		}
 		fclose(fpi);

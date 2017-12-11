@@ -1,4 +1,13 @@
 #! /bin/sh
-openssl md5 ./$1_$2.bin
-openssl md5 ./$1_$2.trx
+if [ -f ./$1.bin ];
+then
+openssl md5 ./$1.bin
+fi
+if [ -f ./$1.trx ];
+then
+openssl md5 ./$1.trx
+fi
+if [ -f ./tcboot.bin ];
+then
 openssl md5 ./tcboot.bin
+fi

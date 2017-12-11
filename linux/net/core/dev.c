@@ -1619,6 +1619,7 @@ __IMEM int dev_queue_xmit(struct sk_buff *skb)
 	
 #ifdef CONFIG_QOS
 	u32 queue_num = 0;
+#if ECONET_SDK
 	/* add for ppp & dhcp QoS */
 	u8 *cp = NULL;
 	u16 etherType;
@@ -1630,6 +1631,7 @@ __IMEM int dev_queue_xmit(struct sk_buff *skb)
 #endif
 	unsigned int /*ifidx,*/ newtos, oldtos;
 	int ret, rule_no, rtp_match;
+#endif
 #endif
 
 #ifdef CONFIG_PORT_BINDING
@@ -1690,7 +1692,7 @@ __IMEM int dev_queue_xmit(struct sk_buff *skb)
 		}
 
 		
-#if defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)
+#if ECONET_SDK//defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)
 		if ( skb->imq_flags & IMQ_F_ENQUEUE ) {
 			skb->imq_flags &= ~IMQ_F_ENQUEUE;	
 			/*start no queue marked packets to default queue*/

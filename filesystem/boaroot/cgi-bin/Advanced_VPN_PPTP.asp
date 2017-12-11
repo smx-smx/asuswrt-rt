@@ -70,7 +70,7 @@ function initial(){
 		document.getElementById("divSwitchMenu").style.display = "";
 	}
 
-	formShowAndHide(document.form.VPNServer_enable.value, document.form.VPNServer_mode.value);
+	formShowAndHide(document.form.pptpd_enable.value, "pptpd");
 	if(dualwan_mode == "lb"){
 		var wan0_ipaddr = wanlink_ipaddr();
 		var wan1_ipaddr = secondary_wanlink_ipaddr();
@@ -165,7 +165,7 @@ function formShowAndHide(server_enable, server_type) {
 		document.getElementById('PPTP_setting').style.display = "";
 		document.getElementById("tbAdvanced").style.display = "none";
 		showpptpd_clientlist();
-		parsePPTPClients();
+		update_vpn_client_state();
 		pptpd_connected_status();
 		document.getElementById("divApply").style.display = "";
 	}
@@ -174,9 +174,6 @@ function formShowAndHide(server_enable, server_type) {
 		document.getElementById("pptp_samba").style.display = "none";
 		document.getElementById("PPTP_setting").style.display = "none";
 		document.getElementById("tbAdvanced").style.display = "none";
-		if(document.form.VPNServer_mode.value != "pptpd") {
-			document.getElementById("divApply").style.display = "none";
-		}
 	}
 }
 
@@ -206,11 +203,8 @@ function pptpd_connected_status(){
 
 function applyRule() {
 	var confirmFlag = true;
-	if(document.form.VPNServer_mode.value != "pptpd" && document.form.VPNServer_enable.value == '1') {
-		 confirmFlag = confirm("<%tcWebApi_Get("String_Entry","vpn_switch_confirm","s")%>");
-	}
 
-	if(confirmFlag){
+	//if(confirmFlag){
 		var get_group_value = function () {
 			var rule_num = document.getElementById("pptpd_clientlist_table").rows.length;
 			var item_num = document.getElementById("pptpd_clientlist_table").rows[0].cells.length;
@@ -235,12 +229,11 @@ function applyRule() {
 			return tmp_value;
 		};
 
-		if(document.form.VPNServer_enable.value == "1") {
-			document.form.VPNServer_mode.value = 'pptpd';
+		if(document.form.pptpd_enable.value == "1") {
+			//document.form.VPNServer_mode.value = 'pptpd';
 			document.form.action_script.value = "restart_vpnd";
 			document.form.pptpd_clientlist.value = get_group_value();
 			document.form.pptpd_sr_rulelist.value = pptpd_sr_rulelist_array;
-			document.form.pptpd_enable.value = "1";
 			if(!validator.isLegalIP(document.form._pptpd_clients_start, "")) {
 				document.form._pptpd_clients_start.focus();
 				document.form._pptpd_clients_start.select();
@@ -354,7 +347,7 @@ function applyRule() {
 
 		showLoading();
 		document.form.submit();
-	}
+	//}
 }
 
 function addRow(obj, head){
@@ -524,8 +517,9 @@ function showpptpd_clientlist(){
 	document.getElementById("pptpd_clientlist_Block").innerHTML = code;
 }
 
-function parsePPTPClients(){
-	var Loginfo = document.getElementById("pptp_connected_info").firstChild.innerHTML;
+function parsePPTPClients(client_status){
+	pptpd_connected_clients = [];
+	var Loginfo = client_status;
 	var lines = Loginfo.split('\n');
 	if(Loginfo == "")
 		return;
@@ -758,6 +752,25 @@ function check_vpn_conflict() {		//if conflict with LAN ip & DHCP ip pool & stat
 
 	document.getElementById("pptpd_conflict").innerHTML = "";
 }
+
+function update_vpn_client_state() {
+	$j.ajax({
+		url: 'ajax_pptp_client_status.asp',
+		dataType: 'xml',
+
+		error: function(xml) {
+			setTimeout("update_vpn_client_state();", 1000);
+		},
+
+		success: function(xml) {
+			var vpnserverXML = xml.getElementsByTagName("vpnserver");
+			var client_status = vpnserverXML[0].firstChild.nodeValue;
+			parsePPTPClients(client_status);
+			pptpd_connected_status();
+			setTimeout("update_vpn_client_state();", 3000);
+		}
+	});
+}
 /* Advanced Setting end */
 </script>
 </head>
@@ -822,21 +835,17 @@ function check_vpn_conflict() {		//if conflict with LAN ip & DHCP ip pool & stat
 										</tr>
 										</thead>
 										<tr>
-											<th><%tcWebApi_Get("String_Entry","vpn_enable","s")%></th>
+											<th><%tcWebApi_Get("String_Entry","vpn_pptp_enable","s")%></th>
 											<td>
 												<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="radio_VPNServer_enable"></div>
 												<script type="text/javascript">
-													var VPNServerEnable = document.form.VPNServer_enable.value;
-													if(document.form.VPNServer_mode.value != "pptpd") {
-														VPNServerEnable = 0;
-													}
-													$j('#radio_VPNServer_enable').iphoneSwitch(VPNServerEnable,
+													$j('#radio_VPNServer_enable').iphoneSwitch('<%tcWebApi_Get("PPTP_Entry", "pptpd_enable", "s")%>',
 													function(){
-														document.form.VPNServer_enable.value = "1";
+														document.form.pptpd_enable.value = "1";
 														formShowAndHide(1, "pptpd");
 													},
 													function(){
-														document.form.VPNServer_enable.value = "0";
+														document.form.pptpd_enable.value = "0";
 														formShowAndHide(0, "pptpd");
 													}
 													);

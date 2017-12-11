@@ -25,6 +25,7 @@
 
 #include "boa.h"
 #include <stdarg.h>
+#include <shared.h>
 
 #define HEX_TO_DECIMAL(char1, char2)	\
     (((char1 >= 'A') ? (((char1 & 0xdf) - 'A') + 10) : (char1 - '0')) * 16) + \
@@ -718,4 +719,351 @@ void dbgprintf (const char * format, ...)
 		close(nfd);
 	}
 }
+
+#ifdef ASUS_LOGIN_SESSION
+
+void dump_token(asus_token_t *token)
+{
+	if(token)
+	{
+		dbgprintf("type=%d\n", token->client_type);
+		dbgprintf("ipaddr=%s\n", token->ipaddr);
+		dbgprintf("token=%s\n", token->token);
+		dbgprintf("login_timestamp=%ld\n", token->login_timestamp);
+	}
+}
+
+static void _dump_all_token_list()
+{
+	asus_token_t *token = token_head;
+	int i;
+
+	for(i = 0; token; ++i)
+	{
+		dbgprintf("\nindex=%d\n", i);
+		dump_token(token);
+		token = token->next;
+	}
+}
+
+/*******************************************************************
+* NAME: _generate_token
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2015/12/01
+* DESCRIPTION: generate token
+* INPUT: token: the buffer to store token. 
+*            len: the size of token buffer
+* OUTPUT: the pointer of token
+* RETURN:
+* NOTE: Andy Chiu, 2016/02/25. modify for asus_token_t
+*******************************************************************/
+char *generate_token(char *token, int len)
+{
+	int a=0, b=0, c=0, d=0;
+
+	if(!token || len < ASUS_TOKEN_LEN)
+		return NULL;
+	
+	memset(token,0, len);
+	srand (time(NULL));
+	a=rand();
+	b=rand();
+	c=rand();
+	d=rand();
+	snprintf(token, len,"%d%d%d%d", a, b, c, d);
+	dbgprintf("[%s, %d]generate token=%s\n", __FUNCTION__, __LINE__, token);
+	return token;
+}
+
+
+/*******************************************************************
+* NAME: check_client_type
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/02/25
+* DESCRIPTION: check the client type by user_agent in http header
+* INPUT: user_agent: the user agent in http header.
+* OUTPUT:
+* RETURN: CLIENT_TYPE
+* NOTE:	
+*******************************************************************/
+CLIENT_TYPE check_client_type(const char *user_agent)
+{
+	//dbgprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+	if(user_agent && strstr(user_agent, ASUSROUTER_TAG))
+	{
+		if(strstr(user_agent, ASUSROUTER_APP))
+			return CLI_TYPE_APP;
+		else if(strstr(user_agent, ASUSROUTER_ATE))
+			return CLI_TYPE_ATE;		
+		else if(strstr(user_agent, ASUSROUTER_ASSIA))
+			return CLI_TYPE_ASSIA;		
+	}
+	return CLI_TYPE_BROWSER;
+}
+
+/*******************************************************************
+* NAME: rm_token_in_list
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/02/25
+* DESCRIPTION: remove the items in the list which match the conditions
+* INPUT: ipaddr: a string of ip address. 
+*            token: a string of token. 
+*            timeout: 0, won't do anything. otherwise, check timeout in the list.
+* OUTPUT:
+* RETURN: 
+* NOTE:	
+*******************************************************************/
+void rm_token_in_list(const char *ipaddr, const char *token, const int timeout)
+{
+	asus_token_t *ptr = token_head, *prev = NULL, *temp = NULL;
+	char tmp[256] = {0};
+	int logout_time = 0, find = 0;
+	long now;
+
+	//get timeout time
+	tcapi_get("Misc_Entry", "http_autologout", tmp);
+	logout_time = atoi(tmp) * 60;
+
+	while(ptr)
+	{
+		//dump_token(ptr);
+		find = 0;
+		
+		//check ip
+		if(ipaddr && !strcmp(ptr->ipaddr, ipaddr))
+		{
+			find = 1;
+		}
+
+		//check token
+		if(token && !strcmp(ptr->token, token))
+		{
+			find = 1;
+		}
+
+		//check timeout
+		if(timeout)
+		{
+			now = uptime();
+			if(ptr->client_type == CLI_TYPE_BROWSER)
+			{
+				if(logout_time > 0 && (now - ptr->login_timestamp > logout_time))
+				{
+					find = 1;
+				}
+			}
+			else	//not from browser, the logout time is defined in boa.h
+			{
+				if(now - ptr->login_timestamp > APP_LOGOUT_TIME)
+				{
+					find = 1;
+				}				
+			}
+		}
+
+		if(find)
+		{
+			if(prev)
+				prev->next = ptr->next;
+			temp = ptr;
+			if(ptr == token_head)
+				token_head = ptr->next;
+			ptr = ptr->next;
+			free(temp);			
+		}
+		else
+		{
+			prev = ptr;
+			ptr = ptr->next;
+		}
+	}
+}
+
+/*******************************************************************
+* NAME: search_token_list
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/02/25
+* DESCRIPTION: find the asus_token_t item in the list
+* INPUT:
+* OUTPUT:
+* RETURN: the pointer of matched item.
+* NOTE:	
+*******************************************************************/
+asus_token_t* search_token_list(const char *token, const char *ipaddr, CLIENT_TYPE cli_type)
+{
+	asus_token_t *ptr = token_head;
+
+	while(ptr)
+	{
+		//dump_token(ptr);
+		
+		if(token && !strcmp(ptr->token, token))
+			return ptr;
+
+		if(ipaddr && !strcmp(ptr->ipaddr, ipaddr))
+			return ptr;
+
+		if(ptr->client_type == cli_type)
+			return ptr;
+		ptr = ptr->next;
+	}
+	return NULL;
+}
+
+/*******************************************************************
+* NAME: add_asus_token
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/02/25
+* DESCRIPTION: add asus_token in the list
+* INPUT:
+* OUTPUT:
+* RETURN: pointer of asus_token_t
+* NOTE:	
+*******************************************************************/
+asus_token_t* add_asus_token(const CLIENT_TYPE cli_type, const char *token, const char *ipaddr)
+{
+	asus_token_t *new_token;
+	
+	if(!token || !ipaddr)
+		return NULL;
+
+	//check timeout items in the list.
+	RM_TOKEN_ITEM_BY_TIMEOUT();
+	
+	//create new item.
+	new_token = (asus_token_t*)malloc(sizeof(asus_token_t));
+	if(!new_token)
+		return NULL;
+
+	//init new item
+	memset(new_token, 0, sizeof(asus_token_t));
+	new_token->client_type = cli_type;
+	snprintf(new_token->ipaddr, sizeof(new_token->ipaddr), ipaddr);
+	snprintf(new_token->token, sizeof(new_token->token), token);
+	new_token->login_timestamp = uptime();
+
+	//add in the list
+	new_token->next = token_head;
+	token_head = new_token;
+
+	//_dump_all_token_list();
+	
+	return new_token;
+}
+
+void dump_retry(login_retry_t *retry)
+{
+	if(retry)
+	{
+		dbgprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+		dbgprintf("ipaddr=%s\n", retry->ipaddr);
+		dbgprintf("try_num=%d\n", retry->try_num);
+		dbgprintf("last_login_timestamp=%ld\n", retry->last_login_timestamp);
+	}
+}
+
+/*******************************************************************
+* NAME: rm_token_in_list
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/02/25
+* DESCRIPTION: remove the items in the list which match the conditions
+* INPUT: ipaddr: a string of ip address. 
+*            token: a string of token. 
+*            timeout: 0, won't do anything. otherwise, check timeout in the list.
+* OUTPUT:
+* RETURN: 
+* NOTE:	
+*******************************************************************/
+void rm_retry_in_list(const char *ipaddr)
+{
+	login_retry_t *ptr = retry_head, *prev = NULL, *tmp = NULL;
+
+  	if(!ipaddr)
+		return;
+	
+	while(ptr)
+	{
+		//check ip
+		if(ipaddr && !strcmp(ptr->ipaddr, ipaddr))
+		{
+			if(prev)
+				prev->next = ptr->next;
+			tmp = ptr;
+			if(ptr == retry_head)
+				retry_head = ptr->next;
+			ptr = ptr->next;
+			free(tmp);			
+ 		}
+		else
+		{
+			prev = ptr;
+			ptr = ptr->next;
+		}
+	}
+}
+
+/*******************************************************************
+* NAME: search_token_list
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/02/25
+* DESCRIPTION: find the asus_token_t item in the list
+* INPUT:
+* OUTPUT:
+* RETURN: the pointer of matched item.
+* NOTE:	
+*******************************************************************/
+login_retry_t* search_retry_list(const char *ipaddr)
+{
+	login_retry_t *ptr = retry_head;
+	if(!ipaddr)
+		return NULL;
+
+	while(ptr)
+	{
+		if(!strcmp(ptr->ipaddr, ipaddr))
+		{
+			//dump_retry(ptr);
+			return ptr;
+		}
+		ptr = ptr->next;
+	}
+	return NULL;
+}
+
+/*******************************************************************
+* NAME: add_asus_token
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2016/02/25
+* DESCRIPTION: add asus_token in the list
+* INPUT:
+* OUTPUT:
+* RETURN: pointer of asus_token_t
+* NOTE:	
+*******************************************************************/
+login_retry_t* add_login_retry(const char *ipaddr)
+{
+	login_retry_t *new_retry;
+	
+	if(!ipaddr)
+		return NULL;
+
+	//create new item.
+	new_retry = (login_retry_t*)malloc(sizeof(login_retry_t));
+	if(!new_retry)
+		return NULL;
+
+	//init new item
+	memset(new_retry, 0, sizeof(login_retry_t));
+	snprintf(new_retry->ipaddr, sizeof(new_retry->ipaddr), ipaddr);
+	new_retry->last_login_timestamp = uptime();
+
+	//add in the list
+	new_retry->next = retry_head;
+	retry_head = new_retry;
+
+	return new_retry;
+}
+
+#endif
+
 

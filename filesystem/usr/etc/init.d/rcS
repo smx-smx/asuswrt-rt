@@ -155,6 +155,7 @@ fi
 /bin/mkdir -m 0777 -p /tmp/opt
 /bin/mkdir -m 0777 -p /tmp/ppp
 /bin/mkdir -m 0777 -p /tmp/xdsl
+/bin/mkdir -m 0777 -p /tmp/asusfbsvcs
 /bin/mkdir -m 0755 -p /var/spool/cron/crontabs
 
 if [ "$TCSUPPORT_USB_3G_DONGLE" != "" ] ;then
@@ -303,6 +304,11 @@ if [ "$TCSUPPORT_VOIP" != "" ] ;then
 echo "TCSUPPORT_VOIP"
 userfs/bin/tcVoIPApiServer &
 fi
+
+#if [ "ASUS_NOTIFICATION_CENTER" != "" ]; then
+#echo "ASUS_NOTIFICATION_CENTER"
+#/usr/sbin/nt_monitor &
+#fi
 
 if [ "ASUS_PROTECTION_SERVER" != "" ]; then
 echo "ASUS_PROTECTION_SERVER"
@@ -486,17 +492,26 @@ fi
 insmod /lib/modules/tc3162_dmt.ko
 
 if [ "$RTL8367B_SDK" != "" ] ;then
+echo "RTL8367 models switch init. Start"
 ifconfig eth0 up
 cat /proc/tc3162/reset_rtk_switch
 /userfs/bin/rtkethcmd init
-/userfs/bin/rtkethcmd partition
+/userfs/bin/rtkethcmd partitionEx 0
 /userfs/bin/rtkethcmd up lan
 /userfs/bin/rtkethcmd up wan
 /userfs/bin/vconfig add eth0 1
 /userfs/bin/vconfig add eth0 2
-/userfs/bin/vconfig add eth0 12
+/userfs/bin/vconfig add eth0 3961
+/userfs/bin/vconfig add eth0 3962
+/userfs/bin/vconfig add eth0 3963
+/userfs/bin/vconfig add eth0 3964
 ip link set eth0.2 name nas10
+ip link set eth0.3961 name lan1
+ip link set eth0.3962 name lan2
+ip link set eth0.3963 name lan3
+ip link set eth0.3964 name lan4
 ifconfig eth0.1 up
+echo "RTL8367 models switch init. End"
 fi
 
 fi
@@ -776,15 +791,6 @@ else
 /userfs/bin/tcapi set Lan_EtherMedia enable none
 fi
 
-#Web server
-if [  "$TCSUPPORT_WEBSERVER_SSL" != "" ] ;then
-HTTP_MODE=`/userfs/bin/tcapi get Https_Entry http_enable`
-HTTPS_PORT=`/userfs/bin/tcapi get Https_Entry https_lanport`
-/userfs/bin/boa -c /boaroot -s "$HTTP_MODE" -p "$HTTPS_PORT" -d &
-else
-/userfs/bin/boa -c /boaroot -d &
-fi
-
 #cfg_manager monitor
 /userfs/bin/monitorcfgmgr &
 
@@ -807,6 +813,19 @@ else
 fi
 /userfs/bin/ethphxcmd eth0 vlanpt enable
 fi
+fi
+
+#reset switch
+if [ "$TCSUPPORT_CPU_MT7510" != "" ] && [ "$TCSUPPORT_MTK_INTERNAL_ETHER_SWITCH" != "" ] ;then
+tce miiw 8 0 8000
+tce miiw 9 0 8000
+tce miiw 10 0 8000
+tce miiw 11 0 8000
+else
+tce miiw 0 0 8000
+tce miiw 1 0 8000
+tce miiw 2 0 8000
+tce miiw 3 0 8000
 fi
 
 #AutoMount

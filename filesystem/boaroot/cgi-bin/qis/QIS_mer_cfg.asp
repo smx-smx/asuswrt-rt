@@ -48,15 +48,15 @@ function QKfinish_load_body(){
 	}
 
 
-	if(wan_type == "ATM"){
-		document.form.prev_page.value = "/cgi-bin/qis/QIS_manual_setting.asp";
-		ISP_List = RAW_ISP_List;
-		ISP_List_IPTV = RAW_ISP_List_IPTV;
-	}
-	else{ //PTM
+	if(wan_type == "PTM"){
 		document.form.prev_page.value = "/cgi-bin/qis/QIS_PTM_manual_setting.asp";
 		ISP_List = RAW_ISP_PTM_List;
 		ISP_List_IPTV = RAW_ISP_PTM_List_IPTV;
+	}
+	else{ //ATM
+		document.form.prev_page.value = "/cgi-bin/qis/QIS_manual_setting.asp";
+		ISP_List = RAW_ISP_List;
+		ISP_List_IPTV = RAW_ISP_List_IPTV;
 	}	
 		
 	showHideIPTVList(false);	
@@ -65,8 +65,7 @@ function QKfinish_load_body(){
 	}
 	else {
 		showhide("iptv_manual_setting", 0);
-	}		
-	showhide("STBPortMsg", 0);
+	}
 }
 
 function submitForm(){
@@ -129,17 +128,14 @@ function haveIPTVService() {
 
 function showHideIPTVList(iptv_enable) {
 	if(iptv_enable.checked) {
-		document.form.dsltmp_cfg_iptv_enable.value = "1";
-		document.getElementById("special_ISP_img").style.display = "";
+		document.form.dsltmp_cfg_iptv_enable.value = "1";		
 		document.getElementById("ISP_table").style.visibility = "visible";		
 		showCountryList();
 		showISPList("");
 	}
 	else {
 		document.form.dsltmp_cfg_iptv_enable.value = "0";
-		document.getElementById("special_ISP_img").style.display = "none";
-		document.getElementById("ISP_table").style.visibility = "hidden";		
-		showhide("STBPortMsg", 0);
+		document.getElementById("ISP_table").style.visibility = "hidden";
 	}
 }
 
@@ -231,21 +227,6 @@ function showISPList(country){
 	//code +="<option value='NO'><%tcWebApi_get("String_Entry","Not_Listed","s")%></option>";
 	code +="</select>";
 	$("ISPnServiceList").innerHTML = code;
-	ChgSVC(sel_idx);
-}
-
-function ChgSVC(idx) {
-	if(ISP_List[idx][13] != "") {	//iptv idx
-		if(wan_type == "ATM" && (idx == "610" || idx == "610")) //610:HiNet (0, 33, PPPoE)&ADSL+MOD  ; 612:HiNet (0, 34, PPPoE)&ADSL+MOD
-			document.getElementById("STBPortMsg").innerHTML = "Please connect the MOD(STB) to LAN Port 1";
-		else if(wan_type == "PTM" && idx == "153") //HiNet (PPPoE) & VDSL+MOD
-			document.getElementById("STBPortMsg").innerHTML = "Please connect the MOD(STB) to LAN Port 1";
-			
-		showhide("STBPortMsg", 1);
-	}
-	else {
-		showhide("STBPortMsg", 0);
-	}
 }
 
 function valid_ISP(){
@@ -312,10 +293,10 @@ function setIptvNumPvc() {
 		<td align="left">
 			<span class="description_down">
 			<script>
-				if(wan_type == "ATM")
-					document.write("MER");
-				else //PTM
+				if(wan_type == "PTM")
 					document.write("Automatic IP");
+				else //ATM
+					document.write("MER");
 			</script>
 			</span>
 		</td>
@@ -332,10 +313,10 @@ function setIptvNumPvc() {
 	<tr>
 		<td align="left">
 		<script>
-			if(wan_type == "ATM")
-				document.writeln("<% tcWebApi_Get("String_Entry", "Transfer_Mode", "s") %>: <span class='cfg_val'>ADSL WAN (ATM)</span>, <% tcWebApi_Get("String_Entry", "L3F_x_ConnectionType_in", "s") %>: <span class='cfg_val'>MER</span>, VPI/VCI: <span class='cfg_val'>" + vpi_val + "/" + vci_val + ", " + encap_str + "</span><br><br>");
-			else //PTM
+			if(wan_type == "PTM")
 				document.writeln("<% tcWebApi_Get("String_Entry", "Transfer_Mode", "s") %>: <span class='cfg_val'>VDSL WAN (PTM)</span>, <% tcWebApi_Get("String_Entry", "L3F_x_ConnectionType_in", "s") %>: <span class='cfg_val'>Automatic IP</span><br><br>");
+			else //ATM
+				document.writeln("<% tcWebApi_Get("String_Entry", "Transfer_Mode", "s") %>: <span class='cfg_val'>ADSL WAN (ATM)</span>, <% tcWebApi_Get("String_Entry", "L3F_x_ConnectionType_in", "s") %>: <span class='cfg_val'>MER</span>, VPI/VCI: <span class='cfg_val'>" + vpi_val + "/" + vci_val + ", " + encap_str + "</span><br><br>");
 		</script>
 		</td>
 	</tr>
@@ -378,18 +359,16 @@ function setIptvNumPvc() {
 <br/>
 <div>
 <table id="iptv_manual_setting" width="80%" border="0" align="left" cellpadding="3" cellspacing="0" style="margin-left:8%;">
-		<tr id="specialISP_tr">
+		<tr>
 			<td>
 				<input type="checkbox" id="specialisp" name="specialisp" onclick="showHideIPTVList(this);">
 				<label for="specialisp">
 					<span class="QISGeneralFont" style="margin-left:0px;font-style:normal;color:#66CCFF;font-size:12px;font-weight:bolder;"><%tcWebApi_get("String_Entry","PPPC_x_HostNameForISP_sn","s")%> ( IPTV Service )</span>
-				</label>
-				<span class="stb_msg" id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>	<!-- untranslated -->
+				</label>				
 			</td>
 		</tr>	
 </table>	
-</div>	
-<div id="special_ISP_img_div"><img id="special_ISP_img" width="505px" height="105px" style="margin-top:0px;margin-left:73px;display:none;" src="/images/qis/border.png"></div>
+</div>
 
 <div style="margin-left:-80px;margin-top:-90px;">
 <table id="ISP_table" class="FormTable" width="475px" border="0" align="center" cellpadding="3" cellspacing="0">

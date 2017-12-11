@@ -1,44 +1,44 @@
 <ROMFILE>
 <Wan>
 	<Common TransMode="ATM" UniqueMac="0" sharepvc="0" CDVT_Enable="0" NATENABLE="Enable" wans_disconn_time="60"/>
-	<PVC0 Active="Yes" PVCScanReserved="No" VPI="0" VCI="33" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="2" ENCAP="PPPoE LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" IPADDR6="" PREFIX6="" DEFGATEWAY6="" DEFAULTROUTE="Yes" />
-	<PVC1 Active="No" PVCScanReserved="Yes" VPI="0" VCI="34" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0"/>
-	<PVC2 Active="No" PVCScanReserved="Yes" VPI="0" VCI="35" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0"/>
-	<PVC3 Active="No" PVCScanReserved="Yes" VPI="0" VCI="36" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0"/>
-	<PVC4 Active="No" PVCScanReserved="Yes" VPI="0" VCI="37" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0"/>
-	<PVC5 Active="No" PVCScanReserved="Yes" VPI="0" VCI="38" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0"/>
-	<PVC6 Active="No" PVCScanReserved="Yes" VPI="0" VCI="39" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0"/>
-	<PVC7 Active="No" PVCScanReserved="Yes" VPI="0" VCI="40" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0"/>
-	<PVC8 Active="No" ISP="2" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" IPADDR6="" PREFIX6="" DEFGATEWAY6="" DEFAULTROUTE="Yes" />
-	<PVC9 Active="No" ISP="3" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0"/>
-	<PVC10 Active="No" ISP="0" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" DEFAULTROUTE="Yes" IPOE_DOT1X_STATUS="Disabled" />
-	<PVC11 Active="No" ISP="0" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" DEFAULTROUTE="Yes" />
+	<PVC0 Active="Yes" PVCScanReserved="No" VPI="0" VCI="33" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="2" ENCAP="PPPoE LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" IPADDR6="" PREFIX6="" DEFGATEWAY6="" DEFAULTROUTE="Yes"  dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid=""/>
+	<PVC1 Active="No" PVCScanReserved="Yes" VPI="0" VCI="34" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC2 Active="No" PVCScanReserved="Yes" VPI="0" VCI="35" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC3 Active="No" PVCScanReserved="Yes" VPI="0" VCI="36" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC4 Active="No" PVCScanReserved="Yes" VPI="0" VCI="37" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC5 Active="No" PVCScanReserved="Yes" VPI="0" VCI="38" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC6 Active="No" PVCScanReserved="Yes" VPI="0" VCI="39" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC7 Active="No" PVCScanReserved="Yes" VPI="0" VCI="40" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC8 Active="No" ISP="2" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" IPADDR6="" PREFIX6="" DEFGATEWAY6="" DEFAULTROUTE="Yes"  dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid=""/>
+	<PVC9 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid=""/>
+	<PVC10 Active="No" ISP="0" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" DEFAULTROUTE="Yes" IPOE_DOT1X_STATUS="Disabled"  dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid=""/>
+	<PVC11 Active="No" ISP="0" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" DEFAULTROUTE="Yes"  dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid=""/>
 </Wan>
 <WanExt>
-	<PVC8e0 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC8e1 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC8e2 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC8e3 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC8e4 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC8e5 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC8e6 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC8e7 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC9e0 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC9e1 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC9e2 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC9e3 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC9e4 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC9e5 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC9e6 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC9e7 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC10e0 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC10e1 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC10e2 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC10e3 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC10e4 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC10e5 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC10e6 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
-	<PVC10e7 Active="No" ISP="3" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No"/>
+	<PVC8e0 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC8e1 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC8e2 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC8e3 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC8e4 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC8e5 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC8e6 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC8e7 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC9e0 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC9e1 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC9e2 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC9e3 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC9e4 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC9e5 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC9e6 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC9e7 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC10e0 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC10e1 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC10e2 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC10e3 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC10e4 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC10e5 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC10e6 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
+	<PVC10e7 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" DEFAULTROUTE="No"/>
 </WanExt>
 <Lan>
 	<Dhcp type="1" />
@@ -48,7 +48,7 @@
 	<EtherMedia enable="support" port0="Auto" port1="Auto" port2="Auto" port3="Auto" />
 </Lan>
 <Misc>
-	<Entry telnetd_enable="0" http_autologout="30" hwnat_enable="1" />
+	<Entry telnetd_enable="0" http_autologout="30" hwnat_enable="1" jumbo_frame_enable="0" firmware_path="0" />
 </Misc>
 <IGMPproxy>
 	<Entry Robustness="2" QueryInterval="70" QueryResInterval="10" LastMemQueryInterval="1" UnsolicitedReportInterval="1" SSMEnable="true" />
@@ -57,7 +57,8 @@
 	<Entry Active="No" ConnectType="DynamicIP" NATENABLE="Enable" DEFAULTROUTE="Yes" MTU="1492" />
 </Port4As2Wan>
 <IPTV>
-	<Entry switch_stb_x="0" dr_enable_x="1" mr_enable_x="0" udpxy_enable_x="0" />
+	<Entry ad_mr_enable_x="0" vd_mr_enable_x="0" eth_mr_enable_x="0" ad_wan_port="0" vd_wan_port="0" eth_wan_port="0" 
+	ad_udpxy_enable_x="0" vd_udpxy_enable_x="0" eth_udpxy_enable_x="0" ad_rmvlan="0" vd_rmvlan="0" eth_rmvlan="0"/>
 </IPTV>
 <Https>
 	<Entry http_enable="1" https_lanport="8443" />
@@ -158,7 +159,7 @@ wl1_EDCCA_ED_TH="90" wl1_EDCCA_BLOCK_CHECK_TH="2" wl1_EDCCA_AP_RSSI_TH="-80"
 wl1_DIS_EDCCA_AP_STA_TH="1" wl1_DIS_EDCCA_AP_AP_TH="1" wl1_DIS_EDCCA_FALSE_CCA_TH="100"
 wl1_DIS_EDCCA_ED_TH="100" wl1_DIS_EDCCA_BLOCK_CHECK_TH="2" wl1_DIS_EDCCA_AP_RSSI_TH="-80"
 wl1_HT_DisallowTKIP="1" wl1_MacAddress="00:11:22:33:44:10"
-wl1_HT_BSSCoexistence="1" wl1_CarrierDetect="0" wl1_GreenAP="0" />
+wl1_HT_BSSCoexistence="1" wl1_CarrierDetect="0" wl1_GreenAP="0" guard_mode="0" />
 	<WDS WdsEnable="0" Wds_MAC0="" Wds_MAC1="" Wds_MAC2=""
 Wds_MAC3="" WdsEncrypType="NONE" WdsKey="" WdsList="" WdsDefaultKeyID="1"
 wl0_Wds_MAC0="" wl0_Wds_MAC1="" wl0_Wds_MAC2="" wl0_Wds_MAC3=""
@@ -252,9 +253,9 @@ wl1_MeshWPAKEY="" wl1_MeshDefaultkey="1" wl1_MeshWEPKEY=""
 wl1_WscVendorPinCode="24705561" wl1_WscManufacturer="ASUSTeK Computer Inc."
 wl1_WscModelName="WPS Router" wl1_WscDeviceName="ASUS WPS Router" wl1_WscModelNumber="DSL-N55U-C1"
 wl1_WscSerialNumber="00000000" wl1_WscV2Support="1" wl1_RadioOn="1"
-wl_wep_type="0" wl_phrase="" radio_on="1" radio_flag="1" wl_schedule_radio="1" wl_radio_date="1111111" wl_radio_time="00002359" 
-wl0_wl_wep_type="0" wl0_wl_phrase="" wl0_radio_on="1" wl0_radio_flag="1" wl0_wl_schedule_radio="1" wl0_wl_radio_date="1111111" wl0_wl_radio_time="00002359"
-wl1_wl_wep_type="0" wl1_wl_phrase="" wl1_radio_on="1" wl1_radio_flag="1" wl1_wl_schedule_radio="1" wl1_wl_radio_date="1111111" wl1_wl_radio_time="00002359"
+wl_wep_type="0" wl_phrase="" radio_on="1" radio_flag="1" wl_schedule_radio="0" wl_radio_date="1111111" wl_radio_time="00002359" 
+wl0_wl_wep_type="0" wl0_wl_phrase="" wl0_radio_on="1" wl0_radio_flag="1" wl0_wl_schedule_radio="0" wl0_wl_radio_date="1111111" wl0_wl_radio_time="00002359"
+wl1_wl_wep_type="0" wl1_wl_phrase="" wl1_radio_on="1" wl1_radio_flag="1" wl1_wl_schedule_radio="0" wl1_wl_radio_date="1111111" wl1_wl_radio_time="00002359"
 wl_user_rssi="0" wl0_wl_user_rssi="0" wl1_wl_user_rssi="0"
 wl_sched0="000000" wl_sched1="000000" wl0_wl_sched0="000000" wl0_wl_sched1="000000" wl1_wl_sched0="000000" wl1_wl_sched1="000000"
 />
@@ -409,7 +410,7 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	<Entry RestoreLinos="1"
 	Vendor="ASUSTeK Computer Inc."
 	ProductName="DSL-N55U-C1"
-	InnerVersion="1.1.1.0"
+	InnerVersion="1.1.2.1"
 	ProductTitle="Dual-Band Wireless-N600 Gigabit ADSL2/2+ Modem Router"
 	SWVer="V100R001B012" FWVer="3.10.0.24" PubDate="2013/06/06" BatchNum="STC20P0.012.310024" SerialNum="1234" Description="" HWVer=""
 	btn_ez_radiotoggle="0"
@@ -438,6 +439,9 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	<Common Discipline="SP" DisciplineFlag="No" WeightHighest="8" WeightHigh="4" WeightMedium="2" WeightLow="1" Drop="TAIL" Prio="DSCP" Queue1="Yes" Queue2="Yes" Queue3="Yes" Queue4="Yes" QueueSW1="Yes" QueueSW2="Yes" QueueSW3="Yes" QueueSW4="Yes" />
 	<Entry0 qos_enable="0" qos_obw="" qos_ibw="" qos_inuse="" qos_ack="on" qos_syn="on" qos_fin="off" qos_rst="off" qos_icmp="on" qos_reset="0" qos_sticky="1" qos_burst0="" qos_burst1="" qos_method="0" qos_default="3" qos_irates="100,100,100,100,100,0,0,0,0,0" qos_orates="80-100,10-100,5-100,3-100,2-95,0-0,0-0,0-0,0-0,0-0" qos_rulenum_x="0" qos_orules="" qos_rulelist="<Web Surf>>80>tcp>0~512>0<HTTPS>>443>tcp>0~512>0<File Transfer>>80>tcp>512~>3<File Transfer>>443>tcp>512~>3" />
 </QoS>
+<WebHistory>
+	<Entry wh_enable="0" wh_path="" wh_max="5000" wh_bkp="0" wh_bkp_path="/tmp" wh_bkp_period="12" wh_clear="1" wh_bkp_time="" wh_bkp_nonhide="0" />
+</WebHistory>
 <IpMacFilter>
 	<Common ListType="Black" />
 	<Entry0 Active="0" LtoW_date="1111111" LtoW_time="00002359" LtoW_ICMP="" LtoW_List="" />
@@ -446,7 +450,7 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
   <Entry Activate="0" Block_ICQ="0" Block_MSN="0" Block_YMSG="0" Block_RTSP="0" />
 </AppFilter>
 <UrlFilter>
-	<Common Activate="0" Active="0" URL_Rule_List="" />
+	<Common Activate="0" Active="0" Mode="0" URL_Rule_List="" />
 </UrlFilter>
 <KeywordFilter>
 	<Common Activate="0" Active="0" Keyword_Rule_List="" />
@@ -585,7 +589,7 @@ SIPAuthenticationName="" SIPPassword="" />
 	<Entry2 />
 </GUI>
 <Parental>
-	<Entry Enable="No" BlockType="MAC" MacAddr="00:00:00:00:00:00" URL="" Mon="No" Start_Mon="00:00" Inter_Mon="00:00" Tue="No" Start_Tue="00:00" Inter_Tue="00:00" Wed="No" Start_Wed="00:00" Inter_Wed="00:00" Thu="No" Start_Thu="00:00" Inter_Thu="00:00" Fri="No" Start_Fri="00:00" Inter_Fri="00:00" Sat="No" Start_Sat="00:00" Inter_Sat="00:00" Sun="No" Start_Sun="00:00" Inter_Sun="00:00" Client_Status="" />
+	<Entry Enable="No" BlockType="MAC" MacAddr="00:00:00:00:00:00" URL="" Mon="No" Start_Mon="00:00" Inter_Mon="00:00" Tue="No" Start_Tue="00:00" Inter_Tue="00:00" Wed="No" Start_Wed="00:00" Inter_Wed="00:00" Thu="No" Start_Thu="00:00" Inter_Thu="00:00" Fri="No" Start_Fri="00:00" Inter_Fri="00:00" Sat="No" Start_Sat="00:00" Inter_Sat="00:00" Sun="No" Start_Sun="00:00" Inter_Sun="00:00" Client_Status="" MULTIFILTER_ALL="0" />
 </Parental>
 <RoutePolicy>
 	<Entry startIP="0.0.0.0" endIP="0.0.0.0" TOS="0" Gateway="0.0.0.0" />
@@ -601,7 +605,7 @@ SIPAuthenticationName="" SIPPassword="" />
 	<Entry0 Name="romfile.cfg" Version="" Date="0001-01-01T00:00:00" Description="The customer setting of CPE" />
 </VendorCfgFile>
 <ipv6rd>
-	<Entry Active="No" CEIPv4Addr="58.211.230.102" IPv4MaskLen="0" PrefixLen="32" Prefix="2001:55c::" 6rdPD="2001:55c:3ad3:e666::/64" BRIPv4Addr="69.252.80.66" />
+	<Entry Active="No" CEIPv4Addr="" IPv4MaskLen="0" PrefixLen="32" Prefix="" 6rdPD="" BRIPv4Addr="" />
 </ipv6rd>
 <Samba>
 	<Entry Active="Yes" Passwd="1234" WorkGroup="MyGroup" NetBiosName="DSL-N55U-C1" Path="/" acc_num="1" enable_ftp="No" acc_list="admin&gt;admin" st_samba_mode="4" st_ftp_mode="2" dummyShareway="" st_samba_workgroup="WORKGROUP" st_max_user="5" ftp_lang="EN" st_ftp_force_mode="0" st_samba_force_mode="0"/>
@@ -699,4 +703,14 @@ SIPAuthenticationName="" SIPPassword="" />
 <RebootSchedule>
 	<Entry reboot_schedule_enable="0" reboot_schedule="00000000000" />
 </RebootSchedule>
+<NTcenter>
+	<Entry 
+		mIndex="-1"
+		MY_EMAIL=""
+		SMTP_AUTH_USER=""
+		SMTP_AUTH_PASS=""
+		NOTIFY_MAIL_TO=""
+		EventAction="" 
+	/>
+</NTcenter>
 </ROMFILE>

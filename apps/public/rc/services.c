@@ -19,6 +19,9 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <shared.h>
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+#include <libnt.h>
+#endif
 #ifdef RTCONFIG_USB
 #include <disk_io_tools.h>	//mkdir_if_none()
 #else
@@ -42,6 +45,7 @@ extern int mkdir_if_none(const char *path)
 #define sin_addr(s) (((struct sockaddr_in *)(s))->sin_addr)
 
 #define DDNS_INFO	"Vram_Entry"
+#define NODE_LE_CONF	"Https_Entry"
 
 // Pop an alarm to recheck pids in 500 msec.
 static const struct itimerval pop_tv = { {0,0}, {0, 500 * 1000} };
@@ -77,7 +81,7 @@ void create_passwd(void)
 
 	fappend_file("/etc/passwd", "/etc/passwd.custom");
 #ifdef RTCONFIG_OPENVPN
-	fappend_file("/etc/passwd", "/etc/passwd.openvpn");
+	add_openvpn_account("/etc/passwd", "/etc/passwd.openvpn");
 #endif
 }
 
@@ -291,6 +295,32 @@ ddns_updated_main(int argc, char *argv[])
 }
 
 void
+start_httpd(void)
+{
+	char path[64] = {0};
+	char *httpd_argv[] = { path, NULL };
+	pid_t pid;
+
+#ifdef TCSUPPORT_WEBSERVER_SSL
+#ifdef RTCONFIG_LETSENCRYPT
+	if(tcapi_get_int(NODE_LE_CONF, "le_enable") && !is_correct_le_certificate(HTTPD_CERT))
+		copy_le_certificate(HTTPD_CERT, HTTPD_KEY);
+#endif
+	snprintf(path, sizeof(path), "/tmp/var/restart_boa.sh");
+#else
+	snprintf(path, sizeof(path), "/usr/script/restart_boa.sh");
+#endif
+	_eval(httpd_argv, NULL, 0, &pid);
+}
+
+void
+stop_httpd(void)
+{
+	if (pids("boa"))
+		killall_tk("boa");
+}
+
+void
 stop_rstats(void)
 {
 	if (pids("rstats"))
@@ -318,16 +348,67 @@ void start_spectrum(void)
 }
 #endif
 
+#ifdef RTCONFIG_SYSSTATE
+void stop_sysstate(void)
+{
+	if (pids("sysstate"))
+		killall_tk("sysstate");
+}
+
+void start_sysstate(void)
+{
+	stop_sysstate();
+	xstart("sysstate");
+}
+#endif
+
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+int
+start_notification_center(void)
+{
+	char *nt_monitor_argv[] = {"nt_monitor", NULL};
+	pid_t pid;
+
+	am_setup_email_conf();
+	am_setup_email_info();
+	
+	return _eval(nt_monitor_argv, NULL, 0, &pid);
+}
+
+int
+stop_notification_center(void)
+{
+	killall_tk("nt_monitor");
+	killall_tk("nt_actMail");
+	killall_tk("nt_center");
+}
+#endif
+
 int
 start_services(void)
 {
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+	start_notification_center();
+#endif
+#ifdef TCSUPPORT_SSH
+	check_host_key("rsa", "sshd_hostkey", "/etc/dropbear/dropbear_rsa_host_key");
+	check_host_key("dss", "sshd_dsskey",  "/etc/dropbear/dropbear_dss_host_key");
+	start_sshd();
+#endif
 #ifdef RTCONFIG_CROND
 	start_cron();
 #endif
+#ifdef RTCONFIG_LETSENCRYPT
+	start_letsencrypt();
+#endif
+	start_httpd();
 	start_infosvr();
 	start_rstats();
 #ifdef RTCONFIG_SPECTRUM
 	start_spectrum();
+#endif
+#ifdef RTCONFIG_SYSSTATE
+	start_sysstate();
 #endif
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 	start_pptpd();
@@ -349,8 +430,18 @@ stop_services(void)
 #ifdef ASUS_DISK_UTILITY
 	stop_diskmon();
 #endif
+	//stop_httpd();	//firmware upgrade still need boa for a while
+#ifdef RTCONFIG_LETSENCRYPT
+	stop_letsencrypt();
+#endif
 #ifdef RTCONFIG_CROND
 	stop_cron();
+#endif
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+	stop_notification_center();
+#endif
+#ifdef TCSUPPORT_SSH
+	stop_sshd();
 #endif
 }
 /*
@@ -505,6 +596,11 @@ again:
 		}
 	}
 #endif
+	else if (strcmp(script, "httpd") == 0 || strcmp(script, "boa") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_httpd();
+		if(action & RC_SERVICE_START) start_httpd();
+	}
 	else if (strcmp(script, "dnsmasq") == 0)
 	{
 		if(action & RC_SERVICE_STOP) stop_dnsmasq();
@@ -554,6 +650,13 @@ again:
 		if(action & RC_SERVICE_START) start_samba();
 	}
 #endif
+#ifdef TCSUPPORT_SSH
+	else if (strcmp(script, "ssh") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_sshd();
+		if(action & RC_SERVICE_START) start_sshd();
+	}
+#endif
 
 #ifdef RTCONFIG_USB_PRINTER
 	else if (strcmp(script, "lpd") == 0)
@@ -569,6 +672,7 @@ again:
 #endif
 
 #endif	//#ifdef RTCONFIG_USB
+
 	else if (strcmp(script, "pppoe_relay") == 0)
 	{
 		if(action & RC_SERVICE_STOP)
@@ -608,41 +712,30 @@ again:
 		if (action & RC_SERVICE_START) start_vpnserver(atoi(&script[9]));
 	}
 #endif
-#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN)
+#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 	else if (strcmp(script, "vpnd") == 0)
 	{
-#if defined(RTCONFIG_OPENVPN)
-		int openvpn_unit = tcapi_get_int("OpenVPN_Common", "vpn_server_unit");
-#endif
 		if (action & RC_SERVICE_STOP){
-#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 			stop_pptpd();
-#endif
-#if defined(RTCONFIG_OPENVPN)
-			stop_vpnserver(openvpn_unit);
-#endif
 		}
 		if (action & RC_SERVICE_START){
-			if(tcapi_match("VPNControl_Entry", "VPNServer_mode", "pptpd")){
-#if defined(RTCONFIG_OPENVPN)
-				stop_vpnserver(openvpn_unit);
-#endif
-#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 				start_pptpd();
-#endif
 				tcapi_commit("Firewall");
-			}else{	//openvpn
-#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
-				stop_pptpd();
-#endif
-#if defined(RTCONFIG_OPENVPN)
-				start_vpnserver(openvpn_unit);
-#endif
-			}
 		}
 	}
 #endif
-
+#if defined(RTCONFIG_OPENVPN)
+	else if (strcmp(script, "openvpnd") == 0)
+	{
+		int openvpn_unit = tcapi_get_int("OpenVPN_Common", "vpn_server_unit");
+		if (action & RC_SERVICE_STOP){
+			stop_vpnserver(openvpn_unit);
+		}
+		if (action & RC_SERVICE_START){
+ 			start_vpnserver(openvpn_unit);
+ 		}
+ 	}
+#endif
 #ifdef RTCONFIG_VPNC
 	else if (strcmp(script, "vpncall") == 0)
 	{
@@ -720,6 +813,26 @@ again:
 			start_script(count, cmd);
 		}
 	}
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+	else if(strcmp(script, "email_conf") == 0) {
+		am_setup_email_conf();
+	}
+	else if (strcmp(script, "email_info") == 0)
+	{
+		am_setup_email_info();
+		char buf[8];
+		if (f_read_string(NOTIFY_ACTION_MAIL_PID_PATH, buf, sizeof(buf)) > 0) {
+			kill(atoi(buf), SIGUSR2);
+		}
+	}
+#endif
+#ifdef RTCONFIG_LETSENCRYPT
+	else if (strcmp(script, "letsencrypt") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_letsencrypt();
+		if(action & RC_SERVICE_START) start_letsencrypt();
+	}
+#endif
 	else
 	{
 		fprintf(stderr,

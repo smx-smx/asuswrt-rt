@@ -148,6 +148,8 @@ function ddns_load_body(){
 		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_nochange","s")%>");
 	else if(ddns_return_code =='auth_fail')
 		alert("<%tcWebApi_get("String_Entry","qis_fail_desc1","s")%>");
+	else if(ddns_return_code =='Updating' || ddns_return_code =='ddns_query')
+		alert("Still query ASUS DDNS registration status. Please wait.");
 	else if(ddns_return_code != '')
 		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2","s")%>");
 }

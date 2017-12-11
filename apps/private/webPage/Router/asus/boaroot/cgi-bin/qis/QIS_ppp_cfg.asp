@@ -59,10 +59,10 @@ var vci_val = "<% tcWebApi_get("AutoPVC_Common","Detect_VCI","s") %>";
 var encap_val = "<% tcWebApi_get("AutoPVC_Common","Detect_Encap","s") %>";
 var wan_type = "<%tcWebApi_get("AutoPVC_Common","Detect_XDSL","s")%>";
 var w_Setting = "<%tcWebApi_get("SysInfo_Entry","w_Setting","s")%>";
-if(detect_status == "pppoe")
-	prctl_str = "PPPoE";
-else
+if(detect_status == "pppoa")
 	prctl_str = "PPPoA";
+else
+	prctl_str = "PPPoE";
 var encap_str = "LLC";
 if (encap_val == "vc") encap_str = "VC-Mux";
 
@@ -111,27 +111,26 @@ function QKfinish_load_body(){
 		document.form.dsltmp_qis_pppoe_mtu.value = "1442";
 	}*/
 
-	if(wan_type == "ATM")
+	if(wan_type == "PTM")
+	{		
+		document.form.prev_page.value = "/cgi-bin/qis/QIS_PTM_manual_setting.asp";
+		ISP_List = RAW_ISP_PTM_List;
+		ISP_List_IPTV = RAW_ISP_PTM_List_IPTV;
+	}
+	else //ATM
 	{
 		document.form.prev_page.value = "/cgi-bin/qis/QIS_manual_setting.asp";
 		ISP_List = RAW_ISP_List;
 		ISP_List_IPTV = RAW_ISP_List_IPTV;
 	}
-	else //PTM
-	{
-		document.form.prev_page.value = "/cgi-bin/qis/QIS_PTM_manual_setting.asp";
-		ISP_List = RAW_ISP_PTM_List;
-		ISP_List_IPTV = RAW_ISP_PTM_List_IPTV;
-	}
 
 	showHideIPTVList(false);
 	if(haveIPTVService()) {
-		showhide("iptv_manual_setting", 1);		
+		showhide("iptv_manual_setting", 1);
 	}
 	else {
 		showhide("iptv_manual_setting", 0);
 	}
-	showhide("STBPortMsg", 0);
 	
 	DE_ISP_note_detect();
 }
@@ -176,11 +175,6 @@ function submitForm(){
 		document.form.dsltmp_cfg_pppoe_passwd.focus();
 		return false;
 	}
-	if(document.form.dsltmp_cfg_pppoe_passwd.value != document.form.confirm_cfg_pppoe_passwd.value){
-		alert("<% tcWebApi_get("String_Entry","File_Pop_content_alert_desc7","s") %>");
-		document.form.dsltmp_cfg_pppoe_passwd.focus();
-		return false;
-	}	
 	if(!validate_string(document.form.dsltmp_cfg_pppoe_passwd)){
 		alert("<%tcWebApi_get("String_Entry","WANJS20Text","s")%>");
 		document.form.dsltmp_cfg_pppoe_passwd.focus();
@@ -237,16 +231,13 @@ function haveIPTVService() {
 function showHideIPTVList(iptv_enable) {
 	if(iptv_enable.checked) {
 		document.form.dsltmp_cfg_iptv_enable.value = "1";		
-		document.getElementById("special_ISP_img").style.display = "";
 		document.getElementById("ISP_table").style.visibility = "visible";
 		showCountryList();
 		showISPList("");
 	}
 	else {
 		document.form.dsltmp_cfg_iptv_enable.value = "0";
-		document.getElementById("special_ISP_img").style.display = "none";
 		document.getElementById("ISP_table").style.visibility = "hidden";
-		showhide("STBPortMsg", 0);
 	}
 }
 
@@ -295,7 +286,7 @@ function showISPList(country){
 	var first_element = 0;
 	var sel_idx = 0;
 
-	code +="<select id='ISP' name='ISP' onChange='ChgSVC(this.value);' class='input_option'>";
+	code +="<select id='ISP' name='ISP' onChange='' class='input_option'>";
 	code +="<option value='default'><%tcWebApi_get("String_Entry","Select_menu_default","s")%></option>";
 	for(var i = 0; i < ISP_List.length; i++){
 		if(country == ISP_List[i][1]){
@@ -338,23 +329,7 @@ function showISPList(country){
 
 	//code +="<option value='NO'><%tcWebApi_get("String_Entry","Not_Listed","s")%></option>";
 	code +="</select>";
-	$("ISPnServiceList").innerHTML = code;
-	ChgSVC(sel_idx);
-}
-
-function ChgSVC(idx) {
-	if(idx == "default")	return;
-	if(ISP_List[idx][13] != "") {	//iptv idx
-		if(wan_type == "ATM" && (idx == "610" || idx == "610")) //610:HiNet (0, 33, PPPoE)&ADSL+MOD  ; 612:HiNet (0, 34, PPPoE)&ADSL+MOD
-			document.getElementById("STBPortMsg").innerHTML = "Please connect the MOD(STB) to LAN Port 1";
-		else if(wan_type == "PTM" && idx == "153") //HiNet (PPPoE) & VDSL+MOD
-			document.getElementById("STBPortMsg").innerHTML = "Please connect the MOD(STB) to LAN Port 1";
-			
-		showhide("STBPortMsg", 1);
-	}
-	else {
-		showhide("STBPortMsg", 0);
-	}
+	$("ISPnServiceList").innerHTML = code;	
 }
 
 function valid_ISP(){
@@ -388,7 +363,11 @@ function setIptvNumPvc() {
 	document.form.dsltmp_cfg_iptv_mr.value = ISP_List[isp_idx][12];
 	document.form.dsltmp_cfg_iptv_pvclist.value = dsltmp_cfg_iptv_pvclist_value;
 }
-
+/* password item show or not */
+function pass_checked(obj){
+	if(obj.name == "dsltmp_cfg_pppoe_passwd")
+		switchType(obj, document.form.show_pass_1.checked, true);	
+}		
 </script>
 </head>
 <body onLoad="QKfinish_load_body();" >
@@ -432,10 +411,10 @@ function setIptvNumPvc() {
 	<tr>
 		<td align="left">
 		<script>
-			if(wan_type == "ATM")
-				document.writeln("<% tcWebApi_Get("String_Entry", "Transfer_Mode", "s") %>: <span class='cfg_val'>ADSL WAN (ATM)</span>, <% tcWebApi_Get("String_Entry", "L3F_x_ConnectionType_in", "s") %>: <span class='cfg_val'>" + prctl_str + "</span>, VPI/VCI: <span class='cfg_val'>" + vpi_val + "/" + vci_val + ", " + encap_str + "</span><br><br>");
-			else //PTM
+			if(wan_type == "PTM")
 				document.writeln("<% tcWebApi_Get("String_Entry", "Transfer_Mode", "s") %>: <span class='cfg_val'>VDSL WAN (PTM)</span>, <% tcWebApi_Get("String_Entry", "L3F_x_ConnectionType_in", "s") %>: <span class='cfg_val'>PPPoE</span><br><br>");
+			else //ATM
+				document.writeln("<% tcWebApi_Get("String_Entry", "Transfer_Mode", "s") %>: <span class='cfg_val'>ADSL WAN (ATM)</span>, <% tcWebApi_Get("String_Entry", "L3F_x_ConnectionType_in", "s") %>: <span class='cfg_val'>" + prctl_str + "</span>, VPI/VCI: <span class='cfg_val'>" + vpi_val + "/" + vci_val + ", " + encap_str + "</span><br><br>");
 		</script>
 		<% tcWebApi_Get("String_Entry", "PPP_cfg_usersel_desc", "s") %>
 		<div id=hint_msg></div>
@@ -447,7 +426,7 @@ function setIptvNumPvc() {
 <div>
 <table id="tblsetting_2" class="QISform" width="400" border="0" align="center" cellpadding="3" cellspacing="0">
 	<tr>
-		<th width="180"><% tcWebApi_Get("String_Entry", "PPPC_UserName_in", "s") %></th>
+		<th width="180"><% tcWebApi_Get("String_Entry", "HSDPAC_Username_in", "s") %></th>
 		<td>
 			<input type="text" name="dsltmp_cfg_pppoe_username" value="" maxlength="64" tabindex="1" class="input_32_table" autocapitalization="off" autocomplete="off">
 		</td>
@@ -456,14 +435,9 @@ function setIptvNumPvc() {
 		<th width="180"><% tcWebApi_Get("String_Entry", "PPPC_Password_in", "s") %></th>
 		<td>
 			<input type="password" name="dsltmp_cfg_pppoe_passwd" value="" maxlength="64" tabindex="2" class="input_32_table" autocapitalization="off" autocomplete="off">
+			<div><input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.dsltmp_cfg_pppoe_passwd);"><%tcWebApi_get("String_Entry","QIS_show_pass","s")%></div>
 		</td>
-	</tr>
-	<tr>
-		<th width="180"><%tcWebApi_get("String_Entry","PASS_retype","s")%></th>
-		<td>
-			<input type="password" name="confirm_cfg_pppoe_passwd" value="" maxlength="64" tabindex="3" class="input_32_table" autocapitalization="off" autocomplete="off">
-		</td>
-	</tr>
+	</tr>	
 <%if tcWebApi_get("AutoPVC_Common","Detect_XDSL","h") = "PTM" then %>
 	<tr>
 		<th width="180"><%tcWebApi_get("String_Entry","WANVLANIDText","s")%></th>
@@ -496,18 +470,16 @@ function setIptvNumPvc() {
 	<br>
 <div>
 <table id="iptv_manual_setting" width="92%" border="0" align="left" cellpadding="3" cellspacing="0" style="margin-left:8%;">
-		<tr id="specialISP_tr">
+		<tr>
 			<td>
 				<input type="checkbox" id="specialisp" name="specialisp" onclick="showHideIPTVList(this);">
 				<label for="specialisp">
 					<span class="QISGeneralFont" style="margin-left:0px;font-style:normal;color:#66CCFF;font-size:12px;font-weight:bolder;"><%tcWebApi_get("String_Entry","PPPC_x_HostNameForISP_sn","s")%> ( IPTV Service )</span>
 				</label>
-				<span class="stb_msg" id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>	<!-- untranslated -->
 			</td>
 		</tr>	
 </table>	
-</div>	
-<div id="special_ISP_img_div"><img id="special_ISP_img" width="505px" height="105px" style="margin-top:0px;margin-left:73px;display:none;" src="/images/qis/border.png"></div>
+</div>
 
 <div style="margin-left:-80px;margin-top:-90px;">
 <table id="ISP_table" class="FormTable" width="475px" border="0" align="center" cellpadding="3" cellspacing="0">

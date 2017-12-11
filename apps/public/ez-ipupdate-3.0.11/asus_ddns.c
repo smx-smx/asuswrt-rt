@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <stdlib.h>
 
 #include "md5.h"
 #include "asus_ddns.h"
@@ -18,6 +19,7 @@
 // #include <bcmnvram.h>
 #include "libtcapi.h"
 #define	DDNS_INFO	"Vram_Entry"
+#define	LE_DATA	"Https_Entry"
 #endif
 #include <syslog.h>
 #include <shared.h>
@@ -193,15 +195,15 @@ int main(void)
 	memset (key, 0, sizeof (key));
 	memset (key, 0x0b, 16);
 	memset (data, 0, sizeof (data));
-	strcpy (data, "Hi There");
+	strcpy ((char*)data, "Hi There");
 	hm(data, 8, key, 16, digest);
 	printf ("case 1:"); dump (digest, 16);
 	
 	// case 2
 	memset (key, 0, sizeof (key));
-	strcpy (key, "Jefe");
+	strcpy ((char*)key, "Jefe");
 	memset (data, 0, sizeof (data));
-	strcpy (data, "what do ya want for nothing?");
+	strcpy ((char*)data, "what do ya want for nothing?");
 	hm(data, 28, key, 4, digest);
 	printf ("case 2:"); dump (digest, 16);
 	
@@ -240,7 +242,17 @@ int asus_reg_domain (void)
 		return (REGISTERES_ERROR);
 	}
 
-	snprintf(buf, BUFFER_SIZE, "GET /ddns/register.jsp?hostname=%s&myip=%s HTTP/1.0\015\012", host, address);
+	snprintf(buf, BUFFER_SIZE, "GET /ddns/register.jsp?hostname=%s&myip=%s", host, address);
+	output(buf);
+#ifdef RTCONFIG_LETSENCRYPT
+	char acme_txt[64] = {0};
+	if(tcapi_match(LE_DATA, "le_enable", "1") && f_read_string("/tmp/acme.txt", acme_txt, sizeof(acme_txt)) > 0) {
+		PRINT("acme: TXT: %s", acme_txt);
+		snprintf(buf, BUFFER_SIZE, "&acme_challenge=1&txtdata=%s", acme_txt);
+		output(buf);
+	}
+#endif
+	snprintf(buf, BUFFER_SIZE, " HTTP/1.0\015\012");
 	output(buf);
 	snprintf(buf, BUFFER_SIZE, "Authorization: Basic %s\015\012", auth);
 	output(buf);
@@ -396,7 +408,17 @@ int asus_update_entry(void)
 		return (UPDATERES_ERROR);
 	}
 
-	snprintf(buf, BUFFER_SIZE, "GET /ddns/update.jsp?hostname=%s&myip=%s HTTP/1.0\015\012", host, address);
+	snprintf(buf, BUFFER_SIZE, "GET /ddns/update.jsp?hostname=%s&myip=%s", host, address);
+	output(buf);
+#ifdef RTCONFIG_LETSENCRYPT
+	char acme_txt[64] = {0};
+	if(tcapi_match(LE_DATA, "le_enable", "1") && f_read_string("/tmp/acme.txt", acme_txt, sizeof(acme_txt)) > 0) {
+		PRINT("acme: TXT: %s", acme_txt);
+		snprintf(buf, BUFFER_SIZE, "&acme_challenge=1&txtdata=%s", acme_txt);
+		output(buf);
+	}
+#endif
+	snprintf(buf, BUFFER_SIZE, " HTTP/1.0\015\012");
 	output(buf);
 	snprintf(buf, BUFFER_SIZE, "Authorization: Basic %s\015\012", auth);
 	output(buf);

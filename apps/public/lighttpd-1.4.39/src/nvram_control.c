@@ -31,6 +31,7 @@
 #define DEVICEINFO "DeviceInfo"
 #define TIMEZONE "Timezone_Entry"
 #define FIREWALL "Firewall_Entry"
+#define WANDUCK	"Wanduck_Common"
 #define DDNS_ENANBLE_X	"Active"	// #define DDNS_ENANBLE_X	"ddns_enable_x"
 #define DDNS_SERVER_X	"SERVERNAME"	// #define DDNS_SERVER_X	"ddns_server_x"
 #define DDNS_HOST_NAME_X	"MYHOST"	// #define DDNS_HOST_NAME_X	"ddns_hostname_x"
@@ -1320,7 +1321,7 @@ int nvram_wan_primary_ifunit(void)
 #ifdef USE_TCAPI
 	char tmp[4], prefix[16] = {0};
 	int unit;	
-	for (unit = 0; unit < 12; unit ++) {		
+	for (unit = 0; unit < 13; unit ++) {		
 		if( unit > 0 && unit < 8 )	//ignore nas1~7 which should be bridge mode for ADSL
 			continue;	
 		snprintf(prefix, sizeof(prefix), "Wan_PVC%d", unit);
@@ -1347,8 +1348,8 @@ char* nvram_get_wan_ip(void)
 	static char wan_ip[16]= {0};
 	char prefix[32] = {0};
 	int unit = nvram_wan_primary_ifunit();
-	snprintf(prefix, sizeof(prefix), "%s_PVC%d", DEVICEINFO, unit);
-	tcapi_get(prefix, "WanIP", wan_ip);
+	snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
+	tcapi_get(WANDUCK, prefix, wan_ip);
 	return wan_ip;
 #else
 	char *wan_ip;

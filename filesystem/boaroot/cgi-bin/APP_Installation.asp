@@ -150,7 +150,7 @@ function initial(){
 		(apps_state_switch == 5 || apps_state_switch == "") &&
 		(apps_state_autorun == 4 || apps_state_autorun == "") &&
 		(apps_state_install == 5 || apps_state_install == "")){		//4>5
-		show_apps();
+		setTimeout('show_apps();', 500);
 	}
 	else{
 		setTimeout("update_appstate();", 2000);
@@ -158,20 +158,20 @@ function initial(){
 }
 
 function calHeight(_trNum){
-	$("applist_table").style.height = "auto";
+	document.getElementById("applist_table").style.height = "auto";
 
 	if(_trNum != 0)
 		_trNum = document.getElementById("applist_table").clientHeight;
 
 	var optionHeight = 52;
 	var manualOffSet = 28;
-	menu_height = Math.round(optionHeight*calculate_height - manualOffSet*calculate_height/14 - $("tabMenu").clientHeight) - 18;
+	menu_height = Math.round(optionHeight*calculate_height - manualOffSet*calculate_height/14 - document.getElementById("tabMenu").clientHeight) - 18;
 
 	if(menu_height > _trNum){
 		if(menu_height < 580)
-			$("applist_table").style.height = "580px";
+			document.getElementById("applist_table").style.height = "580px";
 		else	
-		$("applist_table").style.height = menu_height + "px";
+		document.getElementById("applist_table").style.height = menu_height + "px";
 }
 }
 
@@ -208,16 +208,16 @@ function update_applist(e){
 		if(isinstall > 0 && getCookie_help("apps_last") == "downloadmaster"){
 			for(var i = 0; i < apps_array.length; i++){
 				if(apps_array[i][0] == "DM2_Utility")
-					$("DMUtilityLink").href = apps_array[i][5]+ "/" + apps_array[i][12];
+					document.getElementById("DMUtilityLink").href = apps_array[i][5]+ "/" + apps_array[i][12];
 				
 				if(apps_array[i][0] == "downloadmaster"){			//set cookie for help.js	
 					_dm_install = apps_array[i][3];
 					_dm_enable = apps_array[i][4];
 				}					
 			}
-			$("isInstallDesc").style.display = "";
+			document.getElementById("isInstallDesc").style.display = "";
 			setTimeout('divdisplayctrl("none", "none", "none", "");', 100);
-			$("return_btn").style.display = "";
+			document.getElementById("return_btn").style.display = "";
 		}
 		else{
 			setTimeout('show_partition();', 100);
@@ -228,6 +228,7 @@ function update_applist(e){
 }
 
 function check_appstate(){
+		
 	if(_apps_action != "" && apps_state_upgrade == "" && apps_state_enable == "" && apps_state_update == "" &&
 		 apps_state_remove == "" && apps_state_switch == "" && apps_state_autorun == "" && apps_state_install == ""){
 		return false;
@@ -239,9 +240,7 @@ function check_appstate(){
 		(apps_state_install == 5 || apps_state_install == "")){		//4>5
 		if(apps_state_install == 5 || apps_state_upgrade == 4){		//4>5, 3>4
 			if(installPercent > 1 && installPercent < 95)
-				installPercent = 95;
-			/*else if(installPercent < 98)
-				installPercent = installPercent + 1;*/
+				installPercent = 95;			
 			else
 				return true;
 		}
@@ -252,53 +251,50 @@ function check_appstate(){
 	var errorcode;
 	var proceed = 0.6;
 
-	/*if(apps_state_install == 5 || apps_state_upgrade == 4 || (apps_state_enable == 1 && apps_state_install == 4)){		//4>5, 3>4
-		$("apps_state_desc").innerHTML = "[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
-	}
-	else */if(apps_state_upgrade != 4 && apps_state_upgrade != ""){ // upgrade error handler, 3>4
+	if(apps_state_upgrade != 4 && apps_state_upgrade != ""){ // upgrade error handler, 3>4
 		errorcode = "apps_state_upgrade = " + apps_state_upgrade;
 		if(apps_state_error == 1)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_inputerror", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_inputerror", "s") %>";
 		else if(apps_state_error == 2)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_mount", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_mount", "s") %>";
 		else if(apps_state_error == 4)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_install", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_install", "s") %>";
 		else if(apps_state_error == 6)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_remote_responding", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_remote_responding", "s") %>";
 		else if(apps_state_error == 7)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_upgrade", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_upgrade", "s") %>";
 		else if(apps_state_error == 9)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_unmount", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_unmount", "s") %>";
 		else if(apps_state_error == 10)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_dev_responding", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_dev_responding", "s") %>";
 		else if(apps_state_upgrade == 0)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_initializing", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_initializing", "s") %>";
 		else if(apps_state_upgrade == 1){	
 			if(apps_download_percent > 0 && apps_download_percent <= 100){
-				$("apps_state_desc").innerHTML = apps_download_file + " is downloading... " + " <b>" + apps_download_percent + "</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("apps_state_desc").innerHTML = apps_download_file + " is downloading... " + " <b>" + apps_download_percent + "</b> <span style='font-size: 16px;'>%</span>";
 				apps_download_percent_done = 0;
 			}
 			else if(apps_download_percent_done > 5){
 				if(installPercent > 99)
 					installPercent = 99;
-				$("loadingicon").style.display = "none";
-				$("apps_state_desc").innerHTML = "[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("loadingicon").style.display = "none";
+				document.getElementById("apps_state_desc").innerHTML = "[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;//*/
 			}
 			else{
-				$("apps_state_desc").innerHTML = "&nbsp;<% tcWebApi_Get("String_Entry", "usb_initializing", "s") %>...";
+				document.getElementById("apps_state_desc").innerHTML = "&nbsp;<% tcWebApi_Get("String_Entry", "usb_initializing", "s") %>...";
 				apps_download_percent_done++;
 			}
 			
-		}else if(apps_state_upgrade == 2){
-				$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_uninstalling", "s") %>";	
 		}
+		else if(apps_state_upgrade == 2)
+				document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_uninstalling", "s") %>";	
 		else{
 			if(apps_depend_action_target != "terminated" && apps_depend_action_target != "error"){
 				if(apps_depend_action_target == "")
-					$("apps_state_desc").innerHTML = "<b>[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> </b>";
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> </b>";
 				else
-					$("apps_state_desc").innerHTML = "<b>[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> </b>"
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> </b>"
 							+"<br> <span style='font-size: 16px;'> <% tcWebApi_Get("String_Entry", "Excute_processing", "s") %>："+apps_depend_do+"</span>"
 							+"<br> <span style='font-size: 16px;'>"+apps_depend_action+"  "+apps_depend_action_target+"</span>"
 							;
@@ -306,88 +302,87 @@ function check_appstate(){
 			else{
 				if(installPercent > 99)
 					installPercent = 99;
-				$("loadingicon").style.display = "none";
-				$("apps_state_desc").innerHTML = "[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("loadingicon").style.display = "none";
+				document.getElementById("apps_state_desc").innerHTML = "[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;
 			}
-			
 		}
 	}
 	else if(apps_state_enable != 2 && apps_state_enable != ""){
 		errorcode = "apps_state_enable = " + apps_state_enable;
 		if(apps_state_error == 1)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_unknown", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_unknown", "s") %>";
 		else if(apps_state_error == 2)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_mount", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_mount", "s") %>";
 		else if(apps_state_error == 3)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_create_swap", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_create_swap", "s") %>";
         else if(apps_state_error == 8)
-            $("apps_state_desc").innerHTML = "Enable error!";
+            document.getElementById("apps_state_desc").innerHTML = "Enable error!";
 		else{
-			$("loadingicon").style.display = "";
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "QIS_autoMAC_desc2", "s") %>";
+			document.getElementById("loadingicon").style.display = "";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "QIS_autoMAC_desc2", "s") %>";
 		}
 	}
 	else if(apps_state_update != 2 && apps_state_update != ""){
 		errorcode = "apps_state_update = " + apps_state_update;
 		if(apps_state_error == 1)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Preparing", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Preparing", "s") %>";
 		else if(apps_state_error == 2)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_No_Internet", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_No_Internet", "s") %>";
 		else
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "upgrade_processing", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "upgrade_processing", "s") %>";
 	}
 	else if(apps_state_remove != 2 && apps_state_remove != ""){
 		errorcode = "apps_state_remove = " + apps_state_remove;
-		$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "uninstall_processing", "s") %>";
+		document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "uninstall_processing", "s") %>";
 	}
 	else if(apps_state_switch != 4 && apps_state_switch != 5 && apps_state_switch != ""){
 		errorcode = "apps_state_switch = " + apps_state_switch;
 		if(apps_state_error == 1)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_unknown", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_unknown", "s") %>";
 		else if(apps_state_error == 2)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_mount", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_mount", "s") %>";
 		else if(apps_state_switch == 1)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Stopping", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Stopping", "s") %>";
 		else if(apps_state_switch == 2)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Stopwapping", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Stopwapping", "s") %>";
 		else if(apps_state_switch == 3)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Partition_Check", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Partition_Check", "s") %>";
 		else
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %>";
 	}
 	else if(apps_state_autorun != 4 && apps_state_autorun != ""){
 		errorcode = "apps_state_autorun = " + apps_state_autorun;
 		if(apps_state_error == 1)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_unknown", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_unknown", "s") %>";
 		else if(apps_state_error == 2)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_mount", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_mount", "s") %>";
 		else if(apps_state_autorun == 1)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_disk_checking", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_disk_checking", "s") %>";
 		else if(apps_state_install == 2)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Swap_creating", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Swap_creating", "s") %>";
 		else
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "Auto_Install_processing", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "Auto_Install_processing", "s") %>";
 	}
 	else if(apps_state_install != 5 && apps_state_error > 0){ // install error handler, 4>5
 		if(apps_state_error == 1)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_inputerror", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_inputerror", "s") %>";
 		else if(apps_state_error == 2)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_mount", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_mount", "s") %>";
 		else if(apps_state_error == 3)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_create_swap", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_create_swap", "s") %>";
 		else if(apps_state_error == 4)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_install", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_install", "s") %>";
 		else if(apps_state_error == 5)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_connect_internet", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_connect_internet", "s") %>";
 		else if(apps_state_error == 6)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_remote_responding", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_remote_responding", "s") %>";
 		else if(apps_state_error == 7)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_upgrade", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_upgrade", "s") %>";
 		else if(apps_state_error == 9)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_unmount", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_unmount", "s") %>";
 		else if(apps_state_error == 10)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_dev_responding", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_failed_dev_responding", "s") %>";
 
 		isinstall = 0;
 	}
@@ -396,25 +391,25 @@ function check_appstate(){
 		errorcode = "_apps_state_install = " + apps_state_install;
 
 		if(apps_state_install == 0)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_partitioning", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "usb_partitioning", "s") %>";
 		else if(apps_state_install == 1)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_disk_checking", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_disk_checking", "s") %>";
 		else if(apps_state_install == 2)
-			$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Swap_creating", "s") %>";
+			document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "USB_App_Swap_creating", "s") %>";
 		else if(apps_state_install == 3){
 			if(apps_download_percent > 0 && apps_download_percent <= 100){
-				$("apps_state_desc").innerHTML = apps_download_file + " is downloading... " + " <b>" + apps_download_percent + "</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("apps_state_desc").innerHTML = apps_download_file + " is downloading... " + " <b>" + apps_download_percent + "</b> <span style='font-size: 16px;'>%</span>";
 				apps_download_percent_done = 0;
 			}
 			else if(apps_download_percent_done > 5){
 				if(installPercent > 99)
 					installPercent = 99;
-				$("loadingicon").style.display = "none";
-				$("apps_state_desc").innerHTML = "[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("loadingicon").style.display = "none";
+				document.getElementById("apps_state_desc").innerHTML = "[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;//*/				
 			}
 			else{
-				$("apps_state_desc").innerHTML = "&nbsp;<% tcWebApi_Get("String_Entry", "usb_initializing", "s") %>...";
+				document.getElementById("apps_state_desc").innerHTML = "&nbsp;<% tcWebApi_Get("String_Entry", "usb_initializing", "s") %>...";
 				apps_download_percent_done++;
 			}
 		}
@@ -423,14 +418,14 @@ function check_appstate(){
 				if(apps_depend_action_target == ""){
 					if(installPercent > 99)
 						installPercent = 99;
-					$("loadingicon").style.display = "none";
-					$("apps_state_desc").innerHTML = "[" + getCookie_help("apps_last") + "] " + "usb_initializing<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+					document.getElementById("loadingicon").style.display = "none";
+					document.getElementById("apps_state_desc").innerHTML = "[" + getCookie_help("apps_last") + "] " + "usb_initializing<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 					installPercent = installPercent + proceed;
 				}
 				else{
 					var _apps_depend_do = apps_depend_do.replace(apps_depend_action, "<span style='color:#FC0'>"+apps_depend_action+"</span>");
 
-					$("apps_state_desc").innerHTML = "<b>[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> </b>"
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> </b>"
 							+"<br> <span style='font-size: 16px;'> <% tcWebApi_Get("String_Entry", "Excute_processing", "s") %>："+_apps_depend_do+"</span>"
 							+"<br><br> <span style='font-size: 18px;'>"+apps_depend_action+"  "+apps_depend_action_target+"</span>"
 							;
@@ -439,33 +434,32 @@ function check_appstate(){
 			else{
 				if(installPercent > 99)
 					installPercent = 99;
-				$("loadingicon").style.display = "none";
-				$("apps_state_desc").innerHTML = "[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("loadingicon").style.display = "none";
+				document.getElementById("apps_state_desc").innerHTML = "[" + getCookie_help("apps_last") + "] " + "<% tcWebApi_Get("String_Entry", "Excute_processing", "s") %> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;
 			}
 		}
 	}
 	else{
-		$("loadingicon").style.display = "";
-		$("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "QIS_autoMAC_desc2", "s") %>";
+		document.getElementById("loadingicon").style.display = "";
+		document.getElementById("apps_state_desc").innerHTML = "<% tcWebApi_Get("String_Entry", "QIS_autoMAC_desc2", "s") %>";
 	}
 
 	if(apps_state_error != 0){
-		$("return_btn").style.display = "";
-		$("loadingicon").style.display = "none";
+		document.getElementById("return_btn").style.display = "";
+		document.getElementById("loadingicon").style.display = "none";
 		stoppullstate = 1;
 	}
 	else
-		$("return_btn").style.display = "none";
-
-	/*$("apps_state_desc").innerHTML += '<span class="app_action" onclick="apps_form(\'cancel\',\'\',\'\');">(<% tcWebApi_Get("String_Entry", "CTL_Cancel", "s") %>)</span>';*/
-	$("cancelBtn").style.display = "";
+		document.getElementById("return_btn").style.display = "none";
+	
+	document.getElementById("cancelBtn").style.display = "";
 	return false;
 }
 
 var trNum;
-function show_apps(){
-	$("usbHint").innerHTML = "<%tcWebApi_get("String_Entry","remove_usb_hint","s")%>";
+function show_apps(){	
+	document.getElementById("usbHint").innerHTML = "<%tcWebApi_get("String_Entry","remove_usb_hint","s")%>";
 
 	var counter = 0;
 	appnum = 0;
@@ -542,7 +536,7 @@ function show_apps(){
 	// show all apps
 	for(var i = 0; i < apps_array.length; i++){
 		if(apps_array[i][0] == "DM2_Utility")
-			$("DMUtilityLink").href = apps_array[i][5]+ "/" + apps_array[i][12];
+			document.getElementById("DMUtilityLink").href = apps_array[i][5]+ "/" + apps_array[i][12];
 
 		if(apps_array[i][0] != "downloadmaster" && apps_array[i][0] != "mediaserver" && apps_array[i][0] != "mediaserver2" && apps_array[i][0] != "aicloud") // discard unneeded apps
 			continue;
@@ -648,28 +642,34 @@ function show_apps(){
 		if(apps_array[i][3] == "yes"){ //installed
 			htmlcode += '<span class="app_action" onclick="apps_form(\'remove\',\''+ apps_array[i][0] +'\',\'\');">Uninstall</span>\n';
 			if(apps_array[i][4] == "yes")		//enable
-				htmlcode += '<span class="app_action" onclick="apps_form(\'enable\',\''+ apps_array[i][0] +'\',\'no\');">Disable</span>\n';
+				htmlcode += '<span class="app_action" onclick="apps_form(\'enable\',\''+ apps_array[i][0] +'\',\'no\');"><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_buttonname","s")%></span>\n';
 			else
-				htmlcode += '<span class="app_action" onclick="apps_form(\'enable\',\''+ apps_array[i][0] +'\',\'yes\');">Enable</span>\n';
+				htmlcode += '<span class="app_action" onclick="apps_form(\'enable\',\''+ apps_array[i][0] +'\',\'yes\');"><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_button1name","s")%></span>\n';
+
+			if(sw_mode == 3 || document.getElementById("connect_status").className == "connectstatuson")
+				htmlcode += '<span class="app_action" onclick="apps_form(\'update\',\''+ apps_array[i][0] +'\',\'\');">Check update</span>\n';	/* untranslated */
+				
+			if(apps_array[i][0] == "downloadmaster"){
+				htmlcode += '<span class="app_action" onclick="divdisplayctrl(\'none\', \'none\', \'none\', \'\');"><%tcWebApi_get("String_Entry","CTL_help","s")%></span>\n';
+
+				cookie_help.set("dm_install", apps_array[i][3], 1000);
+				cookie_help.set("dm_enable", apps_array[i][4], 1000);
+			}
+				
+			if(getCookie_help("apps_last") == apps_array[i][0] &&
+					hasNewVer(apps_array[i]) && 
+					(sw_mode == 3 || document.getElementById("connect_status").className == "connectstatuson"))
+						htmlcode += '</div><div style="color:#FC0;margin-top:10px;"><span class="app_action" onclick="apps_form(\'upgrade\',\''+ apps_array[i][0] +'\',\'\');"><%tcWebApi_get("String_Entry","update_available","s")%></span>\n';
+			else if(getCookie_help("apps_last") == apps_array[i][0])
+						htmlcode += "</div><div style=\"color:#FC0;margin-top:10px;margin-left:10px;\"><span class=\"app_no_action\" onclick=\"\">The version is up-to-date.</span>\n";	
+						
 		}
 		else{
 			if(apps_array[i][0] == "downloadmaster" || apps_array[i][0] == "mediaserver" || apps_array[i][0] == "aicloud" || apps_array[i][0] == "mediaserver2")
 				htmlcode += '<span class="app_action" onclick="_appname=\''+apps_array[i][0]+'\';divdisplayctrl(\'none\', \'\', \'none\', \'none\');location.href=\'#\';">Install</span>\n';
 			else
 				htmlcode += '<span class="app_action" onclick="apps_form(\'install\',\''+ apps_array[i][0] +'\',\''+ partitions_array[i] +'\');">Install</span>\n';
-		}
-
-		if(apps_array[i][0] == "downloadmaster"){
-			if(apps_array[i][3] == "yes"){
-				htmlcode += '<span class="app_action" onclick="divdisplayctrl(\'none\', \'none\', \'none\', \'\');">Help</span>\n';
-			}
-
-			cookie_help.set("dm_install", apps_array[i][3], 1000);
-			cookie_help.set("dm_enable", apps_array[i][4], 1000);
-		}
-
-		if(hasNewVer(apps_array[i]))
-			htmlcode += '</div><div style="color:#FC0;margin-top:10px;"><span class="app_action" onclick="apps_form(\'upgrade\',\''+ apps_array[i][0] +'\',\'\');"><%tcWebApi_get("String_Entry","update_available","s")%></span>\n';
+		}		
 
 		htmlcode += '</div><br/><br/></td></tr>\n';
 
@@ -682,11 +682,12 @@ function show_apps(){
 	}
 
 	htmlcode += '</table>\n';
-	$("app_table").innerHTML = htmlcode;
+	document.getElementById("app_table").innerHTML = htmlcode;
 	divdisplayctrl("", "none", "none", "none");
 	stoppullstate = 1;
 	calHeight(1);
 	cookie_help.set("hwaddr", '<% tcWebApi_get("Info_Ether", "mac", "s") %>', 1000);
+	cookie_help.set("apps_last", "", 1000);
 }
 
 /* 
@@ -737,7 +738,7 @@ function show_partition(){
 	if(pool_names() != "") //  avoid no_disk error
 		partitions_array = pool_devices();
 
-	$("app_table").style.display = "none";
+	document.getElementById("app_table").style.display = "none";
 	htmlcode += '<table align="center" style="margin:auto;border-collapse:collapse;">';
 
 	for(var i = 0; i < partitions_array.length; i++){
@@ -776,8 +777,8 @@ function show_partition(){
 	if(mounted_partition == 0)
 		htmlcode += '<tr height="360px"><td colspan="2" class="nohover"><span class="app_name" style="line-height:100%"><%tcWebApi_get("String_Entry","no_usb_found","s")%></span></td></tr>\n';
 
-	$("partition_div").innerHTML = htmlcode;
-	$("usbHint").innerHTML = "<%tcWebApi_get("String_Entry","DM_Install_partition","s")%>" + ' <span style="color:#FFCC00;">Strongly recommended installing on a USB HDD.</span>';
+	document.getElementById("partition_div").innerHTML = htmlcode;
+	document.getElementById("usbHint").innerHTML = "<%tcWebApi_get("String_Entry","DM_Install_partition","s")%>" + ' <span style="color:#FFCC00;">Strongly recommended installing on a USB HDD.</span>';
 	calHeight(1);
 }
 
@@ -815,18 +816,18 @@ function apps_form(_act, _name, _flag){
 }
 
 function divdisplayctrl(flag1, flag2, flag3, flag4){
-	$("app_table").style.display = flag1;
-	$("partition_div").style.display = flag2;
-	$("app_state").style.display = flag3;
-	$("DMDesc").style.display = flag4;
+	document.getElementById("app_table").style.display = flag1;
+	document.getElementById("partition_div").style.display = flag2;
+	document.getElementById("app_state").style.display = flag3;
+	document.getElementById("DMDesc").style.display = flag4;
 
 	if(flag1 != "none"){ // app list
-		$("return_btn").style.display = "none";
+		document.getElementById("return_btn").style.display = "none";
 	}
 	else if(flag2 != "none"){ // partition list
 		detectUSBStatusApp();
 		show_partition()
-		$("return_btn").style.display = "";
+		document.getElementById("return_btn").style.display = "";
 		calHeight(1);
 	}
 	else if(flag4 != "none"){ // help
@@ -836,12 +837,12 @@ function divdisplayctrl(flag1, flag2, flag3, flag4){
 			var _quick_dmlink = "http://" + location.host + ":" + dm_http_port;
 
 		if(_dm_enable == "yes"){
-			$("realLink").href = _quick_dmlink;
+			document.getElementById("realLink").href = _quick_dmlink;
 		}
 		else
-			$("quick_dmlink").onclick = function(){alert("You cannot use Download Master because Download Master is disabled!")}
+			document.getElementById("quick_dmlink").onclick = function(){alert("You cannot use Download Master because Download Master is disabled!")}
 
-		$("return_btn").style.display = "";
+		document.getElementById("return_btn").style.display = "";
 		calHeight(1);
 	}
 	else{ // status
@@ -849,9 +850,9 @@ function divdisplayctrl(flag1, flag2, flag3, flag4){
 	}
 
 	if(flag4 == "none")
-		$("usbHint").style.display = "";
+		document.getElementById("usbHint").style.display = "";
 	else
-		$("usbHint").style.display = "none";
+		document.getElementById("usbHint").style.display = "none";
 }
 
 function reloadAPP(){
@@ -962,10 +963,10 @@ function reloadAPP(){
 								<a id="faq" href="http://www.asus.com/support/FAQ/1009773/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master FAQ</a>
 							</li>
 							<li style="margin-top:10px;">
-								<a id="faq2" href="http://www.asus.com/support/faq/114002/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master Tool FAQ</a>
+								<a id="faq2" href="http://www.asus.com/support/FAQ/1016385/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF">Download Master Tool FAQ</a>
 							</li>
 							<li style="margin-top:10px;">
-								<a id="DMUtilityLink" href="http://dlcdnet.asus.com/pub/ASUS/wireless/ASUSWRT/DM2_2040.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><% tcWebApi_Get("String_Entry", "DM_Download_Tool", "s") %></a>
+								<a id="DMUtilityLink" href="http://dlcdnet.asus.com/pub/ASUS/wireless/RT-AC5300/UT_Download_Master_2228_Win.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><% tcWebApi_Get("String_Entry", "DM_Download_Tool", "s") %></a>
 							</li>
 						</ul>
 					</td>

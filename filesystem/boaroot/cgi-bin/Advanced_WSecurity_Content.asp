@@ -54,7 +54,7 @@ var wireless = []; // [[MAC, associated, authorized], ...]
 function initial(){
 	show_menu();
 
-	if(band5g_support == -1)
+	if(!wl_info.band5g_support)
 		$("wl_unit_field").style.display = "none";
 
 	if(sw_mode == 2 && '<% tcWebApi_get("WLan_Common","wl_unit","s"); %>' == ''){

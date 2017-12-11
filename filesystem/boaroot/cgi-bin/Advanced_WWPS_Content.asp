@@ -92,7 +92,7 @@ var delay = 1000;
 function initial(){
 	show_menu();
 
-	if(band5g_support == -1){	//single band
+	if(!wl_info.band5g_support){	//single band
 		$("wps_band_tr").style.display = "none";
 
 	}else{										//Dual band
@@ -291,9 +291,9 @@ function updateWPS(){
 	var ie = window.ActiveXObject;
 
 	if (ie)
-		makeRequest_ie('/cgi-bin/WPS_info.xml');
+		makeRequest_ie('/cgi-bin/WPS_info.xml?hash=' + Math.random().toString());
 	else
-		makeRequest('/cgi-bin/WPS_info.xml');
+		makeRequest('/cgi-bin/WPS_info.xml?hash=' + Math.random().toString());
 }
 
 function loadXML(){

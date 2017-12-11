@@ -147,7 +147,7 @@ void svr_dropbear_exit(int exitcode, const char* format, va_list param) {
 				"exit before auth: %s", format);
 	}
 #ifdef RTCONFIG_PROTECTION_SERVER
-		struct state_report ssh;
+		STATE_REPORT_T ssh;
 		char info[64];
 		char *addrport;
 		char *addr;
@@ -160,7 +160,7 @@ void svr_dropbear_exit(int exitcode, const char* format, va_list param) {
 		strcpy(ssh.ip_addr, token);
 		ssh.loginType = PROTECTION_SERVICE_SSH;
 		strcpy(ssh.note, "From dropbear , LOGIN FAIL");
-		send_socket(ssh);
+		send_protect_event(ssh);
 #endif
 
 	_dropbear_log(LOG_INFO, fmtbuf, param);

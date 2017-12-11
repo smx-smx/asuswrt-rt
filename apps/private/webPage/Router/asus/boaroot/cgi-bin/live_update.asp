@@ -2,6 +2,7 @@
 	if request_Form("live_update_flag") = "1" then
 		update_variables()
 	elseif request_Form("live_upgrade_flag") = "1" then
+		tcWebApi_set("Misc_Entry","firmware_path","firmware_path")
 		update_variables()
 	end if	
 	
@@ -22,10 +23,13 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="/images/favicon.png">
 <link rel="icon" href="/images/favicon.png">
-<script type="text/javascript">
-	var action_script = '<% get_parameter("action_script"); %>';
+<script type="text/javascript">	
+	var action_script = "<% get_parameter("action_script"); %>";
 	
 	function initial(){		
+		if(action_script.indexOf("start_webs_update") >= 0) {				
+				setTimeout("parent.detect_firmware();", 5000);
+		}
 		if(action_script.indexOf("start_webs_upgrade") >= 0) {
   				setTimeout("parent.DownloadDone();", 3000);
   				setTimeout("parent.chk_upgrade();", 5000);

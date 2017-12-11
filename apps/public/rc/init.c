@@ -142,9 +142,9 @@ int init_nvram(void)
 		add_rc_support("2.4G 5G update usbX2 modem rawifi dsl wifi_hw_sw ipv6 PARENTAL2 printer mssid appnet pwrctrl iptv wds HTTPS");
 		break;
 	case MODEL_DSLN10C1:
-	case MODEL_DSLN10D1:
 	case MODEL_DSLN10PC1:
 	case MODEL_DSLN12EC1:
+	case MODEL_DSLN10D1:
 		add_rc_support("2.4G rawifi dsl wifi_hw_sw ipv6 PARENTAL2 mssid no5gmssid pwrctrl iptv wds HTTPS");
 		break;
 	case MODEL_DSLN12UC1:
@@ -248,9 +248,14 @@ int init_nvram(void)
 	add_ss_support("usb");
 #endif
 #endif
-
 #ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
 	add_rc_support("dsl_diag");
+#endif
+#ifdef TCSUPPORT_WEBMON
+	add_rc_support("ipt_webmon");
+#endif
+#ifdef MT7530_SUPPORT //Currently only MT7530 (DSL-AC56U/DSL-AC52U/DSL-AC55U/DSL-N17U) can support jumbo frame
+	add_rc_support("jumbo_frame");
 #endif
 
 	if (SupportCountrySelect())
@@ -289,12 +294,14 @@ int init_nvram(void)
 	}
 	tcapi_set("OpenVPN_Common", "vpn_upload_state", "");
 #endif
-
+#ifdef RTCONFIG_LETSENCRYPT
+	tcapi_set("Vram_Entry", "le_state", "0");
+#endif
 	tcapi_save();	//Andy Chiu, 2015/07/14
 	return 0;
 }
 
-static void init_mem(void)
+static void tweak_kernel_platdep(void)
 {
 	int model = get_model();
 	int min_free_kbytes = 0;
@@ -395,6 +402,24 @@ static void init_mem(void)
 	}
 }
 
+static void tweak_kernel(void)
+{
+	f_write_string("/proc/sys/net/ipv4/tcp_fin_timeout", "40", 0, 0);
+	f_write_string("/proc/sys/net/ipv4/tcp_keepalive_intvl", "30", 0, 0);
+	f_write_string("/proc/sys/net/ipv4/tcp_keepalive_probes", "5", 0, 0);
+	f_write_string("/proc/sys/net/ipv4/tcp_keepalive_time", "1800", 0, 0);
+	f_write_string("/proc/sys/net/ipv4/tcp_retries2", "5", 0, 0);
+	f_write_string("/proc/sys/net/ipv4/tcp_syn_retries", "3", 0, 0);
+	f_write_string("/proc/sys/net/ipv4/tcp_synack_retries", "3", 0, 0);
+	f_write_string("/proc/sys/net/ipv4/tcp_tw_reuse", "1", 0, 0);
+	f_write_string("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", "1", 0, 0);
+	f_write_string("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", "1", 0, 0);
+	f_write_string("/proc/sys/net/ipv4/tcp_rfc1337", "1", 0, 0);
+	f_write_string("/proc/sys/net/ipv4/tcp_syncookies", "1", 0, 0);
+
+	tweak_kernel_platdep();
+}
+
 static void sysinit(void)
 {
 #ifdef TCSUPPORT_USB_PRINTER_SERVER
@@ -408,7 +433,7 @@ static void sysinit(void)
 	start_hotplug2();
 #endif
 	setup_passwd();
-	init_mem();
+	tweak_kernel();
 	init_nvram();  // for system indepent part after getting model	
 
 #ifdef RTCONFIG_SHP

@@ -1085,6 +1085,16 @@ config ASUS_SPECTRUM
 	help
 		Shows SNR and bits per carrier information on GUI
 
+config ASUS_HWINFO
+	bool "HWINFO FEATURE"
+	help
+		Shows some hardware information
+
+config ASUS_SYSSTATE
+	bool "SYSSTATE FEATURE"
+	help
+		Check system stability information
+
 config ASUS_DSL_POWER_SAVING
 	bool "DSL Power Saving"
 	default n
@@ -1105,7 +1115,13 @@ config ASUS_PROTECTION_SERVER
 	default y
 	bool "ASUS_PROTECTION_SERVER"
 	help
-		Protection server support web/firewall/email
+		Protection server support web/firewall
+
+config ASUS_NOTIFICATION_CENTER
+	default n
+	bool "ASUS_NOTIFICATION_CENTER"
+	help
+		Notification Center 
 
 config ASUSSUPPORT_EMAIL
 	bool "ASUSSUPPORT_EMAIL Support"
@@ -1136,6 +1152,11 @@ config ASUS_CFGMGR_RESTART
 	bool "Restart cfg_manager Support"
 	help
 	   When cfg_manager is stuck or gone, restart it.
+
+config TCSUPPORT_CUSTOMIZE
+	bool "Customization Support"	
+	help	   
+		Customize for Customer.
 
 config ASUS_DISK_UTILITY
 	depends TCSUPPORT_USBHOST
@@ -1193,6 +1214,28 @@ config TCSUPPORT_DSL_LINE_DIAGNOSTIC
 	bool "TCSUPPORT_DSL_LINE_DIAGNOSTIC"
 	help
 		Support DSL Line Diagnostic on Feedback GUI.
+
+config TCSUPPORT_WEBMON
+	bool "TCSUPPORT_WEBMON"
+	help
+		Support Web History display on QoS - Web History GUI.
+
+config TCSUPPORT_NETSTAT_NAT
+	bool "TCSUPPORT_NETSTAT_NAT"
+	help
+		Support netstat-nat tool on Active Connections GUI.
+
+config ASUS_LOGIN_SESSION
+	bool "ASUS_LOGIN_SESSION"
+	help
+		Support login session.
+
+config ASUS_LETSENCRYPT
+	bool "Let's Encrypt"
+	default n
+	depends TCSUPPORT_WEBSERVER_SSL && (TCSUPPORT_ADD_JFFS || TCSUPPORT_SQUASHFS_ADD_YAFFS)
+	help
+	   Support Let's Encrypt Certificate
 
 endmenu
 

@@ -65,7 +65,7 @@ function tabclickhandler(wl_unit){
 		location.href = "router_status.asp";
 	}
 	else{
-		if(band5g_support == -1){
+		if(!wl_info.band5g_support){
 			redirect();
 		}
 		else{
@@ -157,10 +157,10 @@ function validForm(){
 	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){ //2008.08.04 lock modified
 		if(!validate_psk(document.form.wl_wpa_psk))
 			return false;
-		//confirm common string combination     #JS_common_passwd#
+		//confirm common string combination
                 var is_common_string = check_common_string(document.form.wl_wpa_psk.value, "wpa_key");
                 if(is_common_string){
-                        if(confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
+                        if(!confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
                                 document.form.wl_wpa_psk.focus();
                                 document.form.wl_wpa_psk.select();
                                 return false;   
@@ -257,7 +257,7 @@ function doLoad(){
 	document.getElementById("MAC").innerHTML = document.getElementById("MAC").innerHTML.toString().toUpperCase();
 	document.getElementById("BandMAC").innerHTML = document.getElementById("BandMAC").innerHTML.toString().toUpperCase();
 
-	if(band5g_support != -1){
+	if(wl_info.band5g_support){
 		document.getElementById("t0").style.display = "";
 		document.getElementById("t1").style.display = "";
 	}
@@ -500,7 +500,7 @@ function doLoad(){
 		document.write("<% tcWebApi_Get("String_Entry", "menu5_1", "s") %> 5GHz <%tcWebApi_get("String_Entry","MAC_Address","s")%>");
 	else
 	{
-		if(band5g_support != -1)
+		if(wl_info.band5g_support)
 			document.write("<% tcWebApi_Get("String_Entry", "menu5_1", "s") %> 2.4GHz <%tcWebApi_get("String_Entry","MAC_Address","s")%>");
 		else //DSL-N16U ..
 			document.write("<% tcWebApi_Get("String_Entry", "menu5_1", "s") %> <%tcWebApi_get("String_Entry","MAC_Address","s")%>");

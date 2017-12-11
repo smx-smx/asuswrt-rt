@@ -1487,7 +1487,7 @@ void Test_port(int ruid, int euid, char *serial_line )
 			FPRINTF( STDOUT, line );
 			++i;
 		}
-		fclose(tf);
+		pclose(tf);
 	}
 	
 	if( i == 0 && (tf = popen( "ps | grep XXYYZZ | grep -v grep", "r" )) ){
@@ -1496,7 +1496,7 @@ void Test_port(int ruid, int euid, char *serial_line )
 			FPRINTF( STDOUT, line );
 			++i;
 		}
-		fclose(tf);
+		pclose(tf);
 	}
 	if( i ){
 		FPRINTF( STDOUT, "***** setproctitle works\n" );

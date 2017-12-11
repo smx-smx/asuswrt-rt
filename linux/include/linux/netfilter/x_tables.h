@@ -130,6 +130,78 @@ struct xt_counters_info
 
 #include <linux/netdevice.h>
 
+#ifdef CONFIG_IP_NF_MATCH_WEBMON
+/**
+ * struct xt_action_param - parameters for matches/targets
+ *
+ * @match:	the match extension
+ * @target:	the target extension
+ * @matchinfo:	per-match data
+ * @targetinfo:	per-target data
+ * @in:		input netdevice
+ * @out:	output netdevice
+ * @fragoff:	packet is a fragment, this is the data offset
+ * @thoff:	position of transport header relative to skb->data
+ * @hook:	hook number given packet came from
+ * @family:	Actual NFPROTO_* through which the function is invoked
+ * 		(helpful when match->family == NFPROTO_UNSPEC)
+ *
+ * Fields written to by extensions:
+ *
+ * @hotdrop:	drop packet if we had inspection problems
+ * Network namespace obtainable using dev_net(in/out)
+ */
+struct xt_action_param {
+	union {
+		const struct xt_match *match;
+		const struct xt_target *target;
+	};
+	union {
+		const void *matchinfo, *targinfo;
+	};
+	const struct net_device *in, *out;
+	int fragoff;
+	unsigned int thoff;
+	unsigned int hooknum;
+	u_int8_t family;
+	bool hotdrop;
+};
+
+/**
+ * struct xt_mtchk_param - parameters for match extensions'
+ * checkentry functions
+ *
+ * @net:	network namespace through which the check was invoked
+ * @table:	table the rule is tried to be inserted into
+ * @entryinfo:	the family-specific rule data
+ * 		(struct ipt_ip, ip6t_ip, arpt_arp or (note) ebt_entry)
+ * @match:	struct xt_match through which this function was invoked
+ * @matchinfo:	per-match data
+ * @hook_mask:	via which hooks the new rule is reachable
+ * Other fields as above.
+ */
+struct xt_mtchk_param {
+	struct net *net;
+	const char *table;
+	const void *entryinfo;
+	const struct xt_match *match;
+	void *matchinfo;
+	unsigned int hook_mask;
+	u_int8_t family;
+};
+
+/**
+ * struct xt_mdtor_param - match destructor parameters
+ * Fields as above.
+ */
+struct xt_mtdtor_param {
+	struct net *net;
+	const struct xt_match *match;
+	void *matchinfo;
+	u_int8_t family;
+};
+#endif
+
 struct xt_match
 {
 	struct list_head list;

@@ -267,6 +267,8 @@
 #define EBT_FWD_DROP_RULE 	"ebtables -A FORWARD -i eth0.%d -o eth0.%d -j DROP"
 #endif
 
+#define LAN_DEV	"lan"
+
 #define VLAN_GROUP_ARRAY_LEN 4096
 #define START_VLAN_VID	0x1
 

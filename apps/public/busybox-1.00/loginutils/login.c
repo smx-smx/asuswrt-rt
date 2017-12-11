@@ -247,11 +247,11 @@ auth_ok:
 		puts("Login incorrect");
 #endif
 #ifdef RTCONFIG_PROTECTION_SERVER
-		struct state_report t_report;
-		strcpy(t_report.ip_addr, remoteIP);
-		t_report.loginType = PROTECTION_SERVICE_TELNET;
-		strcpy(t_report.note, "From busybox login, LOGIN FAIL");
-		send_socket(t_report);
+		STATE_REPORT_T report;
+		strcpy(report.ip_addr, remoteIP);
+		report.loginType = PROTECTION_SERVICE_TELNET;
+		strcpy(report.note, "From busybox login, LOGIN FAIL");
+		send_protect_event(report);
 #endif
 		username[0] = 0;
 		if ( ++count == 3 ) {

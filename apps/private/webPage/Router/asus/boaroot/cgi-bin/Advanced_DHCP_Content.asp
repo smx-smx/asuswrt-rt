@@ -22,7 +22,7 @@ If Request_Form("lanFlag") <> "" Then
     TCWebApi_set("Dhcpd_Common","lease","dhcp_LeaseTime")
     TCWebApi_set("Dhcpd_Common","router","dhcp_gateway_x")
     TCWebApi_set("Dhcpd_Common","wins_IP","winsIP")
-		TCWebApi_set("Dhcpd_Common","eth0.1","DHCPPhyPortEth0")
+    TCWebApi_set("Dhcpd_Common", "lan1","DHCPPhyPortEth0")
 
     tcWebApi_set("Dproxy_Entry","Active","DNSproxy")
     TCWebApi_set("Dproxy_Entry","type","dnsTypeRadio")

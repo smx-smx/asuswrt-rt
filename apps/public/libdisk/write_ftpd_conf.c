@@ -89,6 +89,7 @@ int main(int argc, char *argv[]) {
 	fprintf(fp, "ftp_username=anonymous\n");
 	//fprintf(fp, "ftpd_banner=Welcome to ASUS %s FTP service.\n", nvram_safe_get("productid"));
 	fprintf(fp, "ftpd_banner=Welcome to ASUS %s FTP service.\n", "DSL-N66U");	//tmp
+	fprintf(fp, "hide_file={.router_temp*}\n");
 
 	// update codepage
 	eval("modprobe", "-r", "nls_cp936");

@@ -918,13 +918,7 @@ stop_wan_if(int unit)
 #endif
 	{
 		if(strlen(wan_ifname) > 0){
-			ifconfig(wan_ifname, 0, NULL, NULL);
-#ifdef RTCONFIG_RALINK
-#elif defined(RTCONFIG_QCA)
-#else
-			if(!strncmp(wan_ifname, "eth", 3) || !strncmp(wan_ifname, "vlan", 4))
-				ifconfig(wan_ifname, IFUP, "0.0.0.0", NULL);
-#endif
+			ifconfig(wan_ifname, IFUP, "0.0.0.0", NULL);
 		}
 	}
 
@@ -1169,6 +1163,18 @@ wan_up(char *wan_ifname)	// oleg patch, replace
 	tcapi_commit("Misc");
 
 	do_dns_detect();
+
+#if defined(TCSUPPORT_6RD)
+	tcapi_commit("ipv6rd");
+
+	/* If in Native Mode, skip restart Radvd/Dhcp6s in here. 
+           the Radvd will be call in cc.c */
+	if((tcapi_match("ipv6rd_Entry", "Active", "Yes") && 
+	   !tcapi_match("ipv6rd_Entry", "tunMode", "NATIVE"))) {
+		tcapi_commit("Radvd");
+		tcapi_commit("Dhcp6s");
+	}
+#endif
 
 	_dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
 }

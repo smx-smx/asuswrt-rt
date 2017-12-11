@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/un.h>
 #endif
 /* keyword for rc_support 	*/
 /* ipv6 mssid update parental 	*/
@@ -922,7 +923,7 @@ int set_lanwan_if(int from, int to)
 		}
 
 		//rename to eth0.x
-		snprintf(ifname, sizeof(ifname), "eth0.%d", from);
+		snprintf(ifname, sizeof(ifname), "lan%d", from);
 		strncpy(ifr.ifr_newname, ifname, IFNAMSIZ);
 		if (ioctl(fd, SIOCSIFNAME, &ifr) < 0) {
 			_dprintf("%s: %d SIOCSIFNAME: %s", __FUNCTION__, __LINE__, strerror(errno));
@@ -939,7 +940,7 @@ int set_lanwan_if(int from, int to)
 	//to: eth0.x => WAN_ETHER_LAN_IF
 	if(to >= 1 && to <= 4) {
 		//set interface name eth0.x
-		snprintf(ifname, sizeof(ifname), "eth0.%d", to);
+		snprintf(ifname, sizeof(ifname), "lan%d", to);
 		strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
 
 		//down
@@ -974,7 +975,7 @@ int set_lanwan_if(int from, int to)
 }
 
 /*
-* Function     : send_socket
+* Function     : send_protect_event
 * Purpose      : create socket send login fail info to protection_server record
 * Input        : struct state_report
 * Ouput        : none
@@ -982,85 +983,38 @@ int set_lanwan_if(int from, int to)
 * Provider     : Carlos
 */
 #ifdef RTCONFIG_PROTECTION_SERVER
-int send_socket(struct state_report report)
+int send_protect_event(STATE_REPORT_T report)
 {
-	int sockfd,portno,n,flags,select_ret,error=0;
-        struct sockaddr_in serv_addr;
-	fd_set write_fds,read_fds;
-	struct timeval tv;
-	socklen_t len;
-
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-        if( sockfd < 0 )
-        {
-                _dprintf("[%s:(%d)] ERROR opening socket.\n", __FUNCTION__, __LINE__);
-                return 0;
-        }
-        bzero((char *) &serv_addr, sizeof(serv_addr));
-        portno = LOCAL_SOCKET_PORT;
-        serv_addr.sin_family = AF_INET;
-        if(!inet_aton("127.0.0.1",&serv_addr.sin_addr))
-        {
-                return 0;
-        }
-        serv_addr.sin_port = htons(portno);
-	/*  timeout protection  */	
-	flags = fcntl(sockfd, F_GETFL, 0);
-	fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
-	/*			*/
-	if( connect(sockfd,&serv_addr,sizeof(serv_addr)) < 0 )
-	{
-		if(errno != EINPROGRESS)
-		{
-			close(sockfd);
-			_dprintf("[%s:(%d)] ERROR connecting:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
-			return 0;
-		}
-	}
-
-	/*  timeout protection  */	
-	FD_ZERO(&write_fds);
-	FD_SET(sockfd, &write_fds);
-
-	read_fds= write_fds;
-	tv.tv_sec = 5;
-	tv.tv_usec = 0;	
+	struct    sockaddr_un addr;
+	int       sockfd, n;
 	
-	select_ret = select(sockfd + 1, &write_fds, &read_fds, NULL, &tv);
-	if( select_ret == 0 || select_ret==-1 )
-	{
+	if ( (sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+		_dprintf("[%s:(%d)] ERROR socket.\n", __FUNCTION__, __LINE__);
+		perror("socket error");
+		return 0;
+	}
+	
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strncpy(addr.sun_path, PROTECTION_SERVER_SOCKET_PATH, sizeof(addr.sun_path)-1);
+	
+	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+		_dprintf("[%s:(%d)] ERROR connecting:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
+		perror("connect error");
 		close(sockfd);
-		errno = ETIMEDOUT;
-		_dprintf("[%s:(%d)] ERROR %s.\n", __FUNCTION__, __LINE__, strerror(errno));
 		return 0;
 	}
-	if (FD_ISSET(sockfd, &write_fds) || FD_ISSET(sockfd, &read_fds))
-	{
-		len=sizeof(errno);
-		if(getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len)<0)
-		{
-			_dprintf("[%s:(%d)] ERROR %s.\n", __FUNCTION__, __LINE__, strerror(errno));
-			return 0;
-		}else
-		{
-			if(error!=0)
-			{
-				_dprintf("[%s:(%d)] ERROR connecting:%s.\n", __FUNCTION__, __LINE__, strerror(error));
-				return 0;
-			}	
-		}
-	}else
-	{
-		_dprintf("[%s:(%d)] ERROR socket fd not set.\n", __FUNCTION__, __LINE__);
-		return 0;
-	}
+
+	n = write(sockfd, &report, sizeof(STATE_REPORT_T));
 	
-	n=write(sockfd,&report,sizeof(report));
-	if( n < 0 )
-	{
+	close(sockfd);
+	
+	if(n < 0) {
 		_dprintf("[%s:(%d)] ERROR writing:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
+		perror("writing error");
 		return 0;
 	}
 	
+	return 1;
 }
 #endif

@@ -18,7 +18,7 @@
 var dummyShareway = '<% tcWebApi_get("Samba_Entry", "dummyShareway", "s") %>';
 var FTP_status = parent.get_ftp_status(); // FTP 0=disable 1=enable
 var FTP_mode = parent.get_share_management_status("ftp"); // if share by account. 1=no 2=yes
-var accounts = [<% get_all_accounts(); %>];
+var accounts = [<% get_usb_accounts(); %>];
 var ddns_enable = '<% tcWebApi_get("Ddns_Entry","Active","s") %>';
 var ddns_server = '<%tcWebApi_get("Ddns_Entry","SERVERNAME","s")%>';
 var ddns_hostname = '<%tcWebApi_get("Ddns_Entry","MYHOST","s")%>';

@@ -120,6 +120,7 @@ typedef unsigned long ULONG;
 #define SYSROUTE_PATH	"/tmp/route"
 #define OAM_PING_PATH	"/proc/tc3162/oam_ping"
 #define FWVER_PATH	"/etc/fwver.conf"
+#define EXTENDNO_PATH	"/etc/extendno.conf"
 /*xyzhu_100114: get default device info*/
 #define DEVDEF_PATH	"/etc/devInf.conf"
 #define DEFAULT_WAN_PATH	"/etc/defaultWan.conf"
@@ -304,7 +305,7 @@ typedef unsigned long ULONG;
 #endif
 #define UDHCPC_PID_PATH	"/var/run/udhcpc-nas%s.pid"
 #if defined(TCSUPPORT_ETH4_WAN_PORT)
-#define UDHCPC_ETH4_PID_PATH	"/var/run/udhcpc-eth0.4.pid"
+#define UDHCPC_ETH4_PID_PATH	"/var/run/udhcpc-lan4.pid"
 #endif
 /*We should get wireless state by use  /userfs/bin/iwpriv ra0 stat. shnwind modify*/
 //#define GET_WLAN_INFO_CMD	"/userfs/bin/iwpriv ra0 stat"
@@ -789,8 +790,8 @@ typedef struct _RT_802_11_MAC_ENTRY_5G {
 	UINT32 LastRxRate;
 
 //sync with MT7620
-	SHORT StreamSnr[3];				/* BF SNR from RXWI. Units=0.25 dB. 22 dB offset removed */
-	SHORT SoundingRespSnr[3];			/* SNR from Sounding Response. Units=0.25 dB. 22 dB offset removed */
+	int StreamSnr[3];				/* BF SNR from RXWI. Units=0.25 dB. 22 dB offset removed */
+	int SoundingRespSnr[3];			/* SNR from Sounding Response. Units=0.25 dB. 22 dB offset removed */
 /*	SHORT TxPER;	*/					/* TX PER over the last second. Percent */
 /*	SHORT reserved;*/
 } RT_802_11_MAC_ENTRY_5G, *PRT_802_11_MAC_ENTRY_5G;

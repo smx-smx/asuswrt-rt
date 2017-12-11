@@ -99,7 +99,100 @@ struct pageset {
 	struct pageset *next;
 };
 
+typedef struct param_s {
+	char	*name;
+	char	*value;
+} s_param;
+
+#ifdef ASUS_LOGIN_SESSION	//Andy Chiu, 2015/11/27.
+#define DEFAULT_LOGIN_MAX_NUM   5
+//asus token status for APP
+#define NOTOKEN		1
+#define AUTHFAIL	2
+#define ACCOUNTFAIL	3
+#define NOREFERER	4
+#define WEB_NOREFERER	5
+#define REFERERFAIL	6
+#define LOGINLOCK	7
+#define ISLOGOUT	8
+#define NOLOGIN		9
+
+#define ASUS_TOKEN_LEN	32
+#define LOGINCGI	"login.cgi"
+
+/* MIME referer */
+struct mime_referer {
+	char *pattern;
+	int flag;
+};
+#define NO_CHECK_REFERER	1
+
+//Andy Chiu, 2016/02/25. Use a link list to record the tokens for clients.
+typedef enum CLIENT_TYPE_T
+{
+	CLI_TYPE_BROWSER = 0,
+	CLI_TYPE_APP,
+	CLI_TYPE_ATE,
+	CLI_TYPE_ASSIA,
+}CLIENT_TYPE;
+
+typedef struct asus_token_table asus_token_t;
+struct asus_token_table
+{
+	CLIENT_TYPE client_type;
+	char token[ASUS_TOKEN_LEN];
+	char ipaddr[16];
+	long login_timestamp;	//time stamp as login success	
+	asus_token_t *next;
+};
+extern asus_token_t *token_head;
+
+//These variables are used to handle the login failed case. 
+//When user tried to login more than MAX_LOGIN_FAIL_NUM times in one minute, boa must return LOGINLOCK as error code.
+typedef struct login_retry login_retry_t;
+struct login_retry
+{
+	char ipaddr[16];
+	long last_login_timestamp;		//last login time stamp
+	int try_num;	//the counter of trying to do login in one minute.
+	int is_lock;	//0: unlock, 1:locked
+	login_retry_t *next;
+};
+extern login_retry_t * retry_head;
+
+//The attribute "login_ip_tmp" in the node "WebCurSet_Entry" is ONLY for the user login via browser.
+
+#define ASUSROUTER_TAG	"asusrouter"
+#define ASUSROUTER_APP	"DUTUtil"
+#define ASUSROUTER_ATE	"ATE"
+#define ASUSROUTER_ASSIA "ASSIA"
+
+#define APP_LOGOUT_TIME 6000
+
+char *generate_token(char *token, int len);
+int http_login_header(const char *token, request *req);
+void send_r_redirect_page(request *req, const int with_token);
 void dbgprintf (const char * format, ...);
+
+CLIENT_TYPE check_client_type(const char *user_agent);
+void rm_token_in_list(const char *ipaddr, const char *token, const int timeout);
+#define RM_TOKEN_ITEM_BY_IP(ipaddr)	rm_token_in_list(ipaddr, NULL, 0)
+#define RM_TOKEN_ITEM_BY_TOKEN(token)	rm_token_in_list(NULL, token, 0)
+#define RM_TOKEN_ITEM_BY_TIMEOUT()	rm_token_in_list(NULL, NULL, 1)
+
+asus_token_t* search_token_list(const char *token, const char *ipaddr, CLIENT_TYPE cli_type);
+#define SEARCH_TOKEN_LST_BY_TOKEN(token)	search_token_list(token, NULL, -1)
+#define SEARCH_TOKEN_LST_BY_IP(ipaddr)	search_token_list(NULL, ipaddr, -1)
+#define SEARCH_TOKEN_LST_BY_CLITYPE(type)	search_token_list(NULL, NULL, type)
+
+login_retry_t* add_login_retry(const char *ipaddr);
+login_retry_t* search_retry_list(const char *ipaddr);
+void rm_retry_in_list(const char *ipaddr);
+
+void dump_token(asus_token_t *token);
+void dump_retry(login_retry_t *retry);
+
+#endif
 
 /* alias */
 void add_alias(char *fakename, char *realname, int script);
@@ -161,6 +254,10 @@ int process_logline(request * req);
 int process_option_line(request * req);
 void add_accept_header(request * req, char *mime_type);
 void free_requests(void);
+s_param **param_line (char *line,char separate1,char separate2);
+void free_param(s_param **var);
+struct passwd *getrealpass(const char *user) ;
+
 
 /* response */
 void print_ka_phrase(request * req);
@@ -263,5 +360,8 @@ int boa_sslWrite(mssl_conn_t *conn, char *buf, const int buflen);
 int boa_sslRead(mssl_conn_t *conn, char *buf, const int len);
 enum { HTTP_ONLY = 1, HTTPS_ONLY, BOTH_HTTP_HTTPS };
 #endif 
+
+void *rfc822_base64 (unsigned char *src,unsigned long srcl,unsigned long *len);
+
 
 #endif

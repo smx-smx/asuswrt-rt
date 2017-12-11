@@ -31,6 +31,9 @@
 
 #include "email.h"
 #include "error.h"
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+#include <libnt.h>
+#endif
 
 /**
  * Simply provide an fatal error message to stderr
@@ -69,6 +72,18 @@ fatal(const char *message, ...)
 	fputs("\n",fp);
 	fclose(fp);
 
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+	extern int report_f;
+	extern int sendId;
+	if(report_f) {
+		NOTIFY_EVENT_T *e = initial_nt_event();
+		e->event = RESERVATION_MAIL_REPORT_EVENT;
+		e->mail_t.MsendId = sendId;
+		e->mail_t.MsendStatus = MAIL_FATAL_ERROR;
+		send_notify_event(e, NOTIFY_MAIL_SERVICE_SOCKET_PATH);
+		nt_event_free(e);
+	}
+#endif
 }
 
 /**

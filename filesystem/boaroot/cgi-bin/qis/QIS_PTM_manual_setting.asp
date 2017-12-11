@@ -18,7 +18,6 @@ var ISP_List_IPTV = [<% nvram_dump("ISP_PTM_List_IPTV") %>];
 var ru_idx_start = 0;
 var x_Setting = "<%tcWebApi_get("SysInfo_Entry","x_Setting","s")%>";
 var w_Setting = "<%tcWebApi_get("SysInfo_Entry","w_Setting","s")%>";
-var dslx_ginp = "<%tcWebApi_get("Adsl_Entry","dslx_ginp","s")%>";
 
 function $(){
 	var elements = new Array();
@@ -126,7 +125,7 @@ function showNomoISPServiceByIdx(idx) {
 	var first_element = 0;
 	var sel_idx = 0;
 
-	code +="<select id='ISPSVC' name='ISPSVC' onChange='ChgSVC(this.value);' class='input_option'>";
+	code +="<select id='ISPSVC' name='ISPSVC' onChange='' class='input_option'>";
 	for(var i = idx; i < ISP_List.length; i++){
 		if(ISP_List[idx][4] != ISP_List[i][4])	//only show this isp
 			break;
@@ -142,13 +141,11 @@ function showNomoISPServiceByIdx(idx) {
 			code +="<option value='"+ISP_List[i][0]+"'>"+ISP_List[i][5]+"</option>";
 		}
 	}
-	code +="</select>";
-	code +="<span id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>";	/* untranslated */
+	code +="</select>";	
 
 	if(first_element != 0) {
 		$("Service_tr").style.display="";
-		$("Service").innerHTML = code;
-		ChgSVC(sel_idx);
+		$("Service").innerHTML = code;		
 	}
 }
 
@@ -193,7 +190,7 @@ function showRussiaISPServiceByIdx(c, idx){
 		}
 		$("Service_tr").style.display="";
 		var code = "";
-		code +="<select id='ISPSVC' name='ISPSVC' onChange='ChgSVC(this.value);' tabindex='4' class='input_option'>";
+		code +="<select id='ISPSVC' name='ISPSVC' onChange='' tabindex='4' class='input_option'>";
 		var first_element = 0;
 		var sel_idx = 0;
 		for(var i = ru_idx_start; i < ISP_List.length; i++){
@@ -207,9 +204,8 @@ function showRussiaISPServiceByIdx(c, idx){
 			}
 		}
 		code +="</select>";
-		code +="<span id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>";	/* untranslated */
+
 		$("Service").innerHTML = code;
-		ChgSVC(sel_idx);
 	}
 }
 function showRussiaISPService(c, o){
@@ -218,7 +214,7 @@ function showRussiaISPService(c, o){
 	else {
 		$("Service_tr").style.display="";
 		var code = "";
-		code +="<select id='ISPSVC' name='ISPSVC' onChange='ChgSVC(this.value);' tabindex='4' class='input_option'>";
+		code +="<select id='ISPSVC' name='ISPSVC' onChange='' tabindex='4' class='input_option'>";
 		var first_element = 0;
 		var sel_idx = 0;
 		for(var i = ru_idx_start; i < ISP_List.length; i++){
@@ -232,9 +228,8 @@ function showRussiaISPService(c, o){
 			}
 		}
 		code +="</select>";
-		code +="<span id='STBPortMsg'> Please connect the IPTV STB to LAN Port 1</span>";	/* untranslated */
-		$("Service").innerHTML = code;
-		ChgSVC(sel_idx);
+
+		$("Service").innerHTML = code;		
 	}
 }
 function showAllList(o){
@@ -324,16 +319,6 @@ function ShowPVC(idx) {
 	else
 		hidePVCInfo(1);
 }
-function ChgSVC(idx) {
-	if(ISP_List[idx][13] != "") {	//iptv idx
-		if(idx == "153") //HiNet (PPPoE) & VDSL+MOD
-			document.getElementById("STBPortMsg").innerHTML = "Please connect the MOD(STB) to LAN Port 1";
-		showhide("STBPortMsg", 1);
-	}
-	else {
-		showhide("STBPortMsg", 0);
-	}
-}
 
 function QIS_menual_setting_load_body() {
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","Manual_Setting_btn","s")%>";
@@ -377,6 +362,7 @@ function btnNext() {
 		document.form.dsltmp_cfg_vlanid.value = document.form.user_vlanid.value;
 		document.form.dsltmp_cfg_iptv_idx.value = "";
 		document.form.dsltmp_cfg_ispname.value = "";
+		document.form.dsltmp_cfg_ispservice.value = "";
 		document.form.dsltmp_cfg_country.value = "";
 	}
 	else {
@@ -392,6 +378,7 @@ function btnNext() {
 		connection_type = ISP_List[isp_idx][8];
 		document.form.dsltmp_cfg_country.value = ISP_List[isp_idx][1];
 		document.form.dsltmp_cfg_ispname.value = ISP_List[isp_idx][4];
+		document.form.dsltmp_cfg_ispservice.value = ISP_List[isp_idx][5];
 		document.form.dsltmp_cfg_prctl.value = ISP_List[isp_idx][8];
 		document.form.dsltmp_cfg_vlanid.value = ISP_List[isp_idx][10];
 		document.form.dsltmp_cfg_iptv_rmvlan.value = ISP_List[isp_idx][11];
@@ -400,16 +387,6 @@ function btnNext() {
 	}
 
 	//Specific setting
-	if( dslx_ginp != "on" &&
-		(
-		document.form.country.value=='Australia'
-		|| document.form.country.value=='United Kingdom'
-		|| document.form.country.value=='Germany'
-		)
-	){
-		document.form.dsltmp_set_ginp.value = "1";	//flag
-		document.form.dsltmp_cfg_ginp.value = "on";
-	}
 	if( document.form.dsltmp_cfg_country.value=='Thailand'
 		&& document.form.dsltmp_cfg_ispname.value=='3BB 15M/1.5M'
 	){
@@ -473,6 +450,7 @@ function submit_detect(){
 <input type="hidden" name="action_wait" value="">
 <input type="hidden" name="dsltmp_cfg_country" value="">
 <input type="hidden" name="dsltmp_cfg_ispname" value="">
+<input type="hidden" name="dsltmp_cfg_ispservice" value="">
 <input type="hidden" name="dsltmp_cfg_prctl" value="">
 <input type="hidden" name="dsltmp_cfg_vlanid" value="">
 <input type="hidden" name="dsltmp_cfg_iptv_rmvlan" value="">
@@ -483,10 +461,8 @@ function submit_detect(){
 <input type="hidden" name="dsltmp_cfg_iptv_enable" value="0">
 <input type="hidden" name="dsltmp_transfer_mode" value="PTM">
 <input type="hidden" name="dsltmp_wanTypeOption" value="">
-<input type="hidden" name="dsltmp_set_ginp" value="<%tcWebApi_Get("GUITemp_Entry0","dsltmp_set_ginp","s")%>">
 <input type="hidden" name="dsltmp_dsl_restart" value="<%tcWebApi_Get("GUITemp_Entry0","dsltmp_dsl_restart","s")%>">
 <input type="hidden" name="dsltmp_restart_waittime" value=0>
-<input type="hidden" name="dsltmp_cfg_ginp" value="off">
 <input type="hidden" name="dsltmp_cfg_th3bb" value="">
 <input type="hidden" name="dsltmp_cfg_vpi" value="">
 <input type="hidden" name="dsltmp_cfg_vci" value="">
@@ -579,7 +555,7 @@ function submit_detect(){
 </table>
 </div>
 <div class="apply_gen" style="margin-top:30px">
-	<input type="button" id="detectButton" value="<% tcWebApi_Get("String_Entry", "QKS_detect_freshbtn", "s") %>" tabindex="8" onclick="submit_detect();" class="button_gen_long">
+	<!--input type="button" id="detectButton" value="<% tcWebApi_Get("String_Entry", "CTL_Detect_Again", "s") %>" tabindex="8" onclick="submit_detect();" class="button_gen_long"-->
 	<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" tabindex="7" onclick="btnNext();" class="button_gen">
 </div>
 </div>

@@ -5243,6 +5243,9 @@ endif
 #copy webs_upgrade2.sh for AiCloud live update
 	cp $(APP_PRIVATE_DIR)/etc_script/webs_upgrade2.sh $(FILESYSTEM_DIR)/usr/script/webs_upgrade2.sh
 
+#for ASUS Router (AiHome) APP
+	cp $(APP_PRIVATE_DIR)/etc_script/upload_config.sh $(FILESYSTEM_DIR)/usr/script/upload_config.sh
+
 #copy public.pem
 ifneq ("$(wildcard $(APP_CFG_MANAGER_DIR)/public.pem)","")
 	cp $(APP_CFG_MANAGER_DIR)/public.pem $(FILESYSTEM_DIR)/usr/etc/public.pem
@@ -5741,15 +5744,6 @@ ifeq ($(strip $(TCSUPPORT_BHARTI)),)
 	rm -f $(FILESYSTEM_DIR)/boaroot/cgi-bin/adv_nat_session.cgi
 endif
 #endif
-	
-#if !defined(TCSUPPORT_NEW_CUSTOMER_VERSION))
-ifeq ($(strip $(TCSUPPORT_NEW_CUSTOMER_VERSION)),)
-	rm -f $(FILESYSTEM_DIR)/boaroot/cgi-bin/sig.asp
-	rm -f $(FILESYSTEM_DIR)/boaroot/cgi-bin/upload.asp
-	rm -f $(FILESYSTEM_DIR)/boaroot/cgi-bin/version.asp
-endif
-#endif
-	
 
 #if !defined(TCSUPPORT_WEB_INTERCEPTION))
 ifeq ($(strip $(TCSUPPORT_WEB_INTERCEPTION)),)
@@ -5815,6 +5809,8 @@ endif
 endif
 endif
 endif
+#for ASUS Router (AiHome) APP
+	ln -s /tmp/var/romfile_encrypt.cfg $(FILESYSTEM_DIR)/boaroot/html/Config.CFG
 
 	ln -s /var/log/currLogFile $(FILESYSTEM_DIR)/boaroot/html/syslog.xlog
 ifneq ($(strip $(TCSUPPORT_DSL_LINE_DIAGNOSTIC)),)

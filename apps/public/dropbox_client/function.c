@@ -9,7 +9,9 @@
 #include <sys/stat.h>
 #include<signal.h>
 #include "function.h"
-//include "date.h"
+
+char *case_conflict_name = "case-conflict";
+extern int exit_loop;
 
 char *my_str_malloc(size_t len){
 
@@ -23,7 +25,7 @@ char *my_str_malloc(size_t len){
         exit(1);
     }
 
-    memset(s,'\0',sizeof(s));
+    memset(s,'\0',sizeof(char)*len);
     return s;
 }
 
@@ -689,4 +691,458 @@ char *my_nstrchr(const char chr,char *str,int n){
 
     return p2;
 }
+/*
+ 大小写转换函数
+ big to low
+*/
+char *strlwr(char *s)
+{
+    char *str;
+    str = s;
+    while(*str != '\0')
+    {
+        if(*str >= 'A' && *str <= 'Z'){
+            *str += 'a'-'A';
+        }
+        str++;
+    }
+    return s;
+}
+int is_local_exist(char *folder,char *filename)
+{
+    DIR *pDir;
+    struct dirent *ent = NULL;
+    pDir = opendir(folder);
 
+    if(NULL == pDir)
+    {
+        return 0;
+    }
+    while(NULL != (ent = readdir(pDir)))
+    {
+        if(!strcmp(ent->d_name,".") || !strcmp(ent->d_name,".."))
+            continue;
+
+        if(!strcmp(strlwr(ent->d_name),strlwr(filename)) && strcmp(ent->d_name,filename))
+        {
+            return 1;
+        }
+
+        closedir(pDir);
+    }
+    return 0;
+}
+char *get_case_conflict_localfilename(char *localfolder,char *filename,char *serfolder,int index)
+{
+    DIR *pDir;
+    struct dirent *ent = NULL;
+    pDir = opendir(localfolder);
+    char *suffix = "(big-low-conflict)";
+    int exist = 0;
+    if(NULL == pDir)
+    {
+        return NULL;
+    }
+    char *tmp_name = NULL;
+    while(NULL != (ent = readdir(pDir)))
+    {
+        if(!strcmp(ent->d_name,".") || !strcmp(ent->d_name,".."))
+            continue;
+
+        if(!strcmp(strlwr(ent->d_name),strlwr(filename)) && strcmp(ent->d_name,filename))
+        {
+            char *serfullname = malloc(strlen(serfolder)+strlen(ent->d_name)+1+1);
+            memset(serfullname,0,strlen(serfolder)+strlen(ent->d_name)+1+1);
+            sprintf(serfullname,"%s/%s",serfolder,ent->d_name);
+            exist=is_server_exist(serfolder,serfullname,index);
+            my_free(serfullname);
+            if(exist)
+            {
+                tmp_name = malloc(strlen(ent->d_name)+strlen(suffix)+1);
+                memset(tmp_name,0,strlen(ent->d_name)+strlen(suffix)+1);
+                sprintf(tmp_name,"%s",ent->d_name,suffix);
+                break;
+            }
+        }
+    }
+    closedir(pDir);
+
+    return tmp_name;
+}
+
+char *check_if_exist_big_low_conflict()
+{
+    int exist = 0;
+    //exist = is_local_exist();
+}
+/*
+
+*/
+int is_number(char *str)
+{
+    if(str == NULL)
+        return -1;
+
+    if(!strcmp(str,"0"))
+        return 0;
+
+    int i;
+    int len = strlen(str);
+    for(i=0;i<len;i++)
+    {
+        if(!isdigit(str[i]))
+            return 0;
+    }
+
+    if(i == len && i > 0)
+        return 1;
+
+    return 0;
+}
+char *get_prefix_name(const char *fullname,int isfolder)
+{
+    char *parse_name = NULL;
+    char *p = NULL;
+
+    char *filename = NULL;
+
+    filename = parse_name_from_path(fullname);
+
+    p = strrchr(filename,'.');
+
+    if(p && filename[0] != '.' && !isfolder)
+    {
+        parse_name = my_str_malloc(strlen(filename)-strlen(p)+1);
+        strncpy(parse_name,filename,strlen(filename)-strlen(p));
+    }
+    else
+    {
+        parse_name = my_str_malloc(strlen(filename)+1);
+        strcpy(parse_name,filename);
+    }
+    my_free(filename);
+    return parse_name;
+
+}
+char *get_confilicted_name_first(const char *fullname,int isfolder)
+{
+    char *confilicted_name = NULL;
+    char prefix_name[NORMALSIZE];
+    char suffix_name[256];
+    char parse_name[NORMALSIZE];
+    char *p = NULL;
+    char *p1 = NULL;
+    //char *p2 = NULL;
+    char seq[8];
+    int  num = 0;
+    //int have_suf = 0;
+    char *filename = NULL;
+    char *path;
+    int n = 0,j=0;
+    //char seq_num[8];
+    char con_filename[256];
+
+    memset(prefix_name,0,sizeof(prefix_name));
+    memset(suffix_name,0,sizeof(suffix_name));
+    memset(parse_name,0,sizeof(parse_name));
+    memset(con_filename,0,sizeof(con_filename));
+
+    filename = parse_name_from_path(fullname);
+
+    path = my_str_malloc(strlen(fullname)-strlen(filename)+1);
+    strncpy(path,fullname,strlen(fullname)-strlen(filename)-1);
+
+    confilicted_name = (char *)malloc(sizeof(char)*NORMALSIZE);
+
+
+    if(isfolder)
+    {
+        strcpy(parse_name,filename);
+    }
+    else
+    {
+        p = strrchr(filename,'.');
+
+        //printf("p=%s\n",p);
+
+        if(p && filename[0] != '.')
+        {
+            strncpy(parse_name,filename,strlen(filename)-strlen(p));
+            strcpy(suffix_name,p);
+        }
+        else
+        {
+            strcpy(parse_name,filename);
+        }
+    }
+
+    //printf("parse_name=%s,suffix_name=%s\n",parse_name,suffix_name);
+
+    if(num == 0)
+    {
+        strcpy(prefix_name,parse_name);
+    }
+
+    snprintf(prefix_name,252-strlen(case_conflict_name)-strlen(suffix_name),"%s",prefix_name);
+    snprintf(con_filename,256,"%s(%s)%s",prefix_name,case_conflict_name,suffix_name);
+    snprintf(confilicted_name,NORMALSIZE,"%s/%s",path,con_filename);
+
+    //printf("------ prefix name is %s,num is %d,suffix name is %s -----\n",prefix_name,num,suffix_name);
+
+    my_free(filename);
+    my_free(path);
+
+    return confilicted_name;
+}
+char *get_confilicted_name(const char *fullname,int isfolder)
+{
+    char *confilicted_name = NULL;
+    char prefix_name[NORMALSIZE];
+    char suffix_name[256];
+    char parse_name[NORMALSIZE];
+    char *p = NULL;
+    char *p1 = NULL;
+    //char *p2 = NULL;
+    char seq[8];
+    int  num = 0;
+    //int have_suf = 0;
+    char *filename = NULL;
+    char path[512];
+    int n = 0,j=0;
+    //char seq_num[8];
+    char con_filename[256];
+
+    memset(prefix_name,0,sizeof(prefix_name));
+    memset(suffix_name,0,sizeof(suffix_name));
+    memset(parse_name,0,sizeof(parse_name));
+    memset(path,0,sizeof(path));
+    memset(con_filename,0,sizeof(con_filename));
+
+    filename = parse_name_from_path(fullname);
+
+    strncpy(path,fullname,strlen(fullname)-strlen(filename)-1);
+
+    confilicted_name = (char *)malloc(sizeof(char)*NORMALSIZE);
+
+
+    if(isfolder)
+    {
+        strcpy(parse_name,filename);
+    }
+    else
+    {
+        p = strrchr(filename,'.');
+
+        //printf("p=%s\n",p);
+
+        if(p && filename[0] != '.')
+        {
+            strncpy(parse_name,filename,strlen(filename)-strlen(p));
+            strcpy(suffix_name,p);
+            //have_suf = 1;
+        }
+        else
+        {
+            strcpy(parse_name,filename);
+        }
+    }
+
+    p = NULL;
+
+    p = strrchr(parse_name,'(');
+
+    if(p)
+    {
+        p1 = strchr(p,')');
+        if(p1)
+        {
+            p++;
+            memset(seq,0,sizeof(seq));
+            strncpy(seq,p,strlen(p)-strlen(p1));
+            if(is_number(seq))
+            {
+                num = atoi(seq);
+                num++;
+                //printf("seq is %s,num is %d\n",seq,num);
+                n = num;
+                while((n=(n/10)))
+                {
+                    j++;
+                }
+
+
+                strncpy(prefix_name,parse_name,strlen(parse_name)-strlen(p)-1);
+            }
+        }
+    }
+
+    //printf("parse_name=%s,suffix_name=%s\n",parse_name,suffix_name);
+
+    if(num == 0)
+    {
+        num = 1;
+        strcpy(prefix_name,parse_name);
+    }
+
+    snprintf(prefix_name,252-j-strlen(suffix_name),"%s",prefix_name);
+    snprintf(con_filename,256,"%s(%d)%s",prefix_name,num,suffix_name);
+    snprintf(confilicted_name,NORMALSIZE,"%s/%s",path,con_filename);
+
+    //printf("------ prefix name is %s,num is %d,suffix name is %s -----\n",prefix_name,num,suffix_name);
+
+    my_free(filename);
+
+    return confilicted_name;
+}
+
+char *get_confilicted_name_case(const char *fullname,int is_folder)
+{
+    char *g_newname = NULL;
+    char *tmp_name = malloc(strlen(fullname)+1);
+    memset(tmp_name,0,strlen(fullname)+1);
+    sprintf(tmp_name,"%s",fullname);
+
+    char *prefix_name = get_prefix_name(tmp_name,is_folder);//a.txt --> a
+    //printf("%s\n",prefix_name);
+    g_newname = get_confilicted_name_first(tmp_name,is_folder);//a.txt-->a(case-conflict).txt
+    //printf("%s\n",g_newname);
+    if(access(g_newname,F_OK) == 0)//a(case-conflict).txt-->a(case-conflict(n)).txt
+    {
+        //printf("111\n");
+        my_free(tmp_name);
+        tmp_name = malloc(strlen(g_newname)+1);
+        memset(tmp_name,0,strlen(g_newname)+1);
+        sprintf(tmp_name,"%s",g_newname);
+        my_free(g_newname);
+        while(!exit_loop)
+        {
+            g_newname = get_confilicted_name_second(tmp_name,is_folder,prefix_name);
+            //printf("confilicted_name=%s\n",confilicted_name);
+            if(access(g_newname,F_OK) == 0)
+            {
+                my_free(tmp_name);
+                tmp_name = malloc(strlen(g_newname)+1);
+                memset(tmp_name,0,strlen(g_newname)+1);
+                sprintf(tmp_name,"%s",g_newname);
+                my_free(g_newname);
+                //have_same = 1;
+            }
+            else
+                break;
+        }
+        my_free(tmp_name);
+    }else
+    {
+        //printf("222\n");
+        my_free(tmp_name);
+    }
+    my_free(prefix_name);
+    return g_newname;
+}
+
+char *get_confilicted_name_second(const char *fullname,int isfolder,char *prefix_name)
+{
+    char *confilicted_name = NULL;
+    char suffix_name[256];
+    char parse_name[NORMALSIZE];
+    char *p = NULL;
+    char *p1 = NULL;
+    //char *p2 = NULL;
+    char seq[8];
+    int  num = 0;
+    //int have_suf = 0;
+    char *filename = NULL;
+    char *path;
+    int n = 0,j=0;
+    //char seq_num[8];
+    char con_filename[256];
+    char cmp_name[128] = {0};
+
+    memset(suffix_name,0,sizeof(suffix_name));
+    memset(parse_name,0,sizeof(parse_name));
+    memset(con_filename,0,sizeof(con_filename));
+
+    filename = parse_name_from_path(fullname);
+
+    path = my_str_malloc(strlen(fullname)-strlen(filename)+1);
+    strncpy(path,fullname,strlen(fullname)-strlen(filename)-1);
+
+    //printf("%s\n",path);
+    confilicted_name = (char *)malloc(sizeof(char)*NORMALSIZE);
+
+
+    if(isfolder)
+    {
+        strcpy(parse_name,filename);
+    }
+    else
+    {
+        p = strrchr(filename,'.');
+
+        //printf("p=%s\n",p);
+
+        if(p && filename[0] != '.')
+        {
+            strncpy(parse_name,filename,strlen(filename)-strlen(p));
+            strcpy(suffix_name,p);
+            //have_suf = 1;
+        }
+        else
+        {
+            strcpy(parse_name,filename);
+        }
+    }
+
+    p = NULL;
+
+    p = strrchr(parse_name,'(');
+
+    if(p)
+    {
+        p1 = strchr(p,')');
+        if(p1)
+        {
+            p++;
+            memset(seq,0,sizeof(seq));
+            strncpy(seq,p,strlen(p)-strlen(p1));
+            if(is_number(seq))
+            {
+                num = atoi(seq);
+                num++;
+                //printf("seq is %s,num is %d\n",seq,num);
+                n = num;
+                while((n=(n/10)))
+                {
+                    j++;
+                }
+            }
+        }
+    }
+
+    //printf("parse_name=%s,suffix_name=%s\n",parse_name,suffix_name);
+
+    if(num == 0)
+    {
+        sprintf(cmp_name,"(%s(1))",case_conflict_name);
+
+    }
+    else
+    {
+        sprintf(cmp_name,"(%s(%d))",case_conflict_name,num);
+    }
+    //printf("%s\n",cmp_name);
+    //printf("%s\n",prefix_name);
+    snprintf(prefix_name,252-strlen(cmp_name)-strlen(suffix_name),"%s",prefix_name);
+    //printf("%s\n",prefix_name);
+    snprintf(con_filename,256,"%s%s%s",prefix_name,cmp_name,suffix_name);
+    //printf("%s\n",con_filename);
+    snprintf(confilicted_name,NORMALSIZE,"%s/%s",path,con_filename);
+    //printf("%s\n",confilicted_name);
+
+    //printf("------ prefix name is %s,num is %d,suffix name is %s -----\n",prefix_name,num,suffix_name);
+
+    my_free(filename);
+    my_free(path);
+
+    return confilicted_name;
+}

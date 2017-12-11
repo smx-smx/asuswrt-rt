@@ -305,8 +305,6 @@ extern int decryptRomfile( char *path, unsigned int *length, unsigned int offset
 extern int timerTrigger(unsigned int seconds, void (*func)(int signo)); //Ren
 extern int timerTrigger_re(unsigned int first_seconds, unsigned int interval, void (*func)(int signo)); //Ren
 extern int modifyXDSLscript(void); //Ren
-extern char * getWanIfName(char *buffer); //Ren
-extern char *getWanNasIfName(char *buffer);
 extern unsigned int getMTU(void); //Ren
 extern char *getLANIPAddr(char *buffer); //Ren
 extern void dbgprintf (const char * format, ...); //Ren
@@ -340,5 +338,21 @@ extern int _ifconfig(const char *name, int flags, const char *addr, const char *
 #define IFUP (IFF_UP | IFF_RUNNING | IFF_BROADCAST | IFF_MULTICAST)
 
 extern void reset_switch_phy();
+#ifdef ASUS_BUSYBOX_NEW
+extern int bin2hex(char *dest, size_t size, const void *src, size_t n);
+extern int addOpt2Str(char *dest, size_t size, const unsigned char id, const char *opt_val, const unsigned char len);
+#endif
 
+
+#define MAX_BRIDGE_MEMBER_CNT		32
+#define MAX_INTERFACE_NAME_LEN	8
+
+typedef struct BridgeMember
+{
+	char member[MAX_BRIDGE_MEMBER_CNT][MAX_INTERFACE_NAME_LEN];
+}BRIDGE_MEMBER;
+
+extern int getMemberOfBridge(const char *brif, BRIDGE_MEMBER *member);
+
+extern void adjust_hw_nat();
 #endif

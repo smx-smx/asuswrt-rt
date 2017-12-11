@@ -20,12 +20,20 @@ GCC_FLAGS = -Wstrict-prototypes -Wpointer-arith -Wcast-align -Wcast-qual\
 srcdir = .
 VPATH = .:./../extras
 LDFLAGS =  -lcrypt
-LIBS =  -lcrypt -L ../../lib/ -lmxml -L../../shared -lshared -L../../utils -lutils
-CFLAGS = -pipe -Wall -I. -I./asp -I../../shared/ -I../../utils
+LIBS =  -lcrypt -L ../../lib/ -lmxml -L../../shared -lshared -L$(LIB_UTILS_DIR) -lutils -L$(APP_JSONC_DIR)/.libs -ljson-c
+CFLAGS = -pipe -Wall -I. -I./asp -I../../shared/ -I$(LIB_UTILS_DIR) -I$(APP_JSONC_DIR)
 ifeq ($(RTCONFIG_USB),y)
 CFLAGS += -I../../libdisk/
 LIBS += -L../../libdisk -ldisk 
 endif
+
+ifneq ($(strip $(RTCONFIG_NOTIFICATION_CENTER)),)
+CFLAGS += -I$(APP_NOTIFICATION_CENTER_DIR) -I$(APP_NOTIFICATION_CENTER_DIR)/lib/
+CFLAGS += -I$(APP_SQLITE_DIR)/
+LDFLAGS += -L$(APP_NOTIFICATION_CENTER_DIR)/lib -lnt -lm
+LDFLAGS += -L$(APP_SQLITE_DIR)/.libs -lsqlite3
+endif
+
 
 #CFLAGS+= -mips1 -G0 -msoft-float -O2 -fshort-wchar 
 CFLAGS+= -G0 -fshort-wchar 

@@ -132,7 +132,7 @@ function initial(){
 		document.getElementById('WPS_hideSSID_hint').style.display = "";	
 	}		
 		
-	if(band5g_support == -1)
+	if(!wl_info.band5g_support)
 		document.getElementById("wl_unit_field").style.display = "none";
 		
 	limit_auth_method();
@@ -266,10 +266,10 @@ function validForm(){
 		if(!validate_psk(document.form.wl_wpa_psk))
 				return false;
 
-		//confirm common string combination     #JS_common_passwd#
+		//confirm common string combination
                 var is_common_string = check_common_string(document.form.wl_wpa_psk.value, "wpa_key");
                 if(is_common_string){
-                        if(confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
+                        if(!confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
                                 document.form.wl_wpa_psk.focus();
                                 document.form.wl_wpa_psk.select();
                                 return false;   

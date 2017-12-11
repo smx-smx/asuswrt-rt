@@ -77,9 +77,9 @@ function initial(){
 	load_body();
 	autoFocus('<% get_parameter("af"); %>');
 	
-	if(band5g_support != -1 && band5g_11ac_support != -1 && document.form.wl_unit[1].selected == true){
+	if(wl_info.band5g_support && band5g_11ac_support != -1 && document.form.wl_unit[1].selected == true){
 		document.getElementById('wl_mode_desc').onclick=function(){return openHint(1, 5)};		
-	}else if(band5g_support && document.form.wl_unit[1].selected == true){
+	}else if(wl_info.band5g_support && document.form.wl_unit[1].selected == true){
 		document.getElementById('wl_mode_desc').onclick=function(){return openHint(1, 4)};
 	}	
 
@@ -144,7 +144,7 @@ function initial(){
 		document.getElementById('WPS_hideSSID_hint').style.display = "";	
 	}		
 		
-	if(band5g_support == -1)
+	if(!wl_info.band5g_support)
 		document.getElementById("wl_unit_field").style.display = "none";			
 		
 	change_wl_nmode(document.form.wl_nmode_x);
@@ -273,7 +273,7 @@ function validForm(){
 		//confirm common string combination     #JS_common_passwd#
                 var is_common_string = check_common_string(document.form.wl_wpa_psk.value, "wpa_key");
                 if(is_common_string){
-                        if(confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
+                        if(!confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
                                 document.form.wl_wpa_psk.focus();
                                 document.form.wl_wpa_psk.select();
                                 return false;   

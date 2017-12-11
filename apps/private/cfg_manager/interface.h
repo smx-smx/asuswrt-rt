@@ -186,16 +186,41 @@ struct port_mask
 };
 
 /* lan device name */
-#define		LAN_DEV			"eth0"
+#define		LAN_DEV			"lan"
+#if 0
 #define		LAN1			"eth0.1"
 #define		LAN2			"eth0.2"
 #define		LAN3			"eth0.3"
 #define		LAN4			"eth0.4"
+#else
+#define		LAN1			"lan1"
+#define		LAN2			"lan2"
+#define		LAN3			"lan3"
+#define		LAN4			"lan4"
+#endif
 #define		SSID1			"ra0"
 #define		SSID2 			"ra1"
 #define		SSID3			"ra2"
 #define		SSID4			"ra3"
 #define		USB0			"usb0"
+
+#ifdef RTL8367B_SDK
+#ifdef TCSUPPORT_CPU_RT63368	//for RT63368, DSL-N55U-C1, DSL-N16U
+#define LAN_PORT_1			4	/* P4 */
+#define LAN_PORT_2			3	/* P3 */
+#define LAN_PORT_3			2	/* P2 */
+#define LAN_PORT_4			1	/* P1 */
+#else
+#define LAN_PORT_1			1	/* P1 */
+#define LAN_PORT_2			2	/* P2 */
+#define LAN_PORT_3			3	/* P3 */
+#define LAN_PORT_4			4	/* P4 */
+#endif
+#define LAN_PORT_1_MASK			(1U << LAN_PORT_1)
+#define LAN_PORT_2_MASK			(1U << LAN_PORT_2)
+#define LAN_PORT_3_MASK			(1U << LAN_PORT_3)
+#define LAN_PORT_4_MASK			(1U << LAN_PORT_4)
+#endif
 
 /* lan device mask */
 #define 	LAN1_MASK		0x10000000
@@ -304,6 +329,7 @@ struct port_mask
 #define WLAN	"WLan"
 #define WLANSWITCHNAME  "APOn"
 #define WLAN_COMMON "WLan_Common"
+#define WLAN_ENTRY_0	"Entry0"
 #define WLAN_BUTTON_PATH "/proc/tc3162/wlan_button"
 #define WLAN_HT_EXTCHA	"HT_EXTCHA"
 #define WLAN_CHANNEL  "Channel"
@@ -614,6 +640,15 @@ create_rip_conf(mxml_node_t *tree);
 #endif
 #endif
 
+#define WLAN_SCRIPT_TEMPLATE "/userfs/bin/iwpriv %s set %s=%s\n"
+#if defined(TCSUPPORT_WLAN_RT6856)
+#define CONTROL_INTF_2G "ra00_0"
+#define CONTROL_INTF_5G "ra01_0"
+#else
+#define CONTROL_INTF_2G "ra0"
+#define CONTROL_INTF_5G "rai0"
+#endif
+
 #else
 #define WLAN_SCRIPT_PATH "/etc/Wireless/RT61AP/WLAN_exec.sh"
 #endif
@@ -652,7 +687,11 @@ create_rip_conf(mxml_node_t *tree);
 #define WLAN_SSID_OFF "0"
 #endif
 int  write_wlan_config(mxml_node_t *top, int BssidNum, int freq);
+
+//is not used anymore, mark it for better readibility
+#if 0
 int  write_wlan_exe_sh(mxml_node_t *top, int BssidNum);
+#endif
 int Is11nWirelessMode(mxml_node_t *top);
 int txBurst_or_not(mxml_node_t *top, int BssidNum);
 #ifdef WSC_AP_SUPPORT//add by xyyou	
@@ -745,6 +784,7 @@ int iptv_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
 
 #ifdef TCSUPPORT_WEBSERVER_SSL
 int https_init(void);
+int https_write(mxml_node_t *top, mxml_node_t *parant);
 int https_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
 #endif
 
@@ -753,6 +793,12 @@ int dualwan_init(void);
 int dualwan_boot(mxml_node_t *top);
 int dualwan_write(mxml_node_t *top, mxml_node_t *parant);
 int dualwan_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
+#endif
+
+#if (defined(TCSUPPORT_WAN_ETHER) || defined(TCSUPPORT_WAN_PTM)) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+void reset_bridge_wan(const int vc, const int serv);
+#else
+void reset_bridge_wan(const int vc);
 #endif
 
 #endif

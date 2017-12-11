@@ -195,7 +195,7 @@
 #define ADSL_SETANNEX_CMD "wan ghs set annex"
 #define ADSL_ATTR_DLA	"dslx_dla_enable"
 
-#ifdef TCSUPPORT_CPU_MT7510
+#if defined(TCSUPPORT_CPU_MT7510) || defined(TCSUPPORT_CPU_RT63365) || defined(TCSUPPORT_CPU_RT63368)
 #define ADSL_ATTR_ESNP	"dslx_adsl_esnp" //Enhanced Sudden Noise Protection for ADSL
 #endif
 
@@ -527,6 +527,11 @@ void qos_drop_reset(mxml_node_t *top);
 void qos_drop_set(int mode, int drop_mode_id, int prio_mode_id);
 void qos_drop_set_rule(int interface, int pvc);
 void qos_drop_unset_rule();
+#endif
+
+#ifdef TCSUPPORT_WEBMON
+int webHistory_init(void);
+int webHistory_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
 #endif
 
 /**********20080703 racing add************/

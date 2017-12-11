@@ -62,10 +62,10 @@ show_menu();
 				  <div class="formfontdesc"><%tcWebApi_get("String_Entry","WLLog_title","s")%></div>
 <div style="margin-top:8px">
 
-	<iframe src="/cgi-bin/status_wifi.cgi" width="100%" height="470" marginwidth="5" #marginheight="0" scrolling="no" frameborder="0" align="center"></iframe>
+	<iframe id="status_iframe" src="/cgi-bin/status_wifi.cgi" width="100%" marginwidth="5" #marginheight="0" scrolling="no" frameborder="0" align="center"></iframe>
 
 </div>
-			<div class="apply_gen" style="margin-top:0px;">
+			<div class="apply_gen" style="margin-top:8px;">
 					<input type="button" onClick="location.href=location.href" value="<%tcWebApi_get("String_Entry","CTL_refresh","s")%>" class="button_gen">
 			</div>
 </td>

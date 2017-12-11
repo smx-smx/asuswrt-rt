@@ -69,6 +69,7 @@ extern int _eval(char *const argv[], const char *path, int timeout, pid_t *ppid)
  */
 extern int kill_pidfile(char *pidfile);
 extern int kill_pidfile_s(char *pidfile, int sig);
+extern int kill_pidfile_s_rm(char *pidfile, int sig);
 
 /*
  * fread() with automatic retry on syscall interrupt

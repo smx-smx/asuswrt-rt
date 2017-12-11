@@ -756,7 +756,7 @@ function updateCloudStatus(){
 							_cloud_ftpclient_msg += ": </b><br />";
 							_cloud_ftpclient_msg += "<span style=\\'word-break:break-all;\\'>" + decodeURIComponentSafe(cloud_ftpclient_obj) + "</span>";
 						}
-						else if(cloud_dropbox_msg){
+						else if(cloud_ftpclient_msg){
 							_cloud_ftpclient_msg += cloud_ftpclient_msg;
 						}
 						else{
@@ -821,7 +821,7 @@ function updateCloudStatus(){
 						if(cloud_usbclient_status != "")
 							_cloud_usbclient_status = cloud_usbclient_status;
 						else
-							_cloud_v_status = "";
+							_cloud_usbclient_status = "";
 	
 						document.getElementById("cloudStatus_usbclient").innerHTML = '<div style="text-decoration:underline; cursor:pointer" onmouseout="return nd();" onclick="return overlib(\''+ _cloud_usbclient_msg +'\');">'+ _cloud_usbclient_status +'</div>';
 					}
@@ -874,7 +874,7 @@ function updateCloudStatus(){
 						if(cloud_sambaclient_status != "")
 							_cloud_sambaclient_status = cloud_sambaclient_status;
 						else
-							_cloud_v_status = "";
+							_cloud_sambaclient_status = "";
 	
 						document.getElementById("cloudStatus_sambaclient").innerHTML = '<div style="text-decoration:underline; cursor:pointer" onmouseout="return nd();" onclick="return overlib(\''+ _cloud_sambaclient_msg +'\');">'+ _cloud_sambaclient_status +'</div>';
 					}

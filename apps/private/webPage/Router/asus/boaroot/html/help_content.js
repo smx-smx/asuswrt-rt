@@ -142,7 +142,8 @@ helpcontent[8] = new Array("",
 
 helpcontent[9] = new Array("",
 "<%tcWebApi_get("String_Entry","FC_URLActiveDate_id","s")%>",
-"<%tcWebApi_get("String_Entry","FC_URLActiveTime_id","s")%>");
+"<%tcWebApi_get("String_Entry","FC_URLActiveTime_id","s")%>",
+"<%tcWebApi_get("String_Entry","FC_LanWanDefaultAct_id","s")%>");
 
 helpcontent[10] = new Array("",
 "<%tcWebApi_get("String_Entry","FC_LanWanActiveDate_id","s")%>",
@@ -212,7 +213,9 @@ helpcontent[20] = new Array("",
 '<%tcWebApi_get("String_Entry","BM_manual_link_speed_desc","s")%>',
 "<%tcWebApi_get("String_Entry","min_bound_desc","s")%>",
 "<%tcWebApi_get("String_Entry","max_bound_desc","s")%>",
-"<%tcWebApi_get("String_Entry","bound_zero_desc","s")%>");
+"<%tcWebApi_get("String_Entry","bound_zero_desc","s")%>",
+"The max size is <%tcWebApi_staticGet("WebHistory_Entry","wh_max", "s") %> records, if max limit reached remove old entries one by one.",	/* untranslated */
+"Backup data would be hidden from network access such as Samba/ FTP. Data will be stored under USB disk /.router_temp/web_history_backup/ directory. Since .router_temp is hidden folder format, in order to view it from Windows, go to Control Panel > Appearance and Personalization > Folder Options, set as Show hidden files.");	/* untranslated */
 
 helpcontent[21] = new Array("",
 "<%tcWebApi_get("String_Entry","HSDPAC_hsdpa_mode_id","s")%>",

@@ -23,7 +23,10 @@ If Request_Form("editFlag") = "1" then
 	tcWebApi_Set("WLan_Entry","key4","wl_key4")
 	tcWebApi_Set("WLan_Entry","phrase_x","wl_phrase_x")
 	tcWebApi_Set("WLan_Entry","expire","wl_expire")
-	tcWebApi_Set("WLan_Entry","lanaccess","wl_lanaccess")	
+	tcWebApi_Set("WLan_Entry","lanaccess","wl_lanaccess")
+	tcWebApi_Set("WLan_Entry","bw_enabled","wl_bw_enabled")
+	tcWebApi_Set("WLan_Entry","bw_ul","bw_ul")
+	tcWebApi_Set("WLan_Entry","bw_dl","bw_dl")
 	tcWebApi_Set("WLan_Entry","wl0.1_bss_enabled","wl0.1_bss_enabled")
 	tcWebApi_Set("WLan_Entry","wl0.2_bss_enabled","wl0.2_bss_enabled")
 	tcWebApi_Set("WLan_Entry","wl0.3_bss_enabled","wl0.3_bss_enabled")
@@ -39,9 +42,20 @@ If Request_Form("editFlag") = "1" then
 
 	tcWebApi_Commit("WLan_Entry")
 	tcWebApi_Commit("ACL_Entry")
+
+If Request_Form("QoS_enable_force_Flag") = "1" then
+	tcWebApi_Set("QoS_Entry0","qos_enable","qos_enable_force")
+	tcWebApi_Set("QoS_Entry0","qos_type","qos_type_force")
+	tcWebApi_Commit("QoS")
+End If
+
+If Request_Form("QoS_restart_Flag") = "1" then
+	tcWebApi_Commit("QoS")
+End If	
 end if
 
 load_MBSSID_parameters_to_generic()
+
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -66,6 +80,7 @@ load_MBSSID_parameters_to_generic()
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/detect.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
 <style>
 .WL_MAC_Block{
 	border:1px outset #999;
@@ -114,7 +129,8 @@ var radio_5 = '<% tcWebApi_get("WLan_Entry","wl1_radio_on","s") %>';
 var wl0_nmode_x = '<% tcWebApi_get("WLan_Common","wl0_WirelessMode","s") %>';
 var wl1_nmode_x = '<% tcWebApi_get("WLan_Common","wl1_WirelessMode","s") %>';
 
-var modify_mode = '<% get_parameter("flag"); %>';	//Viz keep Confirm
+var QoS_enable_orig = '<% tcWebApi_get("QoS_Entry0","qos_enable","s") %>';
+var QoS_type_orig = '<% tcWebApi_get("QoS_Entry0","qos_type","s") %>';
 
 var gn_array = gn_array_2g;
 var wl_maclist_x_array = decodeURIComponent(gn_array[0][16]).replace(/&#60/g, "<");
@@ -144,7 +160,7 @@ function initial(){
 	else
 		document.form.wl_gmode_check.checked = false;
 
-	if(band5g_support == -1 || no5gmssid_support != -1){
+	if(!wl_info.band5g_support || no5gmssid_support != -1){
 		document.getElementById("guest_table5").style.display = "none";
 	}
 
@@ -172,8 +188,11 @@ function initial(){
 }
 
 function change_wl_expire_radio(){
+	load_expire_selection(document.form.wl_expire_day, option_expire_day, optval_expire_day);	
+	
 	if(document.form.wl_expire.value > 0){
-		document.form.wl_expire_hr.value = Math.floor(document.form.wl_expire.value/3600);
+		document.form.wl_expire_day.value = Math.floor(document.form.wl_expire.value/86400);
+		document.form.wl_expire_hr.value = Math.floor((document.form.wl_expire.value%86400)/3600);
 		document.form.wl_expire_min.value  = Math.floor((document.form.wl_expire.value%3600)/60);
 		document.form.wl_expire_radio[0].checked = 1;
 		document.form.wl_expire_radio[1].checked = 0;
@@ -181,6 +200,22 @@ function change_wl_expire_radio(){
 	else{
 		document.form.wl_expire_radio[0].checked = 0;
 		document.form.wl_expire_radio[1].checked = 1;
+	}
+}
+
+option_expire_day = new Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", 
+			"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", 
+			"21", "22", "23", "24", "25", "26", "27", "28", "29", "30");
+optval_expire_day = new Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+			11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 
+			21, 22, 23, 24, 25, 26, 27, 28, 29, 30);
+
+function load_expire_selection(obj, opt, val){
+	free_options(obj);
+	for(i=0; i<opt.length; i++){
+		if(opt[i].length > 0){
+			obj.options[i] = new Option(opt[i], val[i]);
+		}
 	}
 }
 
@@ -263,10 +298,13 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 					if(gn_array[i][11] == 0)
 							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><% tcWebApi_Get("String_Entry", "Limitless", "s") %></td></tr>';
 					else{
-							var expire_hr = Math.floor(gn_array[i][13]/3600);
-							var expire_min = Math.floor((gn_array[i][13]%3600)/60);
-							if(expire_hr > 0)
-									htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_hr_'+i+'">'+ expire_hr + '</b><% tcWebApi_Get("String_Entry", "Hour", "s") %> <b id="expire_min_'+i+'">' + expire_min +'</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %></td></tr>';
+							var expire_day = Math.floor(gn_array[i][13]/86400);
+							var expire_hr = Math.floor((gn_array[i][13]%86400)/3600);
+							var expire_min = Math.floor((gn_array[i][13]%3600)/60);							
+							if(expire_day > 0)
+									htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_day_'+i+'">'+ expire_day + '</b> <% tcWebApi_Get("String_Entry", "Day", "s") %> <b id="expire_hr_'+i+'">'+ expire_hr + '</b> <% tcWebApi_Get("String_Entry", "Hour", "s") %> <b id="expire_min_'+i+'">' + expire_min +'</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %></td></tr>';
+							else if(expire_hr > 0)
+									htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_hr_'+i+'">'+ expire_hr + '</b> <% tcWebApi_Get("String_Entry", "Hour", "s") %> <b id="expire_min_'+i+'">' + expire_min +'</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %></td></tr>';
 							else{
 									if(expire_min > 0)
 											htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_min_'+i+'">' + expire_min +'</b> <% tcWebApi_Get("String_Entry", "Minute", "s") %></td></tr>';
@@ -409,10 +447,28 @@ function applyRule(){
 		inputCtrl(document.form.wl_phrase_x, 1);
 
 		if(document.form.wl_expire_radio[0].checked)
-			document.form.wl_expire.value = document.form.wl_expire_hr.value*3600 + document.form.wl_expire_min.value*60;
+			document.form.wl_expire.value = document.form.wl_expire_day.value*86400 + document.form.wl_expire_hr.value*3600 + document.form.wl_expire_min.value*60;
 		else
-			document.form.wl_expire.value = 0;
+			document.form.wl_expire.value = 0;					
 
+		document.form.bw_dl.value = document.form.wl_bw_dl.value*1024;
+		document.form.bw_ul.value = document.form.wl_bw_ul.value*1024;		
+		
+		if((QoS_enable_orig == "0" || QoS_type_orig != "2") && (document.form.wl_bw_enabled.value == "1" || document.form.wl_bw_enabled[0].checked == true))
+		{
+			document.form.QoS_enable_force_Flag.value = "1";
+			document.form.qos_enable_force.value = "1";
+			document.form.qos_type_force.value = "2";
+		}
+		else if(unit_bw_enabled != document.form.wl_bw_enabled.value ||		/*bandwidth limiter settings changed or re-enable mSSID with bandwidth limiter*/
+				unit_bw_ul != document.form.bw_ul.value ||
+				unit_bw_dl != document.form.bw_dl.value ||
+			(wl_x_y_bss_enabled == "1" && document.form.wl_bw_enabled.value == "1")
+		)
+		{
+				document.form.QoS_restart_Flag.value = "1";
+		}
+		
 		TranslateWRTtoMTK();
 		if(document.form.wl_unit.value == 1)
 			document.form.wl_nmode_orig.value = wl1_nmode_x;
@@ -454,10 +510,10 @@ function validForm(){
 	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){
 		if(!validate_psk(document.form.wl_wpa_psk))
 			return false;
-		//confirm common string combination     #JS_common_passwd#
+		//confirm common string combination
 			var is_common_string = check_common_string(document.form.wl_wpa_psk.value, "wpa_key");
 			if(is_common_string){
-				if(confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
+				if(!confirm("<% tcWebApi_Get("String_Entry", "JS_common_passwd","s") %>")){
 					document.form.wl_wpa_psk.focus();
 					document.form.wl_wpa_psk.select();
 					return false;   
@@ -469,6 +525,44 @@ function validForm(){
 		if(auth_mode != "radius" && !validate_wlkey(cur_wep_key))
 			return false;
 	}
+	
+	//confirm expire time not allow zero
+	if(document.form.wl_expire_radio[0].checked){		
+		if(document.form.wl_expire_day.value==0 && (document.form.wl_expire_hr.value=="" || document.form.wl_expire_hr.value==0) & (document.form.wl_expire_min.value=="" || document.form.wl_expire_min.value==0)){
+			alert("<% tcWebApi_Get("String_Entry", "JS_fieldblank", "s") %>");
+			document.form.wl_expire_min.focus();
+			return false;
+		}	
+	}
+	
+	//bandwidth limiter
+	if(document.form.wl_bw_enabled.value == "1"){
+		
+		if(document.form.wl_bw_dl.value == ""){
+			alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
+			document.form.wl_bw_dl.focus();
+			return false;
+		}
+	
+		if(document.form.wl_bw_dl.value.split(".").length > 2 || document.form.wl_bw_dl.value < 0.1){
+			alert("<%tcWebApi_get("String_Entry","min_bound","s")%> : 0.1 Mb/s");
+			document.form.wl_bw_dl.focus();
+			return false;
+		}
+		
+		if(document.form.wl_bw_ul.value == ""){
+			alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
+			document.form.wl_bw_ul.focus();
+			return false;
+		}
+	
+		if(document.form.wl_bw_ul.value.split(".").length > 2 || document.form.wl_bw_ul.value < 0.1){
+			alert("<%tcWebApi_get("String_Entry","min_bound","s")%> : 0.1 Mb/s");
+			document.form.wl_bw_ul.focus();
+			return false;
+		}
+	}
+	
 	return true;
 }
 
@@ -506,7 +600,7 @@ function disableAdvFn(){
 function guest_divctrl(flag){
 	if(flag == 1){
 		document.getElementById("guest_table2").style.display = "none";
-		if(band5g_support != -1)
+		if(wl_info.band5g_support)
 			document.getElementById("guest_table5").style.display = "none";
 			
 		document.getElementById("gnset_table").style.display = "";
@@ -518,7 +612,7 @@ function guest_divctrl(flag){
 	}
 	else{
 		document.getElementById("guest_table2").style.display = "";
-		if(band5g_support == -1 || no5gmssid_support != -1)
+		if(!wl_info.band5g_support || no5gmssid_support != -1)
 				document.getElementById("guest_table5").style.display = "none";
 		else
 				document.getElementById("guest_table5").style.display = "";
@@ -541,7 +635,7 @@ function mbss_display_ctrl(){
 	else{
 		document.getElementById("gnset_table").style.display = "none";
 		document.getElementById("guest_table2").style.display = "none";
-		if(band5g_support != -1)
+		if(wl_info.band5g_support)
 			document.getElementById("guest_table5").style.display = "none";
 			
 		document.getElementById("applyButton").style.display = "none";
@@ -551,11 +645,13 @@ function mbss_display_ctrl(){
 	}
 }
 
+var wl_x_y_bss_enabled = 0;
 function en_dis_guest_unit(_unit, _subunit, _setting){
 	var NewInput = document.createElement("input");
 	NewInput.type = "hidden";
 	NewInput.name = "wl"+ _unit + "." + _subunit +"_bss_enabled";
 	NewInput.value = _setting;
+	wl_x_y_bss_enabled = _setting;
 	document.form.appendChild(NewInput);
 	document.form.wl_unit.value = _unit;
 	document.form.wl_subunit.value = _subunit;	
@@ -567,17 +663,22 @@ function close_guest_unit(_unit, _subunit){
 	NewInput.type = "hidden";
 	NewInput.name = "wl"+ _unit + "." + _subunit +"_bss_enabled";
 	NewInput.value = "0";
+	wl_x_y_bss_enabled = 0;
 	document.form.appendChild(NewInput);
 	document.form.wl_unit.value = _unit;
 	document.form.wl_subunit.value = _subunit;
 	document.form.action = "/cgi-bin/Guest_network.asp";
 	document.form.editFlag.value = "1" ;
 	document.form.MBSSID_able_Flag.value = "1" ;
+	document.form.QoS_restart_Flag.value = "1";
 	showLoading(4);
 	setTimeout("redirect();", 4000);
 	document.form.submit();
 }
 
+var unit_bw_enabled = "";
+var unit_bw_ul = "";
+var unit_bw_dl = "";
 var edit_unit = "";
 function change_guest_unit(_unit, _subunit){	
 	var idx;
@@ -604,6 +705,7 @@ function change_guest_unit(_unit, _subunit){
 	document.getElementById("wl_vifname").innerHTML = document.form.wl_subunit.value;
 	document.form.wl_bss_enabled.value = decodeURIComponent(gn_array[idx][0]);
 	document.form.wl_ssid.value = decodeURIComponent(gn_array[idx][1]);
+	wl_x_y_bss_enabled = 1;
 	
 	var wl_auth_mode_value = TranslateWRTtoMTK_auth_mode(decodeURIComponent(gn_array[idx][2]));
 	document.form.wl_auth_mode_x.value = wl_auth_mode_value;	
@@ -618,10 +720,17 @@ function change_guest_unit(_unit, _subunit){
 	document.form.wl_key4.value = decodeURIComponent(gn_array[idx][10]);
 	document.form.wl_phrase_x.value = decodeURIComponent(gn_array[idx][17]);
 	document.form.wl_expire.value = decodeURIComponent(gn_array[idx][11]);
-	document.form.wl_lanaccess.value = decodeURIComponent(gn_array[idx][12]);	
+	document.form.wl_lanaccess.value = decodeURIComponent(gn_array[idx][12]);
+	document.form.wl_bw_enabled.value = decodeURIComponent(gn_array[idx][18]);
+	unit_bw_enabled = decodeURIComponent(gn_array[idx][18]);
+	document.form.wl_bw_dl.value = decodeURIComponent(gn_array[idx][19])/1024;
+	unit_bw_dl = decodeURIComponent(gn_array[idx][19]);
+	document.form.wl_bw_ul.value = decodeURIComponent(gn_array[idx][20])/1024;
+	unit_bw_ul = decodeURIComponent(gn_array[idx][20]);	
 	
-	wl_wep_change(_unit);
+	wl_wep_change(_unit);	
 	change_wl_expire_radio();
+	show_bandwidth(unit_bw_enabled);
 	guest_divctrl(1);
 	
 	updateMacModeOption();
@@ -641,7 +750,6 @@ function create_guest_unit(_unit, _subunit){
 	
 	if(gn_array[_subunit-1][15] != "1"){
 		change_guest_unit(_unit, _subunit);
-		document.form.wl_bss_enabled.value = "1";
 	}else{
 		en_dis_guest_unit(_unit, _subunit, "1");
 	}
@@ -861,6 +969,47 @@ function setClientmac(macaddr){
 function maclistMain_display(obj){	
 	document.getElementById("maclistMain").style.display = (obj.value == "disabled") ? "none" : "";
 }
+
+function show_bandwidth(flag){	
+	if(flag == "1"){
+		document.form.wl_bw_enabled[0].checked = true;
+		if(QoS_enable_orig == "0"){
+			document.getElementById("QoS_hint").innerHTML = "<br>Traffic Manager > QoS will be Enabled, QoS Type will be set as Bandwidth Limiter.";	/* untranslated */
+			document.getElementById("QoS_hint").style.display = "";	
+		}
+		else if(QoS_type_orig != "2"){
+			document.getElementById("QoS_hint").innerHTML = "<br>Traffic Manager > QoS > QoS Type will be set as Bandwidth Limiter.";	/* untranslated */
+			document.getElementById("QoS_hint").style.display = "";	
+		}
+		inputCtrl(document.form.wl_bw_dl, 1);
+		inputCtrl(document.form.wl_bw_ul, 1);		
+	}
+	else{		
+		document.form.wl_bw_enabled[1].checked = true;
+		document.getElementById("QoS_hint").style.display = "none";
+		inputCtrl(document.form.wl_bw_dl, 0);
+		inputCtrl(document.form.wl_bw_ul, 0);		
+	}	
+}
+
+function bandwidth_code(o,event){
+	var keyPressed = event.keyCode ? event.keyCode : event.which;
+	var target = o.value.split(".");
+	
+	if (validator.isFunctionButton(event))
+		return true;	
+		
+	if((keyPressed == 46) && (target.length > 1))
+		return false;
+
+	if((target.length > 1) && (target[1].length > 0))
+		return false;	
+		
+	if ((keyPressed == 46) || (keyPressed > 47 && keyPressed < 58))
+		return true;
+	else
+		return false;		
+}
 </script>
 </head>
 
@@ -920,6 +1069,12 @@ function maclistMain_display(obj){
 <input type="hidden" name="wl_mode_x" value="0" disabled>
 <input type="hidden" name="flag" value="0">
 <input type="hidden" name="editFlag" value="0">
+<input type="hidden" name="bw_ul" value="">
+<input type="hidden" name="bw_dl" value="">
+<input type="hidden" name="QoS_enable_force_Flag" value="0">
+<input type="hidden" name="qos_enable_force" value="0">
+<input type="hidden" name="qos_type_force" value="0">
+<input type="hidden" name="QoS_restart_Flag" value="0">
 <input type="hidden" name="wl_auth_mode_save" value="OPEN">
 <input type="hidden" name="wl_crypto_save" value="NONE">
 <input type="hidden" name="MBSSID_changeFlag" value="1">
@@ -1141,9 +1296,29 @@ function maclistMain_display(obj){
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 25);"><%tcWebApi_get("String_Entry","Access_Time","s")%></a></th>
 					<td>
 					<input type="radio" value="1" name="wl_expire_radio" class="content_input_fd" onClick="">
-					<input type="text" maxlength="2" name="wl_expire_hr" class="input_3_table" value="" onKeyPress="return is_number(this,event);" onblur="validate_number_range(this, 0, 23)"><% tcWebApi_Get("String_Entry", "Hour", "s") %>
-					<input type="text" maxlength="2" name="wl_expire_min" class="input_3_table" value="" onKeyPress="return is_number(this,event);" onblur="validate_number_range(this, 0, 59)"> <% tcWebApi_Get("String_Entry", "Minute", "s") %>
+					<select name="wl_expire_day" class="input_option"></select><% tcWebApi_Get("String_Entry", "Day", "s") %>
+					<input type="text" maxlength="2" name="wl_expire_hr" class="input_3_table" value="" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 0);"> <% tcWebApi_Get("String_Entry", "Hour", "s") %>
+					<input type="text" maxlength="2" name="wl_expire_min" class="input_3_table" value="" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 1);"> <% tcWebApi_Get("String_Entry", "Minute", "s") %>
+					<br>
 					<input type="radio" value="0" name="wl_expire_radio" class="content_input_fd" onClick=""><% tcWebApi_Get("String_Entry", "Limitless", "s") %>
+					</td>
+				</tr>
+
+				<tr>
+					<th>Enable Bandwidth Limiter</th>
+					<td>
+						<input type="radio" value="1" name="wl_bw_enabled" class="content_input_fd" onClick="show_bandwidth(1);"><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
+						<input type="radio" value="0" name="wl_bw_enabled" class="content_input_fd" onClick="show_bandwidth(0);"><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+						<span id="QoS_hint" style="color:#FC0;display:none;"></span>
+					</td>
+				</tr>
+
+				<tr>
+					<th><%tcWebApi_get("String_Entry","Bandwidth_Limiter","s")%></th>
+					<td>
+						Download <input type="text" id="wl_bw_dl" name="wl_bw_dl" maxlength="12" onkeypress="return bandwidth_code(this, event);" class="input_12_table" value=""><label style="margin-left:2px;">Mb/s</label>
+						&nbsp;&nbsp;&nbsp;
+						Upload <input type="text" id="wl_bw_ul" name="wl_bw_ul" maxlength="12" onkeypress="return bandwidth_code(this, event);" class="input_12_table" value=""><label style="margin-left:2px;">Mb/s</label>
 					</td>
 				</tr>
 

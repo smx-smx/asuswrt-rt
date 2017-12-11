@@ -1,8 +1,9 @@
 <%
 If Request_Form("editFlag") = "1" then
 	tcWebApi_Set("UrlFilter_Common","Active","url_enable_x")
-	tcWebApi_Set("UrlFilter_Common","URL_Rule_List","url_rulelist")
-  	tcWebApi_commit("UrlFilter_Common")
+	tcWebApi_Set("UrlFilter_Common","Mode","url_mode_x")
+	tcWebApi_Set("UrlFilter_Common","URL_Rule_List","url_rulelist")	
+	tcWebApi_commit("UrlFilter_Common")
 end if
 %>
 
@@ -192,21 +193,31 @@ refreshpage();
 		<div class="formfonttitle"><%tcWebApi_get("String_Entry","menu5_5","s")%> - <%tcWebApi_get("String_Entry","menu5_5_2","s")%></div>
 		<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 		<div class="formfontdesc"><%tcWebApi_get("String_Entry","FC_UrlFilterEnable_sd","s")%></div>
-		<div class="formfontdesc"><%tcWebApi_get("String_Entry","FC_KeywordFilterEnable_sd2","s")%></div>	
+		<div class="formfontdesc">HTTPS sites also can be blocked.</div>	<!-- untranslated -->	
 
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
-<thead>
-<tr>
-						<td colspan="4"><%tcWebApi_get("String_Entry","t2BC","s")%></td>
-</tr>
-</thead>
-<tr>
-          <th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(9,1);"><%tcWebApi_get("String_Entry","FC_UrlFilterEnable_in","s")%></th>
-<td>
-<input type="radio" value="1" name="url_enable_x" onClick="enable_url();" <% if tcWebApi_get("UrlFilter_Common","Active","h") = "1" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","CTL_Enabled","s")%>
-<input type="radio" value="0" name="url_enable_x" onClick="enable_url();" <% if tcWebApi_get("UrlFilter_Common","Active","h") = "0" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","CTL_Disabled","s")%>
-</td>
-</tr>
+	<thead>
+	<tr>
+		<td colspan="4"><%tcWebApi_get("String_Entry","t2BC","s")%></td>
+	</tr>
+	</thead>
+
+	<tr>
+		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(9,1);"><%tcWebApi_get("String_Entry","FC_UrlFilterEnable_in","s")%></a></th>
+		<td>
+			<input type="radio" value="1" name="url_enable_x" onClick="enable_url();" <% if tcWebApi_get("UrlFilter_Common","Active","h") = "1" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","CTL_Enabled","s")%>
+			<input type="radio" value="0" name="url_enable_x" onClick="enable_url();" <% if tcWebApi_get("UrlFilter_Common","Active","h") = "0" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","CTL_Disabled","s")%>
+		</td>
+	</tr>
+	<tr>
+		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(9,3);"><%tcWebApi_get("String_Entry","FC_LanWanDefaultAct_in","s")%></a></th>
+		<td>
+			<select name="url_mode_x" class="input_option" onChange="">
+				<option class="content_input_fd" value="0" <% if tcWebApi_get("UrlFilter_Common","Mode","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","BlackList","s")%></option>
+				<option class="content_input_fd" value="1" <% if tcWebApi_get("UrlFilter_Common","Mode","h") = "1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","WhiteList","s")%></option>
+			</select>
+		</td>
+	</tr>
 </table>
 <table width="100%" style="display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 <tr>

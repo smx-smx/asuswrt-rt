@@ -96,10 +96,11 @@
 	border:1px outset #999;
 	background-color:#576D73;
 	position:absolute;
-	margin-top:120px;
-	margin-left:54px;
-	*margin-left:-296px;
-	width:340px;	
+	margin-left:10px;
+ 	margin-top: 25px;
+	*margin-left:-285px;
+	width:275px;
+	*width:280px;
 	text-align:left;
 	height:auto;
 	overflow-y:auto;

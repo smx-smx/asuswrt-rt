@@ -1234,15 +1234,18 @@ void check_prn_status(char *status_prn, char *cliadd_prn)
 /*JY1114: get printer queue name for LPR*/
 int get_queue_name(char *input)
 {
+#if 0
 	char QueueName_got[32];
 	char *index1;
 	int rps_i=0, rps_j=0;
 	while(index1 = strrchr(input, ' '))
 		index1[0] = 0;
 	rps_i = 0;
-	strcpy(QueueName_got, input);
+	memset(QueueName_got, 0, sizeof(QueueName_got));
+	strncpy(QueueName_got, input, sizeof(QueueName_got) - 1);
 	//return(strcmp(QueueName_got, "LPRServer"));
 	//by pass queue Name Check
+#endif
 	return 0;
 }
 
