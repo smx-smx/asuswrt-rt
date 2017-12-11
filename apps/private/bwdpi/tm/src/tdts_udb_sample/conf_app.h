@@ -32,7 +32,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "tdts/tmcfg.h"
 #include "udb/tmcfg_udb.h"
 
 #include "udb/ioctl/udb_ioctl_common.h"
@@ -61,8 +60,8 @@
 	(uint8_t) o[12], (uint8_t) o[13], (uint8_t) o[14], (uint8_t) o[15]
 
 #define DBG(fmt, args...)
-//#define DBG(fmt, args...) 	fprintf(stderr, "[%s(%d)]: " fmt, __func__, __LINE__, ##args);
-#define ERR(fmt, args...) 	fprintf(stderr, "[%s(%d)]: " fmt, __func__, __LINE__, ##args);
+//#define DBG(fmt, args...) 	fprintf(stderr, fmt, ##args);
+#define ERR(fmt, args...) 	fprintf(stderr, "Error: " fmt, ##args);
 
 #define PRT_DEVID(_name, _val) \
 do { \
@@ -80,18 +79,28 @@ struct delegate
 {
 	int action;
 	char *name;
-	char *desc;	// reserved
+	void (*show_help)(char *base);
+	int (*parse_arg)(int, char **);
 	action_cb_t cb;
 };
 
 #define CMD_OPTIONS_MAX 16
 #define CMD_OPTS_STR_MAX 32
 
+#define OPTS_IDX_INC(__i) \
+do { \
+	if ((__i) >= CMD_OPTIONS_MAX) \
+	{ \
+		ERR("exceed max command options\n"); \
+		return -1; \
+	} \
+	(__i)++; \
+} while (0)
+
 struct cmd_option
 {
 	struct delegate opts[CMD_OPTIONS_MAX];
 	char *help;
-	int (*parse_arg)(int, char **, int);
 };
 
 #define ERR_UNKNOWN_ARGS(_i, _c, _v) \
@@ -184,7 +193,7 @@ typedef struct qos_app_stat
 
 #define ENV_SHN_HOME_DIR "SHN_HOME_DIR"
 
-static char *shn_path(const char *path)
+static __attribute__((unused)) char *shn_path(const char *path)
 {	
 	static char abs_path[CONF_PATH_MAX_LEN];
 	char *home = getenv(ENV_SHN_HOME_DIR);

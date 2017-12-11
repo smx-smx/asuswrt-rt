@@ -517,21 +517,6 @@ function update_wanip(e) {
   });
 }
 
-function submitWANAction(status){
-	switch(status){
-		case 0:
-			parent.showLoading();
-			setTimeout('location.href = "/device-map/wan_action.asp?wanaction=Connect";', 1);
-			break;
-		case 1:
-			parent.showLoading();
-			setTimeout('location.href = "/device-map/wan_action.asp?wanaction=Disconnect";', 1);
-			break;
-		default:
-			alert("No change!");
-	}
-}
-
 function goQIS(){
 	parent.location.href = '/QIS_wizard.htm';
 }

@@ -160,6 +160,8 @@ extern login_retry_t * retry_head;
 extern login_retry_t retry_flag, retry_flag_wan;
 #endif
 #define MAX_LOGIN_BLOCK_TIME	300
+/* Get Login Token - New add Remaing Lock Time */
+extern time_t login_dt;
 
 //The attribute "login_ip_tmp" in the node "WebCurSet_Entry" is ONLY for the user login via browser.
 

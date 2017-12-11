@@ -1237,7 +1237,7 @@ function showclock(){
 	</tr>
 
 	<tr id="wl_txPower_field">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 17);"><%tcWebApi_get("String_Entry","WC11b_TxPower_in","s")%></a></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 16);"><%tcWebApi_get("String_Entry","WC11b_TxPower_in","s")%></a></th>
 						<td>
 							<div>
 								<table>

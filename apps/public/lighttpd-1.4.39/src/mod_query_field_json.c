@@ -239,11 +239,17 @@ URIHANDLER_FUNC(mod_query_field_json_physical_handler){
 		buffer_urldecode_path(url_options_path);	
 		free(param_val);
 
-		if(strcmp(url_options_path->ptr, "")==0 || strcmp(url_options_path->ptr, usbdisk_name)==0){
+		if( strcmp(url_options_path->ptr, "") == 0 ){
 			buffer_copy_string(url_options_path, "/");
 			buffer_append_string(url_options_path, usbdisk_name);
-
-			is_root_path = 1;
+                        is_root_path = 1;
+		}
+		else if( strcmp(url_options_path->ptr, "/")==0 ||
+			strncmp(url_options_path->ptr, ".", 1)==0 ||
+			strstr(url_options_path->ptr, usbdisk_name) == NULL ){
+			con->http_status = 200;
+			con->file_finished = 1;
+			return HANDLER_FINISHED;
 		}
 		
 		//- replace 'usbdisk_name' to 'usbdisk_rel_root_path'
@@ -390,7 +396,7 @@ URIHANDLER_FUNC(mod_query_field_json_physical_handler){
 						
 						buffer_append_string_len(folder_info->path, CONST_STR_LEN(", \"permission\" : "));
 						char str_permission[10] = "\0";
-						sprintf( str_permission, "%d", permission );
+						snprintf( str_permission, sizeof(str_permission), "%d", permission );
 						buffer_append_string(folder_info->path, str_permission);
 							
 						buffer_append_string_len(folder_info->path, CONST_STR_LEN("}"));
@@ -522,7 +528,7 @@ URIHANDLER_FUNC(mod_query_field_json_physical_handler){
 				
 				buffer_append_string_len(folder_info->path, CONST_STR_LEN(", \"permission\" : "));
 				char str_permission[10] = "\0";
-				sprintf( str_permission, "%d", permission );
+				snprintf( str_permission, sizeof(str_permission), "%d", permission );
 				buffer_append_string(folder_info->path, str_permission);
 #endif
 					

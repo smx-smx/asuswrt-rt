@@ -30,8 +30,6 @@
 #define IP6_HLEN	40
 #define TCP_HLEN	20
 
-extern char *dev_wan;
-
 /* Hop-by-Hop or Destination Option header */
 typedef struct
 {
@@ -39,7 +37,7 @@ typedef struct
 	unsigned char hdrlen;
 
 	/* option dependent data */
-	unsigned char opts[0];
+	unsigned char opts[6];
 } ipv6_opt_hdr_t;
 
 typedef struct pseduohdr_type2 {
@@ -65,12 +63,6 @@ void send_action_pkt(struct sk_buff *skb
 		, void *send
 		, char *wan_name
 		, char *redir_url, int url_len
-		, struct net_device *in_dev
-		, struct net_device *out_dev);
-
-void prepare_ford_dev(tdts_udb_param_t *fw_param
-		, void *okfn
-		, struct sock *sk
 		, struct net_device *in_dev
 		, struct net_device *out_dev);
 

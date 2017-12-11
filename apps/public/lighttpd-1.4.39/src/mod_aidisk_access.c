@@ -93,6 +93,9 @@ SETDEFAULTS_FUNC(mod_aidisk_access_set_defaults) {
 #define PATCH(x) \
 	p->conf.x = s->x;
 static int mod_aidisk_access_patch_connection(server *srv, connection *con, plugin_data *p) {
+
+	UNUSED(con);
+	
 	size_t i, j;
 	plugin_config *s = p->config_storage[0];
 
@@ -135,7 +138,7 @@ static int mod_aidisk_access_patch_connection(server *srv, connection *con, plug
 
 URIHANDLER_FUNC(mod_aidisk_access_physical_handler){
 	plugin_data *p = p_d;
-	int s_len;
+	//int s_len;
 	size_t k;
 
 	if (con->mode != SMB_BASIC&&con->mode != DIRECT) return HANDLER_GO_ON;
@@ -181,7 +184,7 @@ URIHANDLER_FUNC(mod_aidisk_access_physical_handler){
 	data_string *ds = (data_string *)array_get_element(con->request.headers, "user-Agent");	
 	
 	smb_info_t *smb_info = NULL;
-	int b_save_smb_info = 0;
+	//int b_save_smb_info = 0;
 
 #if 1	
 	if( isBrowser(con) == 1 ){
@@ -319,11 +322,20 @@ URIHANDLER_FUNC(mod_aidisk_access_physical_handler){
 	else
 		denied = 1;
 
+#if 0
 #if EMBEDDED_EANBLE
 	if( con->share_link_type==1 && !con->srv_socket->is_ssl){
 		Cdbg(DBE, "con->share_link_type=%d", con->share_link_type);
 		denied = 1;
 	}
+#endif
+//#else
+//#if EMBEDDED_EANBLE
+//	if( con->share_link_type==1 && con->request.http_method != HTTP_METHOD_GET){
+//		Cdbg(DBE, "con->share_link_type=%d", con->share_link_type);
+//		denied = 1;
+//	}
+//#endif
 #endif
 
 	if(strstr(con->physical.path->ptr, "asusware")!=NULL){

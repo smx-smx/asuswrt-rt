@@ -366,7 +366,7 @@ typedef struct {
 //- Sungmin add
 #ifdef HAVE_LIBSMBCLIENT
 #include <libsmbclient.h>
-#define uint32 unsigned int
+#define uint32 uint32_t
 
 #define NMB_PORT 137
 #define SMB_PORT 445
@@ -840,8 +840,10 @@ typedef struct server {
 	buffer *syslog_buf;
 	buffer *cur_login_info;
 	buffer *last_login_info;
-	time_t last_no_ssl_connection_ts;
+	time_t last_ts_of_streaming_connection;
 	int is_streaming_port_opend;
+	time_t last_ts_of_network_access_connection;
+	int is_network_access_port_opend;
 #endif
 	
 } server;

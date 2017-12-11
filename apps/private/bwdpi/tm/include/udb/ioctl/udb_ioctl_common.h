@@ -102,6 +102,7 @@ typedef struct udb_ioc_os
 
 #define UDB_ENTRY_HOST_NAME_SIZE 32
 
+#define MAX_WRS_CAT_NUM 128
 typedef struct udb_ioc_entry
 {
 	uint8_t uid;
@@ -122,6 +123,9 @@ typedef struct udb_ioc_entry
 #endif
 #if TMCFG_E_UDB_CORE_SHN_QUERY
 	shnagent_nl_upnp_ioctl upnp_data;
+#endif
+#if TMCFG_E_UDB_CORE_URL_QUERY
+	uint32_t wrs_stat[MAX_WRS_CAT_NUM];
 #endif
 	uint8_t available;
 } udb_ioctl_entry_t;

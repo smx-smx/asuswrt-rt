@@ -26,18 +26,39 @@ function initial(){
 		document.adv_adsl.attach_modemlog.checked = false;
 		document.getElementById("attach_modem_span").style.display = "none";
 	}
-	if(dsl_diag_support == -1 || usb_support == -1){
+
+	if(dsl_diag_support >= 0 && usb_support >= 0){
+		change_dsl_diag_enable(0);
+		check_dsl_diag_state();
+	}
+	else{
 		inputCtrl(document.adv_adsl.dslx_diag_enable[0], 0);
 		inputCtrl(document.adv_adsl.dslx_diag_enable[1], 0);
 		inputCtrl(document.adv_adsl.dslx_diag_duration, 0);	
 		document.getElementById("dslx_diag_enable_tr").style.display = "none";
 		document.getElementById("dslx_diag_duration_tr").style.display = "none";
 	}
+
+	//Renjie: do not check WAN connection.
+	//setTimeout("check_wan_state();", 300);
+}
+
+function check_dsl_diag_state(){
+	if(wan_diag_state == 1){	//diagnostic log capturing
+		document.adv_adsl.dslx_diag_enable[0].disabled = "true";
+		document.adv_adsl.dslx_diag_enable[1].disabled = "true";
+		document.adv_adsl.dslx_diag_duration.disabled = "true";
+		document.getElementById("diag_proceeding").style.display = "";
+		document.getElementById("diag_proceeding").innerHTML = "* Diagnostic debug log capture in progress. " +show_diagTime(boottime_update)+"<br><span onclick=\"cancel_diag();\" style=\"cursor:pointer;text-decoration:underline;\">Cancel debug capture</span>";
+	}
 	else{
-		change_dsl_diag_enable(0);	
+		document.adv_adsl.dslx_diag_enable[0].disabled = "";
+		document.adv_adsl.dslx_diag_enable[1].disabled = "";
+		document.adv_adsl.dslx_diag_duration.disabled = "";
+		document.getElementById("diag_proceeding").style.display = "none";
 	}
 
-	setTimeout("check_wan_state();", 300);
+	setTimeout("check_dsl_diag_state();", 3000);
 }
 
 function check_wan_state(){
@@ -72,10 +93,18 @@ function check_wan_state(){
 		document.adv_adsl.attach_cfgfile.disabled = "";
 		document.adv_adsl.attach_iptables.disabled = "";
 		document.adv_adsl.attach_modemlog.disabled = "";
-		if(dsl_diag_support >= 0){
+		if(dsl_diag_support >= 0 && wan_diag_state == 1){
+			document.adv_adsl.dslx_diag_enable[0].disabled = "true";
+			document.adv_adsl.dslx_diag_enable[1].disabled = "true";
+			document.adv_adsl.dslx_diag_duration.disabled = "true";
+			document.getElementById("diag_proceeding").style.display = "";
+			document.getElementById("diag_proceeding").innerHTML = "* Diagnostic debug log capture in progress. " +show_diagTime(boottime_update)+"<br><span onclick=\"cancel_diag();\" style=\"cursor:pointer;text-decoration:underline;\">Cancel debug capture</span>";
+		}
+		else if(dsl_diag_support >= 0){
 			document.adv_adsl.dslx_diag_enable[0].disabled = "";
 			document.adv_adsl.dslx_diag_enable[1].disabled = "";
 			document.adv_adsl.dslx_diag_duration.disabled = "";
+			document.getElementById("diag_proceeding").style.display = "none";
 		}
 		document.adv_adsl.fb_availability.disabled = "";
 		document.adv_adsl.fb_comment.disabled = "";		
@@ -103,61 +132,58 @@ function redirect(){
 }
 
 function applyRule(){		
-		document.adv_adsl.browserInfo.value = navigator.userAgent;
-		if((link_status == "2" && (link_auxstatus == "0" || link_auxstatus == "2")) || (secondary_link_status == "2" && (secondary_link_auxstatus == "0" || secondary_link_auxstatus == "2"))){
+		/*if(document.adv_adsl.fb_response.value == "3"){
+			alert("Feedback report daily maximum(10) send limit reached.");
+			return false;
+		}*/
+		if(document.adv_adsl.attach_syslog.checked == true)
+			document.adv_adsl.PM_attach_syslog.value = 1;
+		else
+			document.adv_adsl.PM_attach_syslog.value = 0;
+		if(document.adv_adsl.attach_cfgfile.checked == true)
+			document.adv_adsl.PM_attach_cfgfile.value = 1;
+		else
+			document.adv_adsl.PM_attach_cfgfile.value = 0;
+		if(document.adv_adsl.attach_iptables.checked == true)
+			document.adv_adsl.PM_attach_iptables.value = 1;
+		else
+			document.adv_adsl.PM_attach_iptables.value = 0;
+		if(document.adv_adsl.attach_modemlog.checked == true)
+			document.adv_adsl.PM_attach_modemlog.value = 1;
+		else
+			document.adv_adsl.PM_attach_modemlog.value = 0;
 
-			/*if(document.adv_adsl.fb_response.value == "3"){
-				alert("Feedback report daily maximum(10) send limit reached.");
-				return false;
-			}*/
-			if(document.adv_adsl.attach_syslog.checked == true)
-				document.adv_adsl.PM_attach_syslog.value = 1;
-			else
-				document.adv_adsl.PM_attach_syslog.value = 0;
-			if(document.adv_adsl.attach_cfgfile.checked == true)
-				document.adv_adsl.PM_attach_cfgfile.value = 1;
-			else
-				document.adv_adsl.PM_attach_cfgfile.value = 0;
-			if(document.adv_adsl.attach_iptables.checked == true)
-				document.adv_adsl.PM_attach_iptables.value = 1;
-			else
-				document.adv_adsl.PM_attach_iptables.value = 0;
-			if(document.adv_adsl.attach_modemlog.checked == true)
-				document.adv_adsl.PM_attach_modemlog.value = 1;
-			else
-				document.adv_adsl.PM_attach_modemlog.value = 0;
-
-			split_fb_comment();
-			
-			if(document.adv_adsl.fb_email.value == ""){
-					if(!confirm("E-mail address field is empty. Are you sure you want to proceed?")){
-							document.adv_adsl.fb_email.focus();
-							return false;
-					}	
-			}
-			else{   //validate email                        
-					if(!isEmail(document.adv_adsl.fb_email.value)){
-						alert(Untranslated.Email_validation);
+		split_fb_comment();
+		
+		if(document.adv_adsl.fb_email.value == ""){
+				if(!confirm("E-mail address field is empty. Are you sure you want to proceed?")){
 						document.adv_adsl.fb_email.focus();
 						return false;
-					}
-			}
-			
-			document.adv_adsl.saveFlag.value = 1;
-			if(document.adv_adsl.dslx_diag_enable[0].checked == true){
-				showLoading(120);
-				setTimeout("redirect();", 120*1000);
-			}
-			else{
-				showLoading(60);
-				setTimeout("redirect();", 60*1000);
-			}	
-			document.adv_adsl.submit();
+				}
+		}
+		else{   //validate email                        
+				if(!isEmail(document.adv_adsl.fb_email.value)){
+					alert(Untranslated.Email_validation);
+					document.adv_adsl.fb_email.focus();
+					return false;
+				}
+		}
+		
+		document.adv_adsl.saveFlag.value = 1;
+		if(document.adv_adsl.dslx_diag_enable[0].checked == true){
+			document.adv_adsl.DslDiagFlag.value = 1;
+			showLoading(120);
+			setTimeout("redirect();", 120*1000);
 		}
 		else{
-			alert("<%tcWebApi_get("String_Entry","USB_App_No_Internet","s")%>");
-			return false;
+			showLoading(60);
+			setTimeout("redirect();", 60*1000);
 		}
+		document.adv_adsl.browserInfo.value = navigator.userAgent;
+		if(document.getElementById("connect_status").className == "connectstatuson"){
+			document.adv_adsl.WANConnCurState.value = 1;	//Submit form with WAN connected state
+		}	
+		document.adv_adsl.submit();
 }
 
 function isEmail(strE) {
@@ -189,18 +215,21 @@ function change_dsl_diag_enable(value) {
 			if(usb_path1.search("storage") == -1){
 				alert("USB disk required in order to store the debug log, please plug-in a USB disk to <%tcWebApi_get("String_Entry","Web_Title2","s")%> and Enable DSL Line Diagnostic again.");
 				document.adv_adsl.dslx_diag_enable[1].checked = true;
-				return;				
-			}			
+				return;
+			}
+			else{
+				alert("While debug log capture in progress, please do not unplug the USB disk as the debug log would be stored in the disk. UI top right globe icon flashing in yellow indicating that debug log capture in progress. Click on the yellow globe icon could cancel the debug log capture. Please note that xDSL line would resync in one minute after Feedback form submitted.");
+			}	
 		}
 		else if(rc_support.search("usbX2") >= 0 ){	//two USB port
 			if(usb_path1.search("storage") == -1 && usb_path2.search("storage") == -1){
 				alert("USB disk required in order to store the debug log, please plug-in a USB disk to <%tcWebApi_get("String_Entry","Web_Title2","s")%> and Enable DSL Line Diagnostic again.");
 				document.adv_adsl.dslx_diag_enable[1].checked = true;
 				return;
-			}			
+			}
+			else{
+				alert("While debug log capture in progress, please do not unplug the USB disk as the debug log would be stored in the disk. UI top right globe icon flashing in yellow indicating that debug log capture in progress. Click on the yellow globe icon could cancel the debug log capture. Please note that xDSL line would resync in one minute after Feedback form submitted.");
 		}
-		else{
-			alert("While debug log capture in progress, please do not unplug the USB disk as the debug log would be stored in the disk. UI top right globe icon flashing in yellow indicating that debug log capture in progress. Click on the yellow globe icon could cancel the debug log capture. Please note that xDSL line would resync in one minute after Feedback form submitted.");
 		}
 		
 		showhide("dslx_diag_duration_tr",1);
@@ -242,6 +271,9 @@ function change_dsl_diag_enable(value) {
 <input type="hidden" name="fb_comment4" value="">
 <input type="hidden" name="fb_response" value="<% tcWebApi_Get("PushMail_Entry", "fb_state", "s") %>">
 <input type="hidden" name="browserInfo" value="">
+<input type="hidden" name="WANConnCurState" value="0">
+<input type="hidden" name="saveFlag" value="0">
+<input type="hidden" name="DslDiagFlag" value="0">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 <tr>
 <td width="17">&nbsp;</td>
@@ -305,8 +337,9 @@ function change_dsl_diag_enable(value) {
 	<td>
 		<input type="radio" name="dslx_diag_enable" class="input" value="1" onclick="change_dsl_diag_enable(1);"><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
 		<input type="radio" name="dslx_diag_enable" class="input" value="0" onclick="change_dsl_diag_enable(0);" checked><%tcWebApi_get("String_Entry","checkbox_No","s")%>
-		<br>	
+		<br>
 		<span id="be_lack_storage" style="display:none;color:#FC0">* No USB disk plug-in.</span>
+		<span id="diag_proceeding" style="display:none;color:#FC0"></span>
 	</td>
 </tr>
 
@@ -366,7 +399,6 @@ function change_dsl_diag_enable(value) {
 	</td>
 </tr>	
 </table>
-<INPUT TYPE="HIDDEN" NAME="saveFlag" VALUE="0">
 </td>
 </tr>
 </tbody>

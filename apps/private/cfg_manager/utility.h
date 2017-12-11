@@ -301,6 +301,8 @@ extern unsigned char get_rand();
 extern unsigned long readFileSize( char *filepath );
 extern int encryptRomfile(char *src, char *dst, char *productName);
 extern int decryptRomfile( char *path, unsigned int *length, unsigned int offset ); //Ren
+extern int detect_endianness(void);
+extern int encryptBinaryfile(char *src, char *dst, char *productName);
 extern int timerTrigger(unsigned int seconds, void (*func)(int signo)); //Ren
 extern int timerTrigger_re(unsigned int first_seconds, unsigned int interval, void (*func)(int signo)); //Ren
 extern int modifyXDSLscript(void); //Ren
@@ -324,6 +326,13 @@ typedef enum{
 	IFID_WL24G,
 	IFID_WL5G
 }IFID;
+
+enum{
+	ENDIAN_UNKNOWN = -1,
+	ENDIAN_LITTLE = 0,
+	ENDIAN_BIG = 1
+};
+
 int getMacAddrWithoutColon(const IFID ifid, char *mac);
 int is_wan_connect(int unit);
 
@@ -335,6 +344,7 @@ int is_wan_connect(int unit);
 extern int _ifconfig(const char *name, int flags, const char *addr, const char *netmask, const char *dstaddr);
 #define ifconfig(name, flags, addr, netmask) _ifconfig(name, flags, addr, netmask, NULL)
 #define IFUP (IFF_UP | IFF_RUNNING | IFF_BROADCAST | IFF_MULTICAST)
+#define adjustEndian(num) do{num = (((num)>>24) & 0x000000FF) | (((num)<<8) & 0x00FF0000) | (((num)>>8) & 0x0000FF00) | (((num)<<24) & 0xFF000000);}while(0)
 
 extern void reset_switch_phy();
 #ifdef ASUS_BUSYBOX_NEW
@@ -354,4 +364,8 @@ typedef struct BridgeMember
 extern int getMemberOfBridge(const char *brif, BRIDGE_MEMBER *member);
 
 extern void adjust_hw_nat();
+extern char* get_mailserver(char *buffer, size_t buffer_size);
+extern char* get_email(char *buffer, size_t buffer_size);
+extern char* get_pwd(char *buffer, size_t buffer_size);
+extern int get_auth_data(email_auth_data_t* authdata);
 #endif

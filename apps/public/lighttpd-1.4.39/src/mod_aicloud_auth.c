@@ -16,7 +16,7 @@
 #endif
 #endif
 
-#define DBE 1
+#define DBE 0
 
 typedef struct {
 	array *access_deny;
@@ -655,7 +655,6 @@ static int check_aicloud_auth_url(server *srv, connection *con, plugin_data *p){
 static void get_aicloud_connection_auth_type(server *srv, connection *con)
 {
 	data_string *ds;
-	int found = 0;
 		
 	aicloud_check_direct_file(srv, con);
 
@@ -723,22 +722,23 @@ static void aicloud_connection_smb_info_url_patch(server *srv, connection *con)
 	}
 	
 	if(con->mode == DIRECT){
-		sprintf(strr, "%s", uri);
+		snprintf(strr, sizeof(strr), "%s", uri);
 	}
 	else {
 		if(con->smb_info&&con->smb_info->server->used) {
 			if(con->mode == SMB_BASIC){
 				if(con->smb_info->username->used&&con->smb_info->password->used){
-					sprintf(strr, "smb://%s:%s@%s", con->smb_info->username->ptr, con->smb_info->password->ptr, uri+1);
+					snprintf(strr, sizeof(strr), "smb://%s:%s@%s", con->smb_info->username->ptr, con->smb_info->password->ptr, uri+1);
 				}
 				else
-					sprintf(strr, "smb://%s", uri+1);
+					snprintf(strr, sizeof(strr), "smb://%s", uri+1);
 			}
 			else if(con->mode == SMB_NTLM){
-				sprintf(strr, "smb://%s", uri+1);		
+				snprintf(strr, sizeof(strr), "smb://%s", uri+1);		
 			}
-		} else {
-			sprintf(strr, "smb://");
+			}
+		else {
+			snprintf(strr, sizeof(strr), "smb://");
 		}		
 	}
 
@@ -753,6 +753,8 @@ static void aicloud_connection_smb_info_url_patch(server *srv, connection *con)
 static smb_info_t *smbdav_get_smb_info_from_pool(server *srv, connection *con, plugin_data *p)
 {
 	smb_info_t *c;
+	
+	UNUSED(p);
 	
 	if(srv->smb_srv_info_list==NULL||con->mode==DIRECT)
 		return NULL;
@@ -961,6 +963,8 @@ static int aicloud_connection_smb_info_init(server *srv, connection *con, plugin
 
 void sambaname2ip(server *srv, connection *con){
 
+	UNUSED(srv);
+	
 #if EMBEDDED_EANBLE
 	
 	char* aa = nvram_get_smbdav_str();
@@ -1023,8 +1027,6 @@ void sambaname2ip(server *srv, connection *con){
 		free(str_smbdav_list);
 	}
 #else
-	size_t j;
-	int length, filesize;
 	char* g_temp_file = "/tmp/arpping_list";
 	FILE* fp = fopen(g_temp_file, "r");
 	if(fp!=NULL){		
@@ -1060,10 +1062,10 @@ void sambaname2ip(server *srv, connection *con){
 			//- PC Online?
 			pch = strtok(NULL,"<");			
 
-			int index = strstr(con->request.uri->ptr, name) - con->request.uri->ptr;			
-			if(index==1 && strcmp(pch, "1")==0){
+			int idx = strstr(con->request.uri->ptr, name) - con->request.uri->ptr;			
+			if(idx==1 && strcmp(pch, "1")==0){
 				char buff[4096];
-				char* tmp = replace_str(con->request.uri->ptr, 
+				char* tmp = (char*)replace_str(con->request.uri->ptr, 
 									    name, 
 									    ip,
 									    (char *)&buff[0]);
@@ -1087,13 +1089,13 @@ void sambaname2ip(server *srv, connection *con){
 URIHANDLER_FUNC(mod_aicloud_auth_physical_handler){
 	plugin_data *p = p_d;
 	//plugin_config *pc = merge_config(srv, con, p);
-	int s_len;
-	size_t k;
+	//int s_len;
+	//size_t k;
 	int res = HANDLER_UNSET;
 	//char buf[1024]; // cookie content
     //char key[32];   // <AuthName> key
     //char *cs;       // pointer to (some part of) <AuthName> key
-	data_string *ds;
+	//data_string *ds;
 	
 	if (con->uri.path->used == 0) return HANDLER_GO_ON;
 

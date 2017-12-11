@@ -534,9 +534,9 @@ function gen_lantowanTable(client){
 	code_temp += '<option value="1" >24-hour</option>';
 	code_temp += '</select>';
 	code_temp += '</div></td>';
-	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;">Allow</div></td>';	/*<%tcWebApi_get("String_Entry","FC_MFMethod_item1","s")%>*/
+	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;"><%tcWebApi_get("String_Entry","ParentalCtrl_allow","s")%></div></td>';	/*<%tcWebApi_get("String_Entry","FC_MFMethod_item1","s")%>*/
 	code_temp += '<td><div style="width:90px;height:20px;background:#9CB2BA;"></div></td>';
-	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;">Deny</div></td>';
+	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;"><%tcWebApi_get("String_Entry","ParentalCtrl_deny","s")%></div></td>';
 	code_temp += '<td><div style="width:90px;height:20px;border:solid 1px #000"></div></td>';
 	code_temp += '</tr></table>';
 	document.getElementById('hintBlock').innerHTML = code_temp;

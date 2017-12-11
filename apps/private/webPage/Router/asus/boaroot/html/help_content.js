@@ -14,8 +14,8 @@
 "<%tcWebApi_get("String_Entry","WC11b_WEPKey_itemtype2","s")%>",
 "<%tcWebApi_get("String_Entry","WC11b_ChannelBW_id","s")%><br/><%tcWebApi_get("String_Entry","WC11b_Wireless_Speed_in_3","s")%>",
 "<%tcWebApi_get("String_Entry","WC11b_EChannel_id","s")%>",
+"<%tcWebApi_get("String_Entry","WC11b_TxPower_help1","s")%>",
 "",
-"<%tcWebApi_get("String_Entry","WC11b_TxPower_help","s")%>",
 "<%tcWebApi_get("String_Entry","WC11b_WEPKey_itemtype1","s")%><br/><%tcWebApi_get("String_Entry","WC11b_WEPKey_itemtype2","s")%>",
 "<%tcWebApi_get("String_Entry","WC11b_WEPKey_itemtype1","s")%><br/><%tcWebApi_get("String_Entry","WC11b_WEPKey_itemtype2","s")%>",
 "<%tcWebApi_get("String_Entry","WC11b_WEPKey_itemtype1","s")%><br/><%tcWebApi_get("String_Entry","WC11b_WEPKey_itemtype2","s")%>",
@@ -125,7 +125,11 @@ helpcontent[7] = new Array("",
 "If you need special ISP settings for WAN connection, please select the ISP profile here.",
 "<%tcWebApi_get("String_Entry","PPPC_Authentication_id","s")%>",
 "Enable SIP Passthrough allows modification of SIP packets in order for SIP traffic to pass through NAT.",
-"Enable H.323 Passthrough allows modification of H.323 packets in order for H.323 traffic to pass through NAT.");
+"Enable H.323 Passthrough allows modification of H.323 packets in order for H.323 traffic to pass through NAT.",	//31
+"<b>PPP Echo:</b> Use Echo-Request and Echo-Reply message defined in PPP Link Control Protocol (LCP) to test the PPP connection.",
+"Send an LCP Echo-Request frame to the peer every n seconds.",
+"Presume the peer to be dead if n LCP Echo-Requests are sent without receiving a valid LCP Echo-Reply. Use of this option requires a non-zero value for the Echo Interval parameter.",
+"For PPTP/L2TP setup, please select Automatic/Static IP and setup VPN Client(PPTP/L2TP) via VPN > VPN Client tab.");
 
 helpcontent[8] = new Array("",
 "<%tcWebApi_get("String_Entry","FC_WanLanLog_id","s")%>",
@@ -158,7 +162,7 @@ helpcontent[11] = new Array("",
 "This feature allows browser to redirect to failed connection warning page when Internet is down, if disabled warning page would not appear.",	/* untranslated */
 "",
 "",
-"This feature allows you to restrict only specified IP address could access the wireless router via \"SSH\" / \"Telnet\" / \"Web Access from WAN\" (if Enabled) from WAN or LAN side(SSH LAN only)"	/* untranslated */);
+"This feature allows you to restrict only specified IP address could access the wireless router via \"Web UI\" / \"SSH\" / \"Telnet\" from WAN(if Enabled) or LAN side(SSH and telnet LAN only)"	/* untranslated */);
 
 helpcontent[12] = new Array("",
 "<%tcWebApi_get("String_Entry","General_x_SystemUpTime_id","s")%>",
@@ -320,6 +324,7 @@ helpcontent[32] = new Array("",
 							"The Username / Common Name(CN) of client certificate.<br> If setting authenticated by username / password only, this field should be the username in the \"Username and Password\" table.",/*untranslated*/
 							"The Network Address of a subnet to generate an internal route to a specific client. This specific client should own this subnet.",/*untranslated*/
 							"The Network Mask of a subnet to generate an internal route to a specific client. This specific client should own this subnet.",/*untranslated*/
-							" If you would like other clients to be able to this specific client's subnet, choose Yes and Enable \"Allow Client <-> Client\"."/*untranslated*/
+							" If you would like other clients to be able to this specific client's subnet, choose Yes and Enable \"Allow Client <-> Client\".",/*untranslated*/
+							"The message digest algorithm which is used to authenticate packets with HMAC. HMAC usually adds 16 or 20 bytes per packet."/*untranslated*/
 							);
 

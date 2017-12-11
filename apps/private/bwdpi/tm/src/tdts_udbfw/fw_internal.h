@@ -27,11 +27,11 @@
 #define __FW_INTERNAL_H__
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,31))
-#define NF_INET_LOCAL_OUT	 NF_IP_LOCAL_OUT
-#define NF_INET_LOCAL_IN	 NF_IP_LOCAL_IN
-#define NF_INET_FORWARD		 NF_IP_FORWARD
-#define NF_INET_PRE_ROUTING  NF_IP_PRE_ROUTING
-#define NF_INET_POST_ROUTING NF_IP_POST_ROUTING
+#define NF_INET_LOCAL_OUT	NF_IP_LOCAL_OUT
+#define NF_INET_LOCAL_IN	NF_IP_LOCAL_IN
+#define NF_INET_FORWARD		NF_IP_FORWARD
+#define NF_INET_PRE_ROUTING	NF_IP_PRE_ROUTING
+#define NF_INET_POST_ROUTING	NF_IP_POST_ROUTING
 #endif
 
 #ifndef pr_emerg
@@ -60,7 +60,11 @@ typedef struct {
 	atomic_t fastpath_conn_cnt;
 
 	atomic_t unexp_cnt;
-}ford_stat_t;
+	atomic_t unmatched_sip_cnt;
+	atomic_t unmatched_dip_cnt;
+	atomic_t unmatched_sport_cnt;
+	atomic_t unmatched_dport_cnt;
+} ford_stat_t;
 
 #define CNT_INC(__c)		atomic_inc(&ford_stat.__c ## _cnt)
 #define CNT_READ(__c)		atomic_read(&ford_stat.__c ## _cnt)

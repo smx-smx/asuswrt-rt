@@ -67,6 +67,7 @@ elseif Request_Form("current_page") = "Advanced_VPN_OpenVPN.asp" then
 		tcWebApi_Set("OpenVPN_Entry", "reneg", "vpn_server_reneg")
 		tcWebApi_Set("OpenVPN_Entry", "comp", "vpn_server_comp")
 		tcWebApi_Set("OpenVPN_Entry", "cipher", "vpn_server_cipher")
+		tcWebApi_Set("OpenVPN_Entry", "digest", "vpn_server_digest")
 		tcWebApi_Set("OpenVPN_Entry", "dhcp", "vpn_server_dhcp")
 		tcWebApi_Set("OpenVPN_Entry", "pool_start", "vpn_server_r1")
 		tcWebApi_Set("OpenVPN_Entry", "pool_end", "vpn_server_r2")
@@ -123,6 +124,10 @@ elseif Request_Form("current_page") = "Advanced_SettingBackup_Content.asp" then
 		tcWebApi_set("System_Entry","upgrade_fw_status","value_NONE")
 	end if
 elseif Request_Form("current_page") = "Advanced_Feedback.asp" then
+	If Request_Form("DslDiagFlag") = "1" Then
+		tcWebApi_Set("DslDiag_Entry","dslx_diag_enable","dslx_diag_enable")
+		tcWebApi_Set("DslDiag_Entry","dslx_diag_duration","dslx_diag_duration")
+	end if
 	If Request_Form("saveFlag") = "1" Then
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_country","fb_country")
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_ISP","fb_ISP")
@@ -135,18 +140,19 @@ elseif Request_Form("current_page") = "Advanced_Feedback.asp" then
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_comment3","fb_comment3")
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_comment4","fb_comment4")
 		tcWebApi_Set("GUITemp_Entry0","browserInfo","browserInfo")
+		tcWebApi_Set("GUITemp_Entry0","WANConnCurState","WANConnCurState")
 		tcWebApi_Set("PushMail_Entry","PM_attach_syslog","PM_attach_syslog")
 		tcWebApi_Set("PushMail_Entry","PM_attach_cfgfile","PM_attach_cfgfile")
 		tcWebApi_Set("PushMail_Entry","PM_attach_iptables","PM_attach_iptables")
 		tcWebApi_Set("PushMail_Entry","PM_attach_modemlog","PM_attach_modemlog")
 		gen_modemlog()
-		tcWebApi_Set("DslDiag_Entry","dslx_diag_enable","dslx_diag_enable")
-		tcWebApi_Set("DslDiag_Entry","dslx_diag_duration","dslx_diag_duration")		
-		tcWebApi_commit("PushMail")
+		tcWebApi_commit("PushMail")		
 	end if
 elseif Request_Form("current_page") = "Feedback_Info.asp" then
+	If Request_Form("DslDiagFlag") = "1" Then
 		tcWebApi_Set("DslDiag_Entry","dslx_diag_state","dslx_diag_state")
 		tcWebApi_commit("DslDiag")
+	end if	
 elseif Request_Form("current_page") = "Advanced_WANPort_Content.asp" then
 	tcWebApi_Set("Dualwan_Entry","wans_mode","wans_mode")
 	tcWebApi_Set("Dualwan_Entry","wans_dualwan","wans_dualwan")

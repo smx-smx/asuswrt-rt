@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# Fri Jun 30 15:01:51 2017
+# Thu Aug 31 11:15:40 2017
 #
 # TCSUPPORT_CPU_RT63365 is not set
 # TCSUPPORT_CPU_RT63368 is not set
@@ -169,6 +169,7 @@ ASUS_LOGIN_SESSION=y
 ASUS_NEWSSID_REV3=y
 # TCSUPPORT_PIMD is not set
 RTCONFIG_ODMPID=y
+TCSUPPORT_LSOF=y
 TCSUPPORT_IPV6=y
 TCSUPPORT_IPV6_ENHANCEMENT=y
 # TCSUPPORT_ODHCP6C is not set

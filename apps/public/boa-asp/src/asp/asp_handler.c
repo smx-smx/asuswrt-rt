@@ -9107,30 +9107,6 @@ static int appSet_attribute(char *wp, json_object *root)
 		tcapi_commit("portTriggering_Entry0");
 		app_method_hit = 2;
 	}
-	if(wl_unit || wl_subunit || wl_nmode_x || wl_bw
-		|| wl0_nmode_x || wl0_bw || wl1_nmode_x || wl1_bw
-		|| wl0_txpower || wl1_txpower
-		|| guard_mode || wps_enable || wps_band) {
-		tcapi_commit("WLan_Common");
-		app_method_hit = 2;
-	}
-	/* rc_service: restart_wireless */
-	if(wps_sta_pin
-		|| wl0_1_bss_enabled || wl0_1_ssid || wl0_1_auth_mode_x || wl0_1_crypto || wl0_1_key || wl0_1_wpa_psk || wl0_1_lanaccess || wl0_1_expire || wl0_1_expire_tmp
-		|| wl0_2_bss_enabled || wl0_2_ssid || wl0_2_auth_mode_x || wl0_2_crypto || wl0_2_key || wl0_2_wpa_psk || wl0_2_lanaccess || wl0_2_expire || wl0_2_expire_tmp
-		|| wl0_3_bss_enabled || wl0_3_ssid || wl0_3_auth_mode_x || wl0_3_crypto || wl0_3_key || wl0_3_wpa_psk || wl0_3_lanaccess || wl0_3_expire || wl0_3_expire_tmp
-		|| wl1_1_bss_enabled || wl1_1_ssid || wl1_1_auth_mode_x || wl1_1_crypto || wl1_1_key || wl1_1_wpa_psk || wl1_1_lanaccess || wl1_1_expire || wl1_1_expire_tmp
-		|| wl1_2_bss_enabled || wl1_2_ssid || wl1_2_auth_mode_x || wl1_2_crypto || wl1_2_key || wl1_2_wpa_psk || wl1_2_lanaccess || wl1_2_expire || wl1_2_expire_tmp
-		|| wl1_3_bss_enabled || wl1_3_ssid || wl1_3_auth_mode_x || wl1_3_crypto || wl1_3_key || wl1_3_wpa_psk || wl1_3_lanaccess || wl1_3_expire || wl1_3_expire_tmp
-		|| wl_closed || wl_radio || wl_ssid
-		|| wl0_ssid || wl0_closed || wl0_auth_mode_x || wl0_crypto || wl0_wpa_psk
-		|| wl1_ssid || wl1_closed || wl1_auth_mode_x || wl1_crypto || wl1_wpa_psk
-		|| wl0_radio || wl1_radio
-		|| wl0_user_rssi || wl1_user_rssi || wl2_user_rssi
-		) {
-		tcapi_commit("WLan_Entry0");
-		app_method_hit = 2;
-	}
 	/* rc_service: restart_wireless */
 	if(wl0_macmode || wl1_macmode || wl2_macmode
 		|| wl0_maclist_x || wl1_maclist_x || wl2_maclist_x
@@ -9263,6 +9239,16 @@ static int appDo_rc_service(char *rc_service, char *wp, json_object *root)
 		/* [SET] [Firmware Update] download fw server info */
 		else if(!strcmp(rc_service, "start_webs_update")) {
 			eval("/usr/script/webs_update.sh");
+			app_method_hit = 2;
+		}
+		else if(!strcmp(rc_service, "restart_wireless")) {
+			if (fork() == 0) {
+				//child process
+				char *execvp_str[] = {"tcapi", "commit", "WLan",NULL};
+				tcapi_set("WLan_Common", "fromAPP", "1");
+				execvp("tcapi", execvp_str);
+				exit(0);
+			}
 			app_method_hit = 2;
 		}
 		/* [SET] [General] Firmware Upgrade */
@@ -11673,7 +11659,7 @@ static int do_check_passwd_strength(char *stream, char *att_name)
 				}
 				nLength=0; nConsecAlphaUC=0; nConsecCharType=0; nAlphaUC=0; nConsecAlphaLC=0; nAlphaLC=0; nMidChar=0; nConsecNumber=0; nNumber=0; nConsecSymbol=0; nSymbol=0; nRepChar=0; nUnqChar=0; nSeqAlpha=0; nSeqNumber=0; nSeqChar = 0; nSeqSymbol=0;
 				nTmpAlphaUC = -1; nTmpAlphaLC = -1; nTmpNumber = -1; nTmpSymbol = -1;
-			   if (strlen(pwd) && (!strcmp(auth_mode,"OPEN") || !strcmp(auth_mode,"WPA2PSK") || !strcmp(auth_mode,"WPAPSKWPA2PSK") || !strcmp(auth_mode,"WPA2") || !strcmp(auth_mode,"WPA1WPA2"))){
+			   if (strlen(pwd) && (!strcmp(auth_mode,"WPA2PSK") || !strcmp(auth_mode,"WPAPSKWPA2PSK") || !strcmp(auth_mode,"WPA2") || !strcmp(auth_mode,"WPA1WPA2"))){
 				nScore=0;
 				nLength=0;
 				pwd_st = pwd;
@@ -14794,7 +14780,7 @@ static void gen_modemlog(asp_reent* reent, const asp_text* params,  asp_text* re
 
 	if( strcmp(value, "1") == 0 )
 	{
-		snprintf(cmd, sizeof(cmd), "/usr/script/3ginfo.sh > %s", "/tmp/xdsl/modemlog.txt");
+		snprintf(cmd, sizeof(cmd), "/usr/script/3ginfo.sh > %s", "/tmp/asusfbsvcs/modemlog.txt");
 		system(cmd);
 	}
 	return;
@@ -16139,7 +16125,7 @@ static void disk_scan_result(asp_reent* reent, const asp_text* params, asp_text*
 #ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
 static void stop_dsl_diag(asp_reent* reent, const asp_text* params, asp_text* ret)
 {
-	if(tcapi_match("DslDiag_Entry", "dslx_diag_enable", "1") && tcapi_match("DslDiag_Entry", "dslx_diag_state", "1")) {
+	if(tcapi_match("DslDiag_Entry", "dslx_diag_enable", "1") || tcapi_match("DslDiag_Entry", "dslx_diag_state", "1")) {
 		tcapi_set("DslDiag_Entry", "dslx_diag_enable", "0");
 		tcapi_set("DslDiag_Entry", "dslx_diag_state", "5");
 		tcapi_commit("DslDiag");
@@ -16375,7 +16361,10 @@ void send_login_packet(request *req, const int error_status, char *cur_page, cha
 		}
 		else
 		{
-			websWrite(wp, "{\n\"error_status\":\"%d\"\n}\n", error_status);
+			if(error_status == LOGINLOCK)
+				websWrite(wp, "{\n\"error_status\":\"%d\",\"remaining_lock_time\":\"%ld\"\n}\n", error_status, MAX_LOGIN_BLOCK_TIME - login_dt);
+			else
+				websWrite(wp, "{\n\"error_status\":\"%d\"\n}\n", error_status);
 		}
 	}
 }

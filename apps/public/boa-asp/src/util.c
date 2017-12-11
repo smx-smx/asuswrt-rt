@@ -767,13 +767,15 @@ char *generate_token(char *token, int len)
 		, 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 
 	if(!token || len < ASUS_TOKEN_LEN)
+	{
 		return NULL;
-	
+	}
+
 	memset(token,0, len);
-	srand (time(NULL));
+
 	for(i = 0; i < ASUS_TOKEN_LEN - 1; ++i)
 	{
-		num = rand() % 62;
+		num = get_rand() % 62;
 		token[i] = token_contain[num];
 	}
 	//dbgprintf("[%s, %d]generate token=%s\n", __FUNCTION__, __LINE__, token);

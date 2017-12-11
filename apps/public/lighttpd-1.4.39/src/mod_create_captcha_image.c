@@ -157,7 +157,7 @@ URIHANDLER_FUNC(mod_craete_captcha_image_physical_handler){
 	captcha_num[3] = (rand() % 9);
 	
 	char captcha_code[10];
-	sprintf(captcha_code,"%d%d%d%d", captcha_num[0]+1, captcha_num[1]+1, captcha_num[2]+1, captcha_num[3]+1);
+	snprintf(captcha_code, sizeof(captcha_code), "%d%d%d%d", captcha_num[0]+1, captcha_num[1]+1, captcha_num[2]+1, captcha_num[3]+1);
 	
 	buffer_copy_string_len(b, CONST_STR_LEN("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
 	buffer_append_string_len(b,CONST_STR_LEN("<result>"));

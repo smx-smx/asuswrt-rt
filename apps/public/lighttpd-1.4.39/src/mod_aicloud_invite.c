@@ -518,7 +518,7 @@ URIHANDLER_FUNC(mod_aicloud_invite_physical_handler){
 					//- auth type: 0:aicloud, 1:facebook, 2:google
 					buffer_append_string_len(b, CONST_STR_LEN("\"auth_type\":\""));
 					char c_auth_type[2] = "\0";
-					sprintf(c_auth_type, "%d", c->auth_type);
+					snprintf(c_auth_type, sizeof(c_auth_type), "%d", c->auth_type);
 					buffer_append_string_len(b, c_auth_type, strlen(c_auth_type));
 					buffer_append_string_len(b, CONST_STR_LEN("\""));
 					

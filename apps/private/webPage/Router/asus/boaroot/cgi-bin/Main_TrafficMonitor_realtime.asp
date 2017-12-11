@@ -128,7 +128,7 @@ function init()
 	wdogWarn = E('warnwd');
 	watchdogReset();
 	ref.start();
-	document.getElementById("faq0").href = "http://www.asus.com/support/Search-Result-Detail/69B50762-C9C0-15F1-A5B8-C7B652F50ACF/?keyword=ASUSWRT%20Traffic%20Monitor" ;
+	document.getElementById("faq0").href = "https://www.asus.com/support/FAQ/114483/" ;
 }
 
 function switchPage(page){

@@ -26,16 +26,34 @@
 #ifndef __FW_UTIL_H__
 #define __FW_UTIL_H__
 
+#define IP6_IPPROTO_HOPOPTS    0x00 /* IPv6 hop-by-hop options */
+#define IP6_IPPROTO_ICMP          1 /* ICMP */
+#define IP6_IPPROTO_IGMP          2 /* IGMP */
+#define IP6_IPPROTO_IPINIP        4 /* IP in/within IP */
+#define IP6_IPPROTO_TCP           6 /* TCP */
+#define IP6_IPPROTO_UDP          17 /* UDP */
+#define IP6_IPPROTO_RDP          27 /* RDP */
+#define IP6_IPPROTO_IP6          41 /* IPv6 encapsulation */
+#define IP6_IPPROTO_IP6_ROUTING  43 /* IPv6 routing header */
+#define IP6_IPPROTO_IP6_FRAGMENT 44 /* IPv6 fragmentation header */
+#define IP6_IPPROTO_GRE          47 /* GRE */
+#define IP6_IPPROTO_ESP          50 /* ESP */
+#define IP6_IPPROTO_AH           51 /* AH */
+#define IP6_IPPROTO_IP6_ICMP6    58 /* ICMPv6 */
+#define IP6_IPPROTO_IP6_NONXT    59 /* IPv6 no next header */
+#define IP6_IPPROTO_IP6_DSTOPTS  60 /* IPv6 destination options */
+#define IP6_IPPROTO_SCTP        132 /* SCTP */
+#define IP6_IPPROTO_MH          135 /* IPv6 mobility header */
+
 typedef unsigned int socklen_t;
 
-//int is_skb_upload(struct sk_buff *skb);
 int parse_skb(struct sk_buff *skb);
-
 int inet_pton(int af, const char *src, void *dst);
 const char* inet_ntop(int af, const void */*restrict*/ src
 	, char */*restrict*/ dst, socklen_t cnt);
-
 unsigned short ip_sum(unsigned short *buf, int len);
+bool is_skb_upload(struct sk_buff *skb, const struct net_device *fw_outdev);
+void dump_skb(struct sk_buff *skb);
 
 #define IP_FLAG_UF 0x04
 #define IP_FLAG_DF 0x02
@@ -139,7 +157,5 @@ static inline uint32_t list_count(struct list_head *head)
 	}
 	return cnt;
 }
-
-void dump_skb(struct sk_buff *skb);
 
 #endif

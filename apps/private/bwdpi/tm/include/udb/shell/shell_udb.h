@@ -48,15 +48,16 @@ tdts_res_t udb_shell_do_lout_action(tdts_pkt_parameter_t *param, int dpi_ret, td
 tdts_act_t udb_shell_get_action(tdts_udb_param_t *fw_param);
 tdts_res_t udb_shell_policy_match(tdts_udb_param_t *fw_param);
 
-int udb_shell_is_skb_upload(struct sk_buff *skb, uint8_t *smac);
 int udb_shell_udb_init(void);
 void udb_shell_udb_exit(void);
 
 int udb_shell_usr_msg_handler(uint8_t *msg, int size, int pid, int type);
-int udb_shell_update_devid_un_http_ua(uint8_t *addr, uint8_t ip_ver, uint8_t *data);
-int udb_shell_update_devid_un_bootp(uint8_t *addr, uint8_t ip_ver, uint8_t *data);
-int udb_shell_update_dns_reply(uint8_t *addr, uint8_t ip_ver, uint8_t *data);
+int udb_shell_update_devid_un_http_ua(uint8_t uid, uint8_t ip_ver, uint8_t *data);
+int udb_shell_update_devid_un_bootp(uint8_t uid, uint8_t ip_ver, uint8_t *data);
+int udb_shell_update_dns_reply(uint8_t uid, uint8_t ip_ver, uint8_t *data);
 int udb_shell_update_upnp_data(uint8_t *data, uint32_t index, void *cb);
+
+int udb_shell_wan_detection(uint8_t *dev_name, uint32_t len);
 
 int udb_shell_anomaly_init(void);
 void udb_shell_anomaly_exit(void);

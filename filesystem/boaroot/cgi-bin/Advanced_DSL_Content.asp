@@ -1793,8 +1793,8 @@ function doConTypeChange() {
 				//ppp setting
 				showhide("wan_PPPSetting", 1);
 				document.form.InetDetect.value = (original_ppp_echo == 0 || original_ppp_echo == 1)?original_ppp_echo:1;
-				document.form.lcpEchoInterval.value = (original_lcpEchoInterval > 0)?original_lcpEchoInterval:6;
-				document.form.lcpEchoFailure.value = (original_lcpEchoFailure > 0)?original_lcpEchoFailure:10;
+				document.form.lcpEchoInterval.value = (original_lcpEchoInterval >= 0)?original_lcpEchoInterval:6;
+				document.form.lcpEchoFailure.value = (original_lcpEchoFailure >= 0)?original_lcpEchoFailure:10;
 				ppp_echo_control();
 
 				// ISP Requirement
@@ -2337,7 +2337,7 @@ function ppp_echo_control(flag){
 						</tr>
 						</thead>
 						<tr>
-							<th><%tcWebApi_get("String_Entry","L3F_x_ConnectionType_in","s")%></th>
+							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,35);"><%tcWebApi_get("String_Entry","L3F_x_ConnectionType_in","s")%></a></th>
 							<td align="left">
 								<select class="input_option" name="wanTypeOption" onchange="doConTypeChange();">
 									<option id="wanTypeOption0" value="0"<% if tcWebApi_get("Wan_PVC","ISP","h") = "0" then asp_Write("selected") end if %>>Automatic IP</option>
@@ -2786,7 +2786,7 @@ function ppp_echo_control(flag){
 						</tr>
 
 						<tr>
-							<th><a class="hintstyle" href="javascript:void(0);">Internet Detection</a></th><!--untranslated-->
+							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,32);"><%tcWebApi_get("String_Entry","PPPC_x_InternetDetection_in","s")%></a></th>
 							<td>
 								<select name="InetDetect" class="input_option" onChange="ppp_echo_control();">
 								<option value="0" <% if tcWebApi_get("Wan_PVC","InetDetect","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_disable","s")%></option>
@@ -2795,11 +2795,11 @@ function ppp_echo_control(flag){
 							</td>
 						</tr>
 						<tr>
-							<th><a class="hintstyle" href="javascript:void(0);">PPP Echo Interval</a></th><!--untranslated-->
+							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,33);"><%tcWebApi_get("String_Entry","PPPC_x_PPPEcho_Interval","s")%></a></th>
 							<td><input type="text" maxlength="6" class="input_6_table" name="lcpEchoInterval" value="<%tcWebApi_get("Wan_PVC", "lcpEchoInterval", "s")%>" onkeypress="return validator.isNumber(this, event)" autocorrect="off" autocapitalize="off"/></td>
 						</tr>
 						<tr>
-							<th><a class="hintstyle" href="javascript:void(0);">PPP Echo Max Failures</a></th><!--untranslated-->
+							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,34);"><%tcWebApi_get("String_Entry","PPPC_x_PPPEcho_Max_Failure","s")%></a></th>
 							<td><input type="text" maxlength="6" class="input_6_table" name="lcpEchoFailure" value="<%tcWebApi_get("Wan_PVC", "lcpEchoFailure", "s")%>" onkeypress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/></td>
 						</tr>
 

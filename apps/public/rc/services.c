@@ -640,6 +640,13 @@ again:
 	{
 		setup_passwd();
 	}
+#ifdef TCSUPPORT_SSH
+	else if (strcmp(script, "ssh") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_sshd();
+		if(action & RC_SERVICE_START) start_sshd();
+	}
+#endif
 #ifdef RTCONFIG_USB
 	else if (strcmp(script, "nasapps") == 0)
 	{
@@ -673,14 +680,6 @@ again:
 		if(action & RC_SERVICE_START) start_samba();
 	}
 #endif
-#ifdef TCSUPPORT_SSH
-	else if (strcmp(script, "ssh") == 0)
-	{
-		if(action & RC_SERVICE_STOP) stop_sshd();
-		if(action & RC_SERVICE_START) start_sshd();
-	}
-#endif
-
 #ifdef RTCONFIG_USB_PRINTER
 	else if (strcmp(script, "lpd") == 0)
 	{

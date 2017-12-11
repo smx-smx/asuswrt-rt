@@ -504,10 +504,30 @@ typedef struct log_record_s{
 	struct log_record_s* next;
 }log_record_t;
 
-#define WIFI_LOG_FILE "/tmp/wifilog.txt"
-#define IPTABLES_LOG_FILE "/tmp/iptables_save.txt"
-#define SYNC_LOG_FILE "/tmp/sync_log.txt"
-#define SNR_LOG_FILE "/tmp/snr_crc_log.txt"
+typedef struct email_auth_data_s{
+	char mailServer[64];
+	char email[32];
+	char acct[32];
+	char pwd[32];
+}email_auth_data_t;
+
+#define WIFI_LOG_FILE "/tmp/asusfbsvcs/wifilog.txt"
+#define FREE_LOG_FILE "/tmp/asusfbsvcs/free.txt"
+#define TOP_LOG_FILE "/tmp/asusfbsvcs/top.txt"
+#define PSINFO_LOG_FILE "/tmp/asusfbsvcs/psInfo.txt"
+#define IPTABLES_LOG_FILE "/tmp/asusfbsvcs/iptables_save.txt"
+#define SYSLOG_LOG_FILE "/tmp/asusfbsvcs/currLogFile.txt"
+#define DMESG_LOG_FILE "/tmp/asusfbsvcs/dmesg.txt"
+#define SYNC_LOG_FILE "/tmp/asusfbsvcs/sync_log.txt"
+#define SNR_LOG_FILE "/tmp/asusfbsvcs/snr_crc_log.txt"
+#define MODEM_LOG_FILE "/tmp/asusfbsvcs/modemlog.txt"
+#define ENC_ROMFILE_FILE "/tmp/asusfbsvcs/romfile_feedback.cfg"
+#ifdef RTCONFIG_SYSSTATE
+#define CPUUSAGE_LOG_FILE "/tmp/asusfbsvcs/cpuusage_log.txt"
+#define RAMUSAGE_LOG_FILE "/tmp/asusfbsvcs/ramusage_log.txt"
+#define CPUTEMP_LOG_FILE "/tmp/asusfbsvcs/cputemp_log.txt"
+#endif
+
 #define CREATE_STRIP_PSINFO_SCRIPT "/usr/script/Create_Strip_psInfo.sh"
 #define DO_STRIP_PSINFO "/tmp/StripsInfo.sh"
 

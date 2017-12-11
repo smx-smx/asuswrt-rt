@@ -180,18 +180,23 @@ var restrict_rulelist_array = [];
 var accounts = [<% get_all_accounts(); %>];
 var is_gen_key = "<% get_ssh_first_init() %>";
 
-<% wanlink(); %>
-<% secondary_wanlink(); %>
 var ddns_enable_x = '<% tcWebApi_get("Ddns_Entry","Active","s"); %>';
 var ddns_hostname_x_t = '<% tcWebApi_get("Ddns_Entry","MYHOST","s"); %>';
-var wan0_unit = '<% wanlink_status(); %>';
-var wan1_unit = '<% secondary_wanlink_status(); %>';
-var wan_ipaddr = "";
 
-if(wan1_unit == "1")
-        wan_ipaddr = secondary_wanlink_ipaddr();
-if(wan0_unit == "1")
-	wan_ipaddr = wanlink_ipaddr();
+<% first_wanlink(); %>
+<% secondary_wanlink(); %>
+var first_wanlink_status = first_wanlink_status();
+var first_wanlink_ipaddr = first_wanlink_ipaddr();
+var secondary_wanlink_status = secondary_wanlink_status();
+var secondary_wanlink_ipaddr = secondary_wanlink_ipaddr();
+var wan_ipaddr = "";
+if(first_wanlink_status == 1)
+	wan_ipaddr = first_wanlink_ipaddr;
+else if(secondary_wanlink_status == 1)
+	wan_ipaddr = secondary_wanlink_ipaddr;
+else
+	wan_ipaddr = first_wanlink_ipaddr;
+
 
 var isFromHTTPS = false;
 if((location.href.search('https://') >= 0) || (location.href.search('HTTPS://') >= 0)){
@@ -823,6 +828,23 @@ function validForm(){
 	if(!validate_range_sp(document.form.http_autologout, 10, 999, set_http_autologout))
 		return false;
 
+	//Not allowed no Web UI in restrict_rulelist_array
+	var WebUI_selected=0
+	if(document.form.http_client[0].checked && restrict_rulelist_array.length >0){	//Allow only specified IP address
+		for(var x=0;x<restrict_rulelist_array.length;x++){
+			if(restrict_rulelist_array[x][0] == 1 && 	//enabled rule && Web UI included
+				(restrict_rulelist_array[x][2] == 1 || restrict_rulelist_array[x][2] == 3 || restrict_rulelist_array[x][2] == 5 || restrict_rulelist_array[x][2] == 7)){
+				WebUI_selected++;
+			}
+		}
+
+		if(WebUI_selected <= 0){
+			alert("Please select at least one Web UI of Access Type and enable it in [Allow only specified IP address]");	//Untranslated 2017/08
+			document.form.http_client_ip_x_0.focus();
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -851,7 +873,7 @@ function hide_https_lanport(_value){
 }
 
 function check_wan_access(http_enable){
-	if(http_enable == "1" && document.form.misc_http_x.value == "1"){	//While Accesss from WAN enabled, not allow to set HTTP only
+	if(http_enable == "1" && document.form.misc_http_x[0].checked == true){	//While Accesss from WAN enabled, not allow to set HTTP only
 		alert("When \"Web Access from WAN\" is enabled, HTTPS must be enabled.");
 		document.form.http_enable.selectedIndex = 2;
 		hide_https_lanport(document.form.http_enable.value);
@@ -1097,14 +1119,13 @@ function change_url(num, flag){
 		var https_wanport = num;
 		var host_addr = "";
 		if(ddns_enable_x == "1" && ddns_hostname_x_t.length != 0)
-			host_addr = ddns_hostname_x_t;
+			host_addr = ddns_hostname_x_t;	
 		else
 			host_addr = wan_ipaddr;
 
-		if(wan_ipaddr != "0.0.0.0"){
-			document.getElementById("wan_access_url").innerHTML = "<%tcWebApi_get("String_Entry","https_access_url","s")%> ";
-			document.getElementById("wan_access_url").innerHTML += "<a href=\"https://"+host_addr+":"+https_wanport+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+host_addr+"<span>:"+https_wanport+"</span></a>";
-		}
+		document.getElementById("wan_access_url").innerHTML = "<%tcWebApi_get("String_Entry","https_access_url","s")%> ";
+		document.getElementById("wan_access_url").innerHTML += "<a href=\"https://"+host_addr+":"+https_wanport+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+host_addr+"<span>:"+https_wanport+"</span></a>";
+
 	}
 }
 //Viz add 2012.12 show url for https [end]
@@ -1494,7 +1515,7 @@ function update_rewanDateTime()
 							</td>
 						</tr>				
 						<tr id="sshd_password_tr">
-							<th>Allow Password Login</th>
+							<th><%tcWebApi_get("String_Entry","Allow_PWLogin","s")%></th>
 							<td>
 								<input type="radio" name="sshd_pass" class="input" value="1" <% if tcWebApi_get("SSH_Entry","Need_Pass","h") = "1" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
 								<input type="radio" name="sshd_pass" class="input" value="0" <% if tcWebApi_get("SSH_Entry","Need_Pass","h") = "0" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>

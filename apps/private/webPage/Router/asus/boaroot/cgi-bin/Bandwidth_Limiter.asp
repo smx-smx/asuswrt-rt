@@ -87,9 +87,11 @@ function hideClients_Block(){
 
 }
 var PC_mac = "";
+var PC_name = "";
 function setClientIP(devname, macaddr){
 	document.form.PC_devicename.value = devname;
 	PC_mac = macaddr;
+	PC_name = devname;
 	hideClients_Block();
 	over_var = 0;
 }
@@ -123,9 +125,10 @@ function deleteRow_main(obj){
 }
 
 function addRow_main(obj, length){
+	/*
 	if(document.form.PC_devicename.value == "" || document.getElementById("download_rate").value == "" || document.getElementById("upload_rate").value == ""){
 		return true;
-	}
+	}*/
 	
 	var enable_checkbox = $j(obj.parentNode).siblings()[0].children[0];
 	var invalid_char = "";
@@ -139,8 +142,9 @@ function addRow_main(obj, length){
 		return false;   
 	}	
 	
-	if(!validator.string(document.form.PC_devicename))
+	if(!validator.string(document.form.PC_devicename)){
 		return false;
+	}	
 	
 	if(document.form.PC_devicename.value == ""){
 		alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
@@ -148,25 +152,29 @@ function addRow_main(obj, length){
 		return false;
 	}
 
-	if(qos_bw_rulelist.search(PC_mac+">") > -1 && PC_mac != ""){		//check same target
-		alert("<%tcWebApi_get("String_Entry","JS_duplicate","s")%>");
-		document.form.PC_devicename.focus();
-		PC_mac = "";
-		return false;
+	if(PC_mac != "" && PC_name == document.form.PC_devicename.value){
+		if(qos_bw_rulelist.search(PC_mac+">") > -1){            //check same target
+			alert("<%tcWebApi_get("String_Entry","JS_duplicate","s")%>");
+			document.form.PC_devicename.focus();
+			PC_mac = "";
+			PC_name = "";
+			return false;
+		}	
 	}
-	if(qos_bw_rulelist.search(document.form.PC_devicename.value+">") > -1){
-		alert("<%tcWebApi_get("String_Entry","JS_duplicate","s")%>");
-		document.form.PC_devicename.focus();
-		return false;
-	}
+	else{
+		if(qos_bw_rulelist.search(document.form.PC_devicename.value+">") > -1){
+			alert("<%tcWebApi_get("String_Entry","JS_duplicate","s")%>");
+			document.form.PC_devicename.focus();
+			return false;
+		}
+	}	
 	
-	if(document.getElementById("download_rate").value == ""){
+	if(document.getElementById("download_rate").value == ""){		
 		alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
 		document.getElementById("download_rate").focus();
 		return false;
 	}
-	
-	if(document.getElementById("download_rate").value.split(".").length > 2 || document.getElementById("download_rate").value < 0.1){
+	else if(isNaN(document.getElementById("download_rate").value) || document.getElementById("download_rate").value < 0.1){
 		alert("<%tcWebApi_get("String_Entry","min_bound","s")%> : 0.1 Mb/s");
 		document.getElementById("download_rate").focus();
 		return false;
@@ -177,8 +185,7 @@ function addRow_main(obj, length){
 		document.getElementById("upload_rate").focus();
 		return false;
 	}
-	
-	if(document.getElementById("upload_rate").value.split(".").length > 2 || document.getElementById("upload_rate").value < 0.1){
+	else if(isNaN(document.getElementById("upload_rate").value) || document.getElementById("upload_rate").value < 0.1){
 		alert("<%tcWebApi_get("String_Entry","min_bound","s")%> : 0.1 Mb/s");
 		document.getElementById("upload_rate").focus();
 		return false;
@@ -192,7 +199,39 @@ function addRow_main(obj, length){
 			return false;			
 		}
 	}
+
+	if(PC_mac == "" || (PC_mac != "" && PC_name != document.form.PC_devicename.value)) {
+		if(document.form.PC_devicename.value.split(":").length == 6) { //mac
+			if(!validator.mac_addr(document.form.PC_devicename.value)) {
+				document.form.PC_devicename.focus();
+				PC_mac = "";
+				PC_name = "";
+				alert("<%tcWebApi_get("String_Entry","LHC_MnlDHCPMacaddr_id","s")%>");
+				return false;
+			}
+		}
+		else if(document.form.PC_devicename.value.split(".").length == 4) { //ip
+			if(!validator.ipv4_addr(document.form.PC_devicename.value)) { //single ip
+				if(!validator.ipv4_addr_range(document.form.PC_devicename.value)) { //ip range
+					document.form.PC_devicename.focus();
+					PC_mac = "";
+					PC_name = "";
+					alert(document.form.PC_devicename.value + " <%tcWebApi_get("String_Entry","JS_validip","s")%>");
+					return false;
+				}
+			}
+		}
+		else {
+			document.form.PC_devicename.focus();
+			PC_mac = "";
+			PC_name = "";
+			alert(document.form.PC_devicename.value + " <%tcWebApi_get("String_Entry","Manual_Setting_JS_invalid","s")%>");
+			return false;
+		}
+	}
+
 	
+	/*  Not Need these.
 	if(document.form.PC_devicename.value.indexOf('-') != -1
 	|| document.form.PC_devicename.value.indexOf('~') != -1
 	||(document.form.PC_devicename.value.indexOf(':') != -1 && document.form.PC_devicename.value.indexOf('.') != -1)){
@@ -204,7 +243,7 @@ function addRow_main(obj, length){
 		
 		document.form.PC_devicename.value = document.form.PC_devicename.value.replace(":", "-");
 		document.form.PC_devicename.value = document.form.PC_devicename.value.replace("~", "-");
-	}
+	}*/
 
 	if(qos_bw_rulelist == ""){
 		qos_bw_rulelist += enable_checkbox.checked ? 1:0;
@@ -212,16 +251,22 @@ function addRow_main(obj, length){
 	else{
 		qos_bw_rulelist += "<";
 		qos_bw_rulelist += enable_checkbox.checked ? 1:0;
-	}	
+	}
 
-	if(PC_mac == "")
+	if(PC_mac == ""){
 		qos_bw_rulelist += ">" + document.form.PC_devicename.value + ">";
-	else
-		qos_bw_rulelist += ">" + PC_mac + ">";
+	}
+	else{
+		if(PC_name == document.form.PC_devicename.value)
+			qos_bw_rulelist += ">" + PC_mac + ">";
+		else
+			qos_bw_rulelist += ">" + document.form.PC_devicename.value + ">";
+	}	
 	
 	qos_bw_rulelist += document.getElementById("download_rate").value*1024 + ">" + document.getElementById("upload_rate").value*1024;
 	qos_bw_rulelist += ">" + max_priority;
 	PC_mac = "";
+	PC_name = "";
 	max_priority++;
 	document.form.PC_devicename.value = "";
 	genMain_table();	

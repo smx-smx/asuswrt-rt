@@ -1,6 +1,6 @@
 <ROMFILE>
 <Wan>
-	<Common TransMode="ATM" UniqueMac="0" sharepvc="0" CDVT_Enable="0" NATENABLE="Enable" wans_disconn_time="60"/>
+	<Common TransMode="ATM" UniqueMac="0" sharepvc="0" CDVT_Enable="0" NATENABLE="Enable" wans_disconn_time="60" DSLMode="ADSL"/>
 	<PVC0 Active="Yes" PVCScanReserved="No" VPI="0" VCI="33" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="2" ENCAP="PPPoE LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" IPADDR6="" PREFIX6="" DEFGATEWAY6="" DEFAULTROUTE="Yes" />
 	<PVC1 Active="No" PVCScanReserved="Yes" VPI="0" VCI="34" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" DEFAULTROUTE="No"/>
 	<PVC2 Active="No" PVCScanReserved="Yes" VPI="0" VCI="35" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" DEFAULTROUTE="No"/>

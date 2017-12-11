@@ -711,9 +711,9 @@ function show_ddns_status(){
         if( ddns_enable == '0')
 		document.getElementById("ddnsHostName").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp?af=ddns_enable_x"><% tcWebApi_get("String_Entry","btn_go","s")%></a>';
 	else if(ddnsName == '')
-		document.getElementById("ddnsHostName").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp?af=DDNSName">Sign up</a>';
+		document.getElementById("ddnsHostName").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp?af=DDNSName"><% tcWebApi_get("String_Entry","sign_up", "s") %></a>';
 	else if(ddnsName == isMD5DDNSName())
-		document.getElementById("ddnsHostName").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp?af=DDNSName">Sign up</a>';
+		document.getElementById("ddnsHostName").innerHTML = '<a style="color:#FFF;text-decoration:underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp?af=DDNSName"><% tcWebApi_get("String_Entry","sign_up", "s") %></a>';
 	else{
 		document.getElementById("ddnsHostName").innerHTML = '<span>'+ ddnsName +'</span>';
 		if( ddns_enable == '1' ) {

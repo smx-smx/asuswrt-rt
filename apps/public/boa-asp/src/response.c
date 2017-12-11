@@ -642,6 +642,10 @@ void send_r_login_page(request *req, int error_status, char* url, int lock_time)
 	{
 		snprintf(buffer, sizeof(buffer), "{\n\"error_status\":\"%d\"\n}\n", error_status);
 		req_write(req, buffer);
+		if(error_status == LOGINLOCK) {
+			snprintf(buffer, sizeof(buffer), ",\"remaining_lock_time\":\"%d\"", MAX_LOGIN_BLOCK_TIME - login_dt);
+			req_write(req, buffer);
+		}
 	}
 }
 

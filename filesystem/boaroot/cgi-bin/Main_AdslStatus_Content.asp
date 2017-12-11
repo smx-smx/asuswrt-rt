@@ -89,6 +89,9 @@ var adsl_timestamp_update = parseInt("<% tcWebApi_get("WebCurSet_Entry","dsl_upt
 var status_isVDSLmode = "<%tcWebApi_staticGet("Info_Adsl","xDSLmode","s")%>";
 var adsl_boottime = boottime - adsl_timestamp;
 var dsl_type = "<% tcWebApi_get("Info_Adsl","AdslType","s") %>".replace("_", " ");
+if(status_isVDSLmode == "VDSL"){
+	dsl_type = dsl_type.replace("ANNEX ", "");
+}
 var isMT7510 = "<%tcWebApi_get("WebCustom_Entry","isMT7510","s")%>";
 var log_lineState;
 var log_Opmode;
@@ -144,10 +147,12 @@ function display_vdsl_band_status(){
 
 	if(status_isVDSLmode == "VDSL")
 	{
+		document.getElementById("th_AdslType").innerHTML = "<%tcWebApi_get("String_Entry","dslsetting_disc2_vdsl","s")%>";	/*untranslated*/
 		document.getElementById("vdsl_band_status").style.display = "";
 	}
 	else
 	{
+		document.getElementById("th_AdslType").innerHTML = "<%tcWebApi_get("String_Entry","dslsetting_disc2","s")%>";
 		document.getElementById("vdsl_band_status").style.display = "none";
 	}
 }
@@ -171,6 +176,9 @@ function update_log(){
 				document.getElementById("div_FarEndVendorID").innerHTML = log_FarEndVendorID;
 				document.getElementById("div_lineState").innerHTML = log_lineState;
 				document.getElementById("div_Opmode").innerHTML = log_Opmode;
+				if(status_isVDSLmode == "VDSL"){
+					log_AdslType = log_AdslType.replace("ANNEX ", "");
+				}
 				document.getElementById("div_AdslType").innerHTML = log_AdslType;
 
 				display_line_stats();
@@ -361,7 +369,7 @@ function showadslbootTime(){
 </td>
 </tr>
 <tr>
-<th><%tcWebApi_get("String_Entry","dslsetting_disc2","s")%></th>
+<th id="th_AdslType"><%tcWebApi_get("String_Entry","dslsetting_disc2","s")%></th>
 <td colspan="2">
 	<div id="div_AdslType"></div>
 </td>

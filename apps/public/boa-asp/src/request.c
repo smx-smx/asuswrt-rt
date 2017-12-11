@@ -93,6 +93,9 @@ extern SSL_CTX *ssl_ctx;
 
 extern char lan_ip[64];
 
+/* Get Login Token - New add Remaing Lock Time */
+time_t login_dt=0;
+
 /*
  * Name: new_request
  * Description: Obtains a request struct off the free list, or if the
@@ -1082,7 +1085,7 @@ int AllPassUrl(char *url)
 		strstr(url, "update_applist.asp")
 #ifdef ASUS_LOGIN_SESSION
 		|| strstr(url, "Main_Login.asp")
-		|| strstr(url, "login.asp")
+		|| (strstr(url, "login.asp") && !strstr(url, "mod_login.asp"))
 /* ASUS Router (AiHome) APP no need tokan */
 		|| strstr(url, "get_webdavInfo.asp")
 		|| strstr(url, "appGet_image_path.asp")
@@ -1822,8 +1825,8 @@ static int referer_check(char* referer, int fromapp_flag)
 #else
 					snprintf(tmp1, sizeof(tmp1), "%s:%s", tmp, misc_httpsport_x);
 #endif
-					if(!strcmp(auth_referer, tmp) ||	//ddns_hostname
-						!strcmp(auth_referer, tmp1))	//ddns_hostname:(https_port/http_port)
+					if(!strcasecmp(auth_referer, tmp) ||	//ddns_hostname
+						!strcasecmp(auth_referer, tmp1))	//ddns_hostname:(https_port/http_port)
 					{
 						return 0;
 					}
@@ -1835,8 +1838,8 @@ static int referer_check(char* referer, int fromapp_flag)
 	//Compare refer with domain name and LAN IP.
 	snprintf(tmp1, sizeof(tmp1), "%s:%s", DUT_DOMAIN_NAME, https_lanport);
 	snprintf(tmp2, sizeof(tmp2), "%s:%s", lan_ip, https_lanport);	
-	if(!strcmp(DUT_DOMAIN_NAME, auth_referer) || !strcmp(auth_referer, lan_ip) ||
-		!strcmp(tmp1, auth_referer) || !strcmp(auth_referer, tmp2))
+	if(!strcasecmp(DUT_DOMAIN_NAME, auth_referer) || !strcmp(auth_referer, lan_ip) ||
+		!strcasecmp(tmp1, auth_referer) || !strcmp(auth_referer, tmp2))
 	{
 		return 0;
 	}
@@ -1994,7 +1997,8 @@ int process_header_end(request * req)
 	{
 		//check time
 		now = uptime();
-		if((now - retry->last_login_timestamp) > 60)
+		login_dt = now - retry->last_login_timestamp;
+		if(login_dt > 60)
 		{
 			//unlock web
 			retry->is_lock = 0;
@@ -2014,7 +2018,8 @@ int process_header_end(request * req)
 	{
 		//check time
 		now = uptime();
-		if((now - retry_tmp->last_login_timestamp) > MAX_LOGIN_BLOCK_TIME)
+		login_dt = now - retry_tmp->last_login_timestamp;
+		if(login_dt > MAX_LOGIN_BLOCK_TIME)
 		{
 			//unlock web
 			memset(retry_tmp, 0, sizeof(login_retry_t));
@@ -2230,6 +2235,11 @@ int process_header_end(request * req)
 	/* get method function */
 	if(req->method == M_GET)
 	{
+		if(check_xss_blacklist(req->request_uri, 0))
+		{
+			send_r_not_found(req);
+			return 0;
+		}
 		//Ren.B
 		/*for ASUS Router (AiHome) APP: DUT_RT_Config_Download*/
 		if( strstr(req->request_uri, "Settings_") || (strstr(req->request_uri, ".CFG") && fromapp) )
@@ -2340,14 +2350,12 @@ int process_header_end(request * req)
 
      /* post method function */
     if (req->method == M_POST) {
-
 #if !defined(TCSUPPORT_SELF_LOGIN_WINDOW) 
 #if !defined(TCSUPPORT_CD_NEW_GUI) 
 		/* main trunk authorize function */
 		//lee 2006-4-11:authorize
 		if ( (0 != passURL(req->request_uri)) && (1 != auth_result && -1 == http_authorize(req)) )
 		{
-
 			#ifdef BOA_DEBUG
 			fprintf(stderr,"send_r_unauthorized\n");
 			#endif

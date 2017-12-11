@@ -48,7 +48,7 @@ wan_proto = 'pppoe';
 wanip_obj = '<%tcWebApi_staticGet("DeviceInfo_PVC","WanIP","s")%>';
 wannm_obj= '<%tcWebApi_staticGet("DeviceInfo_PVC","WanSubMask","s")%>';
 var lan_proto = '<%tcWebApi_staticGet("Lan_Dhcp","type","s")%>';        //1: dhcp enable 0: dhcp disabled
-var extend_sec = (productid == "DSL-AC52U")?5:0;
+var extend_sec = (productid == "DSL-AC52U" || productid == "DSL-AC55U")?5:0;
 
 var origin_lan_ip = '<%If tcWebApi_get("Lan_Entry","IP","h") <> "" then tcWebApi_get("Lan_Entry","IP","s") end if%>';
 
@@ -70,16 +70,16 @@ function showLANIPList(){
 
 function applyRule(){
 	if(validForm()){
-		showLoading(22+extend_sec);
+		showLoading(28+extend_sec);
 		if(lan_proto == '1'){   //1: "value", dhcp enable
 			document.getElementById('drword').innerHTML = "<%tcWebApi_get("String_Entry","Main_alert_proceeding_desc3","s")%>.<%tcWebApi_get("String_Entry","LANConfig_ChangedLANIP","s")%>";
 		}
 		else{
 			document.getElementById('drword').innerHTML = "<%tcWebApi_get("String_Entry","LAN_IP_changed_suggedtion1","s")%>"+document.uiViewLanForm.lan_ipaddr.value+"<%tcWebApi_get("String_Entry","LAN_IP_changed_suggedtion2","s")%><br/>";
 		}
-		setTimeout("hideLoading();", 23000+extend_sec*1000);
-		setTimeout("dr_advise();", 23000+extend_sec*1000);
-		setTimeout("redirect();", 27000+extend_sec*1000);
+		setTimeout("hideLoading();", 28100+extend_sec*1000);
+		setTimeout("dr_advise();", 28100+extend_sec*1000);
+		setTimeout("redirect();", 31000+extend_sec*1000);
 		originData.onlinelist_cache = "";
 		document.uiViewLanForm.action_script.value = "restart_boa";
 		document.uiViewLanForm.action_mode.value = "apply";

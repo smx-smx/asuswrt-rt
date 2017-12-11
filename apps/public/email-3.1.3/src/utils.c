@@ -404,6 +404,7 @@ properExit(int sig)
 		printf("Push Mail service success and indicate the fb_state as 1!!!\n");
 		system("tcapi set PushMail_Entry fb_state 1");
 		system("rm -f /tmp/xdslissuestracking");
+		system("rm -f /tmp/asusfbsvcs/feedback.bin.gz");
 	}
 	exit(sig);
 }

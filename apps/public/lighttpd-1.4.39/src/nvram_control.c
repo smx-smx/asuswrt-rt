@@ -150,7 +150,6 @@
 
 static const char base64_xlat[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-
 int base64_encode(const unsigned char *in, char *out, int inlen)
 {
         char *o;
@@ -181,8 +180,7 @@ int base64_encode(const unsigned char *in, char *out, int inlen)
         return out - o;
 }
 
-
-int base64_decode_t(const char *in, unsigned char *out, int inlen)
+int base64_decode(const char *in, unsigned char *out, int inlen)
 {
         char *p;
         int n;
@@ -297,6 +295,7 @@ static int _f_read_alloc(const char *path, char **buffer, int max, int z)
                         }
                 }
         }
+
         return -1;
 }
 
@@ -417,7 +416,6 @@ char *nvram_get(char *name)
 #endif
 //char *nvram_get(char *name)
 {
-    fprintf(stderr,"name = %s\n",name);
 #if 0
 
     if(strcmp(name,"webdav_aidisk")==0 ||strcmp(name,"webdav_proxy")==0||strcmp(name,"webdav_smb_pc")==0
@@ -614,7 +612,7 @@ int nvram_get_file(const char *key, const char *fname, int max)
         n = strlen(p);
         if (n <= max) {
                 if ((b = malloc(base64_decoded_len(n) + 128)) != NULL) {
-                        n = base64_decode_t(p, b, n);
+                        n = base64_decode(p, b, n);
                         if (n > 0) r = (f_write(fname, b, n, 0, 0644) == n);
                         free(b);
                 }
@@ -645,9 +643,9 @@ int nvram_set_file(const char *key, const char *fname, int max)
         }
         return r;
 }
+
 void start_ssl()
 {
-    fprintf(stderr,"\nstart ssl\n");
     int ok;
     int save;
     int retry;

@@ -58,14 +58,26 @@ wan_proto = 'pppoe';
 
 var $j = jQuery.noConflict();
 
+<% first_wanlink(); %>
+<% secondary_wanlink(); %>
+var first_wanlink_status = first_wanlink_status();
+var secondary_wanlink_status = secondary_wanlink_status();
+
+var wans_dualwan_orig = '<%tcWebApi_Get("Dualwan_Entry", "wans_dualwan", "s")%>';
+var wans_primary_orig = wans_dualwan_orig.split(" ")[0];
+var wans_second_orig = wans_dualwan_orig.split(" ")[1];
+
 var qos_rulelist_array = "<% tcWebApi_get("QoS_Entry0","qos_rulelist","s") %>";
 //WebCurSet_dev_pvc : 0:ATM / 8:PTM / 10:Ethernet / 11:USB / 12:LAN
 var WebCurSet_dev_pvc = "<% tcWebApi_staticGet("WebCurSet_Entry","dev_pvc","s") %>";
 
 var overlib_str0 = new Array();	//Viz add 2011.06 for record longer qos rule desc
 var overlib_str = new Array();	//Viz add 2011.06 for record longer portrange value
-var dsl_DataRateDown = parseInt("<% tcWebApi_get("Info_Adsl","DataRateDown","s") %>".replace("kbps",""));
-var dsl_DataRateUp = parseInt("<% tcWebApi_get("Info_Adsl","DataRateUp","s") %>".replace("kbps",""));
+
+var dsl_DataRateDown = parseInt("<% tcWebApi_get("Info_Adsl","DataRateDown","s") %>".replace("kbps",""))/1024;
+var dsl_DataRateUp = parseInt("<% tcWebApi_get("Info_Adsl","DataRateUp","s") %>".replace("kbps",""))/1024;
+var upload = "<% tcWebApi_get("QoS_Entry0","qos_obw","s") %>";
+var download = "<% tcWebApi_get("QoS_Entry0","qos_ibw","s") %>";	
 
 var GN_with_BandwidthLimeter = false;
 var gn_array_2g_length = gn_array_2g.length;
@@ -155,11 +167,11 @@ function initial(){
 }
 
 function init_changeScale(){
-	var upload = "<% tcWebApi_get("QoS_Entry0","qos_obw","s") %>";
-	var download = "<% tcWebApi_get("QoS_Entry0","qos_ibw","s") %>";
-	if((WebCurSet_dev_pvc == "0" || WebCurSet_dev_pvc == "8") && ((!upload || upload == "0") && (!download || download == "0"))){
-		document.form.obw.value = isNaN(dsl_DataRateUp)? 0:parseInt(dsl_DataRateUp/1024);
-		document.form.ibw.value = isNaN(dsl_DataRateDown)? 0:parseInt(dsl_DataRateDown/1024);
+	
+	//if((WebCurSet_dev_pvc == "0" || WebCurSet_dev_pvc == "8") && ((!upload || upload == "0") && (!download || download == "0"))){
+	if(((wans_primary_orig == "dsl" && first_wanlink_status == 1) || (wans_second_orig == "dsl" && secondary_wanlink_status == 1)) && ((!upload || upload == "0") && (!download || download == "0"))){
+		document.form.obw.value = isNaN(dsl_DataRateUp)? 0:dsl_DataRateUp.toFixed(1);
+		document.form.ibw.value = isNaN(dsl_DataRateDown)? 0:dsl_DataRateDown.toFixed(1);
 	}	
 	else{
 		if(!upload)	upload = 0;
@@ -382,9 +394,9 @@ function change_qos_type(value){
 														<ul>
 															<!--li><%tcWebApi_get("String_Entry","EzQoS_desc_Adaptive","s")%></li-->
 															<li><%tcWebApi_get("String_Entry","EzQoS_desc_Traditional","s")%></li>
-															<li><span style="font-size:14px;font-weight:bolder">Bandwidth Limiter</span> helps you to control download and upload max speed of your client devices.</li><!--untranslated string-->
+															<li><span style="font-size:14px;font-weight:bolder"><%tcWebApi_get("String_Entry","Bandwidth_Limiter_hint","s")%></li>
 														</ul>
-														To enable QoS function, click the QoS slide switch and fill in the upload and download.<!--unstranlated string-->
+														<%tcWebApi_get("String_Entry","EzQoS_desc_note","s")%>
 														</div>
 														<div class="formfontdesc">
 															<a id="faq" href="" target="_blank" style="text-decoration:underline;">QoS FAQ</a>
@@ -445,11 +457,11 @@ function change_qos_type(value){
 											</td>
 										</tr>										
 										<tr id="qos_type_tr" style="display:none">
-											<th>QoS Type</th>
+											<th><% tcWebApi_Get("String_Entry", "QoS_Type","s")%></th>
 											<td colspan="2">
 												<!--input id="int_type" value="1" onClick="change_qos_type(this.value);" style="display:none;" type="radio" ><a id="int_type_link" class="hintstyle" style="display:none;" href="javascript:void(0);" onClick="openHint(20, 6);"><label for="int_type"><%tcWebApi_Get("String_Entry", "Adaptive_QoS","s")%></label></a-->
 												<input id="trad_type" value="0" onClick="change_qos_type(this.value);" type="radio" <%If tcWebApi_get("QoS_Entry0","qos_type","h") = "0" then asp_Write("checked") end if%>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 7);"><label for="trad_type"><% tcWebApi_Get("String_Entry", "EzQoS_type_traditional","s")%></label></a>
-												<input id="bw_limit_type" value="2"  onClick="change_qos_type(this.value);" type="radio" <%If tcWebApi_get("QoS_Entry0","qos_type","h") = "2" then asp_Write("checked") end if%>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 8)"><label for="bw_limit_type">Bandwidth Limiter</label></a>
+												<input id="bw_limit_type" value="2"  onClick="change_qos_type(this.value);" type="radio" <%If tcWebApi_get("QoS_Entry0","qos_type","h") = "2" then asp_Write("checked") end if%>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 8)"><label for="bw_limit_type"><% tcWebApi_Get("String_Entry", "Bandwidth_Limiter","s")%></label></a>
 											</td>
 										</tr>
 										<tr id="upload_tr">
@@ -459,7 +471,11 @@ function change_qos_type(value){
 												<label style="margin-left:5px;">Mb/s</label>
 											</td>
 											<td rowspan="2" style="width:250px;">
-												<div>Get the bandwidth information from ISP or go to <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0">Speedtest</a> to check bandwidth</div>
+												<div>
+                                                                                                        <ul style="padding:0 10px;margin:5px 0;">
+														<li><%tcWebApi_get("String_Entry","EzQoS_bandwidth_note1","s")%></li>
+													</ul>
+												</div>
 											</td>
 										</tr>									
 										<tr id="download_tr">

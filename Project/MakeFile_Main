@@ -218,6 +218,8 @@ apps_public_target += sdparm-1.02_clean
 apps_public_target += usbmodeswitch_clean
 apps_public_target += comgt-0.32_clean
 apps_public_target += uqmi_clean
+apps_public_target += pimd_clean
+apps_public_target += lsof_clean
 
 ifeq ($(strip $(TCSUPPORT_TC2031)),)
 RELEASE_TARGETS += delete_sendicmp
@@ -782,7 +784,7 @@ apps: br2684ctl brctl mxml shared busybox busybox-new openssl ssl cpu wirelessto
 	  libusb10 libusb libusb-0.1.12 u2ec lprng \
 	  webdav zlib cloudsync accel_pptpd \
 	  vpn_tools udpxy accel_pptp rp_l2tp \
-	  sdparm-1.02 usbmodeswitch comgt-0.32 uqmi ether-wake networkmap upnp netstat-nat $(obj-y)
+	  sdparm-1.02 usbmodeswitch comgt-0.32 uqmi ether-wake networkmap upnp netstat-nat pimd lsof $(obj-y)
 
 apps_clean: br2684ctl_clean brctl_clean busybox_clean busybox-new_clean ssl_clean cwmp_clean \
 	wirelesstool_clean cpu_clean iptables_clean tc_clean ebtables_clean mtd_clean pppd_clean \
@@ -790,11 +792,12 @@ apps_clean: br2684ctl_clean brctl_clean busybox_clean busybox-new_clean ssl_clea
 	ntpclient_clean tftpd_clean wpas_clean igmpproxy_clean mtf_clean pppoe-relay_clean zebra_clean radvd_clean iproute_clean \
 	 8021X_clean vconfig_clean dhcpv6_clean odhcp6c_clean dnsmasq_clean ecmh_clean usb_3g_dongle_clean \
 	usb_printer_clean usb_camera_clean ntfs_clean autoip_clean dms_clean ssh_clean ip_clean siproxd_clean samba_clean \
-	pppoe_svr_clean traceroute_clean sysstat_clean libdisk_clean shared_clean utils_clean iconv_clean vsftpd_clean hotplug2_clean udev_clean rc_clean \
+	pppoe_svr_clean traceroute_clean sysstat_clean libdisk_clean shared_clean iconv_clean vsftpd_clean hotplug2_clean udev_clean rc_clean \
 	libusb10_clean libusb_clean libusb-0.1.12_clean u2ec_clean lprng_clean \
 	webdav_clean zlib_clean cloudsync_clean accel_pptpd_clean vpn_tools_clean \
 	udpxy_clean accel_pptp_clean rp_l2tp_clean \
-	sdparm-1.02_clean usbmodeswitch_clean comgt-0.32_clean uqmi_clean ether-wake_clean networkmap_clean upnp_clean netstat-nat_clean $(obj-clean)
+	sdparm-1.02_clean usbmodeswitch_clean comgt-0.32_clean uqmi_clean ether-wake_clean networkmap_clean upnp_clean netstat-nat_clean pimd_clean \
+        lsof_clean $(obj-clean)
 #endif
 
 ifneq ($(strip $(ASUS_WEBDAV)),)
@@ -1791,6 +1794,46 @@ igmpproxy_clean:
 	$(MAKE) -C $(APP_IGMPPROXY_DIR) clean
 endif
 endif
+
+ifneq ($(strip $(TCSUPPORT_PIMD)),)
+pimd:
+	echo $(CROSS)
+	echo $(CC)
+	cd $(APP_PIMD_DIR) && 	./configure --prefix=/usr --sysconfdir=/etc --embedded-libc
+	$(MAKE) -C $(APP_PIMD_DIR)
+	cp -af $(APP_PIMD_DIR)/pimd $(FILESYSTEM_DIR)/userfs/bin/pimd
+	cp -af $(APP_PIMD_DIR)/pimd.conf $(FILESYSTEM_DIR)/usr/etc/
+
+pimd_clean:
+	@$(SEP)
+	$(MAKE) -C $(APP_PIMD_DIR) clean
+	rm -f $(FILESYSTEM_DIR)/userfs/bin/pimd
+	rm -f $(FILESYSTEM_DIR)/usr/etc/pimd.conf
+else
+pimd:
+pimd_clean:	
+endif
+
+ifneq ($(strip $(TCSUPPORT_LSOF)),)
+lsof:
+	echo $(CROSS)
+	echo $(CC)
+	cd $(APP_LSOF_DIR) && 	LSOF_CC=$(CROSS)gcc LSOF_VSTR="dsl-asuswrt" ./Configure -n linux
+	$(MAKE) -C $(APP_LSOF_DIR)
+	cp -af $(APP_LSOF_DIR)/lsof $(FILESYSTEM_DIR)/userfs/bin/lsof
+
+lsof_clean:
+	@$(SEP)
+	$(MAKE) -C $(APP_LSOF_DIR) clean
+	cd $(APP_LSOF_DIR) && ./Configure -clean	
+	rm -f $(APP_LSOF_DIR)/Makefile
+	rm -f $(FILESYSTEM_DIR)/userfs/bin/lsof
+else
+lsof:
+lsof_clean:	
+endif
+
+
 ifneq ($(strip $(TCSUPPORT_CT)),)
 traceroute:
 	echo "Build traceroute"

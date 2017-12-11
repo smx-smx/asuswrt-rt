@@ -229,7 +229,11 @@ SETDEFAULTS_FUNC(mod_aicloud_sharelink_set_defaults) {
 //	dest[cnt] = 0;
 //}
 
-output_folder_list(server *srv, connection *con, char* fullpath, char* filename, buffer *out) {
+void output_folder_list(server *srv, connection *con, char* fullpath, char* filename, buffer *out) {
+
+	UNUSED(srv);
+	UNUSED(fullpath);
+	
 	buffer* buffer_filename = buffer_init();
 	buffer_copy_string(buffer_filename,filename);
 	buffer_urldecode_path(buffer_filename);
@@ -303,7 +307,9 @@ output_folder_list(server *srv, connection *con, char* fullpath, char* filename,
 	buffer_free(buffer_filename);
 }
 
-output_file_list(server *srv, connection *con, char* fullpath, char* filename, buffer *out) {
+void output_file_list(server *srv, connection *con, char* fullpath, char* filename, buffer *out) {
+
+	UNUSED(srv);
 
 	buffer* buffer_filename = buffer_init();
 	buffer_copy_string(buffer_filename,filename);
@@ -316,7 +322,7 @@ output_file_list(server *srv, connection *con, char* fullpath, char* filename, b
 
 	int use_http_connect = 0;
 	
-	char* aa = get_filename_ext(fullpath);
+	char* aa = (char*)get_filename_ext(fullpath);
 	int len = strlen(aa)+1; 		
 	char* file_ext = (char*)malloc(len);
 	memset(file_ext,'\0', len);
@@ -438,6 +444,7 @@ output_file_list(server *srv, connection *con, char* fullpath, char* filename, b
 	
 }
 
+#if 0
 
 int parser_share_link(server *srv, connection *con){	
 	int result=0;
@@ -451,7 +458,7 @@ int parser_share_link(server *srv, connection *con){
 #if EMBEDDED_EANBLE
 		#ifdef APP_IPKG
 		char *router_mac=nvram_get_router_mac();
-      	sprintf(mac,"%s",router_mac);
+      	snprintf(mac, sizeof(mac), "%s",router_mac);
 		free(router_mac);
 		#else
 		char *router_mac=nvram_get_router_mac();
@@ -463,7 +470,7 @@ int parser_share_link(server *srv, connection *con){
 		
 		Cdbg(DBE, "mac=%s", mac);
 		
-		char* key = ldb_base64_encode(mac, strlen(mac));		
+		char* key = (char*)ldb_base64_encode(mac, strlen(mac));		
 		int y = strstr (con->request.uri->ptr+1, "/") - (con->request.uri->ptr);
 		
 		if(y<=9){
@@ -480,7 +487,7 @@ int parser_share_link(server *srv, connection *con){
 		buffer* substrencode = buffer_init();
 		buffer_copy_string_len(substrencode,con->request.uri->ptr+9,y-9);
 
-		decode_str = x123_decode(substrencode->ptr, key, &decode_str);		
+		decode_str = (char*)x123_decode(substrencode->ptr, key, &decode_str);		
 		Cdbg(DBE, "decode_str=%s", decode_str);
 
 		if(decode_str){
@@ -699,7 +706,7 @@ int parser_share_link(server *srv, connection *con){
 
 int redirect_mobile_share_link(server *srv, connection *con){
 	data_string *ds_userAgent = (data_string *)array_get_element(con->request.headers, "user-Agent");
-	char* aa = get_filename_ext(con->request.uri->ptr);
+	char* aa = (char*)get_filename_ext(con->request.uri->ptr);
 	int len = strlen(aa)+1; 		
 	char* file_ext = (char*)malloc(len);
 	memset(file_ext,'\0', len);
@@ -847,6 +854,9 @@ int redirect_mobile_share_link(server *srv, connection *con){
 #define PATCH(x) \
 	p->conf.x = s->x;
 static int mod_aicloud_sharelink_patch_connection(server *srv, connection *con, plugin_data *p) {
+
+	UNUSED(con);
+	
 	size_t i, j;
 	plugin_config *s = p->config_storage[0];
 
@@ -892,16 +902,18 @@ static int mod_aicloud_sharelink_patch_connection(server *srv, connection *con, 
 
 	return 0;
 }
+
 #undef PATCH
+#endif
 
 URIHANDLER_FUNC(mod_aicloud_sharelink_physical_handler){
 //PHYSICALPATH_FUNC(mod_aicloud_sharelink_physical_handler) {
 
 	plugin_data *p = p_d;
-	int s_len;
-	size_t k;
-	int uri_len, basedir_len;
-	char *uri_ptr;
+	//int s_len;
+	//size_t k;
+	//int uri_len, basedir_len;
+	//char *uri_ptr;
 	
 	if (con->mode != SMB_BASIC&&con->mode != DIRECT) return HANDLER_GO_ON;
 		
@@ -958,7 +970,7 @@ URIHANDLER_FUNC(mod_aicloud_sharelink_physical_handler){
 	if(!con->share_link_shortpath->used)  return HANDLER_GO_ON;
 	
 	struct stat st;
-	int r;
+	int r = -1;
 	
 	if( con->request.http_method != HTTP_METHOD_GET )
 		return HANDLER_GO_ON;

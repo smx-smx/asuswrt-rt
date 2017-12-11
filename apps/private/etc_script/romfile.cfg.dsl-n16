@@ -1,7 +1,7 @@
 <ROMFILE>
 <Wan>
-	<Common TransMode="ATM" UniqueMac="0" sharepvc="0" CDVT_Enable="0" NATENABLE="Enable" wans_disconn_time="60"/>
-	<PVC0 Active="Yes" PVCScanReserved="No" VPI="0" VCI="33" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="2" ENCAP="PPPoE LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" IPADDR6="" PREFIX6="" DEFGATEWAY6="" DEFAULTROUTE="Yes"  dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname=""/>
+	<Common TransMode="PTM" UniqueMac="0" sharepvc="0" CDVT_Enable="0" NATENABLE="Enable" DSLMode="VDSL"/>
+	<PVC0 Active="No" PVCScanReserved="No" VPI="0" VCI="33" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="2" ENCAP="PPPoE LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" IPADDR6="" PREFIX6="" DEFGATEWAY6="" DEFAULTROUTE="Yes" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname=""/>
 	<PVC1 Active="No" PVCScanReserved="Yes" VPI="0" VCI="34" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
 	<PVC2 Active="No" PVCScanReserved="Yes" VPI="0" VCI="35" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
 	<PVC3 Active="No" PVCScanReserved="Yes" VPI="0" VCI="36" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
@@ -10,35 +10,36 @@
 	<PVC6 Active="No" PVCScanReserved="Yes" VPI="0" VCI="39" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
 	<PVC7 Active="No" PVCScanReserved="Yes" VPI="0" VCI="40" QOS="ubr" PCR="0" SCR="0" MBS="0" CDVT="0" ISP="3" bridge_lan_port="1" ENCAP="1483 Bridged Only LLC" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
 	<PVC8 Active="No" ISP="2" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" IPADDR6="" PREFIX6="" DEFGATEWAY6="" DEFAULTROUTE="Yes"  dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname=""/>
-	<PVC9 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname=""/>
+	<PVC9 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0"/>
 	<PVC10 Active="No" ISP="0" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" DEFAULTROUTE="Yes" IPOE_DOT1X_STATUS="Disabled"  dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname=""/>
+	<PVC11 Active="No" ISP="0" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" DEFAULTROUTE="Yes"  dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname=""/>
 	<PVC12 Active="No" ISP="0" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" IPv6Extension="0" DEFAULTROUTE="Yes" IPOE_DOT1X_STATUS="Disabled"  dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname=""/>
 </Wan>
 <WanExt>
-	<PVC8e0 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="Yes"/>
-	<PVC8e1 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC8e2 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC8e3 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC8e4 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC8e5 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC8e6 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC8e7 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC9e0 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC9e1 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC9e2 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC9e3 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC9e4 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC9e5 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC9e6 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC9e7 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC10e0 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="Yes"/>
-	<PVC10e1 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC10e2 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC10e3 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC10e4 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC10e5 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC10e6 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
-	<PVC10e7 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4/IPv6" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC8e0 Active="Yes" ISP="0" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" DEFAULTROUTE="Yes" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname=""/>
+	<PVC8e1 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC8e2 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC8e3 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC8e4 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC8e5 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC8e6 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC8e7 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC9e0 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC9e1 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC9e2 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC9e3 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC9e4 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC9e5 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC9e6 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC9e7 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC10e0 Active="No" ISP="0" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" DEFAULTROUTE="Yes" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname=""/>
+	<PVC10e1 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC10e2 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC10e3 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC10e4 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC10e5 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC10e6 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
+	<PVC10e7 Active="No" ISP="3" bridge_lan_port="1" IPVERSION="IPv4" PPPv6Mode="1" PPPv6PD="Yes" MLDproxy="No" dhcp_vendorid="" dhcp_clientid_type="0" dhcp_clientid="" wan_hostname="" DEFAULTROUTE="No"/>
 </WanExt>
 <Lan>
 	<Dhcp type="1" />

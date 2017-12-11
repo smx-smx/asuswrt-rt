@@ -347,9 +347,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 	return htmlcode;
 }
 
-function _change_wl_unit_status(__unit){
-	document.titleForm.current_page.value = "Advanced_WAdvanced_Content.asp?af=wl_radio";
-	document.titleForm.next_page.value = "Advanced_WAdvanced_Content.asp?af=wl_radio";
+function _change_wl_unit_status(__unit){	
 	change_wl_unit_status(__unit);
 }
 
@@ -371,7 +369,7 @@ function gen_gntable(){
 	document.getElementById("guest_table2").innerHTML = htmlcode;
 
 	htmlcode5 += '<br><table style="margin-left:20px;margin-top:35px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g">';
-	htmlcode5 += '<tr id="5g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>5GHz</span><td><tr>';
+	htmlcode5 += '<tr id="5g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>5GHz</span>';
 	htmlcode5 += '<span id="5g_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <%tcWebApi_get("String_Entry","GuestNetwork_Radio_Status","s") %> <a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(1);"><%tcWebApi_get("String_Entry","btn_go","s")%></a></span></td></tr>';
 	htmlcode5 += '<tr><td>';
 	htmlcode5 += gen_gntable_tr(1, gn_array_5g_tmp, band5sb);
@@ -1459,7 +1457,7 @@ function bandwidth_code(o,event){
 				</tr>
 
 				<tr>
-					<th>Enable Bandwidth Limiter</th>
+					<th><%tcWebApi_get("String_Entry","Bandwidth_Limiter","s")%></th>
 					<td>
 						<input type="radio" value="1" name="wl_bw_enabled" class="content_input_fd" onClick="show_bandwidth(1);"><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
 						<input type="radio" value="0" name="wl_bw_enabled" class="content_input_fd" onClick="show_bandwidth(0);"><%tcWebApi_get("String_Entry","checkbox_No","s")%>
@@ -1468,11 +1466,11 @@ function bandwidth_code(o,event){
 				</tr>
 
 				<tr>
-					<th><%tcWebApi_get("String_Entry","Bandwidth_Limiter","s")%></th>
+					<th><%tcWebApi_get("String_Entry","Bandwidth_Setting","s")%></th>
 					<td>
-						Download <input type="text" id="wl_bw_dl" name="wl_bw_dl" maxlength="12" onkeypress="return bandwidth_code(this, event);" class="input_12_table" value=""><label style="margin-left:2px;">Mb/s</label>
-						&nbsp;&nbsp;&nbsp;
-						Upload <input type="text" id="wl_bw_ul" name="wl_bw_ul" maxlength="12" onkeypress="return bandwidth_code(this, event);" class="input_12_table" value=""><label style="margin-left:2px;">Mb/s</label>
+						<%tcWebApi_get("String_Entry","download_bandwidth","s")%> <input type="text" id="wl_bw_dl" name="wl_bw_dl" maxlength="12" onkeypress="return bandwidth_code(this, event);" class="input_12_table" value=""><label style="margin-left:2px;">Mb/s</label>
+						<br><br>
+						<%tcWebApi_get("String_Entry","upload_bandwidth","s")%> <input type="text" id="wl_bw_ul" name="wl_bw_ul" maxlength="12" onkeypress="return bandwidth_code(this, event);" class="input_12_table" value=""><label style="margin-left:2px;">Mb/s</label>
 					</td>
 				</tr>
 

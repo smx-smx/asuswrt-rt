@@ -265,9 +265,10 @@ var wlan1_radio_flag = "<% tcWebApi_staticGet("WLan_Entry", "wl1_radio_flag", "s
 var support_dfs = "<% support_dfs(); %>";
 
 function change_wl_unit_status(_unit){
-	document.change_wunit.wl_unit.value = _unit;
+	
+	document.change_wunit.wl_unit.value = _unit;	
 	showLoading(2);
-	setTimeout("document.location.href='/Advanced_Wireless_Content.asp';", 2000);
+	setTimeout("document.location.href='/Advanced_WAdvanced_Content.asp';", 2000);
 	document.change_wunit.submit();
 }
 
@@ -304,7 +305,7 @@ banner_code +='<form method="post" name="diskForm_title" action="device-map/safe
 banner_code +='<input type="hidden" name="disk" value="">\n';
 banner_code +='</form>\n';
 
-banner_code +='<form method="post" name="change_wunit" action="/Advanced_Wireless_Content.asp" target="hidden_frame">\n';
+banner_code +='<form method="post" name="change_wunit" action="/Advanced_WAdvanced_Content.asp" target="hidden_frame">\n';
 banner_code +='<input type="hidden" name="wl_unit" value="">\n';
 banner_code +='<input type="hidden" name="editFlag" value="0">\n';
 banner_code +='</form>\n';
@@ -418,8 +419,7 @@ banner_code +='<span onclick=window.location="Wireless_Content_redirect.asp?refr
 banner_code +='<span onclick=window.location="Wireless_Content_redirect.asp?refresh=5" id="elliptic_ssid_5g" style="display:none;" class="title_link"></span>\n';
 banner_code +='</td>\n';
 
-banner_code +='<td width="30"><div id="notification_desc" class=""></div></td>\n';
-banner_code +='<td width="30" id="notification_status1" class="notificationOn"><div id="notification_status" class="notificationOn"></div></td>\n';
+banner_code +='<td width="30" id="notification_status1" class="notificationOn"><div id="notification_status" class="notificationOn"></div><div id="notification_desc" class=""></div></td>\n';
 
 if(wifi_hw_sw_support != -1)
 	banner_code +='<td width="30"><div id="wifi_hw_sw_status"></div></td>\n';
@@ -1511,7 +1511,7 @@ function show_footer(){
 	footer_code += "<td width=\"335\" id=\"bottom_help_link\" align=\"left\">&nbsp&nbsp<a style=\"font-weight: bolder;text-decoration:underline;cursor:pointer;\" href=\"http://www.asus.com/Networking/" + model_name_supportsite + tracing_path_Manual + "\" target=\"_blank\"><%tcWebApi_get("String_Entry","Manual","s")%></a>&nbsp";
 	footer_code += '|&nbsp<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com/Networking/' + model_name_supportsite + tracing_path_Utility + '" target="_blank"><%tcWebApi_get("String_Entry","Utility","s")%></a>';	
 	if(feedback_support != -1)
-		footer_code += '&nbsp|&nbsp<a href="/Advanced_Feedback.asp" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_self">Feedback</a>';
+		footer_code += '&nbsp|&nbsp<a href="/Advanced_Feedback.asp" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_self"><%tcWebApi_get("String_Entry","menu_dsl_feedback","s")%></a>';
 
 	footer_code += '&nbsp|&nbsp<a id="registration_link" target="_blank" href="https://account.asus.com/" target="_self" style="font-weight:bolder;text-decoration:underline;cursor:pointer;"><%tcWebApi_get("String_Entry","Product_Registration","s")%></a>';
 	footer_code += '</td>';
@@ -1778,8 +1778,8 @@ function reboot(){
 			action = "reboot.asp";
 			preferred_lang.disabled = true;
 			flag.disabled = true;
-			showLoading(120); //90
-			setTimeout("redirect(location.pathname);", 120000); //90000
+			showLoading(125); //90
+			setTimeout("redirect(location.pathname);", 125100); //90000
 			document.titleForm.rebootFlag.disabled = false;
 			document.titleForm.restoreFlag.disabled = false;
 			stopFlag = 1;

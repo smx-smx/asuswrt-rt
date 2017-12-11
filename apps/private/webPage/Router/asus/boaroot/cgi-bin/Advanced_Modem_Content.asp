@@ -924,10 +924,10 @@ function change_apn_mode(){
 </tr>
 
 <tr>
-	<th width="40%">APN Configuration</th><!--untranslated-->
+	<th width="40%"><%tcWebApi_get("String_Entry","APN_configuration","s")%></th>
 	<td>
 		<select name="modem_autoapn" id="modem_autoapn" class="input_option" onchange="change_apn_mode();">
-			<option value="1" <%if tcWebApi_get("USBModem_Entry","modem_autoapn","h") = "1" then asp_write("selected") end if%>>Automatic</option><!--untranslated-->
+			<option value="1" <%if tcWebApi_get("USBModem_Entry","modem_autoapn","h") = "1" then asp_write("selected") end if%>><%tcWebApi_get("String_Entry","Auto","s")%></option>
 			<option value="0" <%if tcWebApi_get("USBModem_Entry","modem_autoapn","h") = "0" then asp_write("selected") end if%>><%tcWebApi_get("String_Entry","Manual_Setting_btn","s")%></option>
 		</select>
 	</td>

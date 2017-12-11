@@ -97,6 +97,16 @@ var ciphersarray = [
 		["RC5-CBC"],
 		["SEED-CBC"]
 ];
+var hmacarray = [
+	["MD 5", "MD5"],
+	["SHA 1", "SHA1"],
+	["SHA 224", "SHA224"],
+	["SHA 256", "SHA256"],
+	["SHA 384", "SHA384"],
+	["SHA 512", "SHA512"],
+	["RIPEMD 160", "RIPEMD160"],
+	["RSA MD4", "RSA-MD4"]
+];
 
 function initial(){
 	var current_server_igncrt = "<%tcWebApi_Get("OpenVPN_Entry","igncrt", "s")%>";
@@ -133,12 +143,21 @@ function initial(){
 		add_option(document.form.vpn_server_cipher, ciphersarray[i][0], ciphersarray[i][0], (currentcipher == ciphersarray[i][0]));
 	}
 
+	//generate select option of HMAC list
+	var currentHMAC = '<%tcWebApi_Get("OpenVPN_Entry","digest", "s")%>';
+	for(var i = 0; i < hmacarray.length; i += 1) {
+		add_option(document.form.vpn_server_digest, hmacarray[i][0], hmacarray[i][1], (currentHMAC == hmacarray[i][1]));
+	}
+
 	// Set these based on a compound field
 	setRadioValue(document.form.vpn_server_x_eas, ((document.form.vpn_serverx_eas.value.indexOf(''+(openvpn_unit)) >= 0) ? "1" : "0"));
 	setRadioValue(document.form.vpn_server_x_dns, ((document.form.vpn_serverx_dns.value.indexOf(''+(openvpn_unit)) >= 0) ? "1" : "0"));
 
 	enable_server_igncrt(current_server_igncrt);
 	//update_visibility();
+	update_cipher();
+	update_digest();
+
 	/*Advanced Setting end */
 
 	//set FAQ URL
@@ -256,14 +275,11 @@ function formShowAndHide(server_enable, server_type) {
 		document.getElementById("trClientWillUseVPNToAccess").style.display = "";
 		document.getElementById('OpenVPN_setting').style.display = ("<%tcWebApi_Get("OpenVPN_Entry","crypt","s")%>" == "secret")?"none":"";
 
-		/*	rm 2017/07/21
 		if(vpn_server_enable == '0' )
 			document.getElementById('openvpn_export').style.display = "none";
 		else
 			document.getElementById('openvpn_export').style.display = "";
-		*/
 
-		document.getElementById('openvpn_export').style.display = ("<%tcWebApi_Get("OpenVPN_Entry","crypt","s")%>" == "secret")?"none":"";
 		document.getElementById("divAdvanced").style.display = "none";
 
 		if(service_state == false || service_state != '2')
@@ -834,7 +850,7 @@ function switchMode(mode){
 		if(vpn_server_enable == '0')
 			document.getElementById('openvpn_export').style.display = "none";
 		else
-			document.getElementById('openvpn_export').style.display = ("<%tcWebApi_Get("OpenVPN_Entry","crypt","s")%>" == "secret")?"none":"";
+			document.getElementById('openvpn_export').style.display = "";
 		document.getElementById("divAdvanced").style.display = "none";
 		updateVpnServerClientAccess();
 
@@ -1149,6 +1165,18 @@ function vpnServerTlsKeysize(_obj) {
 	setRadioValue(document.form.vpn_server_tls_keysize_adv, _obj.value);
 }
 
+function update_cipher() {
+	$j("#cipher_hint").css("display", "none");
+	var cipher = document.form.vpn_server_cipher.value;
+	if(cipher == "default")
+		$j("#cipher_hint").css("display", "");
+}
+function update_digest() {
+	$j("#digest_hint").css("display", "none");
+	var digest = document.form.vpn_server_digest.value;
+	if(digest == "MD5" || digest == "RSA-MD4")
+		$j("#digest_hint").css("display", "");
+}
 function vpnServerClientAccess() {
 	var vpn_server_client_access = getRadioValue(document.form.vpn_server_client_access);
 	switch(parseInt(vpn_server_client_access)) {
@@ -1609,6 +1637,13 @@ function updateVpnServerClientAccess() {
 												</td>
 											</tr>
 											<tr>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,26);">HMAC Authentication<!--untranslated--></a></th>
+												<td>
+													<select name="vpn_server_digest" class="input_option" onChange="update_digest();"></select>
+													<span id="digest_hint" style="color:#FC0">(Not recommended)<!--untranslated--></span>
+												</td>
+											</tr>
+											<tr>
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,18);"><%tcWebApi_Get("String_Entry","vpn_openvpn_Compression","s")%></a></th>
 												<td>
 													<select name="vpn_server_comp" class="input_option">
@@ -1764,8 +1799,8 @@ function updateVpnServerClientAccess() {
 											<tr>
 												<th width="36%"><a id="allowed_client_name" class="hintstyle" href="javascript:void(0);" onClick="openHint(32,22);">Common Name(CN)</a></th>	<!--<%tcWebApi_Get("String_Entry","HSDPAC_Username_in","s")%>-->
 												<th width="20%"><a id="allowed_client_name" class="hintstyle" href="javascript:void(0);" onClick="openHint(32,23);"><%tcWebApi_Get("String_Entry","Subnet","s")%></a></th>
-												<th width="20%"><a id="allowed_client_name" class="hintstyle" href="javascript:void(0);" onClick="openHint(32,23);">Mask</a></th>	<!-- Untranslated -->
-												<th width="12%"><a id="allowed_client_name" class="hintstyle" href="javascript:void(0);" onClick="openHint(32,23);"><%tcWebApi_Get("String_Entry","Push","s")%></a></th>
+												<th width="20%"><a id="allowed_client_name" class="hintstyle" href="javascript:void(0);" onClick="openHint(32,24);">Mask</a></th>	<!-- Untranslated -->
+												<th width="12%"><a id="allowed_client_name" class="hintstyle" href="javascript:void(0);" onClick="openHint(32,25);"><%tcWebApi_Get("String_Entry","Push","s")%></a></th>
 												<th width="12%"><%tcWebApi_Get("String_Entry","list_add_delete","s")%></th>
 											</tr>
 											<tr>
