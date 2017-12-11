@@ -382,11 +382,11 @@ function doStaticTableRange()
 		return false;
 	}
 
-    if( staticIP <  stIP || staticIP > edIP)
-	{
-	   alert("DHCP Static IP is out of DHCP pool range!");
-	return false;
-	}
+   	/* remove this restriction 2017.05
+	if( staticIP <  stIP || staticIP > edIP){
+		alert("DHCP Static IP is out of DHCP pool range!");
+		return false;
+	}*/
 
 	var table=document.getElementById("static_list");
 	for(j=0; j<total; j++)

@@ -61,6 +61,7 @@ extern pthread_mutex_t mutex;
 extern my_mutex_t my_mutex;
 extern my_mutex_t wait_sleep_mutex;
 extern int exit_loop;
+extern int error_flag;
 extern int upload_only;
 extern int download_only;
 extern pthread_mutex_t mutex_socket;
@@ -688,7 +689,7 @@ char*
         return NULL;
 
     for(i=0; i < MD5_LEN; i++)
-        sprintf(b+(i<<1), "%02x", (unsigned int)md5.digest[i]);
+        snprintf(b+(i<<1), 1+(MD5_LEN<<1)-(i<<1) , "%02x", (unsigned int)md5.digest[i]);
     b[i<<1]='\0';
 
     return b;
@@ -789,14 +790,14 @@ int findItem(char *display,Local *local,Browse *browse,int isfolder,int isupload
         {   if(isupload == 1)
             oauth_decode_base64((unsigned char *)temp,(browse->folderlist)[i]->display);
             else if(isupload == 0)
-                //sprintf(temp,"%s",oauth_encode_base64(0,(local->folderlist)[i]->name));
+                //snprintf(temp, NORMALSIZE, "%s",oauth_encode_base64(0,(local->folderlist)[i]->name));
                 encode = oauth_encode_base64(0,(unsigned char *)(local->folderlist)[i]->name);
         }
         else        //update files
         {   if(isupload == 1)
             oauth_decode_base64((unsigned char *)temp,(browse->filelist)[i]->display);
             else if(isupload == 0)
-                //sprintf(temp,"%s",oauth_encode_base64(0,(local->filelist)[i]->name));
+                //snprintf(temp, NORMALSIZE, "%s",oauth_encode_base64(0,(local->filelist)[i]->name));
                 encode = oauth_encode_base64(0,(unsigned char *)(local->filelist)[i]->name);
         }
 
@@ -1584,7 +1585,7 @@ int sync_server_modify(char *parentfolder,Browse *browse,Local *local,int isuplo
             else
             {
                 res = sync_local_add_file(parentfolder,local,local_pos,browse->filelist[server_pos]->id);
-                sprintf(browse->filelist[server_pos]->attribute.lastwritetime,"%d",local_mtime);
+                snprintf(browse->filelist[server_pos]->attribute.lastwritetime, 16, "%d",local_mtime);
             }
 
             return res;
@@ -2751,7 +2752,7 @@ int mySync(char *username,long long int parentid,char *localpath,NodeStack **hea
 
         FolderNode *node = (FolderNode *)calloc(1,sizeof(FolderNode));
         node->path = (char *)calloc(1,strlen(path)+1);
-        strcpy(node->path,path);
+        snprintf(node->path, strlen(path)+1, "%s", path);
         node->id = id;
         node->seq = seq;
         push_node(node,head);
@@ -2785,7 +2786,7 @@ int get_all_folders(const char *dirname,Folders *allfolderlist)
                 num = allfolderlist->number;
                 memset(temp_dir,0,sizeof(temp_dir));
                 snprintf(temp_dir,1024,"%s/%s",dirname,ent->d_name);
-                strcpy(allfolderlist->folderlist[num].name,temp_dir);
+                snprintf(allfolderlist->folderlist[num].name, 512, "%s", temp_dir);
                 allfolderlist->number++;
                 get_all_folders(temp_dir,allfolderlist);
             }
@@ -2967,8 +2968,8 @@ sync_item_t create_sync_item(const char *action, const char *name)
     if(q->name == NULL)
         return NULL;
 
-    strcpy(q->action,action);
-    strcpy(q->name,name);
+    snprintf(q->action, len*sizeof(char), "%s", action);
+    snprintf(q->name, len*sizeof(char), "%s", name);
     return q;
 }
 
@@ -3162,11 +3163,11 @@ void print_sync_item(struct sync_item *head,int type)
     memset(filename,0,sizeof(filename));
 
     if(type == UPLOAD) //upload
-        strcpy(filename,up_item_file);
+        snprintf(filename, NORMALSIZE, "%s", up_item_file);
     else if(type == DOWNLOAD)
-        strcpy(filename,down_item_file);
+        snprintf(filename, NORMALSIZE, "%s", down_item_file);
     else
-        strcpy(filename,up_excep_fail_file);
+        snprintf(filename, NORMALSIZE, "%s", up_excep_fail_file);
 
     fp = fopen(filename,"w");
 
@@ -3186,6 +3187,18 @@ void print_sync_item(struct sync_item *head,int type)
     fclose(fp);
 }
 
+int show_finish_log()
+{
+    if(!item_empty(up_excep_fail))
+    {
+        write_log(S_ERROR,"Fail to sync some files,please reference log page","");
+        return 1;
+    }
+    if(!error_flag)
+        write_log(S_SYNC,"","");
+    error_flag = 0;
+    return 0;
+}
 
 char *parse_name_from_path(const char *path)
 {
@@ -3205,7 +3218,7 @@ char *parse_name_from_path(const char *path)
 
     p++;
 
-    strcpy(name,p);
+    snprintf(name, sizeof(char)*512, "%s", p);
 
     return name;
 }
@@ -3240,12 +3253,12 @@ Transitem *parse_trans_item_from_buffer(char *buffer,int type)
             break;
         case 2:
             if(type == UPLOAD) //upload
-                strcpy(item->transid,p);
+                snprintf(item->transid, 64, "%s", p);
             else
                 item->size = atoll(p);
             break;
         case 3:
-            strcpy(item->name,p);
+            snprintf(item->name, NORMALSIZE, "%s", p);
             break;
 
         default:
@@ -3303,12 +3316,12 @@ int parse_trans_item(char *path,int type)
                 break;
             case 2:
                 if(type == UPLOAD) //upload
-                    strcpy(item.transid,p);
+                    snprintf(item.transid, 64, "%s", p);
                 else
                     item.size = atoll(p);
                 break;
             case 3:
-                strcpy(item.name,p);
+                snprintf(item.name, NORMALSIZE, "%s", p);
 
             default:
                 break;
@@ -3395,10 +3408,10 @@ void init_up_excep_fail(char *path)
             switch (i)
             {
             case 0 :
-                strcpy(action,p);
+                snprintf(action, 256, "%s", p);
                 break;
             case 1:
-                strcpy(name,p);
+                snprintf(name, NORMALSIZE, "%s", p);
 
             default:
                 break;
@@ -3602,7 +3615,7 @@ int my_mkdir_r(char *path)
     memset(str,0,sizeof(str));
 
     len = strlen(mount_path);
-    strcpy(str,path+len);
+    snprintf(str, 512, "%s", path+len);
     len = strlen(str);
     for(i=0; i < len ; i++)
     {
@@ -3610,7 +3623,7 @@ int my_mkdir_r(char *path)
         {
             str[i] = '\0';
             memset(fullname,0,sizeof(fullname));
-            sprintf(fullname,"%s%s",mount_path,str);
+            snprintf(fullname, 512, "%s%s",mount_path,str);
             //printf("fullname=%s\n",fullname);
             if(access(fullname,F_OK) != 0)
             {
@@ -3626,7 +3639,7 @@ int my_mkdir_r(char *path)
 
 
     memset(fullname,0,sizeof(fullname));
-    sprintf(fullname,"%s%s",mount_path,str);
+    snprintf(fullname, 512, "%s%s",mount_path,str);
 
     if(len > 0 && access(fullname,F_OK) != 0)
     {
@@ -3734,30 +3747,30 @@ char *get_confilicted_name_case(const char *fullname,const char *path,const char
     if(!isfolder && p && filename[0] != '.')
     {
         strncpy(parse_name,filename,strlen(filename)-strlen(p));
-        strcpy(suffix_name,p);
+        snprintf(suffix_name, 256, "%s", p);
         strncpy(prefix_name,pre_name,strlen(pre_name)-strlen(suffix_name));
     }
     else
     {
-        strcpy(parse_name,filename);
-        strcpy(prefix_name,pre_name);
+        snprintf(parse_name, NORMALSIZE, "%s", filename);
+        snprintf(prefix_name, NORMALSIZE, "%s", pre_name);
     }
 
     get_conflict_seq(parse_name,&num,&count);
 
     if(num == 0)
     {
-        sprintf(cmp_name,"(%s)",case_conflict_name);
+        snprintf(cmp_name, 128, "(%s)",case_conflict_name);
 
         if(strstr(parse_name,cmp_name) && !strstr(raw_name,cmp_name))
         {
             memset(cmp_name,0,sizeof(cmp_name));
-            sprintf(cmp_name,"(%s(1))",case_conflict_name);
+            snprintf(cmp_name, 128, "(%s(1))",case_conflict_name);
         }
     }
     else
     {
-       sprintf(cmp_name,"(%s(%d))",case_conflict_name,num);
+       snprintf(cmp_name, 128, "(%s(%d))",case_conflict_name,num);
     }
 
     snprintf(new_prefix_name,252-strlen(cmp_name)-strlen(suffix_name),"%s",prefix_name);
@@ -3811,10 +3824,10 @@ char *get_confilicted_name(const char *fullname,int isfolder)
     if(!isfolder && p && filename[0] != '.')
     {
         strncpy(parse_name,filename,strlen(filename)-strlen(p));
-        strcpy(suffix_name,p);
+        snprintf(suffix_name, 256, "%s", p);
     }
     else
-        strcpy(parse_name,filename);
+        snprintf(parse_name, NORMALSIZE, "%s", filename);
 
     get_conflict_seq(parse_name,&num,&count);
 
@@ -3824,7 +3837,7 @@ char *get_confilicted_name(const char *fullname,int isfolder)
     if(num == 0)
     {
         num = 1;
-        strcpy(prefix_name,parse_name);
+        snprintf(prefix_name, NORMALSIZE, "%s", parse_name);
     }
     else
     {
@@ -3850,7 +3863,7 @@ int test_if_download_temp_file(char *filename)
 
     if(strstr(filename,temp_suffix))
     {
-        strcpy(file_suffix,p+(strlen(filename)-strlen(temp_suffix)));
+        snprintf(file_suffix, 9, "%s", p+(strlen(filename)-strlen(temp_suffix)));
 
         if(!strcmp(file_suffix,temp_suffix))
             return 1;
@@ -4004,7 +4017,7 @@ int check_token_file(struct asus_config *cfg)
     memset(fullname,0,sizeof(fullname));
     for(i=0;i<info->num;++i)
     {
-       sprintf(fullname,"%s/%s",info->paths[i],token_filename);
+       snprintf(fullname, 256, "%s/%s",info->paths[i],token_filename);
 #ifdef DEBUG
        printf("token_fullname=%s\n",fullname);
 #endif
@@ -4014,12 +4027,12 @@ int check_token_file(struct asus_config *cfg)
            memset(cmp_mount_path,0,sizeof(cmp_mount_path));
            if(!strncmp(mount_path,"/tmp",4))
            {
-              strcpy(cmp_mount_path,mount_path);
-              strcpy(new_mount_path,info->paths[i]);
+              snprintf(cmp_mount_path, 256, "%s", mount_path);
+              snprintf(new_mount_path, 128, "%s", info->paths[i]);
            }
            else
            {
-              sprintf(cmp_mount_path,"/tmp%s",mount_path);
+              snprintf(cmp_mount_path, 256, "/tmp%s",mount_path);
               strncpy(new_mount_path,info->paths[i]+4,strlen(info->paths[i])-4);
            }
 #ifdef DEBUG
@@ -4047,18 +4060,18 @@ int check_token_file(struct asus_config *cfg)
 
                memset(new_sync_path,0,sizeof(new_sync_path));
                memset(tmp_path,0,sizeof(tmp_path));
-               strcpy(tmp_path,sync_path+strlen(mount_path));
-               sprintf(new_sync_path,"%s%s",new_mount_path,tmp_path);
+               snprintf(tmp_path, 256, "%s", sync_path+strlen(mount_path));
+               snprintf(new_sync_path, 256, "%s%s",new_mount_path,tmp_path);
 #ifdef DEBUG
                printf("new_sync_path=%s\n",new_sync_path);
 #endif
                memset(sync_path,0,sizeof(sync_path));
-               strcpy(sync_path,new_sync_path);
+               snprintf(sync_path, NAMESIZE, "%s", new_sync_path);
                memset(mount_path,0,sizeof(mount_path));
-               strcpy(mount_path,new_mount_path);
+               snprintf(mount_path, NAMESIZE, "%s", new_mount_path);
 
                memset(cfg->sync_path,0,sizeof(cfg->sync_path));
-               strcpy(cfg->sync_path,new_sync_path);
+               snprintf(cfg->sync_path, 256, "%s", new_sync_path);
 
 #if 0               //write_token_file(new_mount_path,new_sync_path);
 #ifdef IPKG
@@ -4092,7 +4105,7 @@ int check_token_file(struct asus_config *cfg)
            cfg->sync_disk_exist = 1;
 #ifdef IPKG
           memset(record_token_file,0,sizeof(record_token_file));
-          sprintf(record_token_file,"/opt/etc/.smartsync/asuswebstorage_%s",cfg->user);
+          snprintf(record_token_file, 256, "/opt/etc/.smartsync/asuswebstorage_%s",cfg->user);
           my_mkdir("/opt/etc/.smartsync");
           record_token_to_file(record_token_file,token_filename);
 #else
@@ -4147,7 +4160,7 @@ int write_token_file(char *path,char *filename)
    FILE *fp;
    char fullname[512] = {0};
 
-   sprintf(fullname,"%s/%s",path,filename);
+   snprintf(fullname, 512, "%s/%s",path,filename);
 
    fp = fopen(fullname,"w");
    if(fp == NULL)
@@ -4183,7 +4196,7 @@ int get_token_filename(char *filename,char *sync_path)
    int i;
    int len;
    memset(encode_sync_path,0,sizeof(encode_sync_path));
-   strcpy(encode_sync_path,sync_path);
+   snprintf(encode_sync_path, 256, "%s", sync_path);
    len = strlen(encode_sync_path);
    for(i=0;i<len;i++)
    {
@@ -4227,7 +4240,7 @@ int write_get_nvram_script(char *nvram_name,char *nvram_path,char *script_path)
     FILE *fp;
     char contents[512];
     memset(contents,0,512);
-    sprintf(contents,"#! /bin/sh\nNV=`nvram get %s`\nif [ ! -f \"%s\" ]; then\n   touch %s\nfi\necho \"$NV\" >%s",nvram_name,nvram_path,nvram_path,nvram_path);
+    snprintf(contents, 512, "#! /bin/sh\nNV=`nvram get %s`\nif [ ! -f \"%s\" ]; then\n   touch %s\nfi\necho \"$NV\" >%s",nvram_name,nvram_path,nvram_path,nvram_path);
 
     if(( fp = fopen(script_path,"w"))==NULL)
     {
@@ -4334,7 +4347,7 @@ int convert_nvram_to_file(char *file)
     char tmp[MAXLEN_TCAPI_MSG] = {0};
     tcapi_get(AICLOUD, "cloud_sync", tmp);
     nv = nvp = my_str_malloc(strlen(tmp)+1);
-    sprintf(nv,"%s",tmp);
+    snprintf(nv, sizeof(char)*(strlen(tmp)+1), "%s",tmp);
 #endif
 
     if(nv == NULL)
@@ -4386,7 +4399,7 @@ int create_shell_file()
     FILE *fp;
     char contents[256];
     memset(contents,0,256);
-    strcpy(contents,"#! /bin/sh\nnvram set $2=\"$1\"\nnvram commit");
+    snprintf(contents, 256, "%s", "#! /bin/sh\nnvram set $2=\"$1\"\nnvram commit");
 
     if(( fp = fopen(SHELL_FILE,"w"))==NULL)
     {
@@ -4409,7 +4422,7 @@ int write_to_nvram(char *contents,char *nv_name)
         printf("create memory fail\n");
         return -1;
     }
-    sprintf(command,"sh %s \"%s\" %s",SHELL_FILE,contents,nv_name);
+    snprintf(command, strlen(contents)+strlen(SHELL_FILE)+strlen(nv_name)+8, "sh %s \"%s\" %s",SHELL_FILE,contents,nv_name);
 #ifdef DEBUG
     printf("command : [%s]\n",command);
 #endif
@@ -4426,7 +4439,7 @@ int del_old_token_file(char *path)
     nv = strdup(nvram_safe_get(NVRAM_TOKENFILE));
     if(nv == NULL)
          return 0;
-    sprintf(fullname,"%s/%s",path,nv);
+    snprintf(fullname, 512, "%s/%s",path,nv);
     if(remove(fullname) == -1)
          return 0;
     return 1;
@@ -4464,7 +4477,7 @@ int check_accout_status()
 
 #ifdef IPKG
     char fullname[512] = {0};
-    sprintf(fullname,"%s/%s",mount_path,token_filename);
+    snprintf(fullname, 512, "%s/%s",mount_path,token_filename);
 #ifdef DEBUG
     printf("token_fullname=%s\n",fullname);
 #endif
@@ -4526,13 +4539,13 @@ void parse_otp_and_captcha(char *str,struct asus_config *cfg)
         return;
 
     if(str[0] == '#')                  //only captcha
-        strcpy(cfg->captcha,p+1);
+        snprintf(cfg->captcha, 8, "%s", p+1);
     else if(strlen(p) == 1)            //only otp_key
         strncpy(cfg->otp_key,str,strlen(str)-1);
     else                               //otp and captcha
     {
         strncpy(cfg->otp_key,str,strlen(str)-strlen(p));
-        strcpy(cfg->captcha,p+1);
+        snprintf(cfg->captcha, 8, "%s", p+1);
     }
 
     printf("otp_key=%s,captcha=%s\n",cfg->otp_key,cfg->captcha);
@@ -4582,19 +4595,19 @@ int parse_config_new(char *path,struct asus_config *cfg)
                     cfg->type = type;
                 break;
             case 1:
-                strcpy(username,buffer);
+                snprintf(username, 256, "%s", buffer);
                 if(cfg!=NULL)
-                    strcpy(cfg->user,username);
+                    snprintf(cfg->user, 256, "%s", username);
                 break;
             case 2:
-                strcpy(password,buffer);
+                snprintf(password, 256, "%s", buffer);
                 if(cfg!=NULL)
-                    strcpy(cfg->pwd,password);
+                    snprintf(cfg->pwd, 256, "%s", password);
                 break;
             case 3:
                 parse_otp_and_captcha(buffer,cfg);
                 if(cfg!=NULL)
-                    strcpy(cfg->url,buffer);
+                    snprintf(cfg->url, 32, "%s", buffer);
                 break;
             case 4:
                 rule = atoi(buffer);
@@ -4611,12 +4624,12 @@ int parse_config_new(char *path,struct asus_config *cfg)
 
                 break;
           case 5:
-                strcpy(sync_path,buffer);
+                snprintf(sync_path, NAMESIZE, "%s", buffer);
 
                 if( sync_path[ strlen(sync_path)-1 ] == '\n' )
                     sync_path[ strlen(sync_path)-1 ] = '\0';
                 if(cfg!=NULL)
-                    strcpy(cfg->sync_path,sync_path);
+                    snprintf(cfg->sync_path, 256, "%s", sync_path);
                 break;
             case 6:
                 status = atoi(buffer);
@@ -4665,10 +4678,10 @@ int parse_config_onexit(char *path, struct asus_config *cfg)
             switch (i)
             {
             case 2:
-                    strcpy(cfg->user,buffer);
+                    snprintf(cfg->user, 256, "%s", buffer);
                 break;
             case 3:
-                    strcpy(cfg->pwd,buffer);
+                    snprintf(cfg->pwd, 256, "%s", buffer);
                 break;
             default:
                 break;
@@ -4738,7 +4751,7 @@ int  parse_sync_path(struct asus_config *cfg,char *path)
 
     memset(temp_path,0,sizeof(temp_path));
     memset(mount_path,0,sizeof(mount_path));
-    strcpy(temp_path,path);
+    snprintf(temp_path, 512, "%s", path);
     if(!strncmp(temp_path,"/tmp",4))
         n = 4;
     else
@@ -4757,9 +4770,9 @@ int  parse_sync_path(struct asus_config *cfg,char *path)
     if( i > 3)
         strncpy(mount_path,temp_path,strlen(temp_path)-strlen(new_path)-1);
     else
-        strcpy(mount_path,temp_path);
+        snprintf(mount_path, NAMESIZE, "%s", temp_path);
 
-    strcpy(cfg->dir_name,temp_path+strlen(mount_path)+1);
+    snprintf(cfg->dir_name, 256, "%s", temp_path+strlen(mount_path)+1);
 
 #ifdef DEBUG
     printf("mount_path=%s,dir_name=%s\n",mount_path,cfg->dir_name);
@@ -4819,7 +4832,7 @@ int check_network_state()
         char tmp[MAXLEN_TCAPI_MSG] = {0};
         tcapi_get(WANDUCK, "link_internet", tmp);
         link_internet = my_str_malloc(strlen(tmp)+1);
-        sprintf(link_internet,"%s",tmp);
+        snprintf(link_internet, sizeof(char)*(strlen(tmp)+1), "%s",tmp);
 #endif
         link_flag = atoi(link_internet);
         free(link_internet);
@@ -4834,7 +4847,7 @@ int check_network_state()
 
     if(!local_space_full && !server_space_full && !exit_loop && IsNetworkUnlink)
     {
-        write_log(S_SYNC,"","");
+        //write_log(S_SYNC,"","");
         IsNetworkUnlink = 0;
     }
 

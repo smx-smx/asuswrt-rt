@@ -132,28 +132,22 @@ static const char short_months[12][4] = {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
-/* RFC1123: Sun, 06 Nov 1994 08:49:37 GMT */
-#define RFC1123_FORMAT "%3s, %02d %3s %4d %02d:%02d:%02d GMT"
 
+/* 2017-05-08T06:25:47Z */
+#define RFC1123_FORMAT "%4d-%02d-%02dT%02d:%02d:%02dZ"
 time_t ne_rfc1123_parse(const char *date)
 {
     struct tm gmt = {0};
-    char wkday[4], mon[4];
+    char  mon[4];
     int n;
     time_t result;
 
-    /*  it goes: Sun, 06 Nov 1994 08:49:37 GMT */
     n = sscanf(date, RFC1123_FORMAT,
-               wkday, &gmt.tm_mday, mon, &gmt.tm_year, &gmt.tm_hour,
+                  &gmt.tm_year,&gmt.tm_mon, &gmt.tm_mday, &gmt.tm_hour,
                &gmt.tm_min, &gmt.tm_sec);
-    /* Is it portable to check n==7 here? */
+
     gmt.tm_year -= 1900;
-    for (n=0; n<12; n++)
-        if (strcmp(mon, short_months[n]) == 0)
-            break;
-    /* tm_mon comes out as 12 if the month is corrupt, which is desired,
-     * since the mktime will then fail */
-    gmt.tm_mon = n;
+    gmt.tm_mon -= 1;
     gmt.tm_isdst = -1;
     result = mktime(&gmt);
     return result + GMTOFF(gmt);
@@ -189,24 +183,31 @@ char *parse_name_from_path(const char *path)
 }
 void cjson_change_to_cloudfile(cJSON *q)
 {
-    if(strcmp(q->string,"bytes")==0)
+    if(strcmp(q->string,".tag")==0)
+        {
+            if(strcmp(q->valuestring, "folder") == 0)
+                FolderTmp->isFolder=1;
+            else if(strcmp(q->valuestring, "file") == 0)
+                FolderTmp->isFolder=0;
+        }
+    else if(strcmp(q->string,"name")==0)
     {
-        FolderTmp->size=q->valueint;
+        FolderTmp->name=(char *)malloc(sizeof(char)*(strlen(q->valuestring)+1));
+        snprintf(FolderTmp->name, sizeof(char)*(strlen(q->valuestring)+1), "%s", q->valuestring);
     }
-    else if(strcmp(q->string,"path")==0)
+    else if(strcmp(q->string,"path_display")==0)
     {
         FolderTmp->href=(char *)malloc(sizeof(char)*(strlen(q->valuestring)+1));
         snprintf(FolderTmp->href, sizeof(char)*(strlen(q->valuestring)+1), "%s", q->valuestring);
-        FolderTmp->name=parse_name_from_path(FolderTmp->href);
     }
-    else if(strcmp(q->string,"is_dir")==0)
-    {
-        FolderTmp->isFolder=q->type;
-    }
-    else if(strcmp(q->string,"modified")==0)
+    else if(strcmp(q->string,"server_modified")==0)
     {
         snprintf(FolderTmp->tmptime, MIN_LENGTH, "%s", q->valuestring);
         FolderTmp->mtime=ne_rfc1123_parse(FolderTmp->tmptime);
+    }
+    else if(strcmp(q->string,"size")==0)
+    {
+        FolderTmp->size=q->valueint;
     }
 }
 char *cJSON_parse_name(cJSON *json)
@@ -217,33 +218,13 @@ char *cJSON_parse_name(cJSON *json)
     int i=0;
     while(q!=NULL)
     {
-        if(strcmp(q->string,"path")==0)
+        if(strcmp(q->string,"path_display")==0)
         {
-            wd_DEBUG("path : %s\n",q->valuestring);
+            wd_DEBUG("path_display : %s\n",q->valuestring);
             return q->valuestring;
         }
         q=q->next;
     }
-}
-time_t cJSON_printf_expires(cJSON *json)
-{
-    if(json)
-    {
-        time_t mtime=(time_t)-1;
-        cJSON *q;
-        q=json->child;
-        while(q!=NULL)
-        {
-            if(strcmp(q->string,"expires") == 0)
-            {
-                mtime=ne_rfc1123_parse(q->valuestring);
-            }
-            q=q->next;
-        }
-        return mtime;
-    }
-    else
-        return (time_t)-1;
 }
 
 int cJSON_printf_dir(cJSON *json)
@@ -254,9 +235,10 @@ int cJSON_printf_dir(cJSON *json)
     q=json->child;
     while(q!=NULL)
     {
-        if(strcmp(q->string,"is_deleted") == 0)
+        if(strcmp(q->string,".tag") == 0)
         {
-            flag = q->type;
+            if(0 == strcmp(q->valuestring, "deleted"))
+                    flag=1;
             return flag;
         }
         q=q->next;
@@ -274,7 +256,7 @@ time_t cJSON_printf_mtime(cJSON *json)
         q=json->child;
         while(q!=NULL)
         {
-            if(strcmp(q->string,"modified") == 0)
+            if(strcmp(q->string,"server_modified") == 0)
             {
                 mtime=ne_rfc1123_parse(q->valuestring);
             }
@@ -293,7 +275,7 @@ time_t cJSON_printf_mtime(cJSON *json)
 /*
  FileTail_one is not only file list ,it is also folder list
 */
-int cJSON_printf_one(cJSON *json)
+int cJSON_printf_one(cJSON *json, int *has_more_one, char **cursor)
 {
     if(json)
     {
@@ -302,7 +284,7 @@ int cJSON_printf_one(cJSON *json)
         int i=0;
         while(q!=NULL)
         {
-            if(strcmp(q->string,"contents")==0)
+            if(strcmp(q->string,"entries")==0)
             {
                 if(q->child!=NULL){
                     p=q->child;m=p->child;
@@ -323,17 +305,28 @@ int cJSON_printf_one(cJSON *json)
                         FileTail_one->next = NULL;
                         p=p->next;
                     }
-                    break;
                 }
                 else
                     wd_DEBUG("this is empty folder\n");
+            }
+            else if(strcmp(q->string,"has_more") == 0)
+            {
+                    if(q->valueint == 1)
+                            *has_more_one = 1;
+                    else if(q->valueint == 0)
+                            *has_more_one = 0;
+            }
+            else if(strcmp(q->string,"cursor") == 0)
+            {
+                    *cursor=(char *)malloc(sizeof(char)*(strlen(q->valuestring)+1));
+                    snprintf(*cursor, sizeof(char)*(strlen(q->valuestring)+1), "%s", q->valuestring);
             }
             q=q->next;
         }
     }
 
 }
-time_t cJSON_printf(cJSON *json,char *string)
+time_t cJSON_printf(cJSON *json,char *string, int *has_more, char **cursor)
 {
     if(json)
     {
@@ -342,9 +335,9 @@ time_t cJSON_printf(cJSON *json,char *string)
         int i=0;
         while(q!=NULL)
         {
-            if(strcmp(q->string,"contents")==0)
+            if(strcmp(q->string,"entries")==0)
             {
-                if(strcmp(string,"contents")==0)
+                if(strcmp(string,"entries")==0)
                 {
                     if(q->child!=NULL){
                         p=q->child;m=p->child;
@@ -374,21 +367,36 @@ time_t cJSON_printf(cJSON *json,char *string)
                             }
                             p=p->next;
                         }
-                        break;
                     }
                 }
             }
-            else if(strcmp(q->string,"modified") == 0)
+            else if(strcmp(q->string,"server_modified") == 0)
             {
-                if(strcmp(string,"modified") == 0)
+                if(strcmp(string,"server_modified") == 0)
                 {
                     time_t mtime=ne_rfc1123_parse(q->valuestring);
                     return mtime;
                 }
             }
-            else if(strcmp(q->string,"quota_info") == 0)
+            else if(strcmp(q->string,"used") == 0)
             {
-                if(strcmp(string,"quota_info") == 0)
+                if(strcmp(string,"used") == 0)
+                {
+                    server_used=q->valuelong;
+                    if(q->child != NULL)
+                    {
+                        p=q->child;m=p->child;
+                        while(p!=NULL)
+                        {
+                            cjson_to_space(p);
+                            p=p->next;
+                        }
+                    }
+                }
+            }
+            else if(strcmp(q->string,"allocation") == 0)
+            {
+                if(strcmp(string,"used") == 0)
                 {
                     if(q->child != NULL)
                     {
@@ -401,6 +409,34 @@ time_t cJSON_printf(cJSON *json,char *string)
                     }
                 }
             }
+            else if(strcmp(q->string,"error_summary") == 0)
+            {
+                if(strcmp(string,"error_summary")==0)
+                {
+                    if(strstr(q->valuestring, "from_lookup/not_found/") != NULL)
+                        ;
+                    if(strstr(q->valuestring, "to/conflict/folder/") != NULL)
+                        ;
+                }
+            }
+            else if(strcmp(q->string,"has_more") == 0)
+            {
+                if(strcmp(string,"entries")==0)
+                {
+                    if(q->valueint == 1)
+                            *has_more = 1;
+                    else if(q->valueint == 0)
+                            *has_more = 0;
+                }
+            }
+            else if(strcmp(q->string,"cursor") == 0)
+            {
+                if(strcmp(string,"entries")==0)
+                {
+                    *cursor=(char *)malloc(sizeof(char)*(strlen(q->valuestring)+1));
+                    snprintf(*cursor, sizeof(char)*(strlen(q->valuestring)+1), "%s", q->valuestring);
+                }
+            }
             q=q->next;
         }
     }
@@ -409,19 +445,39 @@ time_t cJSON_printf(cJSON *json,char *string)
 
 }
 
+int cJSON_printf_error(cJSON *json,char *string)
+{
+    if(json)
+    {
+        cJSON *q;
+        q=json->child;
+        int i=0;
+        while(q!=NULL)
+        {
+            if(strcmp(q->string,"error_summary") == 0)
+            {
+                if(strcmp(string,"error_summary")==0)
+                {
+                    if(strstr(q->valuestring, "from_lookup/not_found/") != NULL)
+                        return 1;
+                    if(strstr(q->valuestring, "to/conflict") != NULL)
+                        return 2;
+                    if(strstr(q->valuestring, "path/conflict") != NULL)
+                        return 3;
+                }
+            }
+            q=q->next;
+        }
+    }
+    else
+        return -1;
+}
+
 void cjson_to_space(cJSON *q)
 {
-    if(strcmp(q->string,"shared") == 0)
+    if(strcmp(q->string,"allocated") == 0)
     {
-        server_shared=q->valuelong;
-    }
-    else if(strcmp(q->string,"quota") == 0)
-    {
-        server_quota=q->valuelong;
-    }
-    else if(strcmp(q->string,"normal") == 0)
-    {
-        server_normal=q->valuelong;
+        server_allocated=q->valuelong;
     }
 }
 cJSON *doit(char *text)
@@ -884,7 +940,7 @@ int get_access_token()
     return 0;
 }
 #endif
-int api_accout_info()
+int api_get_userspace()
 {
     CURL *curl;
     CURLcode res;
@@ -899,13 +955,14 @@ int api_accout_info()
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/json" );
     if(curl){
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
         curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
         curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
-        curl_easy_setopt(curl,CURLOPT_URL,"https://api.dropbox.com/1/account/info");
+        curl_easy_setopt(curl,CURLOPT_URL,"https://api.dropboxapi.com/2/users/get_space_usage");
         CURL_DEBUG;
         curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
         fp=fopen(Con(TMP_R,data_3.txt),"w");
@@ -916,6 +973,8 @@ int api_accout_info()
         }
         curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
+        curl_easy_setopt(curl,CURLOPT_POST,1L);
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS, "null");
         res=curl_easy_perform(curl);
 
         curl_easy_cleanup(curl);
@@ -930,17 +989,15 @@ int api_accout_info()
     free(header);
     return 0;
 }
-int api_metadata_one(char *phref,cJSON *(*cmd_data)(char *filename))
+int api_metadata_one(char *phref,cJSON *(*cmd_data)(char *filename), int *has_more_one, char **cursor)
 {
     CURL *curl;
     CURLcode res;
     FILE *fp;
     char *myUrl;
-    char *phref_tmp=oauth_url_escape(phref);
-    myUrl=(char *)malloc(sizeof(char)*(strlen(phref_tmp)+128));
-    memset(myUrl,0,strlen(phref_tmp)+128);
-    snprintf(myUrl, sizeof(char)*(strlen(phref_tmp)+128), "%s%s","https://api.dropbox.com/1/metadata/dropbox",phref_tmp);
-    free(phref_tmp);
+    myUrl=(char *)malloc(128);
+    memset(myUrl,0,128);
+    snprintf(myUrl, 128, "%s","https://api.dropboxapi.com/2/files/list_folder");
     char *header;
 #ifdef OAuth1
     header=makeAuthorize(3);
@@ -950,7 +1007,16 @@ int api_metadata_one(char *phref,cJSON *(*cmd_data)(char *filename))
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/json" );
     if(curl){
+        char *output = NULL;
+        output=(char *)malloc(strlen(phref) + 128);
+        memset(output,0,strlen(phref) + 128);
+        if(strcmp(phref, "/") == 0)
+            snprintf(output, strlen(phref) + 128, "{\"path\": \"%s\"}", "");
+        else
+            snprintf(output, strlen(phref) + 128, "{\"path\": \"%s\"}", phref);
+
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
@@ -962,16 +1028,20 @@ int api_metadata_one(char *phref,cJSON *(*cmd_data)(char *filename))
         fp=fopen(Con(TMP_R,data_one.txt),"w");
         if(fp == NULL)
         {
+            free(output);
             free(header);
             free(myUrl);
             return -1;
         }
         curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
+        curl_easy_setopt(curl,CURLOPT_POST,1L);
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,output);
         res=curl_easy_perform(curl);
 
         curl_easy_cleanup(curl);
         fclose(fp);
+        free(output);
         curl_slist_free_all(headerlist);
         if(res!=0){
             free(header);
@@ -985,7 +1055,7 @@ int api_metadata_one(char *phref,cJSON *(*cmd_data)(char *filename))
     cJSON *json;
     json=cmd_data(Con(TMP_R,data_one.txt));
     if(json){
-        cJSON_printf_one(json);
+        cJSON_printf_one(json, has_more_one, cursor);
         cJSON_Delete(json);
         return 0;
     }else
@@ -998,9 +1068,9 @@ int api_metadata_test_dir(char *phref,proc_pt cmd_data)
     FILE *fp;
     FILE *hd;
     char *myUrl;
-    myUrl=(char *)malloc(sizeof(char)*(strlen(phref)+128));
-    memset(myUrl,0,strlen(phref)+128);
-    snprintf(myUrl, sizeof(char)*(strlen(phref)+128), "%s%s%s","https://api.dropbox.com/1/metadata/dropbox",phref,"?list=false&include_deleted=true");
+    myUrl=(char *)malloc(128);
+    memset(myUrl,0,128);
+    snprintf(myUrl,128, "%s","https://api.dropboxapi.com/2/files/get_metadata");
     char *header;
 #ifdef OAuth1
     header=makeAuthorize(3);
@@ -1010,7 +1080,13 @@ int api_metadata_test_dir(char *phref,proc_pt cmd_data)
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/json" );
     if(curl){
+        char *output = NULL;
+        output=(char *)malloc(strlen(phref) + 128);
+        memset(output,0,strlen(phref) + 128);
+        snprintf(output, strlen(phref) + 128, "{\"path\": \"%s\",\"include_deleted\": true}", phref);
+
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
@@ -1023,10 +1099,13 @@ int api_metadata_test_dir(char *phref,proc_pt cmd_data)
         hd=fopen(Con(TMP_R,data_test_dir_header.txt),"w+");
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
         curl_easy_setopt(curl,CURLOPT_WRITEHEADER,hd);
+        curl_easy_setopt(curl,CURLOPT_POST,1L);
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,output);
         res=curl_easy_perform(curl);
 
         curl_easy_cleanup(curl);
         fclose(fp);
+        free(output);
         curl_slist_free_all(headerlist);
         if(res!=0){
             fclose(hd);
@@ -1043,7 +1122,7 @@ int api_metadata_test_dir(char *phref,proc_pt cmd_data)
             {
                 fgets(tmp,sizeof(tmp),hd);
                 printf("tmp_ : %s\n",tmp);
-                if(strstr(tmp,"404") != NULL)
+                if(strstr(tmp,"409") != NULL)
                 {
                     free(myUrl);
                     free(header);
@@ -1069,65 +1148,18 @@ int api_metadata_test_dir(char *phref,proc_pt cmd_data)
     }else
         return -1;
 }
-int api_metadata_test(char *phref)
-{
-    CURL *curl;
-    CURLcode res;
-    FILE *fp;
-    char *myUrl;
-    myUrl=(char *)malloc(sizeof(char)*(strlen(phref)+128));
-    memset(myUrl,0,strlen(phref)+128);
-    snprintf(myUrl, sizeof(char)*(strlen(phref)+128), "%s%s%s","https://api.dropbox.com/1/metadata/dropbox",phref,"?list=true&include_deleted=true");
-    char *header;
-#ifdef OAuth1
-    header=makeAuthorize(3);
-#else
-    header=makeAuthorize(1);
-#endif
-    struct curl_slist *headerlist=NULL;
-    curl=curl_easy_init();
-    headerlist=curl_slist_append(headerlist,header);
-    if(curl){
-        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-        curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
-        curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
-        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
-        curl_easy_setopt(curl,CURLOPT_URL,myUrl);
-        curl_easy_setopt(curl,CURLOPT_VERBOSE,1);
-        curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
-        fp=fopen(Con(TMP_R,data_test.txt),"w");
-        curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
-        res=curl_easy_perform(curl);
 
-        curl_easy_cleanup(curl);
-        fclose(fp);
-        curl_slist_free_all(headerlist);
-        if(res!=0){
-            free(header);
-            free(myUrl);
-            wd_DEBUG("api_metadata_test [%d] failed!\n",res);
-            return -1;
-        }
-    }
-    free(myUrl);
-    free(header);
-    return 0;
-}
 
-int api_metadata(char *phref,proc_pt cmd_data)
+int api_list_folder(char *phref,proc_pt cmd_data, int *has_more, char **cursor)
 {
     CURL *curl;
     CURLcode res;
     FILE *fp;
     FILE *hd;
     char *myUrl;
-    char *phref_tmp=oauth_url_escape(phref);
-    myUrl=(char *)malloc(sizeof(char)*(strlen(phref_tmp)+128));
-    memset(myUrl,0,strlen(phref_tmp)+128);
-
-    snprintf(myUrl, sizeof(char)*(strlen(phref_tmp)+128), "%s%s","https://api.dropbox.com/1/metadata/dropbox",phref_tmp);
-    free(phref_tmp);
+    myUrl=(char *)malloc(128);
+    memset(myUrl,0,128);
+    snprintf(myUrl, 128, "%s","https://api.dropboxapi.com/2/files/list_folder");
     char *header;
 #ifdef OAuth1
     header=makeAuthorize(3);
@@ -1137,30 +1169,39 @@ int api_metadata(char *phref,proc_pt cmd_data)
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/json" );
     if(curl){
+        char *output = NULL;
+        output=(char *)malloc(strlen(phref) + 128);
+        memset(output,0,strlen(phref) + 128);
+        if(strcmp(phref, "/") == 0)
+            snprintf(output, strlen(phref) + 128, "{\"path\": \"%s\"}", "");
+        else
+            snprintf(output, strlen(phref) + 128, "{\"path\": \"%s\"}", phref);
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
         curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
         curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
         curl_easy_setopt(curl,CURLOPT_URL,myUrl);
-        CURL_DEBUG;
         curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
         fp=fopen(Con(TMP_R,data_5.txt),"w");
         hd=fopen(Con(TMP_R,data_check_access_token.txt),"w");
-        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
         curl_easy_setopt(curl,CURLOPT_WRITEHEADER,hd);
+        curl_easy_setopt(curl,CURLOPT_POST,1L);
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,output);
         res=curl_easy_perform(curl);
 
         curl_easy_cleanup(curl);
         fclose(fp);
+        free(output);
         curl_slist_free_all(headerlist);
         if(res!=0){
             fclose(hd);
             free(header);
             free(myUrl);
-            wd_DEBUG("api_metadata %s [%d] failed!\n",phref,res);
+            wd_DEBUG("api_list_folder %s [%d] failed!\n",phref,res);
             return -1;
         }
         else
@@ -1188,7 +1229,7 @@ int api_metadata(char *phref,proc_pt cmd_data)
     json=cmd_data(Con(TMP_R,data_5.txt));
     if(json)
     {
-        cJSON_printf(json,"contents");
+        cJSON_printf(json,"entries", has_more, cursor);
         cJSON_Delete(json);
         return 0;
     }
@@ -1199,6 +1240,175 @@ int api_metadata(char *phref,proc_pt cmd_data)
     }
 
 }
+
+int api_list_continue(proc_pt cmd_data, int *has_more, char **cursor)
+{
+    CURL *curl;
+    CURLcode res;
+    FILE *fp;
+    FILE *hd;
+    char *myUrl;
+    myUrl=(char *)malloc(128);
+    memset(myUrl,0,128);
+    snprintf(myUrl, 128, "%s","https://api.dropboxapi.com/2/files/list_folder/continue");
+    char *header;
+#ifdef OAuth1
+    header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
+    struct curl_slist *headerlist=NULL;
+    curl=curl_easy_init();
+    headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/json" );
+    if(curl){
+        char *output = NULL;
+        output=(char *)malloc(strlen(*cursor) + 128);
+        memset(output,0,strlen(*cursor) + 128);
+        snprintf(output, strlen(*cursor) + 128, "{\"cursor\": \"%s\"}", *cursor);
+        if(*cursor)
+        {
+            free(*cursor);
+            *cursor=NULL;
+        }
+        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
+        curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
+        curl_easy_setopt(curl,CURLOPT_URL,myUrl);
+        CURL_DEBUG;
+        curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
+        fp=fopen(Con(TMP_R,data_5.txt),"w");
+        hd=fopen(Con(TMP_R,data_check_access_token.txt),"w");
+        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
+        curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
+        curl_easy_setopt(curl,CURLOPT_WRITEHEADER,hd);
+        curl_easy_setopt(curl,CURLOPT_POST,1L);
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,output);
+        res=curl_easy_perform(curl);
+
+        curl_easy_cleanup(curl);
+        fclose(fp);
+        free(output);
+        curl_slist_free_all(headerlist);
+        if(res!=0){
+            fclose(hd);
+            free(header);
+            free(myUrl);
+            wd_DEBUG("api_list_folder_continue  [%d] failed!\n",res);
+            return -1;
+        }
+        else
+        {
+            rewind(hd);
+            char tmp[256]="\0";
+            fgets(tmp,sizeof(tmp),hd);
+            wd_DEBUG("tmp:%s\n",tmp);
+            if(strstr(tmp,"401")!=NULL)
+            {
+                write_log(S_ERROR,"Access token has expired,please re-authenticate!","",0);
+                exit_loop = 1;
+                access_token_expired = 1;
+                fclose(hd);
+                free(header);
+                free(myUrl);
+                return -1;
+            }
+            fclose(hd);
+        }
+    }
+    free(myUrl);
+    free(header);
+    cJSON *json;
+    json=cmd_data(Con(TMP_R,data_5.txt));
+    if(json)
+    {
+        cJSON_printf(json,"entries", has_more, cursor);
+        cJSON_Delete(json);
+        return 0;
+    }
+    else
+    {
+        /*the file contents is error*/
+        return -1;
+    }
+
+}
+
+int api_list_continue_one(proc_pt cmd_data, int *has_more_one, char **cursor)
+{
+    CURL *curl;
+    CURLcode res;
+    FILE *fp;
+    char *myUrl;
+    myUrl=(char *)malloc(128);
+    memset(myUrl,0,128);
+    snprintf(myUrl, 128, "%s","https://api.dropboxapi.com/2/files/list_folder/continue");
+    char *header;
+#ifdef OAuth1
+    header=makeAuthorize(3);
+#else
+    header=makeAuthorize(1);
+#endif
+    struct curl_slist *headerlist=NULL;
+    curl=curl_easy_init();
+    headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/json" );
+    if(curl){
+        char *output = NULL;
+        output=(char *)malloc(strlen(*cursor) + 128);
+        memset(output,0,strlen(*cursor) + 128);
+        snprintf(output, strlen(*cursor) + 128, "{\"cursor\": \"%s\"}", *cursor);
+        if(*cursor)
+        {
+            free(*cursor);
+            *cursor=NULL;
+        }
+        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
+        curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
+        curl_easy_setopt(curl,CURLOPT_URL,myUrl);
+        CURL_DEBUG;
+        curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
+        fp=fopen(Con(TMP_R,data_one.txt),"w");
+        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
+        curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
+        curl_easy_setopt(curl,CURLOPT_POST,1L);
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,output);
+        res=curl_easy_perform(curl);
+
+        curl_easy_cleanup(curl);
+        fclose(fp);
+        free(output);
+        curl_slist_free_all(headerlist);
+        if(res!=0){
+            free(header);
+            free(myUrl);
+            wd_DEBUG("api_list_folder_continue  [%d] failed!\n",res);
+            return -1;
+        }
+    }
+    free(myUrl);
+    free(header);
+    cJSON *json;
+    json=cmd_data(Con(TMP_R,data_one.txt));
+    if(json)
+    {
+        cJSON_printf_one(json, has_more_one, cursor);
+        cJSON_Delete(json);
+        return 0;
+    }
+    else
+    {
+        /*the file contents is error*/
+        return -1;
+    }
+
+}
+
 /*
 oldname & newname both server path
 */
@@ -1209,16 +1419,7 @@ int api_move(char *oldname,char *newname,int index,int is_changed_time,char *new
     FILE *fp;
     FILE *hd;
     char *header;
-    char *data;
     hd=fopen(Con(TMP_R,data_hd.txt),"w+");
-    char *oldname_tmp=oauth_url_escape(oldname);
-    char *newname_tmp=oauth_url_escape(newname);
-    data=(char*)malloc(sizeof(char *)*(64+strlen(oldname_tmp)+strlen(newname_tmp)));
-    memset(data,0,64+strlen(oldname_tmp)+strlen(newname_tmp));
-
-    snprintf(data, sizeof(char *)*(64+strlen(oldname_tmp)+strlen(newname_tmp)), "root=%s&from_path=%s&to_path=%s","dropbox",oldname_tmp,newname_tmp);
-    free(oldname_tmp);
-    free(newname_tmp);
     static const char buf[]="Expect:";
 #ifdef OAuth1
     header=makeAuthorize(3);
@@ -1228,16 +1429,22 @@ int api_move(char *oldname,char *newname,int index,int is_changed_time,char *new
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/json" );
     if(curl){
+        char *output = NULL;
+        output=(char *)malloc(strlen(oldname) + strlen(newname) + 128);
+        memset(output,0,strlen(oldname) + strlen(newname) + 128);
+        snprintf(output, strlen(oldname) + strlen(newname) + 128, "{\"from_path\": \"%s\",\"to_path\": \"%s\",\"autorename\": true}", oldname, newname);
+
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
         curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
         curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
-        curl_easy_setopt(curl,CURLOPT_URL,"https://api.dropbox.com/1/fileops/move");
+        curl_easy_setopt(curl,CURLOPT_URL,"https://api.dropboxapi.com/2/files/move");
         CURL_DEBUG;
         curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
-        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,data);
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,output);
         fp=fopen(Con(TMP_R,data_4.txt),"w");
         curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
@@ -1247,11 +1454,11 @@ int api_move(char *oldname,char *newname,int index,int is_changed_time,char *new
         curl_easy_cleanup(curl);
         curl_slist_free_all(headerlist);
         fclose(fp);
+        free(output);
         if(res!=0){
 
             fclose(hd);
             free(header);
-            free(data);
             wd_DEBUG("rename %s failed,id [%d]!\n",oldname,res);
             return res;
         }
@@ -1261,10 +1468,15 @@ int api_move(char *oldname,char *newname,int index,int is_changed_time,char *new
             char tmp[256]="\0";
             fgets(tmp,sizeof(tmp),hd);
             wd_DEBUG("tmp:%s\n",tmp);
-            if(strstr(tmp,"404")!=NULL)
+            if(strstr(tmp,"409")!=NULL)
             {
-                if(newname_r == NULL)  //newname_r is local new name
+                cJSON *json = dofile(Con(TMP_R,data_4.txt));
+                int move_error_flag=cJSON_printf_error(json,"error_summary");
+                cJSON_Delete(json);
+                if(1 == move_error_flag)
                 {
+                    if(newname_r == NULL)  //newname_r is local new name
+                    {
                     char *localpath=serverpath_to_localpath(newname,index);
                     if(test_if_dir(localpath))
                     {
@@ -1277,71 +1489,84 @@ int api_move(char *oldname,char *newname,int index,int is_changed_time,char *new
                             wd_DEBUG("dragfolder %s failed status = %d\n",localpath,res);
                             fclose(hd);
                             free(header);
-                            free(data);
                             free(localpath);
                             return res;
-                        }
-                    }
-                    else
-                    {
-                        wd_DEBUG("it is file\n");
-                        res=upload_file(localpath,newname,1,index);
-                        if(res!=0)
-                        {
-
-                            fclose(hd);
-                            free(header);
-                            free(data);
-                            free(localpath);
-                            return res;
+                            }
                         }
                         else
                         {
-                            cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                            time_t mtime=cJSON_printf(json,"modified");
-                            cJSON_Delete(json);
+                            wd_DEBUG("it is file\n");
+                            res=upload_file(localpath,newname,1,index);
+                            if(res!=0)
+                            {
 
-                            ChangeFile_modtime(localpath,mtime);
+                                fclose(hd);
+                                free(header);
+                                free(localpath);
+                                return res;
+                            }
+                            else
+                            {
+                                cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
+                                time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
+                                cJSON_Delete(json);
+
+                                ChangeFile_modtime(localpath,mtime);
+                            }
+                        }
+                        free(localpath);
+                    }
+                    else
+                    {
+                        char *localpath = newname_r;
+                        if(test_if_dir(localpath))
+                        {
+                            wd_DEBUG("it is folder\n");
+
+                            res=dragfolder_old_dir(localpath,index,newname);
+                            if(res != 0)
+                            {
+                                wd_DEBUG("dragfolder %s failed status = %d\n",localpath,res);
+                                fclose(hd);
+                                free(header);
+                                return res;
+                            }
+                        }
+                        else
+                        {
+                            wd_DEBUG("it is file\n");
+                            res=upload_file(localpath,newname,1,index);
+                            if(res!=0)
+                            {
+                                fclose(hd);
+                                free(header);
+                                return res;
+                            }
+                            else
+                            {
+                                cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
+                                time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
+                                cJSON_Delete(json);
+
+                                ChangeFile_modtime(localpath,mtime);
+                            }
                         }
                     }
-                    free(localpath);
                 }
-                else
+                else if(2 == move_error_flag)
                 {
-                    char *localpath = newname_r;
-                    if(test_if_dir(localpath))
+                    char *server_conflcit_name=get_server_exist(newname,index);
+                    printf("server_conflict_name=%s\n",server_conflcit_name);
+                    if(server_conflcit_name)
                     {
-                        wd_DEBUG("it is folder\n");
-
-                        res=dragfolder_old_dir(localpath,index,newname);
-                        if(res != 0)
-                        {
-                            wd_DEBUG("dragfolder %s failed status = %d\n",localpath,res);
-                            fclose(hd);
-                            free(header);
-                            free(data);
-                            return res;
-                        }
+                        deal_big_low_conflcit(server_conflcit_name,oldname,newname,newname_r,index);
+                        free(server_conflcit_name);
                     }
                     else
                     {
-                        wd_DEBUG("it is file\n");
-                        res=upload_file(localpath,newname,1,index);
-                        if(res!=0)
-                        {
-                            fclose(hd);
-                            free(header);
-                            free(data);
-                            return res;
-                        }
-                        else
-                        {
-                            cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                            time_t mtime=cJSON_printf(json,"modified");
-                            cJSON_Delete(json);
-
-                            ChangeFile_modtime(localpath,mtime);
-                        }
+                        fclose(hd);
+                        free(header);
+                        return -1;
                     }
                 }
             }
@@ -1351,7 +1576,7 @@ int api_move(char *oldname,char *newname,int index,int is_changed_time,char *new
                 {
                     char *localpath=serverpath_to_localpath(newname,index);
                     cJSON *json = dofile(Con(TMP_R,data_4.txt));
-                    time_t mtime=cJSON_printf(json,"modified");
+                    time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
                     cJSON_Delete(json);
                     if(test_if_dir(localpath))
                     {
@@ -1364,30 +1589,12 @@ int api_move(char *oldname,char *newname,int index,int is_changed_time,char *new
                     free(localpath);
                 }
             }
-            else if(strstr(tmp,"403")!=NULL)
-            {
-                char *server_conflcit_name=get_server_exist(newname,index);
-                printf("server_conflict_name=%s\n",server_conflcit_name);
-                if(server_conflcit_name)
-                {
-                    deal_big_low_conflcit(server_conflcit_name,oldname,newname,newname_r,index);
-                    free(server_conflcit_name);
-                }
-                else
-                {
-                    fclose(hd);
-                    free(header);
-                    free(data);
-                    return -1;
-                }
-            }
         }
     }
 
     fclose(hd);
     wd_DEBUG("rename ok\n");
     free(header);
-    free(data);
     return 0;
 }
 /*
@@ -1413,12 +1620,10 @@ int api_download(char *fullname,char *filename,int index)
     FILE *hd;
     hd=fopen(Con(TMP_R,api_download_header.txt),"w+");
     char *myUrl;
-    char *filename_tmp=oauth_url_escape(filename);
-    myUrl=(char *)malloc(sizeof(char)*(strlen(filename_tmp)+128));
-    memset(myUrl,0,strlen(filename_tmp)+128);
+    myUrl=(char *)malloc(128);
+    memset(myUrl,0,128);
 
-    snprintf(myUrl, sizeof(char)*(strlen(filename_tmp)+128), "%s%s","https://api-content.dropbox.com/1/files/dropbox",filename_tmp);
-    free(filename_tmp);
+    snprintf(myUrl, 128, "%s","https://content.dropboxapi.com/2/files/download");
     char *header;
     static const char buf[]="Expect:";
 #ifdef OAuth1
@@ -1426,10 +1631,17 @@ int api_download(char *fullname,char *filename,int index)
 #else
     header=makeAuthorize(1);
 #endif
+    char *output = NULL;
+    output=(char *)malloc(strlen(filename) + 128);
+    memset(output,0,strlen(filename)+128);
+    snprintf(output, strlen(filename)+128, "Dropbox-API-Arg: {\"path\": \"%s\"}", filename);
+
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, output);
     write_log(S_DOWNLOAD,"",fullname,index);
+    free(output);
     if(curl){
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
@@ -1438,6 +1650,7 @@ int api_download(char *fullname,char *filename,int index)
         curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
         curl_easy_setopt(curl,CURLOPT_URL,myUrl);
         CURL_DEBUG;
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
         curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
         curl_easy_setopt(curl,CURLOPT_NOPROGRESS,0L);
         curl_easy_setopt(curl,CURLOPT_PROGRESSFUNCTION,my_progress_func);
@@ -1481,7 +1694,7 @@ int api_download(char *fullname,char *filename,int index)
             fgets(tmp_name,sizeof(tmp_name),hd);
             wd_DEBUG("tmp:%s\n",tmp_name);
             fclose(hd);
-            if(strstr(tmp_name,"404")!=NULL)
+            if(strstr(tmp_name,"409 path/not_found")!=NULL)
             {
                 unlink(Localfilename_tmp);
             }
@@ -1489,7 +1702,10 @@ int api_download(char *fullname,char *filename,int index)
             {
                 if(rename(Localfilename_tmp,fullname)!=0)
                 {
+                    free(header);
+                    free(myUrl);
                     unlink(Localfilename_tmp);
+                    free(Localfilename_tmp);
                     return -1;
                 }
             }
@@ -1519,7 +1735,7 @@ long long int
 }
 
 
-int api_upload_put(char *filename,char *serverpath,int flag,int index)
+int api_upload_post(char *filename,char *serverpath,int flag,int index)
 {
     CURL *curl;
     CURLcode res;
@@ -1527,17 +1743,12 @@ int api_upload_put(char *filename,char *serverpath,int flag,int index)
     FILE *fp_1;
     FILE *fp_hd;
     struct stat filestat;
-    unsigned long int filesize;
 
     if( stat(filename,&filestat) == -1)
     {
         wd_DEBUG("servr sapce full stat error:%s file not exist\n",filename);
         return -1;
     }
-
-    filesize = filestat.st_size;
-
-    filesize = filesize / 1024 / 1024;
 
     fp_1=fopen(filename,"rb");
     if(fp_1 == NULL)
@@ -1546,26 +1757,19 @@ int api_upload_put(char *filename,char *serverpath,int flag,int index)
         return LOCAL_FILE_LOST;
     }
 
-    long long int size=get_file_size(filename);
     char *header;
-    static const char buf[]="Content-Type: test/plain";
 #ifdef OAuth1
     header=makeAuthorize(4);
 #else
-    header=makeAuthorize(2);
+    header=makeAuthorize(1);
 #endif
     struct curl_slist *headerlist=NULL;
-    char header_l[]="Content-Length: ";
-    char header1_l[128]="\0";
-    snprintf(header1_l, 128, "%s%d\n",header_l,size);
-    header1_l[strlen(header1_l)-1]='\0';
+    headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/octet-stream" );
     curl=curl_easy_init();
     char myUrl[1024]="\0";
     wd_DEBUG("serverpath = %s\n",serverpath);
-    if(flag)
-        snprintf(myUrl, 1024, "%s%s?%s&%s","https://api-content.dropbox.com/1/files_put/dropbox",serverpath,header,"overwrite=true");
-    else
-        snprintf(myUrl, 1024, "%s%s?%s&%s","https://api-content.dropbox.com/1/files_put/dropbox",serverpath,header,"overwrite=false");
+    snprintf(myUrl, 1024, "%s","https://content.dropboxapi.com/2/files/upload",serverpath);
 
     if(LOCAL_FILE.path != NULL)
         free(LOCAL_FILE.path);
@@ -1577,22 +1781,32 @@ int api_upload_put(char *filename,char *serverpath,int flag,int index)
     fp_hd=fopen(Con(TMP_R,upload_header.txt),"w+");
 
     if(curl){
+        char *output = NULL;
+        output=(char *)malloc(strlen(serverpath) + 128);
+        memset(output,0,strlen(serverpath)+128);
+        if(flag)
+            snprintf(output, strlen(serverpath)+128, "Dropbox-API-Arg: {\"path\": \"%s\",\"mode\": \"overwrite\",\"autorename\": true}", serverpath);
+        else
+            snprintf(output, strlen(serverpath)+128, "Dropbox-API-Arg: {\"path\": \"%s\",\"mode\": \"add\",\"autorename\": true}", serverpath);
+
+        headerlist=curl_slist_append(headerlist, output);
+        curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
         curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
         curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
-        curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
         curl_easy_setopt(curl,CURLOPT_URL,myUrl);
         CURL_DEBUG;
+        curl_easy_setopt(curl,CURLOPT_PUT,1L);
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)filestat.st_size);
         curl_easy_setopt(curl,CURLOPT_READDATA,fp_1);
-        curl_easy_setopt(curl,CURLOPT_UPLOAD,1L);
+        curl_easy_setopt(curl,CURLOPT_READFUNCTION, my_read_func);
         curl_easy_setopt(curl,CURLOPT_CONNECTTIMEOUT,10);//upload time_out
-        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)filestat.st_size);//2016.10.19 tina modify for uploadsize is 0 on mipselbig
         curl_easy_setopt(curl,CURLOPT_NOPROGRESS,0L);
         curl_easy_setopt(curl,CURLOPT_PROGRESSFUNCTION,my_progress_func);
         curl_easy_setopt(curl,CURLOPT_PROGRESSDATA,Clientfp);
-        curl_easy_setopt(curl,CURLOPT_READFUNCTION, my_read_func);
         curl_easy_setopt(curl,CURLOPT_LOW_SPEED_LIMIT,1);
         curl_easy_setopt(curl,CURLOPT_LOW_SPEED_TIME,30);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
@@ -1601,6 +1815,7 @@ int api_upload_put(char *filename,char *serverpath,int flag,int index)
         curl_easy_cleanup(curl);
         fclose(fp);
         fclose(fp_1);
+        free(output);
         if(res!=0){
             fclose(fp_hd);
             free(header);
@@ -1626,93 +1841,10 @@ int api_upload_put(char *filename,char *serverpath,int flag,int index)
         else
         {
             free(header);
-            rewind(fp_hd);
-            char tmp_[256];
-            while(!feof(fp_hd))
-            {
-                fgets(tmp_,sizeof(tmp_),fp_hd);
-                if(strstr(tmp_,"507 Quota Error") != NULL)
-                {
-                    write_log(S_ERROR,"server space is not enough!","",index);
-                    action_item *item;
-                    item = get_action_item("upload",filename,g_pSyncList[index]->up_space_not_enough_list,index);
-                    if(item == NULL)
-                    {
-                        add_action_item("upload",filename,g_pSyncList[index]->up_space_not_enough_list);
-                    }
-                    fclose(fp_hd);
-                    return SERVER_SPACE_NOT_ENOUGH;
-                }
-            }
             fclose(fp_hd);
         }
     }
     return 0;
-}
-int api_upload_post()
-{
-    CURL *curl;
-    CURLcode res;
-    FILE *fp;
-    FILE *fp_1;
-
-    struct stat filestat;
-    unsigned long int filesize;
-
-    if( stat("cookie_login.txt",&filestat) == -1)
-    {
-        wd_DEBUG("servr sapce full stat error:%s file not exist\n","cookie_login.txt");
-        return -1;
-    }
-
-    filesize = filestat.st_size;
-
-    filesize = filesize / 1024 / 1024;
-
-    fp_1=fopen("cookie_login.txt","rb+");
-    long long int size=get_file_size("cookie_login.txt");
-    wd_DEBUG("size=%d,filesize=%lu\n",size,filesize);
-    char *header;
-    static const char buf[]="Content-Type: test/plain";
-#ifdef OAuth1
-    header=makeAuthorize(4);
-#else
-    header=makeAuthorize(2);
-#endif
-    struct curl_slist *headerlist=NULL;
-    char header_l[]="Content-Length: ";
-    char header1_l[128]="\0";
-    snprintf(header1_l, 128, "%s%d\n",header_l,size);
-    wd_DEBUG("%d\n",strlen(header1_l));
-    header1_l[strlen(header1_l)-1]='\0';
-    curl=curl_easy_init();
-    char myUrl[256]="\0";
-    snprintf(myUrl, 256, "%s?%s","https://api-content.dropbox.com/1/files/dropbox/oauth_plaintext_example",header);
-
-    if(curl){
-        curl_easy_setopt(curl,CURLOPT_URL,myUrl);
-        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-        curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
-        curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
-        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
-        curl_easy_setopt(curl,CURLOPT_POST,1L);
-        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,fp_1);
-        curl_easy_setopt(curl,CURLOPT_POSTFIELDSIZE_LARGE,(curl_off_t)size);
-        fp=fopen("upload.txt","w");
-        curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
-
-        res=curl_easy_perform(curl);
-
-        curl_easy_cleanup(curl);
-        fclose(fp);
-        fclose(fp_1);
-        if(res!=0){
-            wd_DEBUG("delete [%d] failed!\n",res);
-            return -1;
-        }
-    }
-    free(header);
 }
 
 int my_progress_func(char *clientfp,double t,double d,double ultotal,double ulnow){
@@ -1787,7 +1919,7 @@ size_t my_read_func(void *ptr, size_t size, size_t nmemb, FILE *stream)
     return len;
 }
 
-int api_upload_chunk_put(char *buffer,char *upload_id,unsigned long offset,unsigned long chunk,int index,char *filepath)
+int api_upload_session(char *buffer,char *upload_id,unsigned long offset,unsigned long chunk,int index,char *filepath)
 {
     wd_DEBUG("upload_id: %s\n",upload_id);
     FILE *fp;
@@ -1797,7 +1929,7 @@ int api_upload_chunk_put(char *buffer,char *upload_id,unsigned long offset,unsig
 #ifdef OAuth1
     header=makeAuthorize(4);
 #else
-    header=makeAuthorize(2);
+    header=makeAuthorize(1);
 #endif
 
     fwrite(buffer,4000000/10,10,fp_2);
@@ -1805,16 +1937,26 @@ int api_upload_chunk_put(char *buffer,char *upload_id,unsigned long offset,unsig
     CURL *curl;
     CURLcode res;
     struct curl_slist *headerlist=NULL;
-
+    headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/octet-stream");
     curl=curl_easy_init();
     char *myUrl=(char *)malloc(2046);
     memset(myUrl,0,2046);
+    char *output = NULL;
+    output=(char *)malloc(256);
+    memset(output, 0, 256);
     if( upload_id ==NULL )
-        snprintf(myUrl, 2046, "%s?%s","https://api-content.dropbox.com/1/chunked_upload",header);
+    {
+        snprintf(output, 256, "%s", "Dropbox-API-Arg: {\"close\": false}");
+        snprintf(myUrl, 2046, "%s","https://content.dropboxapi.com/2/files/upload_session/start");
+    }
     else
     {
-        snprintf(myUrl, 2046, "%s?upload_id=%s&offset=%lu&%s","https://api-content.dropbox.com/1/chunked_upload",upload_id,chunk,header);
+        snprintf(output, 256, "Dropbox-API-Arg: {\"cursor\": {\"session_id\": \"%s\",\"offset\": %lu},\"close\": false}", upload_id, chunk);
+        snprintf(myUrl, 2046, "%s", "https://content.dropboxapi.com/2/files/upload_session/append_v2");
     }
+    headerlist=curl_slist_append(headerlist,output);
+    free(output);
     wd_DEBUG("myUrl: %s\n",myUrl);
 
     if(LOCAL_FILE.path != NULL)
@@ -1824,6 +1966,7 @@ int api_upload_chunk_put(char *buffer,char *upload_id,unsigned long offset,unsig
     LOCAL_FILE.index = index;
 
     if(curl){
+        curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
@@ -1831,9 +1974,9 @@ int api_upload_chunk_put(char *buffer,char *upload_id,unsigned long offset,unsig
         curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
         curl_easy_setopt(curl,CURLOPT_URL,myUrl);
         CURL_DEBUG;
-        curl_easy_setopt(curl,CURLOPT_READDATA,fp_2);
-        curl_easy_setopt(curl,CURLOPT_UPLOAD,1L);
         curl_easy_setopt(curl,CURLOPT_PUT,1L);
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_easy_setopt(curl,CURLOPT_READDATA,fp_2);
         curl_easy_setopt(curl,CURLOPT_CONNECTTIMEOUT,10);//upload time_out
         curl_easy_setopt(curl,CURLOPT_INFILESIZE_LARGE,(curl_off_t)offset);//put Content-Length
         fp=fopen(Con(TMP_R,upload_chunk_1.txt),"w+");
@@ -1892,8 +2035,8 @@ char *get_upload_id()
     upload_id=(char *)malloc(sizeof(char *)*512);
     memset(upload_id,0,512);
     fgets(buff,sizeof(buff),fp);
-    p=strstr(buff,"upload_id");
-    p=p+strlen("upload_id")+4;
+    p=strstr(buff,"session_id");
+    p=p+strlen("session_id")+4;
     m=strchr(p,'"');
     snprintf(upload_id,strlen(p)-strlen(m)+1,"%s",p);
     wd_DEBUG("upload_id : %s,%d\n",upload_id,strlen(upload_id));
@@ -1904,31 +2047,51 @@ char *get_upload_id()
     fclose(fp);
     return upload_id;
 }
-int api_upload_chunk_commit(char *upload_id,char *filename,int flag,int index)
+int api_upload_session_finish(char *buffer,char *upload_id,unsigned long offset,unsigned long chunk,int index,char *filepath, char*serverpath,int flag)
 {
     FILE *fp;
+    FILE *fp_2;
     FILE *fp_hd;
+    fp_2=fopen(Con(TMP_R,swap),"w+");
     char *header;
 #ifdef OAuth1
     header=makeAuthorize(4);
 #else
-    header=makeAuthorize(2);
+    header=makeAuthorize(1);
 #endif
+    fwrite(buffer,4000000/10,10,fp_2);
+    rewind(fp_2);
     CURL *curl;
     CURLcode res;
-    struct curl_slist *headerlist=NULL;
-
     curl=curl_easy_init();
-    char *data=malloc(256);
-    memset(data,0,256);
+
+    char *myUrl=(char *)malloc(2046);
+    memset(myUrl,0,2046);
+    snprintf(myUrl, 2046, "%s","https://content.dropboxapi.com/2/files/upload_session/finish");
+
+    char *output = NULL;
+    output=(char *)malloc(strlen(upload_id) + strlen(serverpath) + 256);
+    memset(output, 0, strlen(upload_id) + strlen(serverpath) + 256);
     if(flag)
-        snprintf(data, 256, "upload_id=%s",upload_id);
+        snprintf(output, strlen(upload_id) + strlen(serverpath) + 256, "Dropbox-API-Arg: {\"cursor\": {\"session_id\": \"%s\",\"offset\": %lu},\"commit\": {\"path\": \"%s\",\"mode\": \"overwrite\",\"autorename\": true}}", upload_id, chunk, serverpath);
     else
-        snprintf(data, 256, "overwrite=false&upload_id=%s",upload_id);
-    char myUrl[2046]="\0";
-    snprintf(myUrl, 2046, "%s%s?upload_id=%s&%s","https://api-content.dropbox.com/1/commit_chunked_upload/dropbox",filename,upload_id,header);
+        snprintf(output, strlen(upload_id) + strlen(serverpath) + 256, "Dropbox-API-Arg: {\"cursor\": {\"session_id\": \"%s\",\"offset\": %lu},\"commit\": {\"path\": \"%s\",\"mode\": \"add\",\"autorename\": true}}", upload_id, chunk, serverpath);
+
+    struct curl_slist *headerlist=NULL;
+    headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/octet-stream");
+    headerlist=curl_slist_append(headerlist,output);
+     free(output);
+    wd_DEBUG("myUrl: %s\n",myUrl);
+
+    if(LOCAL_FILE.path != NULL)
+        free(LOCAL_FILE.path);
+    LOCAL_FILE.path = (char*)malloc(sizeof(char)*(strlen(filepath) + 1));
+    snprintf(LOCAL_FILE.path, sizeof(char)*(strlen(filepath) + 1), "%s",filepath);
+    LOCAL_FILE.index = index;
 
     if(curl){
+        curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
@@ -1936,24 +2099,32 @@ int api_upload_chunk_commit(char *upload_id,char *filename,int flag,int index)
         curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
         curl_easy_setopt(curl,CURLOPT_URL,myUrl);
         CURL_DEBUG;
-        curl_easy_setopt(curl,CURLOPT_POST,1L);
-        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,data);
+        curl_easy_setopt(curl,CURLOPT_PUT,1L);
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_easy_setopt(curl,CURLOPT_READDATA,fp_2);
+        //curl_easy_setopt(curl,CURLOPT_UPLOAD,1L);
+        curl_easy_setopt(curl,CURLOPT_CONNECTTIMEOUT,10);//upload time_out
+        curl_easy_setopt(curl,CURLOPT_INFILESIZE_LARGE,(curl_off_t)offset);//put Content-Length
         fp=fopen(Con(TMP_R,upload_chunk_commit.txt),"w");
-        curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
+        curl_easy_setopt(curl,CURLOPT_NOPROGRESS,0L);
+        curl_easy_setopt(curl,CURLOPT_PROGRESSFUNCTION,my_progress_func);
+        curl_easy_setopt(curl,CURLOPT_PROGRESSDATA,Clientfp);
+        curl_easy_setopt(curl,CURLOPT_READFUNCTION, my_read_func);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
-
         fp_hd=fopen(Con(TMP_R,upload_header.txt),"w+");
         curl_easy_setopt(curl,CURLOPT_WRITEHEADER,fp_hd);
-
+        curl_easy_setopt(curl,CURLOPT_LOW_SPEED_LIMIT,1);
+        curl_easy_setopt(curl,CURLOPT_LOW_SPEED_TIME,30);
         res=curl_easy_perform(curl);
         curl_easy_cleanup(curl);
         fclose(fp);
-        if(res!=0){
+        fclose(fp_2);
+        if(res!=CURLE_OK){
             fclose(fp_hd);
             free(header);
-            free(data);
-            wd_DEBUG("upload %s failed,id is [%d]!\n",filename,res);
-            char *error_message=write_error_message("upload %s failed",filename);
+            free(myUrl);
+            wd_DEBUG("upload fail,id is %d!\n",res);
+            char *error_message=write_error_message("upload %s failed",filepath);
             write_log(S_ERROR,error_message,"",index);
             free(error_message);
             if( res == 7 )
@@ -1971,31 +2142,11 @@ int api_upload_chunk_commit(char *upload_id,char *filename,int flag,int index)
             else
                 return res;
         }
-        else
-        {
-            free(header);
-            free(data);
-            rewind(fp_hd);
-            char tmp_[256];
-            while(!feof(fp_hd))
-            {
-                fgets(tmp_,sizeof(tmp_),fp_hd);
-                if(strstr(tmp_,"507 Quota Error") != NULL)
-                {
-                    write_log(S_ERROR,"server space is not enough!","",index);
-                    action_item *item;
-                    item = get_action_item("upload",filename,g_pSyncList[index]->up_space_not_enough_list,index);
-                    if(item == NULL)
-                    {
-                        add_action_item("upload",filename,g_pSyncList[index]->up_space_not_enough_list);
-                    }
-                    fclose(fp_hd);
-                    return SERVER_SPACE_NOT_ENOUGH;
-                }
-            }
-            fclose(fp_hd);
-        }
+        fclose(fp_hd);
     }
+
+    free(header);
+    free(myUrl);
     return 0;
 }
 /*
@@ -2009,15 +2160,14 @@ int is_server_enough(char *filename)
     if(size_lo == -1)
         return -1;
     int status;
-    status=api_accout_info();
+    status=api_get_userspace();
     long long int size_server;
     if(status == 0)
     {
         cJSON *json = dofile(Con(TMP_R,data_3.txt));
-        cJSON_printf(json,"quota_info");
+        cJSON_printf(json,"used", NULL, NULL);
         cJSON_Delete(json);
-        size_server=server_quota-server_shared;
-        size_server-=server_normal;
+        size_server=server_allocated - server_used;
         wd_DEBUG("server free space is %lld\n",size_server);
 
         if(size_server> size_lo)
@@ -2049,7 +2199,7 @@ int free_upload_chunk_info()
     return 1;
 }
 
-int add_upload_chunked_info(char *filename,char *upload_id,unsigned long offset,unsigned long chunk,time_t expires)
+int add_upload_chunked_info(char *filename,char *upload_id,unsigned long offset,unsigned long chunk)
 {
     upload_chunk = (Upload_chunked *)malloc(sizeof(Upload_chunked));
     memset(upload_chunk,0,sizeof(upload_chunk));
@@ -2061,7 +2211,6 @@ int add_upload_chunked_info(char *filename,char *upload_id,unsigned long offset,
     snprintf(upload_chunk->upload_id, sizeof(char)*(strlen(upload_id)+1), "%s",upload_id);
     upload_chunk->chunk = chunk;
     upload_chunk->offset = offset;
-    upload_chunk->expires = expires;
     return 1;
 }
 
@@ -2073,7 +2222,6 @@ int api_upload_chunk_continue(char *filename,int index,int flag,char *serverpath
     unsigned long chunk = 0;
     FILE *fp_1;
     char *upload_id = (char *)malloc(sizeof(char)*(strlen(upload_chunk->upload_id)+1));
-    time_t expires = upload_chunk->expires;
     memset(upload_id,'\0',strlen(upload_chunk->upload_id)+1);
     snprintf(upload_id, sizeof(char)*(strlen(upload_chunk->upload_id)+1), "%s",upload_chunk->upload_id);
     char *buffer = malloc(4000000);
@@ -2087,15 +2235,15 @@ int api_upload_chunk_continue(char *filename,int index,int flag,char *serverpath
     fseek(fp_1,upload_chunk->chunk,SEEK_SET);
 
     chunk = upload_chunk->chunk;
-    while(chunk+offset <= size)
+    while(chunk+offset < size)
     {
         memset(buffer,0,4000000);
-        fread(buffer,sizeof(buffer)/10,10,fp_1);
-        res=api_upload_chunk_put(buffer,upload_id,offset,chunk,index,filename);
+        fread(buffer,4000000/10,10,fp_1);
+        res=api_upload_session(buffer,upload_id,offset,chunk,index,filename);
         if(res != 0)
         {
             free_upload_chunk_info();
-            add_upload_chunked_info(filename,upload_id,offset,chunk,expires);
+            add_upload_chunked_info(filename,upload_id,offset,chunk);
 
             fclose(fp_1);
             free(upload_id);
@@ -2106,26 +2254,14 @@ int api_upload_chunk_continue(char *filename,int index,int flag,char *serverpath
     }
     offset = size-chunk;
     memset(buffer,0,4000000);
-    fread(buffer,sizeof(buffer)/10,10,fp_1);
-    res = api_upload_chunk_put(buffer,upload_id,offset,chunk,index,filename);
-    if(res != 0)
-    {
-        free_upload_chunk_info();
-        add_upload_chunked_info(filename,upload_id,offset,chunk,expires);
-        fclose(fp_1);
-        free(buffer);
-        free(upload_id);
-        return res;
-    }
-    char *serverpath_encode=oauth_url_escape(serverpath);
-    res=api_upload_chunk_commit(upload_id,serverpath_encode,flag,index);
-    free(serverpath_encode);
+    fread(buffer,4000000/10,10,fp_1);
+    res=api_upload_session_finish(buffer,upload_id,offset,chunk,index,filename,serverpath,flag);
     if(res != 0)
     {
         free_upload_chunk_info();
         fclose(fp_1);
-        free(upload_id);
         free(buffer);
+        free(upload_id);
         return res;
     }
 
@@ -2152,9 +2288,9 @@ int api_upload_chunk(char *filename,int index,int flag,char *serverpath,unsigned
     }
     char *buffer = malloc(4000000);
     memset(buffer,0,4000000);
-    fread(buffer,sizeof(buffer)/10,10,fp_1);
+    fread(buffer,4000000/10,10,fp_1);
     start_time = time(NULL);
-    res = api_upload_chunk_put(buffer,NULL,offset,0,index,filename);//offset :Content-length;chunk :offset
+    res = api_upload_session(buffer,NULL,offset,0,index,filename);//offset :Content-length;chunk :offset
     if(res != 0)
     {
         fclose(fp_1);
@@ -2169,20 +2305,16 @@ int api_upload_chunk(char *filename,int index,int flag,char *serverpath,unsigned
         free(buffer);
         return -1;
     }
-    cJSON *json = dofile(Con(TMP_R,upload_chunk_1.txt));
-    time_t mtime=cJSON_printf_expires(json);
-    cJSON_Delete(json);
-    wd_DEBUG("filename chunked file expires : %d\n",mtime);
     chunk = offset;
     while(chunk+offset <= size)
     {
         memset(buffer,0,4000000);
-        fread(buffer,sizeof(buffer)/10,10,fp_1);
-        res=api_upload_chunk_put(buffer,upload_id,offset,chunk,index,filename);
+        fread(buffer,4000000/10,10,fp_1);
+        res=api_upload_session(buffer,upload_id,offset,chunk,index,filename);
         if(res != 0)
         {
             free_upload_chunk_info();
-            add_upload_chunked_info(filename,upload_id,offset,chunk,mtime);
+            add_upload_chunked_info(filename,upload_id,offset,chunk);
 
             fclose(fp_1);
             free(upload_id);
@@ -2193,23 +2325,11 @@ int api_upload_chunk(char *filename,int index,int flag,char *serverpath,unsigned
     }
     offset=size-chunk;
     memset(buffer,0,4000000);
-    fread(buffer,sizeof(buffer)/10,10,fp_1);
-    res=api_upload_chunk_put(buffer,upload_id,offset,chunk,index,filename);
+    fread(buffer,4000000/10,10,fp_1);
+    res=api_upload_session_finish(buffer,upload_id,offset,chunk,index,filename,serverpath,flag);
     if(res!=0)
     {
         free_upload_chunk_info();
-        add_upload_chunked_info(filename,upload_id,offset,chunk,mtime);
-        fclose(fp_1);
-        free(upload_id);
-        free(buffer);
-        return res;
-    }
-
-    char *serverpath_encode=oauth_url_escape(serverpath);
-    res=api_upload_chunk_commit(upload_id,serverpath_encode,flag,index);
-    free(serverpath_encode);
-    if(res!=0)
-    {
         fclose(fp_1);
         free(upload_id);
         free(buffer);
@@ -2283,8 +2403,7 @@ int upload_file(char *filename,char *serverpath,int flag,int index)
         if(upload_chunk != NULL)
         {
             time_t cur_ts = time(NULL);
-            time_t expires = upload_chunk->expires;
-            if(strcmp(filename,upload_chunk->filename) == 0 || expires == -1 || cur_ts < expires)
+            if(strcmp(filename,upload_chunk->filename) == 0)
             {
                 res = api_upload_chunk_continue(filename,index,flag,serverpath,size);
                 if(res != 0)
@@ -2313,9 +2432,7 @@ int upload_file(char *filename,char *serverpath,int flag,int index)
     }
     else
     {
-        char *serverpath_encode=oauth_url_escape(serverpath);
-        res=api_upload_put(filename,serverpath_encode,flag,index);
-        free(serverpath_encode);
+        res=api_upload_post(filename,serverpath,flag,index);
         if(res!=0)
         {
             return res;
@@ -2328,12 +2445,6 @@ int api_delete(char *herf,int index)
     CURL *curl;
     CURLcode res;
     FILE *fp;
-    char *herf_tmp=oauth_url_escape(herf);
-    char *data=(char *)malloc(sizeof(char)*(strlen(herf_tmp)+64));
-    memset(data,0,strlen(herf_tmp)+64);
-
-    snprintf(data, sizeof(char)*(strlen(herf_tmp)+64), "%s%s","root=dropbox&path=",herf_tmp);
-    free(herf_tmp);
     char *header;
 #ifdef OAuth1
     header=makeAuthorize(3);
@@ -2343,16 +2454,23 @@ int api_delete(char *herf,int index)
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/json" );
     if(curl){
+        char *output = NULL;
+        output=(char *)malloc(strlen(herf) + 128);
+        memset(output,0,strlen(herf) + 128);
+        snprintf(output, strlen(herf) + 128, "{\"path\": \"%s\"}", herf);
+        printf("output=%s!!\n", output);
+
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
         curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
         curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
-        curl_easy_setopt(curl,CURLOPT_URL,"https://api.dropbox.com/1/fileops/delete");
+        curl_easy_setopt(curl,CURLOPT_URL,"https://api.dropboxapi.com/2/files/delete");
         CURL_DEBUG;
         curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
-        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,data);
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,output);
         fp=fopen(Con(TMP_R,api_delete.txt),"w");
         curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
@@ -2360,10 +2478,10 @@ int api_delete(char *herf,int index)
 
         curl_easy_cleanup(curl);
         fclose(fp);
+        free(output);
         curl_slist_free_all(headerlist);
         if(res!=0){
             free(header);
-            free(data);
             char error_info[100];
             memset(error_info,0,sizeof(error_info));
             snprintf(error_info, 100, "%s%s","delete fail ",herf);
@@ -2372,7 +2490,6 @@ int api_delete(char *herf,int index)
         }
     }
     free(header);
-    free(data);
     return 0;
 }
 /*
@@ -2399,12 +2516,6 @@ int api_create_folder(char *localpath,char *foldername)
 
     FILE *fp_hd;
     fp_hd=fopen(Con(TMP_R,create_folder_header.txt),"w");
-
-    char *foldername_tmp=oauth_url_escape(foldername);
-    char *data=(char *)malloc(sizeof(char)*(strlen(foldername_tmp)+32));
-    memset(data,0,strlen(foldername_tmp)+32);
-    snprintf(data, sizeof(char)*(strlen(foldername_tmp)+32), "%s%s","root=dropbox&path=",foldername_tmp);
-    free(foldername_tmp);
     char *header;
 #ifdef OAuth1
     header=makeAuthorize(3);
@@ -2414,16 +2525,22 @@ int api_create_folder(char *localpath,char *foldername)
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/json" );
     if(curl){
+        char *output = NULL;
+        output=(char *)malloc(strlen(foldername) + 128);
+        memset(output,0,strlen(foldername)+128);
+        snprintf(output, strlen(foldername)+128, "{\"path\": \"%s\",\"autorename\": true}", foldername);
+
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
         curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
         curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
-        curl_easy_setopt(curl,CURLOPT_URL,"https://api.dropbox.com/1/fileops/create_folder");
+        curl_easy_setopt(curl,CURLOPT_URL,"https://api.dropboxapi.com/2/files/create_folder");
         CURL_DEBUG;
         curl_easy_setopt(curl,CURLOPT_HTTPHEADER,headerlist);
-        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,data);
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,output);
         curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
         curl_easy_setopt(curl,CURLOPT_WRITEHEADER,fp_hd);
@@ -2432,49 +2549,54 @@ int api_create_folder(char *localpath,char *foldername)
         curl_easy_cleanup(curl);
         fclose(fp);
         fclose(fp_hd);
+        free(output);
         curl_slist_free_all(headerlist);
         if(res!=0){
             free(header);
-            free(data);
             wd_DEBUG("create %s failed,is [%d] !\n",foldername,res);
             return res;
         }
         else
         {
-            /*deal big or small case sentive problem,will return 403*/
+            /*deal big or small case sentive problem,will return 409*/
             if(parse_create_folder(Con(TMP_R,create_folder_header.txt)))
             {
-#ifndef MULTI_PATH
-                char *server_conflcit_name=get_server_exist(foldername,0);
-                if(server_conflcit_name)
+                cJSON *json = dofile(Con(TMP_R,create_folder.txt));
+                int cf_error_flag=cJSON_printf_error(json,"error_summary");
+                cJSON_Delete(json);
+                if(3 == cf_error_flag)
                 {
-                    char *local_conflcit_name = serverpath_to_localpath(server_conflcit_name,0);
-                    char *g_newname = get_confilicted_name_case(local_conflcit_name,1);
-                    my_free(local_conflcit_name);
-
-                    updata_socket_list(localpath,g_newname,0);
-
-                    if(access(localpath,0) == 0)
+#ifndef MULTI_PATH
+                    char *server_conflcit_name=get_server_exist(foldername,0);
+                    if(server_conflcit_name)
                     {
-                        add_action_item("rename",g_newname,g_pSyncList[0]->server_action_list);
-                        rename(localpath,g_newname);
+                        char *local_conflcit_name = serverpath_to_localpath(server_conflcit_name,0);
+                        char *g_newname = get_confilicted_name_case(local_conflcit_name,1);
+                        my_free(local_conflcit_name);
+
+                        updata_socket_list(localpath,g_newname,0);
+
+                        if(access(localpath,0) == 0)
+                        {
+                            add_action_item("rename",g_newname,g_pSyncList[0]->server_action_list);
+                            rename(localpath,g_newname);
+                        }
+
+                        char *s_newname = localpath_to_serverpath(g_newname,0);
+                        int status=0;
+                        do
+                        {
+                            status = api_create_folder(g_newname,s_newname);
+                        }while(status != 0 && !exit_loop);
+                        my_free(g_newname);
+                        my_free(s_newname);
                     }
-
-                    char *s_newname = localpath_to_serverpath(g_newname,0);
-                    int status=0;
-                    do
-                    {
-                        status = api_create_folder(g_newname,s_newname);
-                    }while(status != 0 && !exit_loop);
-                    my_free(g_newname);
-                    my_free(s_newname);
-                }
 #endif
+                }
             }
         }
     }
     free(header);
-    free(data);
     return 0;
 }
 int parse_config_mutidir(char *path,struct asus_config *config)
@@ -2935,7 +3057,7 @@ int sync_local_with_server_init(Server_TreeNode *treenode,Browse *perform_br,Loc
                     if(ret == 0)
                     {
                         cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                        time_t mtime=cJSON_printf(json,"modified");
+                        time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
                         cJSON_Delete(json);
                         ChangeFile_modtime(localfiletmp->path,mtime);
                         free(serverpath);
@@ -3029,7 +3151,7 @@ int sync_local_with_server_init(Server_TreeNode *treenode,Browse *perform_br,Loc
                         if(ret == 0)
                         {
                             cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                            time_t mtime=cJSON_printf(json,"modified");
+                            time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
                             cJSON_Delete(json);
                             ChangeFile_modtime(localfiletmp->path,mtime);
                             free(serverpath);
@@ -3707,11 +3829,9 @@ time_t api_getmtime(char *phref,cJSON *(*cmd_data)(char *filename))
     CURLcode res;
     FILE *fp;
     char *myUrl;
-    char *phref_tmp=oauth_url_escape(phref);
-    myUrl=(char *)malloc(sizeof(char)*(strlen(phref_tmp)+128));
-    memset(myUrl,0,strlen(phref_tmp)+128);
-    snprintf(myUrl, sizeof(char)*(strlen(phref_tmp)+128), "%s%s","https://api.dropbox.com/1/metadata/dropbox",phref_tmp);
-    free(phref_tmp);
+    myUrl=(char *)malloc(128);
+    memset(myUrl,0,128);
+    snprintf(myUrl, 128, "%s","https://api.dropboxapi.com/2/files/get_metadata");
     char *header;
     FILE *hd;
     hd=fopen(Con(TMP_R,api_getmime.txt),"w+");
@@ -3723,7 +3843,16 @@ time_t api_getmtime(char *phref,cJSON *(*cmd_data)(char *filename))
     struct curl_slist *headerlist=NULL;
     curl=curl_easy_init();
     headerlist=curl_slist_append(headerlist,header);
+    headerlist=curl_slist_append(headerlist, "Content-Type: application/json" );
     if(curl){
+        char *output = NULL;
+        output=(char *)malloc(strlen(phref) + 128);
+        memset(output,0,strlen(phref) + 128);
+        if(strcmp(phref, "/") == 0)
+            snprintf(output, strlen(phref) + 128, "{\"path\": \"%s\"}", "");
+        else
+            snprintf(output, strlen(phref) + 128, "{\"path\": \"%s\"}", phref);
+
         curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,2L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_CAINFO, CA_INFO_FILE);
@@ -3736,10 +3865,13 @@ time_t api_getmtime(char *phref,cJSON *(*cmd_data)(char *filename))
         curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
         curl_easy_setopt(curl,CURLOPT_WRITEHEADER,hd);
+        curl_easy_setopt(curl,CURLOPT_POST,1L);
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,output);
         res=curl_easy_perform(curl);
 
         curl_easy_cleanup(curl);
         fclose(fp);
+        free(output);
         curl_slist_free_all(headerlist);
         if(res!=0){
             fclose(hd);
@@ -3754,7 +3886,7 @@ time_t api_getmtime(char *phref,cJSON *(*cmd_data)(char *filename))
             char tmp[256]="\0";
             fgets(tmp,sizeof(tmp),hd);
             fclose(hd);
-            if(strstr(tmp,"404")!=NULL)
+            if(strstr(tmp,"409")!=NULL)
             {
                 return -1;
             }
@@ -3921,7 +4053,22 @@ int is_server_exist(char *path,char *temp_name,int index)
     FileTail_one = FileList_one;
     FileTail_one->next = NULL;
     wd_DEBUG("is_server_exist path:%s\n",path);
-    status=api_metadata_one(path,dofile);
+    int has_more_one=0;
+    char *cursor = NULL;
+    status=api_metadata_one(path,dofile, &has_more_one, &cursor);
+    if(status == 0)
+    {
+        while(has_more_one && cursor)
+        {
+            has_more_one=0;
+            api_list_continue_one(dofile, &has_more_one, &cursor);
+        }
+    }
+    if(cursor)
+    {
+        free(cursor);
+        cursor=NULL;
+    }
     CloudFile *de_filecurrent;
     de_filecurrent=FileList_one->next;
     while(de_filecurrent != NULL)
@@ -3960,12 +4107,32 @@ char *get_server_exist(char *temp_name,int index)
     FileTail_one = FileList_one;
     FileTail_one->next = NULL;
     wd_DEBUG("get_server_exist path:%s\n",path);
-    status=api_metadata_one(path,dofile);
+    int has_more_one=0;
+    char *cursor = NULL;
+    status=api_metadata_one(path, dofile, &has_more_one, &cursor);
     if(status == -1)
     {
         free_CloudFile_item(FileList_one);
         free(path);
+        if(cursor)
+        {
+            free(cursor);
+            cursor=NULL;
+        }
         return NULL;
+    }
+    else if(status == 0)
+    {
+        while(has_more_one && cursor)
+        {
+            has_more_one=0;
+            api_list_continue_one(dofile, &has_more_one, &cursor);
+        }
+    }
+    if(cursor)
+    {
+        free(cursor);
+        cursor=NULL;
     }
     char *temp_name_g = my_str_malloc(strlen(temp_name)+1);
     snprintf(temp_name_g, sizeof(char)*(strlen(temp_name)+1), "%s",temp_name);
@@ -4197,7 +4364,7 @@ int the_same_name_compare(LocalFile *localfiletmp,CloudFile *filetmp,int index,i
                 if(ret == 0)
                 {
                     cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                    time_t mtime=cJSON_printf(json,"modified");
+                    time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
                     cJSON_Delete(json);
                     ChangeFile_modtime(localfiletmp->path,mtime);
                 }
@@ -4228,7 +4395,7 @@ int the_same_name_compare(LocalFile *localfiletmp,CloudFile *filetmp,int index,i
                     {
                         char *newlocalname = NULL;
                         cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                        time_t mtime=cJSON_printf(json,"modified");
+                        time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
                         cJSON_Delete(json);
 
                         newlocalname=change_local_same_file(localfiletmp->path,index);
@@ -4293,7 +4460,7 @@ int the_same_name_compare(LocalFile *localfiletmp,CloudFile *filetmp,int index,i
                 if(ret == 0)
                 {
                     cJSON * json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                    time_t mtime=cJSON_printf(json,"modified");
+                    time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
                     cJSON_Delete(json);
 
                     ChangeFile_modtime(localfiletmp->path,mtime);
@@ -6755,7 +6922,7 @@ int cmd_parser(char *cmd,int index,char *re_cmd)
         {
             char *newlocalname = NULL;
             cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-            time_t mtime=cJSON_printf(json,"modified");
+            time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
             cJSON_Delete(json);
             if(re_cmd == NULL)
                 newlocalname=change_local_same_file(fullname,index);
@@ -6828,7 +6995,7 @@ int cmd_parser(char *cmd,int index,char *re_cmd)
             if(status == 0)
             {
                 cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                time_t mtime=cJSON_printf(json,"modified");
+                time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
                 cJSON_Delete(json);
                 if(re_cmd == NULL)
                     ChangeFile_modtime(fullname,mtime);
@@ -6864,7 +7031,7 @@ int cmd_parser(char *cmd,int index,char *re_cmd)
                 if(status == 0)
                 {
                     cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                    time_t mtime=cJSON_printf(json,"modified");
+                    time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
                     cJSON_Delete(json);
                     if(re_cmd == NULL)
                         ChangeFile_modtime(fullname,mtime);
@@ -6900,7 +7067,7 @@ int cmd_parser(char *cmd,int index,char *re_cmd)
                 {
                     char *newlocalname = NULL;
                     cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                    time_t mtime=cJSON_printf(json,"modified");
+                    time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
                     cJSON_Delete(json);
                     if(re_cmd == NULL)
                         newlocalname=change_local_same_file(fullname,index);
@@ -7344,20 +7511,26 @@ int dragfolder_old_dir(char *dir,int index,char *old_dir)
         exist=parse_create_folder(Con(TMP_R,create_folder.txt));
         if(exist)
         {
-            char *newname;
-            newname=change_server_same_name(old_dir,index);
-
-            status = api_move(old_dir,newname,index,0,NULL);
-
-            free(newname);
-            if(status ==0)
+            cJSON *json = dofile(Con(TMP_R,create_folder.txt));
+            int cf_error_flag=cJSON_printf_error(json,"error_summary");
+            cJSON_Delete(json);
+            if(3 == cf_error_flag)
             {
-                status=api_create_folder(dir,old_dir);
-            }
-            if(status != 0)
-            {
-                closedir(pDir);
-                return status;
+                char *newname;
+                newname=change_server_same_name(old_dir,index);
+
+                status = api_move(old_dir,newname,index,0,NULL);
+
+                free(newname);
+                if(status ==0)
+                {
+                    status=api_create_folder(dir,old_dir);
+                }
+                if(status != 0)
+                {
+                    closedir(pDir);
+                    return status;
+                }
             }
         }
 
@@ -7408,7 +7581,7 @@ int dragfolder_old_dir(char *dir,int index,char *old_dir)
                 if(status == 0)
                 {
                     cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                    time_t mtime=cJSON_printf(json,"modified");
+                    time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
                     cJSON_Delete(json);
                     ChangeFile_modtime(fullname,mtime);
 
@@ -7467,20 +7640,26 @@ int dragfolder(char *dir,int index)
         exist=parse_create_folder(Con(TMP_R,create_folder.txt));
         if(exist)
         {
-            char *newname;
-            newname=change_server_same_name(serverpath,index);
+            cJSON *json = dofile(Con(TMP_R,create_folder.txt));
+            int cf_error_flag=cJSON_printf_error(json,"error_summary");
+            cJSON_Delete(json);
+            if(3 == cf_error_flag)
+            {
+                char *newname;
+                newname=change_server_same_name(serverpath,index);
 
             status = api_move(serverpath,newname,index,0,NULL);
 
-            free(newname);
-            if(status ==0)
-            {
-                status=api_create_folder(dir,serverpath);
-            }
-            if(status != 0)
-            {
-                closedir(pDir);
-                return status;
+                free(newname);
+                if(status ==0)
+                {
+                    status=api_create_folder(dir,serverpath);
+                }
+                if(status != 0)
+                {
+                    closedir(pDir);
+                    return status;
+                }
             }
         }
         free(serverpath);
@@ -7530,7 +7709,7 @@ int dragfolder(char *dir,int index)
                 if(status == 0)
                 {
                     cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-                    time_t mtime=cJSON_printf(json,"modified");
+                    time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
                     cJSON_Delete(json);
                     ChangeFile_modtime(fullname,mtime);
 
@@ -7585,7 +7764,7 @@ int parse_create_folder(char *filename)
         }
     }
 #endif
-    if(strstr(tmp,"403") != NULL)
+    if(strstr(tmp,"409") != NULL)
     {
         return 1;
     }
@@ -8307,8 +8486,9 @@ Browse *browseFolder(char *URL){
     TreeFileTail = TreeFileList;
     TreeFolderTail->next = NULL;
     TreeFileTail->next = NULL;
-
-    status = api_metadata(URL,dofile);
+    int has_more=0;
+    char *cursor = NULL;
+    status = api_list_folder(URL,dofile, &has_more, &cursor);
     if(status != 0)
     {
         free_CloudFile_item(TreeFolderList);
@@ -8316,7 +8496,25 @@ Browse *browseFolder(char *URL){
         TreeFolderList = NULL;
         TreeFileList = NULL;
         free(browse);
+        if(cursor)
+        {
+            free(cursor);
+            cursor=NULL;
+        }
         return NULL;
+    }
+    else
+    {
+        while(has_more && cursor)
+        {
+            has_more=0;
+            api_list_continue(dofile, &has_more, &cursor);
+        }
+    }
+    if(cursor)
+    {
+        free(cursor);
+        cursor=NULL;
     }
 
     browse->filelist = TreeFileList;
@@ -8853,7 +9051,7 @@ int do_unfinished(int index){
         if(ret == 0)
         {
             cJSON *json = dofile(Con(TMP_R,upload_chunk_commit.txt));
-            time_t mtime=cJSON_printf(json,"modified");
+            time_t mtime=cJSON_printf(json,"server_modified", NULL, NULL);
             cJSON_Delete(json);
             ChangeFile_modtime(p->path,mtime);
 
@@ -8895,17 +9093,17 @@ int write_log(int status, char *message, char *filename,int index)
 
     if(status == S_SYNC && exit_loop ==0)
     {
-        ret = api_accout_info();
+        ret = api_get_userspace();
         if(ret==0)
         {
             cJSON *json=dofile(Con(TMP_R,data_3.txt));
-            cJSON_printf(json,"quota_info");
+            cJSON_printf(json,"used", NULL, NULL);
             if(json)
                 cJSON_Delete(json);
         }
 
     }
-    long long int totalspace = server_quota;
+    long long int totalspace = server_allocated;
 
     mount_path_length = asus_cfg.prule[index]->base_path_len;
 
@@ -8931,7 +9129,7 @@ int write_log(int status, char *message, char *filename,int index)
 
         snprintf(log_s.error, 512, "%s", message);
         fprintf(fp,"STATUS:%d\nERR_MSG:%s\nTOTAL_SPACE:%lld\nUSED_SPACE:%lld\nRULENUM:%d\n",
-                log_s.status,log_s.error,totalspace,server_normal+server_shared,index);
+                log_s.status,log_s.error,totalspace,server_used,index);
     }
     else if(log_s.status == S_DOWNLOAD)
     {
@@ -8940,7 +9138,7 @@ int write_log(int status, char *message, char *filename,int index)
 
         snprintf(log_s.path, 512, "%s", filename);
         fprintf(fp,"STATUS:%d\nMOUNT_PATH:%s\nFILENAME:%s\nTOTAL_SPACE:%lld\nUSED_SPACE:%lld\nRULENUM:%d\n",
-                log_s.status,asus_cfg.prule[index]->base_path,log_s.path+mount_path_length,totalspace,server_normal+server_shared,index);
+                log_s.status,asus_cfg.prule[index]->base_path,log_s.path+mount_path_length,totalspace,server_used,index);
     }
     else if(log_s.status == S_UPLOAD)
     {
@@ -8949,7 +9147,7 @@ int write_log(int status, char *message, char *filename,int index)
 
         snprintf(log_s.path, 512, "%s", filename);
         fprintf(fp,"STATUS:%d\nMOUNT_PATH:%s\nFILENAME:%s\nTOTAL_SPACE:%lld\nUSED_SPACE:%lld\nRULENUM:%d\n",
-                log_s.status,asus_cfg.prule[index]->base_path,log_s.path+mount_path_length,totalspace,server_normal+server_shared,index);
+                log_s.status,asus_cfg.prule[index]->base_path,log_s.path+mount_path_length,totalspace,server_used,index);
     }
     else
     {
@@ -8959,7 +9157,7 @@ int write_log(int status, char *message, char *filename,int index)
             wd_DEBUG("******** other status is SYNC *******\n");
 
         fprintf(fp,"STATUS:%d\nTOTAL_SPACE:%lld\nUSED_SPACE:%lld\nRULENUM:%d\n",
-                log_s.status,totalspace,server_normal+server_shared,index);
+                log_s.status,totalspace,server_used,index);
     }
 
     fclose(fp);

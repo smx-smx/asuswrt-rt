@@ -64,6 +64,7 @@ int no_config;
 int restart_run;
 int stop_progress = 0;
 int exit_loop = 0;
+int error_flag;
 int retry_fail_time = 0;
 my_mutex_t my_mutex = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,0};
 my_mutex_t wait_server_mutex = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,0};
@@ -80,7 +81,7 @@ int server_space_full = 0;
 int local_space_full = 0 ;
 int has_del_fiel = 0;
 int has_socket = 0;
-int max_upload_filesize;
+long long int max_upload_filesize;
 struct asus_config cfg;
 int no_local_root = 0; /* handle rm sync root dir*/
 int mysync;
@@ -171,9 +172,9 @@ int set_iptables(int flag)
     char cmd[1024]={0};
 #ifdef I686
 #else
-    sprintf(cmd, "iptables -D INPUT -p tcp -m tcp --dport %d -j DROP", MYPORT);
+    snprintf(cmd, 1024, "iptables -D INPUT -p tcp -m tcp --dport %d -j DROP", MYPORT);
     rc = system(cmd);
-    sprintf(cmd, "iptables -D INPUT -p tcp -m tcp -s 127.0.0.1 --dport %d -j ACCEPT", MYPORT);
+    snprintf(cmd, 1024, "iptables -D INPUT -p tcp -m tcp -s 127.0.0.1 --dport %d -j ACCEPT", MYPORT);
     rc = system(cmd);
 #endif
 
@@ -182,9 +183,9 @@ int set_iptables(int flag)
 #ifdef I686
         rc = 0;
 #else
-        sprintf(cmd, "iptables -I INPUT -p tcp -m tcp --dport %d -j DROP", MYPORT);
+        snprintf(cmd, 1024, "iptables -I INPUT -p tcp -m tcp --dport %d -j DROP", MYPORT);
         rc = system(cmd);
-        sprintf(cmd, "iptables -I INPUT -p tcp -m tcp -s 127.0.0.1 --dport %d -j ACCEPT", MYPORT);
+        snprintf(cmd, 1024, "iptables -I INPUT -p tcp -m tcp -s 127.0.0.1 --dport %d -j ACCEPT", MYPORT);
         rc = system(cmd);
 #endif
     }
@@ -203,25 +204,30 @@ int write_rootca()
         printf("open rootca  file %s fail\n",CA_INFO_FILE);
         return -1;
     }
+
     fprintf(fp,"%s","-----BEGIN CERTIFICATE-----\n"
-            "MIIDVDCCAjygAwIBAgIDAjRWMA0GCSqGSIb3DQEBBQUAMEIxCzAJBgNVBAYTAlVT\n"
-            "MRYwFAYDVQQKEw1HZW9UcnVzdCBJbmMuMRswGQYDVQQDExJHZW9UcnVzdCBHbG9i\n"
-            "YWwgQ0EwHhcNMDIwNTIxMDQwMDAwWhcNMjIwNTIxMDQwMDAwWjBCMQswCQYDVQQG\n"
-            "EwJVUzEWMBQGA1UEChMNR2VvVHJ1c3QgSW5jLjEbMBkGA1UEAxMSR2VvVHJ1c3Qg\n"
-            "R2xvYmFsIENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2swYYzD9\n"
-            "9BcjGlZ+W988bDjkcbd4kdS8odhM+KhDtgPpTSEHCIjaWC9mOSm9BXiLnTjoBbdq\n"
-            "fnGk5sRgprDvgOSJKA+eJdbtg/OtppHHmMlCGDUUna2YRpIuT8rxh0PBFpVXLVDv\n"
-            "iS2Aelet8u5fa9IAjbkU+BQVNdnARqN7csiRv8lVK83Qlz6cJmTM386DGXHKTubU\n"
-            "1XupGc1V3sjs0l44U+VcT4wt/lAjNvxm5suOpDkZALeVAjmRCw7+OC7RHQWa9k0+\n"
-            "bw8HHa8sHo9gOeL6NlMTOdReJivbPagUvTLrGAMoUgRx5aszPeE4uwc2hGKceeoW\n"
-            "MPRfwCvocWvk+QIDAQABo1MwUTAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBTA\n"
-            "ephojYn7qwVkDBF9qn1luMrMTjAfBgNVHSMEGDAWgBTAephojYn7qwVkDBF9qn1l\n"
-            "uMrMTjANBgkqhkiG9w0BAQUFAAOCAQEANeMpauUvXVSOKVCUn5kaFOSPeCpilKIn\n"
-            "Z57QzxpeR+nBsqTP3UEaBU6bS+5Kb1VSsyShNwrrZHYqLizz/Tt1kL/6cdjHPTfS\n"
-            "tQWVYrmm3ok9Nns4d0iXrKYgjy6myQzCsplFAMfOEVEiIuCl6rYVSAlk6l5PdPcF\n"
-            "PseKUgzbFbS9bZvlxrFUaKnjaZC2mqUPuLk/IH2uSrW4nOQdtqvmlKXBx4Ot2/Un\n"
-            "hw4EbNX/3aBd7YdStysVAq45pmp06drE57xNNB6pXE0zX5IJL4hmXXeXxx12E6nV\n"
-            "5fEWCRE11azbJHFwLJhWC9kXtNHjUStedejV0NxPNO3CBWaAocvmMw==\n"
+            "MIID/jCCAuagAwIBAgIQFaxulBmyeUtB9iepwxgPHzANBgkqhkiG9w0BAQsFADCB\n"
+            "mDELMAkGA1UEBhMCVVMxFjAUBgNVBAoTDUdlb1RydXN0IEluYy4xOTA3BgNVBAsT\n"
+            "MChjKSAyMDA4IEdlb1RydXN0IEluYy4gLSBGb3IgYXV0aG9yaXplZCB1c2Ugb25s\n"
+            "eTE2MDQGA1UEAxMtR2VvVHJ1c3QgUHJpbWFyeSBDZXJ0aWZpY2F0aW9uIEF1dGhv\n"
+            "cml0eSAtIEczMB4XDTA4MDQwMjAwMDAwMFoXDTM3MTIwMTIzNTk1OVowgZgxCzAJ\n"
+            "BgNVBAYTAlVTMRYwFAYDVQQKEw1HZW9UcnVzdCBJbmMuMTkwNwYDVQQLEzAoYykg\n"
+            "MjAwOCBHZW9UcnVzdCBJbmMuIC0gRm9yIGF1dGhvcml6ZWQgdXNlIG9ubHkxNjA0\n"
+            "BgNVBAMTLUdlb1RydXN0IFByaW1hcnkgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkg\n"
+            "LSBHMzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANziXmJYHTNXOTIz\n"
+            "+uvLh4yn1ErdBojqZI4xmKU4kB6Yzy5jK/BGvESyiaHAKAxJcCGVn2TAppMSAmUm\n"
+            "hsalifD614SgcK9PGpc/BkTVyetyEH3kMSj7HGHmKAdEc5IiaacDiGydY8hS2pgn\n"
+            "5whMcD60yRLBxWeDXTPzAxHsatBT4tG6NmCUgLthY2xbF37fQJQeqw3CIShwiP/W\n"
+            "JmxsYAQlTlV+fe+/lEjetx3dcI0FX4ilm/LC7urRQEFtYjgdVgbFA0dRIBn8exAL\n"
+            "DmKudlW/X3e+PkkBUz2YJQN2JFodtNuJ6nnltrM7P7pMKEF/BqxqjsHQ9gUdfeZC\n"
+            "huOl1UcCAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYw\n"
+            "HQYDVR0OBBYEFMR5yo6hTgMdHNxr2zFblD4/MH8tMA0GCSqGSIb3DQEBCwUAA4IB\n"
+            "AQAtxRPPVoB7eni9n64smefv2t+UXglpp+duaIy9cr5HqQ6XErhK8WTTOd8lNNTB\n"
+            "zU6B8A8ExCSzNJbGpqow32hhc9f5joWJ7w5elShKKiePEI4ufIbEAp7aDHdlDkQN\n"
+            "kv39sxY2+hENHYwOB4lqKVb3cvTdFZx3NWZXqxNT2I7BQMXXExZacse3aQHEerGD\n"
+            "AWh9jUGhlBjBJVz88P6DAod8DQ3PLghcSkANPuyBYeYk28rgDi0Hsj5W3I31QYUH\n"
+            "SJsMC8tJP33st/3LjWeJGqvtux6jAAgIFyqCXDFdRootD4abdNlF+9RAsXqqaC2G\n"
+            "spki4cErx5z481+oghLrGREt\n"
             "-----END CERTIFICATE-----\n");
     fclose(fp);
     return 0;
@@ -257,7 +263,7 @@ int main(int argc, char *argv[])
 
     clean_global_var();
 
-    strcpy(base_path,"/tmp");
+    snprintf(base_path, 256, "%s", "/tmp");
 
     DIR *dp = opendir(base_path);
 
@@ -408,6 +414,7 @@ void *SyncServer()
             my_free(cs);
 
         }
+        show_finish_log();
         server_sync = 0;
         enter_sleep_time(30,&wait_server_mutex);
     }
@@ -429,11 +436,11 @@ int download_only_add_socket_item(Socket_cmd *socket_cmd)
     memset(old_fullname,0,sizeof(old_fullname));
     memset(action,0,sizeof(action));
 
-    strcpy(cmd_name,socket_cmd->cmd_name);
+    snprintf(cmd_name, 32, "%s", socket_cmd->cmd_name);
 
     if( !strncmp(cmd_name,"copyfile",strlen("copyfile")) )
     {
-        sprintf(fullname,"%s/%s",socket_cmd->path,socket_cmd->filename);
+        snprintf(fullname, 512, "%s/%s",socket_cmd->path,socket_cmd->filename);
         add_sync_item("copyfile",fullname,copy_file_list_head);
         return 0;
     }
@@ -454,7 +461,7 @@ int download_only_add_socket_item(Socket_cmd *socket_cmd)
 
     if( strcmp(cmd_name, "createfile") == 0 )
     {
-        strcpy(action,"createfile");
+        snprintf(action, 32, "%s", "createfile");
         struct sync_item* item;
 
         item = get_sync_item("copyfile",fullname,copy_file_list_head);
@@ -466,29 +473,29 @@ int download_only_add_socket_item(Socket_cmd *socket_cmd)
     }
     else if( strcmp(cmd_name, "remove") == 0  || strcmp(cmd_name, "delete") == 0)
     {
-        strcpy(action,"remove");
+        snprintf(action, 32, "%s", "remove");
         del_download_only_sync_item(action,fullname,download_only_socket_head);
         del_download_only_sync_item(action,fullname,download_only_modify_head);
     }
     else if( strcmp(cmd_name, "createfolder") == 0 )
     {
-        strcpy(action,"createfolder");
+        snprintf(action, 32, "%s", "createfolder");
     }
     else if( strcmp(cmd_name, "rename") == 0 )
     {
-        strcpy(action,"rename");
+        snprintf(action, 32, "%s", "rename");
         del_download_only_sync_item(action,old_fullname,download_only_socket_head);
         del_download_only_sync_item(action,fullname,download_only_modify_head);
     }
     else if( strcmp(cmd_name, "move") == 0 )
     {
-    	strcpy(action,"move");
+        snprintf(action, 32, "%s", "move");
     	del_download_only_sync_item(action,old_fullname,download_only_socket_head);
         del_download_only_sync_item(action,fullname,download_only_modify_head);
     }
     else if( strcmp(cmd_name, "modify") == 0 )
     {
-        strcpy(action,"modify");
+        snprintf(action, 32, "%s", "modify");
     }
 
     if(from_server_sync_head->next != NULL)
@@ -550,17 +557,17 @@ int trim_sync_path(char *in,char *out)
     if(p != NULL)
     {
         strncpy(prefix,in,strlen(in)-strlen(p));
-        strcpy(tail,p+len);
+        snprintf(tail, 1024, "%s", p+len);
 
         if(p[len] == '\n')
-            sprintf(new_buf,"%s/%s",prefix,tail);
+            snprintf(new_buf, 1024, "%s/%s",prefix,tail);
         else
-            sprintf(new_buf,"%s%s",prefix,tail);
+            snprintf(new_buf, 1024, "%s%s",prefix,tail);
 
-        strcpy(out,new_buf);
+        snprintf(out, 1024, "%s", new_buf);
     }
     else
-        strcpy(out,in);
+        snprintf(out, 1024, "%s", in);
 
     return 0;
 }
@@ -575,7 +582,7 @@ int add_socket_item(char *in)
 
     if(!strncmp(in,"move",4))
     {
-       strcpy(move_buf,buf);
+       snprintf(move_buf, 1024, "%s", buf);
        memset(buf,0,1024);
        trim_sync_path(move_buf,buf);
     }
@@ -607,7 +614,11 @@ int add_socket_item(char *in)
         return -1;
     }
     memset(SocketActionTmp->cmd_name,0,len);
+#if MEM_POOL_ENABLE
     sprintf(SocketActionTmp->cmd_name,"%s",buf);
+#else
+    snprintf(SocketActionTmp->cmd_name, len*sizeof(char), "%s",buf);
+#endif
 
 
     queue_enqueue(SocketActionTmp,SocketActionList);
@@ -762,7 +773,7 @@ void *Socket_Parser(){
                 printf("upload only mysync start\n");
                 status = syncServerAllItem(username,MySyncFolder,sync_path);
                 printf("upload only mysync end,status is %d\n",status);
-                write_log(S_SYNC,"","");
+                //write_log(S_SYNC,"","");
                 if(status == 0)
                     mysync = 0;
         }
@@ -816,7 +827,8 @@ void *Socket_Parser(){
 
         if(has_socket == 1)
         {
-            write_finish_log();
+            if(upload_only)
+                write_finish_log();
             has_socket = 0;
         }
 
@@ -910,7 +922,7 @@ int split_socket_cmd(char *cmd_in,Socket_cmd *scmd)
     int i=0;
 
     memset(cmd,0,sizeof(cmd));
-    strcpy(cmd,cmd_in);
+    snprintf(cmd,1024, "%s", cmd_in);
 
     if(!strncmp(cmd,"rmroot",6))
     {
@@ -946,34 +958,34 @@ int split_socket_cmd(char *cmd_in,Socket_cmd *scmd)
             if(!strncmp(p,"rename",6) || !strncmp(p,"move",4))
                 strncpy(scmd->cmd_name,p,strlen(p)-1);
             else
-                strcpy(scmd->cmd_name,p);
+                snprintf(scmd->cmd_name, 32, "%s", p);
             break;
         case 1:
             if(!strcmp(p,"/"))
-                strcpy(scmd->path,sync_path);
+                snprintf(scmd->path, 1024, "%s", sync_path);
             else
-                sprintf(scmd->path,"%s%s",sync_path,p);
+                snprintf(scmd->path, 1024, "%s%s",sync_path,p);
             break;
         case 2:
             if(!strcmp(scmd->cmd_name,"rename"))
             {
-                strcpy(scmd->oldname,p);
+                snprintf(scmd->oldname, NORMALSIZE, "%s", p);
             }
             else if(!strcmp(scmd->cmd_name,"move"))
             {
                 if(!strcmp(p,"/"))
-                    strcpy(scmd->oldpath,sync_path);
+                    snprintf(scmd->oldpath, 1024, "%s", sync_path);
                 else
-                    sprintf(scmd->oldpath,"%s%s",sync_path,p);
+                    snprintf(scmd->oldpath, 1024, "%s%s",sync_path,p);
             }
             else
-                strcpy(scmd->filename,p);
+                snprintf(scmd->filename, NORMALSIZE, "%s", p);
             break;
         case 3:
             if(!strcmp(scmd->cmd_name,"rename"))
-                strcpy(scmd->newname,p);
+                snprintf(scmd->newname, NORMALSIZE, "%s", p);
             else if(!strcmp(scmd->cmd_name,"move"))
-                strcpy(scmd->oldname,p);
+                snprintf(scmd->oldname, NORMALSIZE, "%s", p);
             break;
         default:
             break;
@@ -1027,29 +1039,29 @@ int perform_socket_cmd(Socket_cmd *scmd)
     memset(action,0,sizeof(action));
     memset(cmp_name,0,sizeof(cmp_name));
 
-    strcpy(cmd_name,scmd->cmd_name);
-    strcpy(path,scmd->path);
+    snprintf(cmd_name, 64, "%s", scmd->cmd_name);
+    snprintf(path, 512, "%s", scmd->path);
 
     if(!strcmp(cmd_name,"rename"))
     {
-        strcpy(oldname,scmd->oldname);
-        strcpy(newname,scmd->newname);
+        snprintf(oldname, NORMALSIZE, "%s", scmd->oldname);
+        snprintf(newname, NORMALSIZE, "%s", scmd->newname);
     }
     else if(!strcmp(cmd_name,"move"))
     {
-        strcpy(oldpath,scmd->oldpath);
-        strcpy(oldname,scmd->oldname);
+        snprintf(oldpath, NORMALSIZE, "%s", scmd->oldpath);
+        snprintf(oldname, NORMALSIZE, "%s", scmd->oldname);
     }
     else
     {
-        strcpy(filename,scmd->filename);
+        snprintf(filename, NORMALSIZE, "%s", scmd->filename);
     }
 
     //add by alan
     if( strcmp(cmd_name, "copyfile") == 0 )
     {
         //  2013/7/25 change copying way
-        sprintf(fullname,"%s/%s",path,filename);
+        snprintf(fullname, NORMALSIZE, "%s/%s",path,filename);
         add_sync_item("copyfile",fullname,copy_file_list_head);
 
         return 0;
@@ -1064,7 +1076,7 @@ int perform_socket_cmd(Socket_cmd *scmd)
 
     if( strcmp(cmd_name, "createfile") == 0 )
     {
-        strcpy(action,"createfile");
+        snprintf(action, 64, "%s", "createfile");
         struct sync_item* item;
 
         item = get_sync_item("copyfile",cmp_name,copy_file_list_head);
@@ -1076,16 +1088,16 @@ int perform_socket_cmd(Socket_cmd *scmd)
     }
     else if( strcmp(cmd_name, "remove") == 0  || strcmp(cmd_name, "delete") == 0)
     {
-        strcpy(action,"remove");
+        snprintf(action, 64, "%s", "remove");
         isdelete = 1;
     }
     else if( strcmp(cmd_name, "createfolder") == 0 )
     {
-        strcpy(action,"createfolder");
+        snprintf(action, 64, "%s", "createfolder");
     }
     else if( strcmp(cmd_name, "rename") == 0 )
     {
-        strcpy(action,"rename");
+        snprintf(action, 64, "%s", "rename");
     }
 
     struct timespec timeout;
@@ -1208,7 +1220,7 @@ int perform_socket_cmd(Socket_cmd *scmd)
         }
 
         entry_ID = find->id;
-        strcpy(type,find->type);
+        snprintf(type, 64, "%s", find->type);
         my_free(find);
 
         if(strcmp(type,"system.folder") == 0)
@@ -1224,6 +1236,9 @@ int perform_socket_cmd(Socket_cmd *scmd)
 
         if( strcmp(cmd_name, "rename") == 0 )
         {
+            snprintf(fullname,NORMALSIZE,"%s/%s",path,oldname);
+            if(test_if_file_up_excep_fail(fullname))
+                del_sync_item("up_excep_fail",fullname,up_excep_fail);
             if(strcmp(type,"system.notfound") == 0)
             {
                 snprintf(fullname,NORMALSIZE,"%s/%s",path,newname);
@@ -1293,6 +1308,9 @@ int perform_socket_cmd(Socket_cmd *scmd)
             sleep(30);
             printf("del start\n");
 #endif
+            snprintf(fullname,NORMALSIZE,"%s/%s",path,filename);
+            if(test_if_file_up_excep_fail(fullname))
+                del_sync_item("up_excep_fail",fullname,up_excep_fail);
             if(!strcmp(type,"system.notfound"))
             {
                 printf("del item has not exist server\n");
@@ -1397,6 +1415,9 @@ int perform_socket_cmd(Socket_cmd *scmd)
         }
         else
         {
+            snprintf(fullname,NORMALSIZE,"%s/%s",oldpath,oldname);
+            if(test_if_file_up_excep_fail(fullname) == 1)
+                del_sync_item("up_excep_fail",fullname,up_excep_fail);
             if(!strcmp(find->type,"system.notfound"))
             {
                 snprintf(fullname,NORMALSIZE,"%s/%s",path,oldname);
@@ -1514,7 +1535,7 @@ int send_action(int type, char *content)
         return -1;
     }
 
-    sprintf(str,"0@%s",content);
+    snprintf(str, 1024, "0@%s",content);
     if (send(sockfd, str, strlen(str), 0) == -1) {
         perror("send");
         return -1;
@@ -1678,13 +1699,14 @@ void str_to_lower(char *word)
 
 void run()
 {
+    error_flag = 0;
     restart_run = 0;
     int status;
     int auth_ok = 0;
     char *pwd = NULL;
     char pword[256];
 
-    strcpy(pword,password);
+    snprintf(pword, 256, "%s", password);
     str_to_lower(pword);
     pwd = MD5_string(pword);
     memset(password,0,sizeof(password));
@@ -1739,7 +1761,7 @@ void run()
         return;
 
 #ifdef DEBUG
-    printf("##### max upload filesize is %dMB ####\n",max_upload_filesize);
+    printf("##### max upload filesize is %lldMB ####\n",max_upload_filesize);
 #endif
 
     if(auth_ok == 1)
@@ -1823,14 +1845,14 @@ void run()
             FindDir(DirRootNode,sync_path);
         }
 #endif
-        write_log(S_SYNC,"","");//fix local path is blank can't show server space bug
+        //write_log(S_SYNC,"","");//fix local path is blank can't show server space bug
 
         send_action(1,sync_path);
 
         /*add by alan*/
         SocketActionList = queue_create();
 
-        write_log(S_SYNC,"","");
+        //write_log(S_SYNC,"","");
 
         if(set_iptables(1))
             exit(-1);
@@ -1931,7 +1953,7 @@ char  *get_mount_path(char *path , int n)
     if( i > 3)
         strncpy(m_path,path,strlen(path)-strlen(new_path)-1);
     else
-        strcpy(m_path,path);
+        snprintf(m_path, sizeof(char)*NORMALSIZE, "%s", path);
 
     printf("mount path is [%s]\n",m_path);
 
@@ -1992,8 +2014,8 @@ int read_config()
 #ifdef IPKG
         memset(record_token_file,0,sizeof(record_token_file));
         memset(token_filename,0,sizeof(token_filename));
-        sprintf(token_filename,".__smartsync_0_%s_%s",username,cfg.dir_name);
-        sprintf(record_token_file,"/opt/etc/.smartsync/asuswebstorage_%s",cfg.user);
+        snprintf(token_filename, 256, ".__smartsync_0_%s_%s",username,cfg.dir_name);
+        snprintf(record_token_file, 256, "/opt/etc/.smartsync/asuswebstorage_%s",cfg.user);
 
         int have_log = 0;
 
@@ -2043,7 +2065,7 @@ int read_config()
             snprintf(up_item_file,NAMESIZE,"%s/%s_up_item",resume_path,username);
             snprintf(down_item_file,NAMESIZE,"%s/%s_down_item",resume_path,username);
     #if WRITE_DOWNLOAD_TEMP_FILE
-            sprintf(down_item_temp_file,"%s/%s_down_temp_item",resume_path,username);
+            snprintf(down_item_temp_file, NAMESIZE, "%s/%s_down_temp_item",resume_path,username);
     #endif
             snprintf(up_excep_fail_file,NAMESIZE,"%s/%s_up_excep_fail",resume_path,username);
             snprintf(confilicted_log,NAMESIZE,"%s/confilicted.log",resume_path);
@@ -2286,7 +2308,7 @@ int write_notify_file(char *path,int signal_num)
 
     my_mkdir("/tmp/notify");
     my_mkdir("/tmp/notify/usb");
-    sprintf(fullname,"%s/asuswebstorage",path);
+    snprintf(fullname, 64, "%s/asuswebstorage",path);
     fp = fopen(fullname,"w");
     if(NULL == fp)
     {

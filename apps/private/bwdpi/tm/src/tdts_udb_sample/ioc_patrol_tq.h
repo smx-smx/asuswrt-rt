@@ -36,6 +36,7 @@ enum
 	ACT_TQ_SET_PATROL_TQ,		/* set_patrol_tq */
 	ACT_TQ_GET_PATROL_TQ,		/* get_patrol_tq */
 	ACT_TQ_GET_PATROL_TQ_LOG,	/* get_patrol_tq_log */
+	ACT_TQ_RESET_PATROL_TQ,
 	ACT_TQ_MAX
 };
 

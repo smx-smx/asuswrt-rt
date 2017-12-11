@@ -57,7 +57,11 @@ login_retry_t retry_flag, retry_flag_wan;
 #endif
 #endif
 
+extern char https_lanport[8];
+extern char def_passwd[128];
+
 restrict_client_t restrict_client;
+extern int compare_passwd;	//0: need to compare current password and default password
 
 typedef struct cgibin_exception_file
 {
@@ -1732,7 +1736,7 @@ static int referer_check(char* referer, int fromapp_flag)
 	char *auth_referer=NULL;
 	char *cp1=NULL, *cp2=NULL, *location_cp=NULL, *location_cp1=NULL;
 	char wanip[20] = {0}, attr[16] = {0}, tmp[512] = {0}, tmp1[512] = {0}, tmp2[512] = {0};
-	char https_lanport[8] = {0}, misc_httpport_x[8] = {0}, misc_httpsport_x[8] = {0};
+	char misc_httpport_x[8] = {0}, misc_httpsport_x[8] = {0};
 	
 	if(fromapp_flag != 0)
 	{
@@ -1759,65 +1763,75 @@ static int referer_check(char* referer, int fromapp_flag)
 
 	}
 
-	//Andy Chiu, 2016/11/22. Add port checking.
-	tcapi_get("Https_Entry", "https_lanport", https_lanport);
-	tcapi_get("Firewall_Entry", "misc_httpport_x", misc_httpport_x);
-	tcapi_get("Firewall_Entry", "misc_httpsport_x", misc_httpsport_x);
-
 	//Andy Chiu, 2016/10/31. The valid value in Referer field are domain name, LAN IP, WAN IP and DDNS hostname
-	if(!tcapi_get("Wanduck_Common", "link_internet", tmp) && atoi(tmp) == 2)	//Check has WAN
+	if(tcapi_match("Firewall_Entry", "misc_http_x", "1"))//check access from WAN function enable first
 	{
-		//check primary WAN IP
-		if(!tcapi_get("Wanduck_Common", "wan_primary", tmp) && atoi(tmp) >= 0)
+		if(!tcapi_get("Wanduck_Common", "link_internet", tmp) && atoi(tmp) == 2)	//Check has WAN
 		{
-			snprintf(attr, sizeof(attr), "wan%s_ipaddr", tmp);
-			if(!tcapi_get("Wanduck_Common", attr, wanip))	//Check primary WAN IP
+#ifndef TCSUPPORT_WEBSERVER_SSL			
+			tcapi_get("Firewall_Entry", "misc_httpport_x", misc_httpport_x);
+#else
+			tcapi_get("Firewall_Entry", "misc_httpsport_x", misc_httpsport_x);
+#endif
+			
+			//check primary WAN IP
+			if(!tcapi_get("Wanduck_Common", "wan_primary", tmp) && atoi(tmp) >= 0)
 			{
-				snprintf(tmp1, sizeof(tmp1), "%s:%s", wanip, misc_httpport_x);
-				snprintf(tmp2, sizeof(tmp2), "%s:%s", wanip, misc_httpsport_x);
-				if(!strcmp(auth_referer, wanip) ||	//wanip
-					!strcmp(auth_referer, tmp1) ||	//wanip:http_port
-					!strcmp(auth_referer, tmp2))	//wanip:https_port
+				snprintf(attr, sizeof(attr), "wan%s_ipaddr", tmp);
+				if(!tcapi_get("Wanduck_Common", attr, wanip))	//Check primary WAN IP
 				{
-					return 0;
+#ifndef TCSUPPORT_WEBSERVER_SSL			
+					snprintf(tmp, sizeof(tmp), "%s:%s", wanip, misc_httpport_x);
+#else
+					snprintf(tmp, sizeof(tmp), "%s:%s", wanip, misc_httpsport_x);
+#endif
+					if(!strcmp(auth_referer, wanip) ||	//wanip
+						!strcmp(auth_referer, tmp))	//wanip:(https_port/http_port)
+					{
+						return 0;
+					}
 				}
 			}
-		}
 
-		//check secondary WAN IP
-		if(!tcapi_get("Wanduck_Common", "wan_secondary", tmp) && atoi(tmp) >= 0)
-		{
-			snprintf(attr, sizeof(attr), "wan%s_ipaddr", tmp);
-			if(!tcapi_get("Wanduck_Common", attr, wanip))	//Check secondary WAN IP
+			//check secondary WAN IP
+			if(!tcapi_get("Wanduck_Common", "wan_secondary", tmp) && atoi(tmp) >= 0)
 			{
-				snprintf(tmp1, sizeof(tmp1), "%s:%s", wanip, misc_httpport_x);
-				snprintf(tmp2, sizeof(tmp2), "%s:%s", wanip, misc_httpsport_x);
-				if(!strcmp(auth_referer, wanip) ||	//wanip
-					!strcmp(auth_referer, tmp1) ||	//wanip:http_port
-					!strcmp(auth_referer, tmp2))	//wanip:https_port
+				snprintf(attr, sizeof(attr), "wan%s_ipaddr", tmp);
+				if(!tcapi_get("Wanduck_Common", attr, wanip))	//Check secondary WAN IP
 				{
-					return 0;
+#ifndef TCSUPPORT_WEBSERVER_SSL			
+					snprintf(tmp, sizeof(tmp), "%s:%s", wanip, misc_httpport_x);
+#else
+					snprintf(tmp, sizeof(tmp), "%s:%s", wanip, misc_httpsport_x);
+#endif
+					if(!strcmp(auth_referer, wanip) ||	//wanip
+						!strcmp(auth_referer, tmp))	//wanip:(https_port/http_port)
+					{
+						return 0;
+					}
 				}
 			}
-		}
 
-		//check DDNS 
-		if(!tcapi_get("Ddns_Entry", "Active", tmp) && !strcmp(tmp, "1"))
-		{
-			if(!tcapi_get("Ddns_Entry", "MYHOST", tmp))
+			//check DDNS 
+			if(!tcapi_get("Ddns_Entry", "Active", tmp) && !strcmp(tmp, "1"))
 			{
-				snprintf(tmp1, sizeof(tmp1), "%s:%s", tmp, misc_httpport_x);
-				snprintf(tmp2, sizeof(tmp2), "%s:%s", tmp, misc_httpsport_x);
-				if(!strcmp(auth_referer, tmp) ||	//ddns_hostname
-					!strcmp(auth_referer, tmp1) ||	//ddns_hostname:http_port
-					!strcmp(auth_referer, tmp2))	//ddns_hostname:https_port
+				if(!tcapi_get("Ddns_Entry", "MYHOST", tmp))
 				{
-					return 0;
+#ifndef TCSUPPORT_WEBSERVER_SSL			
+					snprintf(tmp1, sizeof(tmp1), "%s:%s", tmp, misc_httpport_x);
+#else
+					snprintf(tmp1, sizeof(tmp1), "%s:%s", tmp, misc_httpsport_x);
+#endif
+					if(!strcmp(auth_referer, tmp) ||	//ddns_hostname
+						!strcmp(auth_referer, tmp1))	//ddns_hostname:(https_port/http_port)
+					{
+						return 0;
+					}
 				}
 			}
-		}
-	}		
-
+		}		
+	}
+	
 	//Compare refer with domain name and LAN IP.
 	snprintf(tmp1, sizeof(tmp1), "%s:%s", DUT_DOMAIN_NAME, https_lanport);
 	snprintf(tmp2, sizeof(tmp2), "%s:%s", lan_ip, https_lanport);	
@@ -1841,6 +1855,7 @@ static char *get_referer[] =
 	"update_clients.asp",
 	"get_webdavInfo.asp",
 	"WPS_info.xml",
+	"*.CFG",
 	NULL,
 };
 
@@ -1849,12 +1864,20 @@ static char *get_referer[] =
 static int _need_confirm_get_referer(const char *url)
 {
 	int i;
+	char *tmp = NULL;
 
 	if(url)
 	{
 		for(i = 0; get_referer[i] ; ++i)
 		{
-			if(strstr(url, get_referer[i]))
+			tmp = strchr(get_referer[i], '*');
+			if(tmp)
+			{
+				tmp += 1;
+				if(strstr(url, tmp))
+					return 1;
+			}
+			else if(strstr(url, get_referer[i]))
 			{
 				return 1;
 			}
@@ -1883,7 +1906,7 @@ int process_header_end(request * req)
 	int ret = 0;
 
 #ifdef ASUS_LOGIN_SESSION
-	char passwd[128] = {0}, def_passwd[128] = {0};
+	char passwd[128] = {0};
 	int  auth_result = 0;	//0:auth fail or unchecked ; 1: auth success
 	int isAteMode = 0;	//Andy Chiu, 2016/01/19.
 	asus_token_t *token;
@@ -1941,7 +1964,6 @@ int process_header_end(request * req)
 	{
 		dbgprintf("[%s, %d]client is from APP\n", __FUNCTION__, __LINE__);
 	}
-
 	//Check refer as POST command.
 	if(req->method == M_POST)
 	{
@@ -1964,7 +1986,6 @@ int process_header_end(request * req)
 			return 0;
 		}
 	}
-
 #ifdef ASUS_LOGIN_SESSION
 	//check web lock.
 #ifdef USE_RETRY_LIST
@@ -1997,7 +2018,7 @@ int process_header_end(request * req)
 		{
 			//unlock web
 			memset(retry_tmp, 0, sizeof(login_retry_t));
-			dbgprintf("[%s, %d]reset lock\n", __FUNCTION__, __LINE__);
+			//dbgprintf("[%s, %d]reset lock\n", __FUNCTION__, __LINE__);
 		}
 		else
 		{
@@ -2034,14 +2055,6 @@ int process_header_end(request * req)
 		}
 	}
 #endif
-#elif defined(RTCONFIG_PROTECTION_SERVER)
-		/* Carlos 2015/11/10, if keep login fail, block login page */
-		char en_web_pt[4];
-		ret = tcapi_get("Vram_Entry", "enable_web_protection", en_web_pt);
-		if(!strcmp(en_web_pt, "1")) {
-			send_r_forbidden_login(req);
-			return 0;
-		}
 #endif
 
 	/* Check if request come from allowed client list */
@@ -2293,14 +2306,16 @@ int process_header_end(request * req)
 			free(uptime);
 		}
 #endif
-		
+
 #ifdef ASUS_LOGIN_SESSION
 		//Andy Chiu, 2015/12/29.
 		//check default password
-		tcapi_get("Account_Entry0", "web_passwd", passwd);
-		tcapi_get("Account_Entry0", "default_passwd", def_passwd);
-		if(!pass_login_check(req->request_uri) && !fromapp && !other_login && !isAteMode
-			&& !strstr(req->request_uri, "Main_Login.asp") && !strcmp(passwd, def_passwd) 
+		if(!compare_passwd)
+		{
+			compare_passwd = tcapi_match("Account_Entry0", "web_passwd", def_passwd)? 0: 1;
+		}
+		if(!compare_passwd && !pass_login_check(req->request_uri) && !fromapp 
+			&& !other_login && !isAteMode && !strstr(req->request_uri, "Main_Login.asp")
 			&& !strstr(req->request_uri, "Main_Password.asp") && !strstr(req->request_uri, "Logout.asp")
 			&& !strstr(req->request_uri, "QIS") && !strstr(req->request_uri, "index.asp") 
 			&& !strstr(req->request_uri, "login.asp") && !strstr(req->request_uri, "facmode.asp") 
@@ -2382,14 +2397,15 @@ int process_header_end(request * req)
 			free(uptime);
 		}
 #endif
-		
 #ifdef ASUS_LOGIN_SESSION
 		//Andy Chiu, 2015/12/29.
 		//check default password
-		tcapi_get("Account_Entry0", "web_passwd", passwd);
-		tcapi_get("Account_Entry0", "default_passwd", def_passwd);
-		if(!pass_login_check(req->request_uri) && !fromapp && !other_login && !isAteMode
-			&& !strstr(req->request_uri, "Main_Login.asp") && !strcmp(passwd, def_passwd) 
+		if(!compare_passwd)
+		{
+			compare_passwd = tcapi_match("Account_Entry0", "web_passwd", def_passwd)? 0: 1;
+		}
+		if(!compare_passwd &&!pass_login_check(req->request_uri) && !fromapp && !other_login 
+			&& !isAteMode && !strstr(req->request_uri, "Main_Login.asp")
 			&& !strstr(req->request_uri, "Main_Password.asp") && !strstr(req->request_uri, "Logout.asp")
 			&& !strstr(req->request_uri, "QIS") && !strstr(req->request_uri, "index.asp") 
 			&& !strstr(req->request_uri, "login.asp") && !strstr(req->request_uri, "facmode.asp") 

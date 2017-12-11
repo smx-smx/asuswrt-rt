@@ -30,6 +30,10 @@ var wan_type = "<%tcWebApi_get("AutoPVC_Common","Detect_XDSL","s")%>";
 var w_Setting = "<%tcWebApi_get("SysInfo_Entry","w_Setting","s")%>";
 var encap_str = "LLC";
 if (encap_val == "vc") encap_str = "VC-Mux";
+var mac_addr_2g = "<%tcWebApi_get("WLan_Common","wl0_MacAddress","s")%>";
+var mac_addr_last_3bytes = "\"" + mac_addr_2g.substring(9, 11) + mac_addr_2g.substring(12, 14) + mac_addr_2g.substring(15, 17) + "\"";
+var model_name = "<%tcWebApi_get("SysInfo_Entry","ProductName","s")%>";
+
 
 function QKfinish_load_body(){
 	parent.document.title = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","QKS_all_title","s")%>";
@@ -40,12 +44,14 @@ function QKfinish_load_body(){
 	else
 		document.form.dsltmp_cfg_encap.value = "0";
 
-	if (vpi_val == "0" && vci_val == "40" && encap_val == "1")
+	/* Renjie: Remove this field, we will use Option 61 and 12 for UK Sky.
+	if (vpi_val == "0" && vci_val == "40" && encap_val == "vc")
 	{
 		//UK ISP SKY Broadband, MER requires some tweak.
 		//PPP Username and Password needs to be added into DHCP option 61.		
 		document.getElementById("special_ISP_ppp").style.display = "";
 	}
+	*/
 
 
 	if(wan_type == "PTM"){
@@ -78,14 +84,24 @@ function submitForm(){
 	}
 	<%end if%>
 
-	if (vpi_val == "0" && vci_val == "40" && encap_val == "1")
+	if (vpi_val == "0" && vci_val == "40" && encap_val == "vc")
 	{
 		//Only for UK ISP SKY Broadband
+		/* Renjie: Remove this field, we will use Option 61 and 12 for UK Sky.
 		if(document.form.ppp_username.value != "")
 			document.form.dsltmp_dhcp_clientid.value = document.form.ppp_username.value + "|" + document.form.ppp_password.value;
 
 		document.form.ppp_username.disabled = true;
 		document.form.ppp_password.disabled = true;
+		*/
+
+		document.form.dsltmp_dhcp_clientid.value = mac_addr_last_3bytes;
+		document.form.dsltmp_dhcp_hostname.value = model_name;
+	}
+	else
+	{
+		document.form.dsltmp_dhcp_clientid.value = "";
+		document.form.dsltmp_dhcp_hostname.value = "";
 	}
 
 	document.form.next_page.value = "/cgi-bin/qis/QIS_wireless.asp";
@@ -286,6 +302,7 @@ function setIptvNumPvc() {
 <input type="hidden" name="dsltmp_wanTypeOption" value="0">
 <input type="hidden" name="with_wan_setting" value="1">
 <input type="hidden" name="dsltmp_dhcp_clientid" value="">
+<input type="hidden" name="dsltmp_dhcp_hostname" value="">
 <div class="QISmain">
 <div>
 <table width="730px">
@@ -322,6 +339,7 @@ function setIptvNumPvc() {
 	</tr>
 </table>
 </div>
+<!-- Renjie: Remove this field, we will use Option 61 and 12 for UK Sky.
 <div>
 <table id="special_ISP_ppp" style="display:none;margin-left:50px;">
   <tr>
@@ -342,6 +360,7 @@ function setIptvNumPvc() {
   </tr>
 </table>
 </div>
+-->
 <%if tcWebApi_get("AutoPVC_Common","Detect_XDSL","h") = "PTM" then %>
 <br>
 <div>
@@ -403,7 +422,7 @@ function setIptvNumPvc() {
 </div>
 <div class="apply_gen" style="margin-top:20px">
 	<input type="button" id="prevButton" value="<% tcWebApi_Get("String_Entry", "Manual_Setting_btn", "s") %>" onclick="gotoprev(document.form);" class="button_gen_long">
-	<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" onclick="submitForm();" class="button_gen">
+	<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" onclick="submitForm();" class="button_gen_long">
 </div>
 </form>
 </body>

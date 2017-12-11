@@ -127,9 +127,9 @@ typedef struct eudb_shell_ioctl
 } eudb_shell_ioctl_t;
 #endif
 
-#define _IOCTL_CMD_R(_nr) _IOR(TDTS_SHELL_IOCTL_CHRDEV_MAJOR, _nr, tdts_shell_ioctl_t)
-#define _IOCTL_CMD_W(_nr) _IOW(TDTS_SHELL_IOCTL_CHRDEV_MAJOR, _nr, tdts_shell_ioctl_t)
-#define _IOCTL_CMD_WR(_nr) _IOWR(TDTS_SHELL_IOCTL_CHRDEV_MAJOR, _nr, tdts_shell_ioctl_t)
+#define _IOCTL_CMD_R(_nr) _IOR(TMCFG_E_KMOD_IOCTL_DEV_MAGIC, _nr, tdts_shell_ioctl_t)
+#define _IOCTL_CMD_W(_nr) _IOW(TMCFG_E_KMOD_IOCTL_DEV_MAGIC, _nr, tdts_shell_ioctl_t)
+#define _IOCTL_CMD_WR(_nr) _IOWR(TMCFG_E_KMOD_IOCTL_DEV_MAGIC, _nr, tdts_shell_ioctl_t)
 
 #ifdef SHN_LICENSE_CONTROL
 //SHN for License control
@@ -213,7 +213,7 @@ typedef enum
 } tdts_shell_ioctl_type_t;
 
 /*! magic */
-#define TDTS_SHELL_IOCTL_MAGIC TDTS_SHELL_IOCTL_CHRDEV_MAJOR
+#define TDTS_SHELL_IOCTL_MAGIC TMCFG_E_KMOD_IOCTL_DEV_MAGIC
 #ifdef SHN_LICENSE_CONTROL
 //SHN License control
 #define UDB_SHELL_IOCTL_MAGIC UDB_SHELL_IOCTL_CHRDEV_MAJOR
@@ -241,7 +241,7 @@ typedef enum
 #define tdts_shell_ioctl_set_in_raw(_ioc, _buf, _buf_len) \
 	do { \
 		(_ioc)->in_type = TDTS_SHELL_IOCTL_TYPE_RAW; \
-		(_ioc)->in_raw = (uint64_t) _buf; \
+		(_ioc)->in_raw = (uintptr_t) _buf; \
 		(_ioc)->in_len = (_buf_len); \
 	} while (0)
 
@@ -260,9 +260,9 @@ typedef enum
  */
 #define tdts_shell_ioctl_set_out_buf(_ioc, _buf, _buf_len, _buf_used_len_p) \
 	do { \
-		(_ioc)->out = (uint64_t) _buf; \
+		(_ioc)->out = (uintptr_t) _buf; \
 		(_ioc)->out_len = _buf_len; \
-		(_ioc)->out_used_len = (uint64_t) _buf_used_len_p; \
+		(_ioc)->out_used_len = (uintptr_t) _buf_used_len_p; \
 	} while (0)
 
 #ifdef SHN_LICENSE_CONTROL

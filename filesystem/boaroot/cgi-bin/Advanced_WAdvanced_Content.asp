@@ -378,14 +378,26 @@ document.getElementById("WAdvTable").deleteRow(i);
 
 /* MODELDEP by Territory Code */
 function generate_region(){
-	//var region_name = ["Asia", "Australia", "Brazil", "Canada", "China", "Europe", "Japan", "Korea", "Malaysia", "Middle East", "Russia", "Singapore", "Turkey", "Taiwan", "Ukraine", "United States"];
-	var region_name = ["Asia", "Australia", "Europe"];	//Viz mod 2015.07.31
-	//var region_value = ["APAC", "AU", "BZ", "CA", "CN", "EU", "JP", "KR", "MY", "ME", "RU", "SG", "TR", "TW", "UA", "US"];
-	region_value = ["AA", "AU", "EU"]; //Viz mod 2015.07.31
+	
+	var region_name = {
+		"AA":"Asia",
+		"AU":"Australia",
+		"EU":"Europe"
+	};	//Viz 2017.07.17	
+	//var region_value = "AA/AU/EU";
+	var region_value = "<% wl_support_region() %>"; //Viz mod 2017.07.17 
+	var region_array = region_value.split("/");
 	var current_region = '<% tcWebApi_get("WLan_Common","location_code","s") %>';
 	if(current_region == '')
-		current_region = ttc.split("/")[0];
-	add_options_x2(document.form.location_code, region_name, region_value, current_region);
+		current_region = ttc.split("/")[0];	
+
+	free_options(document.form.location_code);
+	for(var i=0;i<region_array.length;i++){
+		if(current_region == region_array[i])
+			add_option(document.form.location_code, region_name[region_array[i]], region_array[i], 1);
+		else	
+			add_option(document.form.location_code, region_name[region_array[i]], region_array[i], 0);
+	}	
 }
 
 function adjust_tx_power(){

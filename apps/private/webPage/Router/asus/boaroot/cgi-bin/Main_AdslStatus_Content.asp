@@ -246,6 +246,10 @@ function update_log(){
 	});
 }
 
+var SystemVendorID_orig = "<%tcWebApi_get("SysInfo_Entry","SystemVendorID","s")%>";
+var SystemVendorModelID_orig = "<%tcWebApi_get("SysInfo_Entry","SystemVendorModelID","s")%>";
+var ModemVendorID_orig = "<%tcWebApi_get("SysInfo_Entry","ModemVendorID","s")%>";
+
 function initial(){
 	show_menu();
 	load_body();
@@ -253,6 +257,11 @@ function initial(){
 	display_vdsl_band_status();
 	showadslbootTime();
 	document.getElementById("div_AdslType").innerHTML = dsl_type;
+
+	document.getElementById("tr_SystemVendorID").style.display = (SystemVendorID_orig != "")? "":"none";
+	document.getElementById("tr_SystemVendorModelID").style.display = (SystemVendorModelID_orig != "")? "":"none";
+	document.getElementById("tr_ModemVendorID").style.display = (ModemVendorID_orig != "")? "":"none";
+
 	setTimeout("update_log();", 5000);
 }
 
@@ -369,6 +378,26 @@ function showadslbootTime(){
 	<div id="div_VDSL_CurrentProfile"><% if tcWebApi_get("Info_Adsl","CurrentProfiles","h") <> "" then tcWebApi_get("Info_Adsl","CurrentProfiles","s") end if%></div>
 </td>
 </tr>
+
+<tr id="tr_SystemVendorID" style="display:none;">
+<th>System Vendor ID</th>
+<td colspan="2">
+	<div><%tcWebApi_get("SysInfo_Entry","SystemVendorID","s")%></div>
+</td>
+</tr>
+<tr id="tr_SystemVendorModelID" style="display:none;">
+<th>System Vendor Model ID</th>
+<td colspan="2">
+	<div><%tcWebApi_get("SysInfo_Entry","SystemVendorModelID","s")%></div>
+</td>
+</tr>
+<tr id="tr_ModemVendorID" style="display:none;">
+<th>Modem Vendor ID</th>
+<td colspan="2">
+	<div><%tcWebApi_get("SysInfo_Entry","ModemVendorID","s")%></div>
+</td>
+</tr>
+
 </table>
 </td>
 </tr>

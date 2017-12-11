@@ -28,6 +28,9 @@
 #include <shared.h>
 #include <tcapi.h>
 
+extern char lan_ip[20], lan_netmask[20];
+
+
 #define HEX_TO_DECIMAL(char1, char2)	\
     (((char1 >= 'A') ? (((char1 & 0xdf) - 'A') + 10) : (char1 - '0')) * 16) + \
     (((char2 >= 'A') ? (((char2 & 0xdf) - 'A') + 10) : (char2 - '0')))
@@ -773,7 +776,7 @@ char *generate_token(char *token, int len)
 		num = rand() % 62;
 		token[i] = token_contain[num];
 	}
-	dbgprintf("[%s, %d]generate token=%s\n", __FUNCTION__, __LINE__, token);
+	//dbgprintf("[%s, %d]generate token=%s\n", __FUNCTION__, __LINE__, token);
 	return token;
 }
 
@@ -1072,21 +1075,21 @@ login_retry_t* add_login_retry(const char *ipaddr)
 #endif
 
 //return value: 0: LAN,  1: WAN,  -1: ERROR
-int _check_ip_is_lan_or_wan(const char *target_ip, const char *lan_ip, const char *submask)
+int _check_ip_is_lan_or_wan(const char *target_ip)
 {
 	char tmp1[20], tmp2[20];
 
-	if(!target_ip || !lan_ip || !submask)
+	if(!target_ip)
 		return -1;
 
 	//Convert target ip and lan ip.
 	//ex. target ip is 168.95.10.10, lan ip is 192.168.1.1, subnet mask is 255.255.255.0. 
 	//convert them as 168.95.10.0 and 192.168.1.0. Them compare these 2 values.
 	//If they are different, the target ip would be WAN.
-	if(get_network_addr_by_ip_prefix(target_ip, submask, tmp1, sizeof(tmp1)) == -1)
+	if(get_network_addr_by_ip_prefix(target_ip, lan_netmask, tmp1, sizeof(tmp1)) == -1)
 		return -1;
 
-	if(get_network_addr_by_ip_prefix(lan_ip, submask, tmp2, sizeof(tmp2)) == -1)
+	if(get_network_addr_by_ip_prefix(lan_ip, lan_netmask, tmp2, sizeof(tmp2)) == -1)
 		return -1;
 
 	return !strcmp(tmp1, tmp2)? 0: 1;
@@ -1095,15 +1098,10 @@ int _check_ip_is_lan_or_wan(const char *target_ip, const char *lan_ip, const cha
 //return value: 0: LAN,  1: WAN,  -1: ERROR
 int check_current_ip_is_lan_or_wan(const char *target_ip)
 {
-	char lan_ip[20], lan_netmask[20];
-	
 	if(!target_ip)
 		return -1;
 
-	if(tcapi_get("Lan_Entry0", "IP", lan_ip) != TCAPI_PROCESS_OK || tcapi_get("Lan_Entry0", "netmask", lan_netmask) != TCAPI_PROCESS_OK)
-		return -1;
-	
-	return _check_ip_is_lan_or_wan(target_ip, lan_ip, lan_netmask);
+	return _check_ip_is_lan_or_wan(target_ip);
 }
 
 int check_xss_blacklist(char* para, int check_www)

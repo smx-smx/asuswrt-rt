@@ -675,6 +675,13 @@ int getCloudInfo_forsize(char *URL,void (* cmd_data)(char *),int index)
         curl_easy_setopt(curl,CURLOPT_LOW_SPEED_LIMIT,1);
         curl_easy_setopt(curl,CURLOPT_LOW_SPEED_TIME,30);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+        if(1 == ftp_config.multrule[index]->ssl)
+        {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+        }
         res=curl_easy_perform(curl);
         if(res != CURLE_OK && res != CURLE_FTP_COULDNT_RETR_FILE){
             curl_easy_cleanup(curl);
@@ -1234,6 +1241,13 @@ int getCloudInfo_one(char *URL,int (* cmd_data)(char *,CloudFile *,int),CloudFil
         curl_easy_setopt(curl,CURLOPT_LOW_SPEED_LIMIT,1);
         curl_easy_setopt(curl,CURLOPT_LOW_SPEED_TIME,30);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+        if(1 == ftp_config.multrule[index]->ssl)
+        {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+        }
         res = curl_easy_perform(curl);
         DEBUG("getCloudInfo_one() - res = %d\n",res);
         if(res != CURLE_OK)
@@ -1509,7 +1523,7 @@ int parse_config(const char *path,Config *config)
     return 0;
 }
 
-int usr_auth(char *ip,char *user_pwd)
+int usr_auth(char *ip,char *user_pwd, int index)
 {
     CURL *curl;
     CURLcode res;
@@ -1523,8 +1537,58 @@ int usr_auth(char *ip,char *user_pwd)
         curl_easy_setopt(curl,CURLOPT_LOW_SPEED_LIMIT,1);
         curl_easy_setopt(curl,CURLOPT_LOW_SPEED_TIME,10);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+        if(1 == ftp_config.multrule[index]->ssl)
+        {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+        }
         res = curl_easy_perform(curl);// 28:a timeout was reached  7:couldn't connect to server
         curl_easy_cleanup(curl);
         return res;
     }
+}
+
+int is_support_ssl(char *ip,char *user_pwd, int index)
+{
+        CURL *curl;
+        CURLcode res;
+        FILE *fp;
+        fp = fopen(CURL_HEAD,"wb+");
+        curl = curl_easy_init();
+        if(curl)
+        {
+            curl_easy_setopt(curl, CURLOPT_URL, ip);
+           if(strlen(user_pwd) != 1)
+                curl_easy_setopt(curl, CURLOPT_USERPWD, user_pwd);
+            curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10);
+            curl_easy_setopt(curl,CURLOPT_LOW_SPEED_LIMIT,1);
+            curl_easy_setopt(curl,CURLOPT_LOW_SPEED_TIME,10);
+            curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+            curl_easy_setopt(curl, CURLOPT_WRITEHEADER, fp);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+            res = curl_easy_perform(curl);// 28:a timeout was reached  7:couldn't connect to server
+            curl_easy_cleanup(curl);
+            fclose(fp);
+            //if(res != CURLE_OK)
+            //{
+                FILE *fp1 = fopen(CURL_HEAD,"r");
+                char buff[512]={0};
+                while(fgets(buff,sizeof(buff),fp1) != NULL)
+                {
+                    //p = strstr(buff,"530 TLS required");
+                    if(strstr(buff,"234 Using authentication type TLS")||strstr(buff,"234 Using authentication type SSL"))
+                    {
+                        ftp_config.multrule[index]->ssl=1;
+                        break;
+                    }
+                }
+                fclose(fp1);
+            //}
+            return res;
+        }
 }

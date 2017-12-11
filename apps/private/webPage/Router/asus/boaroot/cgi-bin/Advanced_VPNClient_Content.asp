@@ -421,13 +421,18 @@ var duplicateCheck = {
 		var vpnc_clientlist_row = vpnc_clientlist_array.split('<');
 		var index_del = parseInt(this.tmpIdx);
 		for(var i=1; i<vpnc_clientlist_row.length; i++){
+			var compareData = vpnc_clientlist_row[i];
+			var start_idx = compareData.indexOf(">");
+			if(start_idx != -1)
+				compareData = compareData.substring(start_idx);
+			
 			if(index_del == "" && index_del != 0){
-				if(vpnc_clientlist_row[i].search(this.tmpStr) >= 0){
+				if(compareData == this.tmpStr){
 					return true;
 				}
 			}
 			else if(i != index_del + 1){
-				if(vpnc_clientlist_row[i].search(this.tmpStr) >= 0){
+				if(compareData == this.tmpStr){
 					return true;
 				}
 			}

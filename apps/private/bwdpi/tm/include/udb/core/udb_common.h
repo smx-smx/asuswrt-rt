@@ -28,11 +28,11 @@
 
 typedef enum
 {
-	TDTS_HOOK_NF_FORD = 0
+	TDTS_HOOK_NONE = 0
+	, TDTS_HOOK_NF_FORD
 	, TDTS_HOOK_NF_LIN
 	, TDTS_HOOK_NF_LOUT
-	, TDTS_HOOK_NF_PRE_CTF
-	, TDTS_HOOK_NF_FORD_RTL
+	, TDTS_HOOK_FAST_PATH
 } tdts_hook_t;
 
 typedef enum
@@ -126,6 +126,11 @@ typedef struct skb_tuples
 
 } skb_tuples_t;
 
+typedef struct
+{
+	uint16_t zone;
+} ct_data_t;
+
 enum
 {
 	CT_FLAG_NEW = 0
@@ -159,6 +164,28 @@ typedef struct tdts_net_device
 	void		*fw_send;
 } tdts_net_device_t;
 
+typedef struct redir_param {
+	char *redir_base;
+	
+	int cat_id;
+	
+	unsigned app_cid;
+	unsigned app_id;
+	
+	uint8_t wbl;
+	
+	uint16_t gid;
+	uint16_t pid;
+	
+	uint8_t *mac;
+
+	char *orig_domain;
+	unsigned orig_domain_len;
+	
+	char *orig_path;
+	unsigned orig_path_len;
+} redir_param_t;
+
 typedef struct tdts_udb_param
 {
 	skb_tuples_t	skb_tuples;
@@ -176,16 +203,17 @@ typedef struct tdts_udb_param
 	uint32_t	*ct_mark;
 	void		*ct_ptr;
 	void		*ct_extra;
+	ct_data_t	*ct_data;
 	void 		*fast_path_data;
 
 	tdts_hook_t	hook;
 	uint32_t	error_code;
 	tdts_net_device_t dev;
 	
-	int		(*async_send)(tdts_pkt_parameter_t *, tdts_res_t, tdts_net_device_t *);
+	int		(*async_send)(void *, tdts_res_t);
 	int		(*send_wrs_query_to_user)(usr_msg_hdr_t *, uint8_t *);
-	int		(*send_redir_page)(void *, char *, int, char *, unsigned, char *, unsigned, uint8_t *, tdts_net_device_t *);
-	int		(*send_wpr_page)(void *, char *, tdts_net_device_t *);
+	int		(*send_redir_page)(void *, redir_param_t *, tdts_net_device_t *);
+
 #if TMCFG_E_UDB_CORE_SHN_QUERY
 	int		(*shnagent_cb)(usr_msg_hdr_t *, uint8_t *);
 #endif
@@ -201,7 +229,10 @@ enum
 typedef int (*dpi_l3_scan_t)(void *skb, tdts_pkt_parameter_t *pkt_param);
 #if TMCFG_E_UDB_CORE_RULE_FORMAT_V2
 typedef int (*dpi_set_binding_ver_t)(unsigned int, unsigned int);
-#endif
+#if TMCFG_E_CORE_PORT_SCAN_DETECTION
+typedef int (*dpi_remove_tcp_connection_by_tuple_t)(tdts_conn_tuple_t *ct);
+#endif // TMCFG_E_CORE_PORT_SCAN_DETECTION
+#endif // TMCFG_E_UDB_CORE_RULE_FORMAT_V2
 
 typedef struct
 {
@@ -214,21 +245,35 @@ typedef struct
 	dpi_set_binding_ver_t dpi_set_binding_ver;
 #endif
 #if TMCFG_E_CORE_PORT_SCAN_DETECTION
+#if TMCFG_E_UDB_CORE_RULE_FORMAT_V2
+	dpi_remove_tcp_connection_by_tuple_t dpi_remove_tcp_connection_by_tuple;
+#endif // TMCFG_E_UDB_CORE_RULE_FORMAT_V2
 	unsigned short *port_scan_tholds;
-#endif
+#endif // TMCFG_E_CORE_PORT_SCAN_DETECTION
 } udb_init_param_t;
+
+#if TMCFG_E_UDB_CORE_CONN_EXTRA
+typedef int (*reset_ct_by_tuples_t)(skb_tuples_t *, ct_data_t *);
+
+typedef struct
+{
+	unsigned int sess_num;
+	unsigned int sess_timeout;
+} cte_init_param_t;
+#endif
 
 extern void udb_core_init_pkt_parameter(tdts_pkt_parameter_t *param, uint16_t req_flag, tdts_hook_t hook);
 
 extern tdts_res_t udb_core_do_fastpath_action(tdts_udb_param_t *fw_param);
-extern tdts_act_t udb_core_get_action(tdts_udb_param_t *fw_param, tdts_hook_t hook, bool new_conn);
+extern tdts_act_t udb_core_get_action(tdts_udb_param_t *fw_param, bool new_conn);
 extern tdts_res_t udb_core_policy_match(tdts_udb_param_t *fw_param);
 
 extern int udb_core_udb_init(udb_init_param_t *udb_init_param);
 extern void udb_core_udb_exit(void);
-extern int udb_core_ct_extra_init(unsigned int sn, void (*fn)(void *));
+extern int udb_core_ct_extra_init(cte_init_param_t *param);
 extern void udb_core_ct_extra_exit(void);
 extern void udb_core_ct_event_handler(void *conntrack, uint32_t mark, int ct_evt);
+extern void udb_core_reg_func_reset_ct(int (*func)(skb_tuples_t *, ct_data_t *));
 
 extern int tdts_core_ioctl_udb_op_get(char *tbl, uint32_t tbl_len, uint32_t *tbl_used_len);
 extern int tdts_core_ioctl_dpi_conf_op_set(char *tbl, uint32_t tbl_len);
@@ -238,6 +283,7 @@ extern int tdts_core_ioctl_op_app_patrol_construct(char *tbl, uint32_t tbl_len);
 extern int tdts_core_ioctl_app_op_get(char *tbl, uint32_t tbl_len, uint32_t *tbl_used_len);
 extern int tdts_core_ioctl_app_patrol_list_get(char *tbl, uint32_t tbl_len, uint32_t *tbl_used_len);
 extern int tdts_core_ioctl_app_bw_get_clean(char *tbl, uint32_t tbl_len, uint32_t *tbl_used_len);
+extern int tdts_core_ioctl_op_set_redirect_url(char *buf, uint32_t tbl_len);
 
 extern int udb_core_set_dpi_cfg(unsigned int cfg);
 extern int tdts_core_dpi_conf_seq_print(void *m, void *v);
@@ -246,6 +292,7 @@ extern int tdts_core_fw_usr_msg_handler(uint8_t *msg, int size, int pid, int typ
 extern int tdts_core_show_app_patrol(void *m, void *v);
 extern int tdts_core_show_ford_drop(void *m, void *v);
 extern int tdts_core_cte_stat_seq_print(void *m, void *v);
+extern int udb_core_cte_dump_seq_print(void *m, void *v);
 
 extern int tdts_core_update_devid_un_http_ua(uint8_t *addr, uint8_t ip_ver, uint8_t *data);
 extern int tdts_core_update_devid_un_bootp(uint8_t *addr, uint8_t ip_ver, uint8_t *data);
@@ -253,8 +300,12 @@ extern int tdts_core_update_upnp(uint8_t *data, uint32_t index, void *cb);
 
 extern int tdts_core_udb_mem_seq_print(void *m, void *v);
 extern int tdts_core_udb_memtrack_print(void *m, void *v);
+extern int udb_core_memtrack_init(void);
+extern void udb_core_memtrack_exit(void);
+extern int udb_core_ver_seq_print(void *m, void *v);
 
 extern int tdts_core_ioctl_op_set_wpr_conf(char *buf, uint32_t tbl_len);
 extern int tdts_core_ioctl_op_wpr_switch(uint32_t flag);
+extern int tdts_core_wan_detection(uint8_t *dev_name, uint32_t len);
 #endif	// __UDB_COMMON_H__
 

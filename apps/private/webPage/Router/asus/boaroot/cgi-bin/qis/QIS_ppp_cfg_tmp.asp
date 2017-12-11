@@ -535,7 +535,7 @@ function pass_checked(obj){
 
 	<div class="apply_gen" style="margin-top:30px">
 		<input type="button" id="prevButton" value="<% tcWebApi_Get("String_Entry", "Manual_Setting_btn", "s") %>" tabindex="7" onclick="gotoprev(document.form);" class="button_gen_long">
-		<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" tabindex="6" onclick="submitForm();" class="button_gen">
+		<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" tabindex="6" onclick="submitForm();" class="button_gen_long">
 	</div>
 </div>
 </form>

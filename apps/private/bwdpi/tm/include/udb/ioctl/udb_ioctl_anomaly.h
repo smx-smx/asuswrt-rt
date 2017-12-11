@@ -35,6 +35,7 @@ enum
 	UDB_IOCTL_ANOMALY_OP_NA = 0,
 	UDB_IOCTL_ANOMALY_OP_GET_LOG,
 	UDB_IOCTL_ANOMALY_OP_RESET_LOG,
+	UDB_IOCTL_ANOMALY_OP_GET_LOG_V2,
 	UDB_IOCTL_ANOMALY_OP_MAX
 };
 
@@ -53,6 +54,29 @@ typedef struct udb_ano_ioc_entry_list
 	uint32_t cnt;
 	udb_ano_ioc_entry_t entry[0];
 } udb_ano_ioc_entry_list_t;
+
+typedef struct udb_ano_ioc_entry_v2
+{
+	uint64_t time;
+	uint32_t rule_id;
+
+	uint32_t hit_cnt;
+	uint8_t action; //0 means accept, 1 means block
+	uint8_t mac[6];
+	
+	uint8_t role; //!< 1 is attacker, 0 is victim
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t ip_ver;	
+	uint8_t dip[16];	//IP_ADDR_LEN
+	uint8_t sip[16];
+} udb_ano_ioc_entry_v2_t;
+
+typedef struct udb_ano_ioc_entry_list_v2
+{
+	uint32_t cnt;
+	udb_ano_ioc_entry_v2_t entry[0];
+} udb_ano_ioc_entry_list_v2_t;
 
 #ifdef __KERNEL__
 int udb_ioctl_anomaly_op_copy_out(uint8_t op, void *buf, uint32_t buf_len, uint32_t *buf_used_len);

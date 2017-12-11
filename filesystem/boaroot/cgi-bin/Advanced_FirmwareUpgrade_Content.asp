@@ -411,8 +411,8 @@ function uiDoUpdate()
 var dead = 0;
 function detect_httpd(){
 	$j.ajax({
-    		url: '/cgi-bin/httpd_check.asp',
-    		dataType: 'script',
+    		url: '/cgi-bin/httpd_check.xml?hash=' + Math.random().toString(),
+    		dataType: 'xml',
 		timeout: 1500,
     		error: function(xhr){
     				dead++;

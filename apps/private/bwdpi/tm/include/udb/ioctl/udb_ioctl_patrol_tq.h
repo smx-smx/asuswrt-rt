@@ -35,11 +35,14 @@ enum
 	UDB_IOCTL_PATROL_TQ_OP_SET,
 	UDB_IOCTL_PATROL_TQ_OP_GET_LOG,
 	UDB_IOCTL_PATROL_TQ_OP_GET_TIME,
+	UDB_IOCTL_PATROL_TQ_OP_RESET,
+	UDB_IOCTL_PATROL_TQ_OP_ENABLE,
+	UDB_IOCTL_PATROL_TQ_OP_DISABLE,
 	UDB_IOCTL_PATROL_TQ_OP_MAX
 };
 
-#define MAX_PATROL_TQ_GRP		(16)
-#define MAX_PATROL_TQ_DEV		(6)
+#define MAX_PATROL_TQ_GRP TMCFG_E_UDB_CORE_PATROL_TIME_GRP_NUM
+#define MAX_PATROL_TQ_DEV TMCFG_E_UDB_CORE_PATROL_TIME_DEV_NUM
 #define MAX_PATROL_TQ_SIZE (sizeof(patrol_ioc_tq_t) + (sizeof(patrol_ioc_tq_grp_t) * MAX_PATROL_TQ_GRP) \
 	+ (sizeof(patrol_ioc_tq_dev_t)* MAX_PATROL_TQ_GRP * MAX_PATROL_TQ_DEV))
 
@@ -100,6 +103,7 @@ typedef struct app_time_ioc_entry
 #ifdef __KERNEL__
 int udb_ioctl_patrol_tq_op_copy_out(uint8_t op, void *buf, uint32_t buf_len, uint32_t *buf_used_len);
 int udb_ioctl_patrol_tq_op_copy_in(uint8_t op, void *buf, uint32_t buf_len);
+int udb_ioctl_patrol_tq_op_copy_none(uint8_t op);
 #endif
 
 #endif /* _UDB_IOCTL_PATROL_TQ_H_ */

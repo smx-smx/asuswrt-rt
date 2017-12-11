@@ -55,6 +55,9 @@
 #define UDB_SHELL_IOCTL_CHRDEV_MAJOR TMCFG_E_UDB_SHELL_IOCTL_DEV_MAJ
 #define UDB_SHELL_IOCTL_CHRDEV_MINOR TMCFG_E_UDB_SHELL_IOCTL_DEV_MIN
 
+/*! magic */
+#define UDB_SHELL_IOCTL_MAGIC TMCFG_E_UDB_SHELL_IOCTL_DEV_MAGIC
+
 /*!
  * \brief tdts_shell ioctl.
  *
@@ -89,9 +92,9 @@ typedef struct udb_shell_ioctl
 	uint8_t rsv2[16]; //!< Reserve for future use
 } udb_shell_ioctl_t;
 
-#define _UDB_IOCTL_CMD_R(_nr) _IOR(UDB_SHELL_IOCTL_CHRDEV_MAJOR, _nr, udb_shell_ioctl_t)
-#define _UDB_IOCTL_CMD_W(_nr) _IOW(UDB_SHELL_IOCTL_CHRDEV_MAJOR, _nr, udb_shell_ioctl_t)
-#define _UDB_IOCTL_CMD_WR(_nr) _IOWR(UDB_SHELL_IOCTL_CHRDEV_MAJOR, _nr, udb_shell_ioctl_t)
+#define _UDB_IOCTL_CMD_R(_nr) _IOR(UDB_SHELL_IOCTL_MAGIC, _nr, udb_shell_ioctl_t)
+#define _UDB_IOCTL_CMD_W(_nr) _IOW(UDB_SHELL_IOCTL_MAGIC, _nr, udb_shell_ioctl_t)
+#define _UDB_IOCTL_CMD_WR(_nr) _IOWR(UDB_SHELL_IOCTL_MAGIC, _nr, udb_shell_ioctl_t)
 
 #define UDB_SHELL_IOCTL_CMD_NA		0x00 //!< N/A. Do not use
 #define UDB_SHELL_IOCTL_CMD_INTERNAL 	_UDB_IOCTL_CMD_WR(UDB_IOCTL_NR_INTERNAL)
@@ -111,9 +114,6 @@ typedef enum
 	UDB_SHELL_IOCTL_TYPE_RAW, //!< type is raw data, length must be specified correctly.
 	UDB_SHELL_IOCTL_TYPE_MAX
 } udb_shell_ioctl_type_t;
-
-/*! magic */
-#define UDB_SHELL_IOCTL_MAGIC UDB_SHELL_IOCTL_CHRDEV_MAJOR
 
 /*!@}*/
 

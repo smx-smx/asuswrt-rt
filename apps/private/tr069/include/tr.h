@@ -160,10 +160,10 @@ enum {
     BOOLEAN_ERROR
 };
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(TCSUPPORT_ADD_JFFS)
 #define JFFS_TR_PATH	"/jffs/tr/"
 #else
-#define JFFS_TR_PATH	""
+#define JFFS_TR_PATH	"/yaffs/tr/"
 #endif
 
 #define TR069_CLIENT_VERSION "TR069 Client 1.0"

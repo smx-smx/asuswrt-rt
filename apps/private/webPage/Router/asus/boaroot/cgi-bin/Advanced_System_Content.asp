@@ -49,18 +49,26 @@ If Request_Form("SaveSSHd") = "1" Then
 	TCWebApi_set("SSH_Entry","sshport","sshd_port")
 	TCWebApi_set("SSH_Entry","Need_Pass","sshd_pass")
 	TCWebApi_set("SSH_Entry","Authkeys","sshd_authkeys")
+	TCWebApi_set("SSH_Entry","timeout","shell_timeout_x")
 	tcWebApi_CommitWithoutSave("SSH_Entry")
 End if
 
 If Request_Form("SaveTelnetd") = "1" Then
 	TCWebApi_set("Misc_Entry","telnetd_enable","telnetd_enable")
-	TCWebApi_set("Misc_Entry","http_autologout","http_autologout")
+	TCWebApi_set("Misc_Entry","telnetd_timeout","shell_timeout_x")
+	TCWebApi_set("Misc_Entry","http_autologout","http_autologout")	
 	tcWebApi_CommitWithoutSave("Misc_Entry")
 End if
 
 If Request_Form("SaveRebootScheduler") = "1" Then
 	TCWebApi_set("RebootSchedule_Entry","reboot_schedule_enable","reboot_schedule_enable")
 	TCWebApi_set("RebootSchedule_Entry","reboot_schedule","reboot_schedule")
+	tcWebApi_CommitWithoutSave("RebootSchedule_Entry")
+End if
+
+If Request_Form("SaveRewanScheduler") = "1" Then
+	TCWebApi_set("RebootSchedule_Entry","rewan_schedule_enable","rewan_schedule_enable")
+	TCWebApi_set("RebootSchedule_Entry","rewan_schedule","rewan_schedule")
 	tcWebApi_CommitWithoutSave("RebootSchedule_Entry")
 End if
 
@@ -172,12 +180,26 @@ var restrict_rulelist_array = [];
 var accounts = [<% get_all_accounts(); %>];
 var is_gen_key = "<% get_ssh_first_init() %>";
 
+<% wanlink(); %>
+<% secondary_wanlink(); %>
+var ddns_enable_x = '<% tcWebApi_get("Ddns_Entry","Active","s"); %>';
+var ddns_hostname_x_t = '<% tcWebApi_get("Ddns_Entry","MYHOST","s"); %>';
+var wan0_unit = '<% wanlink_status(); %>';
+var wan1_unit = '<% secondary_wanlink_status(); %>';
+var wan_ipaddr = "";
+
+if(wan1_unit == "1")
+        wan_ipaddr = secondary_wanlink_ipaddr();
+if(wan0_unit == "1")
+	wan_ipaddr = wanlink_ipaddr();
+
 var isFromHTTPS = false;
 if((location.href.search('https://') >= 0) || (location.href.search('HTTPS://') >= 0)){
         isFromHTTPS = true;
 }
 
 var http_clientlist_array = "<% TCWebApi_get("Firewall_Entry","restrict_rulelist","s") %>";
+var set_shell_timeout = "";
 var set_http_autologout = "";
 
 var timezones = [
@@ -298,31 +320,27 @@ function initial(){
 	load_timezones();
 	corrected_timezone(DAYLIGHT_orig, TZ_orig);
 
-	init_reboot_schedule_setting();	
+	init_reboot_schedule_setting();
+	init_rewan_schedule_setting();
 
-	hideport("<% tcWebApi_get("Firewall_Entry","misc_http_x", "s") %>");
+	hideport(document.form.misc_http_x[0].checked);
 	if("<% TCWebApi_get("Firewall_Entry","enable_acc_restriction","s") %>" != "1")	{
 		display_spec_IP(0);
 	}
 	
 	if(HTTPS_support == -1){
-		document.getElementById("https_tr").style.display = "none";
-		document.getElementById("https_lanport").style.display = "none";
+		document.getElementById("http_auth_table").style.display = "none";		
 	}
 	else{
-		hide_https_lanport(document.form.http_enable.value);
-		hide_https_wanport(document.form.http_enable.value);
+		hide_https_lanport(document.form.http_enable.value);		
 	}
 	showLANIPList();
 	document.getElementById("accessfromwan_port").style.display = (document.form.misc_http_x[0].checked == 1) ? "" : "none";
 
 	if(HTTPS_support  == -1 || '<% tcWebApi_get("Https_Entry","http_enable","s") %>' == 1){
-		document.getElementById("https_port").style.display = "none";
+		document.getElementById("https_port_span").style.display = "none";
 	}
-	else if('<% tcWebApi_get("Https_Entry","http_enable","s") %>' == 2){
-		document.getElementById("http_port").style.display = "none";
-	}
-
+	
 	//Set default http_autologout if value null
 	if("<% tcWebApi_Get("Misc_Entry", "http_autologout", "s") %>" != ""){
         	set_http_autologout = "<% tcWebApi_Get("Misc_Entry", "http_autologout", "s") %>";
@@ -332,13 +350,7 @@ function initial(){
 	}
 	document.form.http_autologout.value = set_http_autologout;
 	
-	if(ssh_support != -1){
-		check_sshd_enable('<% tcWebApi_get("SSH_Entry","Enable","s") %>');
-	}	
-	else{
-		document.getElementById('ssh_table').style.display = "none";	
-	}
-	
+
 	//Hide enable_telnet or not
 	if(telnet_support == -1){
 		document.getElementById("telnet_tr").style.display = "none";
@@ -349,7 +361,32 @@ function initial(){
 		document.getElementById("telnet_tr").style.display = "";
 		document.form.telnetd_enable[0].disabled = false;
 		document.form.telnetd_enable[1].disabled = false;
+		document.form.shell_timeout_x.value = "<%tcWebApi_get("Misc_Entry","telnetd_timeout","s")%>";
 	}
+
+	//Hide SSH or not
+	if(ssh_support == -1){
+		document.getElementById('sshd_enable_tr').style.display = "none";
+		document.getElementById('sshd_port_tr').style.display = "none";
+		document.getElementById('sshd_password_tr').style.display = "none";
+		document.getElementById('auth_keys_tr').style.display = "none";
+	}
+	else{
+		check_sshd_enable('<% tcWebApi_get("SSH_Entry","Enable","s") %>');
+		document.form.shell_timeout_x.value = "<%tcWebApi_get("SSH_Entry","timeout","s")%>";		
+	}
+	
+	//Set default shell_timeout_x if value null
+	if("<% tcWebApi_Get("Misc_Entry", "telnetd_timeout", "s") %>" != ""){
+		set_shell_timeout = "<% tcWebApi_Get("Misc_Entry", "telnetd_timeout", "s") %>";
+	}
+	else if("<% tcWebApi_Get("SSH_Entry", "timeout" , "s") %>" != ""){
+		set_shell_timeout = "<% tcWebApi_Get("SSH_Entry", "timeout", "s") %>";
+	}
+	else{
+		set_shell_timeout = 20;
+	}
+
 }
 
 function init_reboot_schedule_setting(){
@@ -366,10 +403,55 @@ function init_reboot_schedule_setting(){
 	hide_reboot_option("<%tcWebApi_Get("RebootSchedule_Entry","reboot_schedule_enable","s")%>");	
 }
 
-function hideport(flag){
-document.getElementById("accessfromwan_port").style.display = (flag == 1) ? "" : "none";
+function init_rewan_schedule_setting(){
+	document.form.rewan_date_x_Sun.checked = getDateCheck(document.form.rewan_schedule.value, 0);
+	document.form.rewan_date_x_Mon.checked = getDateCheck(document.form.rewan_schedule.value, 1);
+	document.form.rewan_date_x_Tue.checked = getDateCheck(document.form.rewan_schedule.value, 2);
+	document.form.rewan_date_x_Wed.checked = getDateCheck(document.form.rewan_schedule.value, 3);
+	document.form.rewan_date_x_Thu.checked = getDateCheck(document.form.rewan_schedule.value, 4);
+	document.form.rewan_date_x_Fri.checked = getDateCheck(document.form.rewan_schedule.value, 5);
+	document.form.rewan_date_x_Sat.checked = getDateCheck(document.form.rewan_schedule.value, 6);
+	document.form.rewan_time_x_hour.value = getrebootTimeRange(document.form.rewan_schedule.value, 0);
+	document.form.rewan_time_x_min.value = getrebootTimeRange(document.form.rewan_schedule.value, 1);
+	document.getElementById('rewan_schedule_enable_tr').style.display = "";
+	hide_rewan_option("<%tcWebApi_Get("RebootSchedule_Entry","rewan_schedule_enable","s")%>");	
 }
 
+function hideport(flag){
+	document.getElementById("accessfromwan_port").style.display = (flag == 1) ? "" : "none";
+	if(HTTPS_support == -1){
+		document.getElementById("NSlookup_help_for_WAN_access").style.display = (flag == 1) ? "" : "none";
+		var orig_str = document.getElementById("access_port_title").innerHTML;
+		document.getElementById("access_port_title").innerHTML = orig_str.replace(/HTTPS/, "HTTP");
+		document.getElementById("http_port_span").style.display = (flag == 1) ? "" : "none";
+	}
+	else{
+		document.getElementById("WAN_access_hint").style.display = (flag == 1) ? "" : "none";
+		document.getElementById("wan_access_url").style.display = (flag == 1) ? "" : "none";
+		change_url(document.form.misc_httpsport_x.value, "https_wan");
+		document.getElementById("https_port_span").style.display = (flag == 1) ? "" : "none";
+	}	
+}
+
+var autoChange = false;
+function enable_wan_access(flag){
+	if(HTTPS_support != -1){
+		if(flag == 1){
+			if(document.form.http_enable.value == "1"){
+				document.form.http_enable.selectedIndex = 2;
+				autoChange = true;
+				hide_https_lanport(document.form.http_enable.value);
+			}
+		}
+		else{
+			if(autoChange){
+				document.form.http_enable.selectedIndex = 0;
+				autoChange = false;
+				hide_https_lanport(document.form.http_enable.value);
+			}
+		}
+	}
+}
 function redirect(){
 	if(document.form.http_enable.value == "1"){
 		if(isFromWAN)
@@ -429,7 +511,10 @@ function uiSave() {
 		}
 
 		document.form.SaveRebootScheduler.value = 1;
-		updateDateTime();	
+		updateDateTime();
+
+		document.form.SaveRewanScheduler.value = 1;
+		update_rewanDateTime();
 
 		document.form.SaveFirewall.value = 1;
 		if(document.form.misc_http_x[0].checked == true)
@@ -665,6 +750,9 @@ function validForm(){
 		}
 	}
 
+	if(!validate_range_sp(document.form.shell_timeout_x, 10, 999, set_shell_timeout))
+                return false;
+
 	if((document.form.adminFlag.value == 1) || (document.form.passwdFlag.value == 1))
 	{
 		document.form.accountFlag.value = 1;
@@ -703,11 +791,13 @@ function validForm(){
 			document.form.https_lanport.focus();
 			return false;
 		}
+		/* misc_httpport_x not support while HTTPS_support
 		if(document.form.misc_httpsport_x.value == document.form.misc_httpport_x.value){
 			alert("<%tcWebApi_get("String_Entry","https_port_conflict","s")%>");
 			document.form.misc_httpsport_x.focus();
 			return false;
 		}
+		*/
 	}
 		
 	if(!document.form.reboot_date_x_Sun.checked && !document.form.reboot_date_x_Mon.checked &&
@@ -717,6 +807,16 @@ function validForm(){
 	{
 		alert(Untranslated.filter_lw_date_valid);
 		document.form.reboot_date_x_Sun.focus();
+		return false;
+	}
+
+	if(!document.form.rewan_date_x_Sun.checked && !document.form.rewan_date_x_Mon.checked &&
+		!document.form.rewan_date_x_Tue.checked && !document.form.rewan_date_x_Wed.checked &&
+		!document.form.rewan_date_x_Thu.checked && !document.form.rewan_date_x_Fri.checked &&
+		!document.form.rewan_date_x_Sat.checked && document.form.rewan_schedule_enable_x[0].checked)
+	{
+		alert(Untranslated.filter_lw_date_valid);
+		document.form.rewan_date_x_Sun.focus();
 		return false;
 	}
 	
@@ -731,11 +831,15 @@ function pass_checked(obj){
 	switchType(obj, document.form.show_pass_1.checked, true);
 }
 
-var theUrl = "router.asus.com";
+var header_info = [<% get_header_info(); %>];
+var host_name = header_info[0].host;
+if(host_name.split(":").length > 1)
+	host_name = host_name.split(":")[0];
+var theUrl = host_name;
 function hide_https_lanport(_value){
 	if(sw_mode == '1' || sw_mode == '2'){
 		var https_lanport_num = "<% TCWebApi_get("Https_Entry","https_lanport","s") %>";
-		document.getElementById("https_lanport").style.display = (_value == "1") ? "none" : "";
+		document.getElementById("https_lanport_tr").style.display = (_value == "1") ? "none" : "";
 		document.form.https_lanport.value = "<% TCWebApi_get("Https_Entry","https_lanport","s") %>";
 		document.getElementById("https_access_page").innerHTML = "<%tcWebApi_get("String_Entry","https_access_url","s")%> ";
 		document.getElementById("https_access_page").innerHTML += "<a href=\"https://"+theUrl+":"+https_lanport_num+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+theUrl+"<span>:"+https_lanport_num+"</span></a>";
@@ -746,9 +850,12 @@ function hide_https_lanport(_value){
 	}
 }
 
-function hide_https_wanport(_value){
-	document.getElementById("http_port").style.display = (_value == "2") ? "none" : "";
-	document.getElementById("https_port").style.display = (_value == "1") ? "none" : "";
+function check_wan_access(http_enable){
+	if(http_enable == "1" && document.form.misc_http_x.value == "1"){	//While Accesss from WAN enabled, not allow to set HTTP only
+		alert("When \"Web Access from WAN\" is enabled, HTTPS must be enabled.");
+		document.form.http_enable.selectedIndex = 2;
+		hide_https_lanport(document.form.http_enable.value);
+	}
 }
 
 // show clientlist
@@ -843,6 +950,26 @@ function check_Timefield_checkbox(){	// To check Date checkbox checked or not an
 			inputCtrl(document.form.reboot_time_x_min,0);
 			document.form.reboot_schedule.disabled = true;
 			document.getElementById('reboot_schedule_time_tr').style.display ="";
+	}		
+}
+
+function check_rewanTimefield_checkbox(){	// To check Date checkbox checked or not and control Time field disabled or not
+	if( document.form.rewan_date_x_Sun.checked == true 
+		|| document.form.rewan_date_x_Mon.checked == true 
+		|| document.form.rewan_date_x_Tue.checked == true
+		|| document.form.rewan_date_x_Wed.checked == true
+		|| document.form.rewan_date_x_Thu.checked == true
+		|| document.form.rewan_date_x_Fri.checked == true	
+		|| document.form.rewan_date_x_Sat.checked == true	){
+			inputCtrl(document.form.rewan_time_x_hour,1);
+			inputCtrl(document.form.rewan_time_x_min,1);
+			document.form.rewan_schedule.disabled = false;
+	}
+	else{
+			inputCtrl(document.form.rewan_time_x_hour,0);
+			inputCtrl(document.form.rewan_time_x_min,0);
+			document.form.rewan_schedule.disabled = true;
+			document.getElementById('rewan_schedule_time_tr').style.display ="";
 	}		
 }
 
@@ -965,8 +1092,19 @@ function change_url(num, flag){
 		var https_lanport_num_new = num;
 		document.getElementById("https_access_page").innerHTML = "<%tcWebApi_get("String_Entry","https_access_url","s")%> ";
 		document.getElementById("https_access_page").innerHTML += "<a href=\"https://"+theUrl+":"+https_lanport_num_new+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+theUrl+"<span>:"+https_lanport_num_new+"</span></a>";
-	}else{
+	}
+	else if(flag == 'https_wan'){
+		var https_wanport = num;
+		var host_addr = "";
+		if(ddns_enable_x == "1" && ddns_hostname_x_t.length != 0)
+			host_addr = ddns_hostname_x_t;
+		else
+			host_addr = wan_ipaddr;
 
+		if(wan_ipaddr != "0.0.0.0"){
+			document.getElementById("wan_access_url").innerHTML = "<%tcWebApi_get("String_Entry","https_access_url","s")%> ";
+			document.getElementById("wan_access_url").innerHTML += "<a href=\"https://"+host_addr+":"+https_wanport+"\" target=\"_blank\" style=\"color:#FC0;text-decoration: underline; font-family:Lucida Console;\">http<span>s</span>://"+host_addr+"<span>:"+https_wanport+"</span></a>";
+		}
 	}
 }
 //Viz add 2012.12 show url for https [end]
@@ -1059,6 +1197,49 @@ function updateDateTime()
 		document.form.reboot_schedule.value = "<% TCWebApi_get("RebootSchedule_Entry","reboot_schedule","s") %>";
 	}
 }
+
+function hide_rewan_option(flag){
+	document.getElementById("rewan_schedule_date_tr").style.display = (flag == 1) ? "" : "none";
+	document.getElementById("rewan_schedule_time_tr").style.display = (flag == 1) ? "" : "none";
+	if(flag == 1)
+		check_rewanTimefield_checkbox();
+}
+
+function getrewanTimeRange(str, pos)
+{
+	if (pos == 0)
+		return str.substring(7,9);
+	else if (pos == 1)
+		return str.substring(9,11);
+}
+
+function setrewanTimeRange(rd, rh, rm)
+{
+	return(rd.value+rh.value+rm.value);
+}
+
+function update_rewanDateTime()
+{
+	if(document.form.rewan_schedule_enable_x[0].checked == true){
+		document.form.rewan_schedule_enable.value = "1";
+		document.form.rewan_schedule.value = setDateCheck(
+			document.form.rewan_date_x_Sun,
+			document.form.rewan_date_x_Mon,
+			document.form.rewan_date_x_Tue,
+			document.form.rewan_date_x_Wed,
+			document.form.rewan_date_x_Thu,
+			document.form.rewan_date_x_Fri,
+			document.form.rewan_date_x_Sat);
+		document.form.rewan_schedule.value = setrewanTimeRange(
+			document.form.rewan_schedule,
+			document.form.rewan_time_x_hour,
+			document.form.rewan_time_x_min);
+	}
+	else{
+		document.form.rewan_schedule_enable.value = "0";
+		document.form.rewan_schedule.value = "<% TCWebApi_get("RebootSchedule_Entry","rewan_schedule","s") %>";
+	}
+}
 </script>
 </head>
 <body onload="initial();" onunLoad="return unload_body();">
@@ -1092,13 +1273,17 @@ function updateDateTime()
 <INPUT TYPE="HIDDEN" name="SaveHttps" VALUE="0">
 <INPUT TYPE="HIDDEN" name="SaveSwap" VALUE="0">
 <INPUT TYPE="HIDDEN" name="tcWebApi_Save_Flag" VALUE="1">
+
 <INPUT TYPE="HIDDEN" name="prev_http_enable" VALUE="<%tcWebApi_get("Https_Entry","http_enable","s")%>">
 <INPUT TYPE="HIDDEN" name="prev_https_lanport" VALUE="<%tcWebApi_get("Https_Entry","https_lanport","s")%>">
 <INPUT TYPE="HIDDEN" name="prev_username" VALUE="<%tcWebApi_get("Account_Entry0","username","s")%>">
 <INPUT TYPE="HIDDEN" name="http_clientlist" value="<% TCWebApi_get("Firewall_Entry","restrict_rulelist","s") %>">
 <INPUT TYPE="HIDDEN" name="SaveRebootScheduler" VALUE="0">
+<INPUT TYPE="HIDDEN" name="SaveRewanScheduler" VALUE="0">
 <INPUT TYPE="HIDDEN" name="reboot_schedule_enable" value="<% TCWebApi_get("RebootSchedule_Entry","reboot_schedule_enable","s") %>">
 <INPUT TYPE="HIDDEN" name="reboot_schedule" value="<% TCWebApi_get("RebootSchedule_Entry","reboot_schedule","s") %>">
+<INPUT TYPE="HIDDEN" name="rewan_schedule_enable" value="<% TCWebApi_get("RebootSchedule_Entry","rewan_schedule_enable","s") %>">
+<INPUT TYPE="HIDDEN" name="rewan_schedule" value="<% TCWebApi_get("RebootSchedule_Entry","rewan_schedule","s") %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 <tr>
@@ -1152,46 +1337,12 @@ function updateDateTime()
 									<span id="alert_msg2" style="color:#FC0;margin-left:8px;"></span>
 								</td>
 							</tr>
-						</table>
-						
-			<table id="ssh_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">
-				<thead>
-				<tr>
-					<td colspan="2">SSH Daemon</td>
-				</tr>
-				</thead>
-				<tr>
-					<th width="40%"><%tcWebApi_get("String_Entry","Enable_SSH","s")%></th>
-					<td>
-						<input type="radio" name="sshd_enable" class="input" value="Yes" onclick="check_sshd_enable(this.value);" <% if tcWebApi_get("SSH_Entry","Enable","h") = "Yes" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
-						<input type="radio" name="sshd_enable" class="input" value="No" onclick="check_sshd_enable(this.value);" <% if tcWebApi_get("SSH_Entry","Enable","h") = "No" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
-					</td>
-				</tr>
-				<tr id="sshd_port_tr">
-					<th width="40%">SSH Port</th>
-					<td>
-						<input type="text" class="input_6_table" maxlength="5" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" value='<%tcWebApi_get("SSH_Entry","sshport","s")%>' autocorrect="off" autocapitalize="off">
-					</td>
-				</tr>				
-				<tr id="sshd_password_tr">
-					<th>Allow Password Login</th>
-					<td>
-						<input type="radio" name="sshd_pass" class="input" value="1" <% if tcWebApi_get("SSH_Entry","Need_Pass","h") = "1" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
-						<input type="radio" name="sshd_pass" class="input" value="0" <% if tcWebApi_get("SSH_Entry","Need_Pass","h") = "0" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
-					</td>
-				</tr>
-				<tr id="auth_keys_tr">
-					<th>Authorized Keys</th>
-					<td>
-						<textarea rows="5" cols="55" class="textarea_ssh_table" name="sshd_authkeys" maxlength="1023"><%tcWebApi_get("SSH_Entry","Authkeys","s")%></textarea>
-					</td>
-				</tr>								
-			</table>						
+						</table>						
 						
 						<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="margin-top:8px;">
 							<thead>
 							<tr>
-								<td colspan="2"><%tcWebApi_get("String_Entry","t2Misc","s")%></td>
+								<td colspan="2"><%tcWebApi_get("String_Entry","t2BC","s")%></td>
 							</tr>
 							</thead>
 							<tr id="btn_ez_radiotoggle_tr">
@@ -1229,6 +1380,33 @@ function updateDateTime()
 								</td>
 							</tr>
 
+							<tr id="rewan_schedule_enable_tr">
+								<th>Enable WAN Reconnect Scheduler</th>
+								<td>
+									<input type="radio" value="1" name="rewan_schedule_enable_x" onClick="hide_rewan_option(1);" <% if tcWebApi_get("RebootSchedule_Entry","rewan_schedule_enable","h") = "1" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
+									<input type="radio" value="0" name="rewan_schedule_enable_x" onClick="hide_rewan_option(0);" <% if tcWebApi_get("RebootSchedule_Entry","rewan_schedule_enable","h") = "0" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+								</td>
+							</tr>
+							<tr id="rewan_schedule_date_tr">
+								<th>Date to do WAN Reconnect</th>
+								<td>
+									<input type="checkbox" name="rewan_date_x_Sun" class="input" onclick="check_rewanTimefield_checkbox();"><%tcWebApi_get("String_Entry","date_Sun_id","s")%>
+									<input type="checkbox" name="rewan_date_x_Mon" class="input" onclick="check_rewanTimefield_checkbox();"><%tcWebApi_get("String_Entry","date_Mon_id","s")%>
+									<input type="checkbox" name="rewan_date_x_Tue" class="input" onclick="check_rewanTimefield_checkbox();"><%tcWebApi_get("String_Entry","date_Tue_id","s")%>
+									<input type="checkbox" name="rewan_date_x_Wed" class="input" onclick="check_rewanTimefield_checkbox();"><%tcWebApi_get("String_Entry","date_Wed_id","s")%>
+									<input type="checkbox" name="rewan_date_x_Thu" class="input" onclick="check_rewanTimefield_checkbox();"><%tcWebApi_get("String_Entry","date_Thu_id","s")%>
+									<input type="checkbox" name="rewan_date_x_Fri" class="input" onclick="check_rewanTimefield_checkbox();"><%tcWebApi_get("String_Entry","date_Fri_id","s")%>
+									<input type="checkbox" name="rewan_date_x_Sat" class="input" onclick="check_rewanTimefield_checkbox();"><%tcWebApi_get("String_Entry","date_Sat_id","s")%>
+								</td>
+							</tr>
+							<tr id="rewan_schedule_time_tr">
+								<th>Time of Day to do WAN Reconnect</th>
+								<td>
+									<input type="text" maxlength="2" class="input_3_table" name="rewan_time_x_hour" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 0);" autocorrect="off" autocapitalize="off"> :
+									<input type="text" maxlength="2" class="input_3_table" name="rewan_time_x_min" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 1);" autocorrect="off" autocapitalize="off">
+								</td>
+							</tr>
+
 							<tr>
 								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,1)"><%tcWebApi_get("String_Entry","LHC_x_ServerLogEnable_in","s")%></a></th>
 								<td>
@@ -1258,49 +1436,7 @@ function updateDateTime()
 									<INPUT TYPE="TEXT" NAME="uiViewSNTPServer" SIZE="24" MAXLENGTH="48" VALUE="<%if tcWebApi_get("Timezone_Entry","SERVER","h") <> "0.0.0.0" then tcWebApi_get("Timezone_Entry","SERVER","s") else asp_Write("") end if%>" class="input_32_table" onKeyPress="return validator.isString(this, event);">
 									<a href="javascript:openLink('x_NTPServer1')" name="x_NTPServer1_link" style=" margin-left:5px; text-decoration: underline;"><%tcWebApi_get("String_Entry","LHC_x_NTPServer1_linkname","s")%></a>
 								</td>
-							</tr>
-							<tr id="telnet_tr">
-								<th><%tcWebApi_get("String_Entry","Enable_Telnet","s")%></th>
-								<td>
-									<input type="radio" name="telnetd_enable" class="input" value="1" <% If TCWebApi_get("Misc_Entry","telnetd_enable","h") = "1" then asp_Write("checked") end if%> ><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
-									<input type="radio" name="telnetd_enable" class="input" value="0" <% If TCWebApi_get("Misc_Entry","telnetd_enable","h") = "0" then asp_Write("checked") end if%> ><%tcWebApi_get("String_Entry","checkbox_No","s")%>
-								</td>
-							</tr>
-
-							<tr id="https_tr">
-								<th><% tcWebApi_Get("String_Entry", "WC11b_AuthenticationMethod_in", "s") %></th>
-								<td>
-									<select name="http_enable" class="input_option" onchange="hide_https_lanport(this.value);hide_https_wanport(this.value);">
-											<option value="1" <% if tcWebApi_get("Https_Entry","http_enable","h") = "1" then asp_Write("selected") end if %>>HTTP</option>
-											<option value="2" <% if tcWebApi_get("Https_Entry","http_enable","h") = "2" then asp_Write("selected") end if %>>HTTPS</option>
-											<option value="3" <% if tcWebApi_get("Https_Entry","http_enable","h") = "3" then asp_Write("selected") end if %>>BOTH</option>
-									</select>
-								</td>
-							</tr>
-
-							<tr id="https_lanport">
-								<th>HTTPS Lan port</th>
-								<td>
-									<input type="text" maxlength="5" class="input_6_table" name="https_lanport" value="<%TCWebApi_get("Https_Entry","https_lanport","s")%>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');">
-									<span id="https_access_page"></span>
-								</td>
-							</tr>
-
-							<tr id="misc_http_x_tr">
-								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(8,2);"><% tcWebApi_Get("String_Entry", "FC_x_WanWebEnable_in", "s") %></a></th>
-								<td>
-									<input type="radio" value="1" name="misc_http_x" class="input" onClick="hideport(1);return change_common_radio(this, 'FirewallConfig', 'misc_http_x', '1')" <% if tcWebApi_get("Firewall_Entry","misc_http_x","h") = "1" then asp_Write("checked") end if %>><% tcWebApi_Get("String_Entry", "checkbox_Yes", "s") %>
-									<input type="radio" value="0" name="misc_http_x" class="input" onClick="hideport(0);return change_common_radio(this, 'FirewallConfig', 'misc_http_x', '0')" <% if tcWebApi_get("Firewall_Entry","misc_http_x","h") = "0" then asp_Write("checked") end if %>><% tcWebApi_Get("String_Entry", "checkbox_No", "s") %>
-								</td>
-							</tr>
-
-							<tr id="accessfromwan_port">
-								<th align="right"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(8,3);"><% tcWebApi_Get("String_Entry", "FC_x_WanWebPort_in", "s") %></a></th>
-								<td>
-									<span style="margin-left:5px;" id="http_port">HTTP: <input type="text" maxlength="5" name="misc_httpport_x" class="input_6_table" value="<% tcWebApi_get("Firewall_Entry","misc_httpport_x", "s") %>" onKeyPress="return validator.isNumber(this,event);"/>&nbsp;&nbsp;</span>
-									<span style="margin-left:5px;" id="https_port">HTTPS: <input type="text" maxlength="5" name="misc_httpsport_x" class="input_6_table" value="<% tcWebApi_get("Firewall_Entry","misc_httpsport_x", "s") %>" onKeyPress="return validator.isNumber(this,event);"/></span>
-								</td>
-							</tr>
+							</tr>							
 
 							<tr>
 								<th><% tcWebApi_Get("String_Entry", "System_AutoLogout", "s") %></th>
@@ -1327,6 +1463,110 @@ function updateDateTime()
 								</td>
 							</tr>
 						<%end if%>
+						</table>
+
+
+						<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="margin-top:8px;">
+						<thead>
+						<tr>
+							<td colspan="2"><%tcWebApi_get("String_Entry","qis_service","s")%></td>
+						</tr>
+						</thead>
+						<tr id="telnet_tr">
+							<th><%tcWebApi_get("String_Entry","Enable_Telnet","s")%></th>
+							<td>
+								<input type="radio" name="telnetd_enable" class="input" value="1" <% If TCWebApi_get("Misc_Entry","telnetd_enable","h") = "1" then asp_Write("checked") end if%> ><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
+								<input type="radio" name="telnetd_enable" class="input" value="0" <% If TCWebApi_get("Misc_Entry","telnetd_enable","h") = "0" then asp_Write("checked") end if%> ><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+							</td>
+						</tr>
+						
+						<tr id="sshd_enable_tr">
+							<th width="40%"><%tcWebApi_get("String_Entry","Enable_SSH","s")%></th>
+							<td>
+								<input type="radio" name="sshd_enable" class="input" value="Yes" onclick="check_sshd_enable(this.value);" <% if tcWebApi_get("SSH_Entry","Enable","h") = "Yes" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
+								<input type="radio" name="sshd_enable" class="input" value="No" onclick="check_sshd_enable(this.value);" <% if tcWebApi_get("SSH_Entry","Enable","h") = "No" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+							</td>
+						</tr>
+						<tr id="sshd_port_tr">
+							<th width="40%">SSH Port</th>
+							<td>
+								<input type="text" class="input_6_table" maxlength="5" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" value='<%tcWebApi_get("SSH_Entry","sshport","s")%>' autocorrect="off" autocapitalize="off">
+							</td>
+						</tr>				
+						<tr id="sshd_password_tr">
+							<th>Allow Password Login</th>
+							<td>
+								<input type="radio" name="sshd_pass" class="input" value="1" <% if tcWebApi_get("SSH_Entry","Need_Pass","h") = "1" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
+								<input type="radio" name="sshd_pass" class="input" value="0" <% if tcWebApi_get("SSH_Entry","Need_Pass","h") = "0" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+							</td>
+						</tr>
+						<tr id="auth_keys_tr">
+							<th>Authorized Keys</th>
+							<td>
+								<textarea rows="5" cols="55" class="textarea_ssh_table" name="sshd_authkeys" maxlength="1023"><%tcWebApi_get("SSH_Entry","Authkeys","s")%></textarea>
+							</td>
+						</tr>
+						
+						<tr>
+							<th width="40%"><%tcWebApi_get("String_Entry","FreeWiFi_Idle","s")%></th>
+							<td>
+								<input type="text" class="input_3_table" maxlength="3" name="shell_timeout_x" value="" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"> <%tcWebApi_get("String_Entry","Minute","s")%>
+								<span>(<%tcWebApi_get("String_Entry","zero_disable","s")%>)</span>
+							</td>
+						</tr>
+					</table>
+
+						<table id="http_auth_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="margin-top:8px;">
+							<thead>
+							<tr>
+								<td colspan="2">Local Access Config</td><!--untranslated-->
+							</tr>
+							</thead>
+							<tr>
+								<th><% tcWebApi_Get("String_Entry", "WC11b_AuthenticationMethod_in", "s") %></th>
+								<td>
+									<select name="http_enable" class="input_option" onchange="hide_https_lanport(this.value);check_wan_access(this.value);">
+									<option value="1" <% if tcWebApi_get("Https_Entry","http_enable","h") = "1" then asp_Write("selected") end if %>>HTTP</option>
+									<option value="2" <% if tcWebApi_get("Https_Entry","http_enable","h") = "2" then asp_Write("selected") end if %>>HTTPS</option>
+									<option value="3" <% if tcWebApi_get("Https_Entry","http_enable","h") = "3" then asp_Write("selected") end if %>>BOTH</option>
+									</select>
+								</td>
+							</tr>
+
+							<tr id="https_lanport_tr">
+								<th>HTTPS Lan port</th>
+								<td>
+									<input type="text" maxlength="5" class="input_6_table" name="https_lanport" value="<%TCWebApi_get("Https_Entry","https_lanport","s")%>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');">
+									<span id="https_access_page"></span>
+								</td>
+							</tr>
+						</table>	
+
+						<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">
+							<thead>
+							<tr>
+								<td colspan="2">Remote Access Config</td><!--untranslated-->
+							</tr>
+							</thead>
+							
+							<tr id="misc_http_x_tr">
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(8,2);"><% tcWebApi_Get("String_Entry", "FC_x_WanWebEnable_in", "s") %></a></th>
+								<td>
+									<input type="radio" value="1" name="misc_http_x" class="input" onClick="hideport(1);enable_wan_access(1);return change_common_radio(this, 'FirewallConfig', 'misc_http_x', '1')" <% if tcWebApi_get("Firewall_Entry","misc_http_x","h") = "1" then asp_Write("checked") end if %>><% tcWebApi_Get("String_Entry", "checkbox_Yes", "s") %>
+									<input type="radio" value="0" name="misc_http_x" class="input" onClick="hideport(0);enable_wan_access(0);return change_common_radio(this, 'FirewallConfig', 'misc_http_x', '0')" <% if tcWebApi_get("Firewall_Entry","misc_http_x","h") = "0" then asp_Write("checked") end if %>><% tcWebApi_Get("String_Entry", "checkbox_No", "s") %>
+									<span class="formfontdesc" id="WAN_access_hint" style="color:#FFCC00; display:none;">Only HTTPS is supported when accessing web from WAN.</span><!--untranslated-->
+									<div class="formfontdesc" id="NSlookup_help_for_WAN_access" style="color:#FFCC00; display:none;"><% tcWebApi_Get("String_Entry", "NSlookup_help", "s") %></div>
+								</td>
+							</tr>
+							<tr id="accessfromwan_port">
+								<th align="right"><a id="access_port_title" class="hintstyle" href="javascript:void(0);" onClick="openHint(8,3);">HTTPS <% tcWebApi_Get("String_Entry", "FC_x_WanWebPort_in", "s") %></a></th>
+								<td>
+									<span style="margin-left:5px; display:none;" id="http_port_span"><input type="text" maxlength="5" name="misc_httpport_x" class="input_6_table" value="<% tcWebApi_get("Firewall_Entry","misc_httpport_x", "s") %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;&nbsp;</span>
+									<span style="margin-left:5px;" id="https_port_span"><input type="text" maxlength="5" name="misc_httpsport_x" class="input_6_table" value="<% tcWebApi_get("Firewall_Entry","misc_httpsport_x", "s") %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_wan');" autocorrect="off" autocapitalize="off"/></span>
+									<span id="wan_access_url"></span>
+								</td>
+							</tr>
+							
 							<tr id="http_client_tr">
 								<th><% tcWebApi_Get("String_Entry", "System_login_specified_IP", "s") %></th>
 								<td>
@@ -1359,8 +1599,8 @@ function updateDateTime()
 								</td>
 								<td width="40%">
 									<input type="checkbox" name="access_webui" class="input access_type" value="1">Web UI<!--untranslated-->
-									<input type="checkbox" name="access_ssh" class="input access_type" value="2">SSH<!--untranslated-->
-									<input type="checkbox" name="access_telnet" class="input access_type" value="4">Telnet (Lan only)<!--untranslated-->
+									<input type="checkbox" name="access_ssh" class="input access_type" value="2">SSH(LAN only)<!--untranslated-->
+									<input type="checkbox" name="access_telnet" class="input access_type" value="4">Telnet(LAN only)<!--untranslated-->
 								</td>
 								<td width="10%">									
 									<input class="add_btn" type="button" onClick="addRow(document.form.http_client_ip_x_0, 4);" value="">

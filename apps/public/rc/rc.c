@@ -435,15 +435,6 @@ int main(int argc, char **argv)
 		else
 			return run_app_script(argv[1], argv[2]);
 	}
-
-#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
-	else if(!strcmp(base, "run_pptpd")) {
-		stop_pptpd();
-		sleep(1);
-		start_pptpd();
-		return 0;
-	}
-#endif
 #ifdef RTCONFIG_VPNC
 	else if(!strcmp(base, "run_vpnc")) {
 		stop_vpnc();

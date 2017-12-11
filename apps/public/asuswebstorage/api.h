@@ -154,7 +154,7 @@ Getpersonalsystemfolder *getPersonalSystemFolder(char *username,char *filename);
 long long int GetMyRecycleID(char *username,char *filename);
 Getuserstate *getUserState(char *user,char *server);
 int CheckUserState(char *user,char *server);
-int get_max_upload_filesize(char *username);
+long long int get_max_upload_filesize(char *username);
 
 Browse *browseFolder(char *username,long long int id,int issibiling,int pageno);
 int my_parse_browse_xml(const char *filename,Browse *br);

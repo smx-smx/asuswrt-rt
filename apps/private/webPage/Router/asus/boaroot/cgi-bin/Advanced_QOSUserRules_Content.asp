@@ -163,7 +163,7 @@ function addRow_Group(upper){
 		if(item_num >=2){		//duplicate check: {IP/MAC, port, proto, transferred}
 			for(i=0; i<rule_num; i++){
 				if(overlib_str[i]){
-					if(document.form.qos_ip_x_0.value == document.getElementById("qos_rulelist_tabl").rows[i].cells[1].innerHTML
+					if(document.form.qos_ip_x_0.value == document.getElementById("qos_rulelist_table").rows[i].cells[1].innerHTML
 						&& document.form.qos_port_x_0.value == overlib_str[i] 
 						&& document.form.qos_transferred_x_0.value == document.getElementById("qos_rulelist_table").rows[i].cells[4].innerHTML){
 						
@@ -428,7 +428,7 @@ function Check_multi_range(obj, mini, maxi){
 }
 
 // Viz add 2011.06 Load default qos rule from XML
-var url_link = "ajax_qos_default.asp";
+var url_link = "ajax_qos_default.xml";
 function load_QoS_rule(){		
 	free_options(document.form.qos_default_sel);
 	//add_option(document.form.qos_default_sel, "<% tcWebApi_Get("String_Entry", "Select_menu_default", "s") %>", 0, 1);	

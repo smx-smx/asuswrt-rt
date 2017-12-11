@@ -1748,24 +1748,32 @@ endif
 #Build igmpproxy
 ifneq ($(strip $(TC_BUILD_RELEASECODE)),)
 ifneq ($(strip $(TCSUPPORT_IGMP_PROXY_V3)),)
+ifneq ($(strip $(TCSUPPORT_IGMP_PROXY_V3_SDK)),)
 igmpproxy:
 	cp $(APP_BINARY_DIR)/$(TCPLATFORM)/igmpproxy $(FILESYSTEM_DIR)/userfs/bin/
 igmpproxy_clean:
 	echo "TC_BUILD_RELEASECODE: Build igmpproxy, do nothing!"
 else
-igmpproxy:
-	echo "Build igmpproxy"
-	$(MAKE) -C $(APP_IGMPPROXY_DIR)
-	if test -e $(APP_IGMPPROXY_DIR)/igmpproxy; \
-	then echo "Compile igmpproxy success"; \
-	else echo "Compile igmpproxy error!"; exit 1; \
+igmpproxy/stamp-h1:
+	if test ! -e $(APP_IGMPPROXY_DIR)/stamp-h1; then \
+		cd $(APP_IGMPPROXY_DIR) && CFLAGS="-O2 -Wall -ffunction-sections -fdata-sections" \
+		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		./configure --host=mips-linux --prefix=/usr --disable-dependency-tracking \
+		&& touch stamp-h1; \
 	fi
-	$(STRIP) $(APP_IGMPPROXY_DIR)/igmpproxy
-	cp $(APP_IGMPPROXY_DIR)/igmpproxy  $(FILESYSTEM_DIR)/userfs/bin/
+
+igmpproxy: igmpproxy/stamp-h1
+	@$(SEP)
+	$(MAKE) -C $(APP_IGMPPROXY_DIR)/src
+	@$(STRIP) $(APP_IGMPPROXY_DIR)/src/igmpproxy
+	install -D $(APP_IGMPPROXY_DIR)/src/igmpproxy  $(FILESYSTEM_DIR)/userfs/bin/igmpproxy
 
 igmpproxy_clean:
-	echo "Clean igmpproxy"
-	$(MAKE) -C $(APP_IGMPPROXY_DIR) clean
+	@$(SEP)
+	-@$(MAKE) -C $(APP_IGMPPROXY_DIR) clean
+	rm -f $(APP_IGMPPROXY_DIR)/stamp-h1
+	rm -f $(FILESYSTEM_DIR)/userfs/bin/igmpproxy
+
 endif
 else
 igmpproxy:
@@ -1781,6 +1789,7 @@ igmpproxy:
 igmpproxy_clean:
 	echo "Clean igmpproxy"
 	$(MAKE) -C $(APP_IGMPPROXY_DIR) clean
+endif
 endif
 ifneq ($(strip $(TCSUPPORT_CT)),)
 traceroute:
@@ -2328,7 +2337,7 @@ ifneq ($(strip $(ASUS_PROTECTION_SERVER)),)
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" ac_cv_func_logout=no ac_cv_func_logwtmp=no \
 	./configure --host=mips-linux --disable-zlib --enable-syslog --disable-lastlog --disable-utmp \
 	--disable-utmpx --disable-wtmp --disable-wtmpx --disable-pututline --disable-pututxline --disable-loginfunc --disable-pam --enable-openpty \
-	CFLAGS="-I$(APP_SHARED_DIR)/ -I$(APP_TCAPILIB_DIR) -DRTCONFIG_PROTECTION_SERVER" LDFLAGS="-L$(APP_SHARED_DIR) -L$(APP_TCAPILIB_DIR)" LIBS="-lshared -ltcapi"
+	CFLAGS="-I$(APP_PROTECTION_SERVER_DIR)/include/ -DRTCONFIG_PROTECTION_SERVER" LDFLAGS="-L$(APP_PROTECTION_SERVER_DIR)/lib/" LIBS="-lptcsrv"
 else
 	cd $(APP_SSH_DIR) && CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" ac_cv_func_logout=no ac_cv_func_logwtmp=no \
@@ -3271,8 +3280,10 @@ openssl_clean:
 curl/stamp-h1:
 	if test ! -e $(APP_CURL_DIR)/stamp-h1; then \
 		cd $(APP_CURL_DIR) && \
-		./configure --build=i686-linux --host=mips-linux --enable-http --with-ssl=$(APP_OPENSSL_DIR) && \
-		touch stamp-h1; \
+		./configure --build=i686-linux --host=mips-linux --enable-http \
+		--with-ssl=$(APP_OPENSSL_DIR) \
+		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
+		&& touch stamp-h1; \
 	fi
 
 curl: curl/stamp-h1
@@ -3623,7 +3634,7 @@ openvpn/stamp-h1: lzo zlib openpam
 		LIBPAM_LIBS="-L$(APP_OPENPAM_DIR)/lib/libpam/.libs -lpam" \
 		LZO_CFLAGS="-I$(APP_LZO_DIR)/include" \
 		LZO_LIBS="-L$(APP_LZO_DIR)/src/.libs -llzo2" \
-		CFLAGS="-Os -Wall $(TC_CFLAGS) -I$(APP_SHARED_DIR) -I$(APP_TCAPILIB_DIR) -I$(APP_OPENPAM_DIR)/include -I$(APP_OPENSSL_DIR)/include"\
+		CFLAGS="-Os -Wall $(TC_CFLAGS) -I$(APP_SHARED_DIR) -I$(APP_TCAPILIB_DIR) -I$(LIB_UTILS_DIR) -I$(APP_OPENPAM_DIR)/include -I$(APP_OPENSSL_DIR)/include"\
 		LDFLAGS="-L$(APP_SHARED_DIR) -lshared -L$(APP_TCAPILIB_DIR) -ltcapi -L$(APP_ZLIB_DIR) -lz -lpthread -ldl -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 		IPROUTE="/usr/sbin/ip" \
 		./configure -host=mips-linux \
@@ -3647,7 +3658,7 @@ openvpn: openvpn/stamp-h1
 	cp $(APP_ETC_SCRIPT_DIR)/updown.sh $(FILESYSTEM_DIR)/usr/script/updown.sh
 	#crond
 	cp $(APP_ETC_SCRIPT_DIR)/cru $(FILESYSTEM_DIR)/usr/script/cru
-	openssl dhparam -out $(FILESYSTEM_DIR)/rom/dh2048.pem 2048
+	openssl dhparam -dsaparam -out $(FILESYSTEM_DIR)/rom/dh2048.pem 2048
 
 openvpn_clean:
 	-@$(MAKE) -C $(APP_OPENVPN_DIR) clean

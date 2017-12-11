@@ -1855,6 +1855,13 @@ mod_time *Getmodtime(char *href,int index)
         curl_easy_setopt(curl_handle, CURLOPT_LOW_SPEED_LIMIT,1);
         curl_easy_setopt(curl_handle, CURLOPT_LOW_SPEED_TIME,30);
         curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 0L);
+        if(1 == ftp_config.multrule[index]->ssl)
+        {
+            curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl_handle, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+            curl_easy_setopt(curl_handle, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+        }
         res = curl_easy_perform(curl_handle);
         DEBUG("%d\n",res);
         if(res != CURLE_OK && res != CURLE_FTP_COULDNT_RETR_FILE)
@@ -2502,6 +2509,13 @@ mod_time *ftp_MDTM(char *href,int index)
         curl_easy_setopt(curl_t, CURLOPT_LOW_SPEED_LIMIT,1);
         curl_easy_setopt(curl_t, CURLOPT_LOW_SPEED_TIME,30);
         curl_easy_setopt(curl_t, CURLOPT_VERBOSE, 0L);
+        if(1 == ftp_config.multrule[index]->ssl)
+        {
+            curl_easy_setopt(curl_t, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl_t, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl_t, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+            curl_easy_setopt(curl_t, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+        }
         res = curl_easy_perform(curl_t);
         DEBUG("res = %d\n",res);
         if(res != CURLE_OK && res != CURLE_FTP_COULDNT_RETR_FILE)
@@ -2723,6 +2737,13 @@ int getCloudInfo(char *URL,int (* cmd_data)(char *,int),int index)
         curl_easy_setopt(curl,CURLOPT_LOW_SPEED_LIMIT,1);
         curl_easy_setopt(curl,CURLOPT_LOW_SPEED_TIME,30);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+        if(1 == ftp_config.multrule[index]->ssl)
+        {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+        }
         res = curl_easy_perform(curl);
         DEBUG("getCloudInfo() - res = %d\n",res);
         curl_easy_cleanup(curl);
@@ -3893,7 +3914,7 @@ void *SyncServer(void *argc)
                     check_disk_change();
                 }
 
-                status = usr_auth(ftp_config.multrule[i]->server_ip, ftp_config.multrule[i]->user_pwd);
+                status = usr_auth(ftp_config.multrule[i]->server_ip, ftp_config.multrule[i]->user_pwd, i);
                 if(status == 7)
                 {
                         write_log(S_ERROR,"check your ip.","",ftp_config.multrule[i]->rules);
@@ -5115,7 +5136,7 @@ void *Socket_Parser(void *argc)
                 {
                     check_disk_change();
                 }
-                status = usr_auth(ftp_config.multrule[i]->server_ip,ftp_config.multrule[i]->user_pwd);
+                status = usr_auth(ftp_config.multrule[i]->server_ip,ftp_config.multrule[i]->user_pwd, i);
                 if(status == 7)
                 {
                         write_log(S_ERROR,"check your ip.","",ftp_config.multrule[i]->rules);
@@ -6482,7 +6503,7 @@ void handle_quit_upload()//同一帐号，继续上传未上传完的文件
     int i;
     for(i = 0; i<ftp_config.dir_num; i++)
     {
-            status = usr_auth(ftp_config.multrule[i]->server_ip,ftp_config.multrule[i]->user_pwd);
+            status = usr_auth(ftp_config.multrule[i]->server_ip,ftp_config.multrule[i]->user_pwd, i);
             if(status == 7)//status=7表示couldn't connect to server
             {
                     write_log(S_ERROR,"check your ip.","",ftp_config.multrule[i]->rules);
@@ -6574,7 +6595,7 @@ int initialization()
                 check_disk_change();
             }
 
-            status = usr_auth(ftp_config.multrule[i]->server_ip,ftp_config.multrule[i]->user_pwd);
+            status = usr_auth(ftp_config.multrule[i]->server_ip,ftp_config.multrule[i]->user_pwd, i);
             if(status == 7)
             {
                     write_log(S_ERROR,"check your ip.","",ftp_config.multrule[i]->rules);
@@ -6688,6 +6709,11 @@ int initialization()
 void run()
 {
     send_to_inotify();
+    for(int i = 0; i<ftp_config.dir_num; i++)
+    {
+        ftp_config.multrule[i]->ssl=0;
+        is_support_ssl(ftp_config.multrule[i]->server_ip,ftp_config.multrule[i]->user_pwd, i);
+    }
     handle_quit_upload();//处理上次上传中断的动作（估计是U盘拔掉啥的,程序挂掉）
 
     int create_thid1 = 0;

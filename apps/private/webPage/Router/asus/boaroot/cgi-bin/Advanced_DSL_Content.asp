@@ -224,6 +224,9 @@ If request_Form("wanVCFlag") = "3" Then
 		tcWebApi_set("Wan_PVC","CLOSEIFIDLE","wan_IdleTimeT")
 		tcWebApi_set("Wan_PVC","MSS","wan_TCPMSS")
 		tcWebApi_set("Wan_PVC","wan_pppoe_hostuniq","wan_pppoe_hostuniq")
+		tcWebApi_set("Wan_PVC","InetDetect","InetDetect")
+		tcWebApi_set("Wan_PVC","lcpEchoInterval","lcpEchoInterval")
+		tcWebApi_set("Wan_PVC","lcpEchoFailure","lcpEchoFailure")
 		tcWebApi_set("Wan_PVC","wan_pppoe_options","wan_pppoe_options")
 		if request_Form("ipv6SupportValue")="0" then
 			 tcWebApi_set("Wan_PVC","MTU","wan_TCPMTU")
@@ -386,6 +389,10 @@ var pppoe_password = "<% tcWebApi_get("Wan_PVC","PASSWORD","s")%>";
 var ipv6_active_orig = "<%tcWebApi_get("ipv6rd_Entry","Active","s")%>";	//Yes/No
 var ipv6_TransMode_orig = "<%tcWebApi_get("ipv6rd_Entry","tunMode","s")%>";		//NATIVE/6RD/6TO4/6IN4
 var IPVersion_orig = "<%tcWebApi_get("Wan_PVC","IPVERSION","s")%>";	//IPv4/ IPv4/IPv6 / IPv6
+
+var original_ppp_echo = parseInt("<%tcWebApi_get("Wan_PVC","InetDetect","s")%>");		//Internet Detection, PPP Echo
+var original_lcpEchoInterval = parseInt("<%tcWebApi_get("Wan_PVC","lcpEchoInterval","s")%>");	//lcpEchoInterval
+var original_lcpEchoFailure = parseInt("<%tcWebApi_get("Wan_PVC","lcpEchoFailure","s")%>");	//lcpEchoFailure
 
 var DSLWANList = [<% get_DSL_WAN_list() %>];
 
@@ -1237,6 +1244,9 @@ function validForm(){
 				return false;
 			}
 
+			// InetDetect 
+
+
 			//IPv4
 			if(form.ipVerRadio[0].checked || form.ipVerRadio[1].checked){
 				if(form.wan_PPPGetIP[1].checked) {
@@ -1547,7 +1557,7 @@ function doIPVersionChange() {
 
 // "WebCurSet_Entry","wan_pvc"		/ ATM
 //"WebCurSet_Entry","wan_pvc_ext"	/ PTM | Ethernet
-function doConTypeChange() {	
+function doConTypeChange() {
 	with (document.form){		
 		switch(wanTypeOption.selectedIndex) {
 			case 0:	//Automatic IP
@@ -1625,8 +1635,8 @@ function doConTypeChange() {
 				<%end if%>
 
 				break;
-			case 1:	//static				
-				if(isForInternet()){				
+			case 1:	//static
+				if(isForInternet()){
 					inputCtrl(document.form.UPnP_active[0], 1);
 					inputCtrl(document.form.UPnP_active[1], 1);
 					document.form.UPnP_active_flag.value = 1;
@@ -1782,6 +1792,10 @@ function doConTypeChange() {
 
 				//ppp setting
 				showhide("wan_PPPSetting", 1);
+				document.form.InetDetect.value = (original_ppp_echo == 0 || original_ppp_echo == 1)?original_ppp_echo:1;
+				document.form.lcpEchoInterval.value = (original_lcpEchoInterval > 0)?original_lcpEchoInterval:6;
+				document.form.lcpEchoFailure.value = (original_lcpEchoFailure > 0)?original_lcpEchoFailure:10;
+				ppp_echo_control();
 
 				// ISP Requirement
 				<%if tcWebApi_get("Wan_Common","sharepvc","h") <> "1" then%>
@@ -2033,6 +2047,15 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 function pass_checked(obj){
 	switchType(obj, document.form.show_pass_1.checked, true);       
 }
+
+function ppp_echo_control(flag){
+	if (typeof(flag) == 'undefined')
+		flag = document.form.InetDetect.value;
+	var enable = (flag == 1) ? 1 : 0;
+	inputCtrl(document.form.lcpEchoInterval, enable);
+	inputCtrl(document.form.lcpEchoFailure, enable);	
+}
+
 </script>
 </head>
 <body onload="initial();" onunLoad="return unload_body();">
@@ -2761,6 +2784,25 @@ function pass_checked(obj){
 								<INPUT TYPE="TEXT" NAME="wan_pppoe_hostuniq" maxlength="32" class="input_32_table" VALUE="<% tcWebApi_get("Wan_PVC","wan_pppoe_hostuniq","s") %>" onKeyPress="return validator.isString(this,event);"/>
 							</td>
 						</tr>
+
+						<tr>
+							<th><a class="hintstyle" href="javascript:void(0);">Internet Detection</a></th><!--untranslated-->
+							<td>
+								<select name="InetDetect" class="input_option" onChange="ppp_echo_control();">
+								<option value="0" <% if tcWebApi_get("Wan_PVC","InetDetect","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_disable","s")%></option>
+								<option value="1" <% if tcWebApi_get("Wan_PVC","InetDetect","h") = "1" then asp_Write("selected") end if %>>PPP Echo</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th><a class="hintstyle" href="javascript:void(0);">PPP Echo Interval</a></th><!--untranslated-->
+							<td><input type="text" maxlength="6" class="input_6_table" name="lcpEchoInterval" value="<%tcWebApi_get("Wan_PVC", "lcpEchoInterval", "s")%>" onkeypress="return validator.isNumber(this, event)" autocorrect="off" autocapitalize="off"/></td>
+						</tr>
+						<tr>
+							<th><a class="hintstyle" href="javascript:void(0);">PPP Echo Max Failures</a></th><!--untranslated-->
+							<td><input type="text" maxlength="6" class="input_6_table" name="lcpEchoFailure" value="<%tcWebApi_get("Wan_PVC", "lcpEchoFailure", "s")%>" onkeypress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/></td>
+						</tr>
+
 						<tr>
 							<th><%tcWebApi_get("String_Entry","PPPC_x_AdditionalOptions_in","s")%></th>
 							<td align="left">

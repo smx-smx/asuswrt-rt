@@ -22,7 +22,7 @@
 
 /*  IPTABLES SETTING 
 ---------------------------------*/
-#define PROTECT_SRV_RULE_CHAIN                "SECURITY_PROTECT"
+#define PROTECT_SRV_RULE_CHAIN                "PTCSRV"
 #define PROTECT_SRV_RULE_FILE                 "/tmp/ipt_protectSrv_rule"
 
 typedef enum {

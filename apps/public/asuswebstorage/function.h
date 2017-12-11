@@ -58,6 +58,7 @@ void del_download_only_sync_item(char *action,char *name, struct sync_item *phea
 sync_item_t get_sync_item(char *action,char *name,sync_item_t head);
 void free_sync_item(sync_item_t head);
 void print_sync_item(sync_item_t head,int type);
+int show_finish_log();
 void print_all_sync_item(struct sync_item *head);
 
 /*basic function */

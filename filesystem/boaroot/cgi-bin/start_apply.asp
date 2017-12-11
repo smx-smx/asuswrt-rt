@@ -48,7 +48,7 @@ elseif Request_Form("current_page") = "Advanced_VPN_PPTP.asp" then
 	tcWebApi_Set("PPTP_Entry", "pptpd_mru", "pptpd_mru")
 	tcWebApi_Set("PPTP_Entry", "pptpd_mtu", "pptpd_mtu")
 	update_variables()
-	tcWebApi_Save()
+	tcWebApi_commit("PPTP_Entry")
 elseif Request_Form("current_page") = "Advanced_VPN_OpenVPN.asp" then
 	if Request_Form("formname") = "form" then
 		tcWebApi_Set("VPNControl_Entry", "VPNServer_enable", "VPNServer_enable")

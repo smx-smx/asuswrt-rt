@@ -99,18 +99,19 @@ var ciphersarray = [
 ];
 
 function initial(){
+	var current_server_igncrt = "<%tcWebApi_Get("OpenVPN_Entry","igncrt", "s")%>";
 	var currentcipher = "<%tcWebApi_Get("OpenVPN_Entry","cipher", "s")%>";
 
 	show_menu();
-	addOnlineHelp(document.getElementById("faq"), ["ASUSWRT", "VPN"]);
+	
 	//if support pptpd and openvpnd then show switch button
 	if(pptpd_support && openvpnd_support) {
 		document.getElementById("divSwitchMenu").style.display = "";
 	}
 
 	formShowAndHide(vpn_server_enable, "openvpn");
-	//check DUT is belong to private IP.
 
+	//check DUT is belong to private IP.
 	if(realip_support){
 		if(!external_ip){
 			document.getElementById("privateIP_notes").innerHTML = "<%tcWebApi_Get("String_Entry","vpn_privateIP_hint","s")%>"
@@ -135,22 +136,135 @@ function initial(){
 	// Set these based on a compound field
 	setRadioValue(document.form.vpn_server_x_eas, ((document.form.vpn_serverx_eas.value.indexOf(''+(openvpn_unit)) >= 0) ? "1" : "0"));
 	setRadioValue(document.form.vpn_server_x_dns, ((document.form.vpn_serverx_dns.value.indexOf(''+(openvpn_unit)) >= 0) ? "1" : "0"));
-	update_visibility();
+
+	enable_server_igncrt(current_server_igncrt);
+	//update_visibility();
 	/*Advanced Setting end */
+
+	//set FAQ URL
+	set_FAQ("faq_windows", "1004469");
+	set_FAQ("faq_macOS", "1004472");
+	set_FAQ("faq_iPhone", "1004471");
+	set_FAQ("faq_android", "1004466");
+
+	updateVpnServerClientAccess();
+}
+
+
+function set_FAQ(_objID, _faqNum) {	
+	var preferredLang = "";
+
+	preferredLang = show_selected_language_path();	
+	if(preferredLang == undefined)
+		preferredLang = "/";
+
+	var faqURL = "";
+	faqURL = "https://www.asus.com" + preferredLang;
+	faqURL += "support/FAQ/";
+	faqURL += _faqNum;
+	$j("#" + _objID + "").attr("href", faqURL);
+}
+
+function show_selected_language_path(){
+var lang_flag = get_preferred_lang_type();
+	switch(lang_flag){
+		case '1':{	//EN
+			return "/";
+			break;
+		}
+		case '3':{
+			return "/CN/";
+			break;
+		}
+		case '18':{
+			return "/TW/";
+			break;
+		}
+		case '2':{	//BR
+			return "/";
+			break;
+		}
+		case '4':{
+			return "/CZ/";
+			break;
+		}
+		case '5':{	//DA
+			return "/";
+			break;
+		}
+		case '6':{
+			return "/DE/";
+			break;
+		}
+		case '7':{
+			return "/ES/";
+			break;
+		}
+		case '8':{	//FI
+			return "/";
+			break;
+		}
+		case '9':{
+			return "/FR/";
+			break;
+		}
+		case '10':{
+			return "/IT/";
+			break;
+		}
+		case '11':{	//MS
+			return "/";
+			break;
+		}
+		case '12':{ //NO
+			return "/";
+			break;
+		}
+		case '13':{
+			return "/PL/";
+			break;
+		}
+		case '14':{
+			return "/RU/";
+			break;
+		}
+		case '15':{	//SV
+			return "/";
+			break;
+		}
+		case '16':{
+			return "/TH/";
+			break;
+		}
+		case '17':{
+			return "/TR/";
+			break;
+		}
+		case '19':{
+			return "/UK/";
+			break;
+		}
+	}
 }
 
 function formShowAndHide(server_enable, server_type) {
-	if(server_enable == 1 && server_type == "openvpn"){
-		document.getElementById("trVPNServerMode").style.display = "";
-		document.getElementById("trRSAEncryptionBasic").style.display = "";
+
+	if(server_enable == 1 && server_type == "openvpn"){     //General View
+		document.getElementById("trVPNServerMode").style.display = "";		
 		document.getElementById("selSwitchMode").value = "1";
-		document.getElementById('openvpn_export').style.display = "";
-		document.getElementById('OpenVPN_setting').style.display = "";
-		document.getElementById("divAdvanced").style.display = "none";
+		document.getElementById("trRSAEncryptionBasic").style.display = ("<%tcWebApi_Get("OpenVPN_Entry","crypt","s")%>" == "secret")?"none":"";
+		document.getElementById("trClientWillUseVPNToAccess").style.display = "";
+		document.getElementById('OpenVPN_setting').style.display = ("<%tcWebApi_Get("OpenVPN_Entry","crypt","s")%>" == "secret")?"none":"";
+
+		/*	rm 2017/07/21
 		if(vpn_server_enable == '0' )
 			document.getElementById('openvpn_export').style.display = "none";
 		else
 			document.getElementById('openvpn_export').style.display = "";
+		*/
+
+		document.getElementById('openvpn_export').style.display = ("<%tcWebApi_Get("OpenVPN_Entry","crypt","s")%>" == "secret")?"none":"";
+		document.getElementById("divAdvanced").style.display = "none";
 
 		if(service_state == false || service_state != '2')
 			document.getElementById('export_div').style.display = "none";
@@ -163,10 +277,12 @@ function formShowAndHide(server_enable, server_type) {
 		openvpnd_connected_status();
 		check_vpn_server_state();
 		document.getElementById("divApply").style.display = "";
+		updateVpnServerClientAccess();
 	}
 	else{
 		document.getElementById("trVPNServerMode").style.display = "none";
 		document.getElementById("trRSAEncryptionBasic").style.display = "none";
+		document.getElementById("trClientWillUseVPNToAccess").style.display = "none";
 		document.getElementById("openvpn_export").style.display = "none";
 		document.getElementById("OpenVPN_setting").style.display = "none";
 		document.getElementById("divAdvanced").style.display = "none";
@@ -196,6 +312,23 @@ function openvpnd_connected_status(){
 }
 
 function applyRule(){
+	var validForm = function() {
+		if(!validator.numberRange(document.form.vpn_server_port, 1, 65535)) {
+			return false;
+		}
+		/*!-- rm 2017/06/28 
+		if(!validator.numberRange(document.form.vpn_server_poll, 0, 1440)) {
+			return false;
+		}
+		*/
+		if(!validator.numberRange(document.form.vpn_server_reneg, -1, 2147483647)) {
+			return false;
+		}
+		return true;
+	};
+	if(!validForm())
+		return false;
+
 	var confirmFlag = true;
 
 	/* Advanced setting start */
@@ -634,7 +767,7 @@ function check_vpn_server_state(){
 
 function update_vpn_server_state() {
 	$j.ajax({
-		url: 'ajax_openvpn_server.asp',
+		url: '/cgi-bin/ajax_openvpn_server.asp',
 		dataType: 'script',
 
 		error: function(xhr) {
@@ -694,22 +827,25 @@ function showMailPanel(){
 
 function switchMode(mode){
 	if(mode == "1"){		//general setting
-		document.getElementById("OpenVPN_setting").style.display = "";
-		if(vpn_server_enable == "1"){
-			document.getElementById("openvpn_export").style.display = "";
-		}
-		else{
-			document.getElementById("openvpn_export").style.display = "none";
-		}
-
+		
+		document.getElementById("trRSAEncryptionBasic").style.display = ("<%tcWebApi_Get("OpenVPN_Entry","crypt","s")%>" == "secret")?"none":"";		
+		document.getElementById("trClientWillUseVPNToAccess").style.display = "";
+		document.getElementById('OpenVPN_setting').style.display = ("<%tcWebApi_Get("OpenVPN_Entry","crypt","s")%>" == "secret")?"none":"";		
+		if(vpn_server_enable == '0')
+			document.getElementById('openvpn_export').style.display = "none";
+		else
+			document.getElementById('openvpn_export').style.display = ("<%tcWebApi_Get("OpenVPN_Entry","crypt","s")%>" == "secret")?"none":"";
 		document.getElementById("divAdvanced").style.display = "none";
-		document.getElementById("trRSAEncryptionBasic").style.display = "";
+		updateVpnServerClientAccess();
+
 	}
 	else{
+
+		document.getElementById("trRSAEncryptionBasic").style.display = "none";
+		document.getElementById("trClientWillUseVPNToAccess").style.display = "none";
 		document.getElementById("OpenVPN_setting").style.display = "none";
 		document.getElementById("openvpn_export").style.display = "none";
-		document.getElementById("divAdvanced").style.display = "";
-		document.getElementById("trRSAEncryptionBasic").style.display = "none";
+		document.getElementById("divAdvanced").style.display = "";	
 	}
 }
 
@@ -731,10 +867,10 @@ function update_visibility(){
 	else
 		ccd = getRadioValue(document.form.vpn_server_ccd);
 
-	showhide("server_useronly", (auth == "tls"));
 	showhide("server_authhmac", (auth != "secret"));
 	showhide("server_snnm", ((auth == "tls") && (iface == "tun")));
 	showhide("server_plan", ((auth == "tls") && (iface == "tun")));
+	showhide("server_rgw", (auth == "tls"));
 	showhide("server_local", ((auth == "secret") && (iface == "tun")));
 	showhide("server_reneg", (auth != "secret"));		//add by Viz 2014.06
 	showhide("server_ccd", (auth == "tls"));
@@ -742,13 +878,12 @@ function update_visibility(){
 	showhide("server_ccd_excl", ccd);
 	showhide("openvpn_client_table", ccd);
 	showhide("openvpn_clientlist_Block", ccd);
-	showhide("server_rgw", (auth == "tls"));
 	showhide("server_pdns", ((auth == "tls") && (dns == 1)));
 	showhide("server_dhcp",((auth == "tls") && (iface == "tap")));
 	showhide("server_range", ((dhcp == 0) && (auth == "tls") && (iface == "tap")));
 	showhide("server_tls_crypto_text", (auth == "tls"));		//add by Viz
 	showhide("server_static_crypto_text", (auth == "secret"));		//add by Viz
-	showhide("server_custom_crypto_text", (auth == "custom"));
+	// rm 2017/07/21 showhide("server_custom_crypto_text", (auth == "custom"));
 }
 
 function set_Keys(auth) {
@@ -762,9 +897,20 @@ function set_Keys(auth) {
 	}
 }
 
+function enable_server_igncrt(flag){
+	//alert((flag==1)?"Hide vpn_server_crypt":"Display vpn_server_crypt");
+	document.form.vpn_server_crypt.style.display = (flag==1)?"none":"";
+	document.form.vpn_server_crypt.value = (flag==1)?"tls":"<%tcWebApi_Get("OpenVPN_Entry","crypt","s")%>";
+	update_visibility();
+	document.getElementById("Hint_fixed_tls_crypto").style.display = (flag==1)?"":"none";
+	document.getElementById("Fixed_tls_crypto").style.display = (flag==1)?"":"none";
+	document.getElementById("allowed_client_name").innerHTML = (flag==1)?"<#HSDPAConfig_Username_itemname#>":"Common Name(CN)";
+
+}
+
 function updateCRTValue(auth){
 	$j.ajax({
-		url: 'ajax_openvpn_server.asp',
+		url: '/cgi-bin/ajax_openvpn_server.asp',
 		dataType: 'script',
 		timeout: 1500,
 		error: function(xhr){
@@ -980,7 +1126,7 @@ function cal_panel_block(){
 
 function update_vpn_client_state() {
 	$j.ajax({
-		url: 'ajax_openvpn_client_status.asp',
+		url: '/cgi-bin/ajax_openvpn_client_status.xml?hash=' + Math.random().toString(),
 		dataType: 'xml',
 
 		error: function(xml) {
@@ -998,18 +1144,48 @@ function update_vpn_client_state() {
 }
 
 function vpnServerTlsKeysize(_obj) {
-	var settingRadioItemCheck = function(obj, checkValue) {
-		var radioLength = obj.length;
-		for(var i = 0; i < radioLength; i += 1) {
-			if(obj[i].value == checkValue) {
-				obj[i].checked = true;
-			}
-		}
-	};
-
 	document.form.vpn_server_tls_keysize.value = _obj.value;
-	settingRadioItemCheck(document.form.vpn_server_tls_keysize_basic, _obj.value);
-	settingRadioItemCheck(document.form.vpn_server_tls_keysize_adv, _obj.value);
+	setRadioValue(document.form.vpn_server_tls_keysize_basic, _obj.value);
+	setRadioValue(document.form.vpn_server_tls_keysize_adv, _obj.value);
+}
+
+function vpnServerClientAccess() {
+	var vpn_server_client_access = getRadioValue(document.form.vpn_server_client_access);
+	switch(parseInt(vpn_server_client_access)) {
+		case 0 :
+			setRadioValue(document.form.vpn_server_plan, 1);
+			setRadioValue(document.form.vpn_server_rgw, 0);
+			setRadioValue(document.form.vpn_server_x_dns, 0);
+			setRadioValue(document.form.vpn_server_pdns, 0);
+			$j(".client_access_custom").css("display", "none");
+			break;
+		case 1 :
+			setRadioValue(document.form.vpn_server_plan, 1);
+			setRadioValue(document.form.vpn_server_rgw, 1);
+			setRadioValue(document.form.vpn_server_x_dns, 1);
+			setRadioValue(document.form.vpn_server_pdns, 1);
+			$j(".client_access_custom").css("display", "none");
+			break;
+	}
+	update_visibility();
+}
+function updateVpnServerClientAccess() {
+	var vpn_server_plan = getRadioValue(document.form.vpn_server_plan);
+	var vpn_server_rgw = getRadioValue(document.form.vpn_server_rgw);
+	var vpn_server_x_dns = getRadioValue(document.form.vpn_server_x_dns);
+	var vpn_server_pdns = getRadioValue(document.form.vpn_server_pdns);
+	if(vpn_server_plan == "1" && vpn_server_rgw == "0" && vpn_server_x_dns == "0" && vpn_server_pdns == "0") {
+		setRadioValue(document.form.vpn_server_client_access, 0);
+		$j(".client_access_custom").css("display", "none");
+	}
+	else if(vpn_server_plan == "1" && vpn_server_rgw == "1" && vpn_server_x_dns == "1" && vpn_server_pdns == "1") {
+		setRadioValue(document.form.vpn_server_client_access, 1);
+		$j(".client_access_custom").css("display", "none");
+	}
+	else {
+		setRadioValue(document.form.vpn_server_client_access, 2);
+		$j(".client_access_custom").css("display", "");
+	}
 }
 </script>
 </head>
@@ -1250,6 +1426,17 @@ function vpnServerTlsKeysize(_obj) {
 												<label for='vpn_server_tls_keysize_basic_1'>2048 bit<!--untranslated--></label>
 											</td>
 										</tr>
+										<tr id="trClientWillUseVPNToAccess">
+											<th>Client will use VPN to access<!--untranslated--></th>
+											<td>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_local" class="input" value="0" onchange="vpnServerClientAccess();">
+												<label for="vpn_server_client_access_local">Local network only<!--untranslated--></label>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_both" class="input" value="1" onchange="vpnServerClientAccess();">
+												<label for="vpn_server_client_access_both">Internet and local network<!--untranslated--></label>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_custom" class="input client_access_custom" value="2" onchange="vpnServerClientAccess();">
+												<label for="vpn_server_client_access_custom" class="client_access_custom"><%tcWebApi_Get("String_Entry","Custom","s")%></label>
+											</td>
+										</tr>
 										<tr id="openvpn_export" style="display:none;">
 											<th><%tcWebApi_Get("String_Entry","vpn_export_ovpnfile","s")%></th>
 											<td>
@@ -1277,13 +1464,13 @@ function vpnServerTlsKeysize(_obj) {
 									</table>
 									<div id="OpenVPN_setting" style="display:none;margin-top:8px;">
 										<div class="formfontdesc">
-											<%tcWebApi_Get("String_Entry","vpn_openvpn_desc1","s")%>&nbsp;<%tcWebApi_Get("String_Entry","vpn_openvpn_desc3","s")%>&nbsp;<%tcWebApi_Get("String_Entry","vpn_openvpn_desc2","s")%> <%tcWebApi_Get("String_Entry","menu5","s")%>
+											<%tcWebApi_Get("String_Entry","vpn_openvpn_desc1","s")%>&nbsp;<%tcWebApi_Get("String_Entry","vpn_openvpn_desc3","s")%>&nbsp;<%tcWebApi_Get("String_Entry","vpn_openvpn_desc2","s")%>
 											<br />
 											<ol>
-												<li><a href="http://www.asus.com/support/Knowledge-Detail/11/2/RTAC68U/1A935B95-C237-4281-AE86-C824737D11F9/" target="_blank" style="text-decoration:underline;">Windows</a></li>
-												<li><a href="http://www.asus.com/support/Knowledge-Detail/11/2/RTAC68U/C77ADCBF-F5C4-46B4-8A0D-B64F09AB881F/" target="_blank" style="text-decoration:underline;">Mac OS</a></li>
-												<li><a href="http://www.asus.com/support/Knowledge-Detail/11/2/RTAC68U/37EC8F08-3F50-4F82-807E-6D2DCFE5146A/" target="_blank" style="text-decoration:underline;">iPhone/iPad</a></li>
-												<li><a href="http://www.asus.com/support/Knowledge-Detail/11/2/RTAC68U/8DCA7DA6-E5A0-40C2-8AED-B9361E89C844/" target="_blank" style="text-decoration:underline;">Android</a></li>
+												<li><a id="faq_windows" href="https://www.asus.com/support/FAQ/1004469/" target="_blank" style="text-decoration:underline;">Windows</a></li>
+												<li><a id="faq_macOS" href="https://www.asus.com/support/FAQ/1004472/" target="_blank" style="text-decoration:underline;">Mac OS</a></li>
+												<li><a id="faq_iPhone" href="https://www.asus.com/support/FAQ/1004471/" target="_blank" style="text-decoration:underline;">iPhone/iPad</a></li>
+												<li><a id="faq_android" href="https://www.asus.com/support/FAQ/1004466/" target="_blank" style="text-decoration:underline;">Android</a></li>
 											</ol>
 										</div>
 										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
@@ -1375,7 +1562,7 @@ function vpnServerTlsKeysize(_obj) {
 												</td>
 		 									</tr>
 											<tr>
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_interface","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,4);"><%tcWebApi_Get("String_Entry","vpn_openvpn_interface","s")%></a></th>
 												<td>
 													<select name="vpn_server_if" class="input_option" onChange="update_visibility();">
 														<option value="tap" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "iface","tap","selected") %> >TAP</option>
@@ -1384,7 +1571,7 @@ function vpnServerTlsKeysize(_obj) {
 												</td>
 											</tr>
 											<tr>
-												<th><%tcWebApi_Get("String_Entry","IPC_VServerProto_in","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,5);"><%tcWebApi_Get("String_Entry","IPC_VServerProto_in","s")%></a></th>
 												<td>
 													<select name="vpn_server_proto" class="input_option">
 														<option value="tcp-server" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "proto","tcp-server","selected") %> >TCP</option>
@@ -1393,13 +1580,47 @@ function vpnServerTlsKeysize(_obj) {
 												</td>
 											</tr>
 											<tr>
-												<th><%tcWebApi_Get("String_Entry","WA11a_ExAuthDBPortNumber_in","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,6);"><%tcWebApi_Get("String_Entry","WA11a_ExAuthDBPortNumber_in","s")%></a></th>
 												<td>
-													<input type="text" maxlength="5" class="input_6_table" name="vpn_server_port" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, 1, 65535)" value="<% tcWebApi_Get("OpenVPN_Entry", "port", "s") %>" autocorrect="off" autocapitalize="off">
+													<input type="text" maxlength="5" class="input_6_table" name="vpn_server_port" onKeyPress="return validator.isNumber(this,event);" value="<% tcWebApi_Get("OpenVPN_Entry", "port", "s") %>" autocorrect="off" autocapitalize="off">
 													<span style="color:#FC0">(<%tcWebApi_Get("String_Entry","Setting_factorydefault_value","s")%> : 1194)</span>
 												</td>
 											</tr>
-											<tr style="display:none">
+
+											<tr>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,15);"><%tcWebApi_Get("String_Entry","vpn_openvpn_ResponseDNS","s")%></a></th>
+												<td>
+													<input type="radio" name="vpn_server_x_dns" class="input" value="1" onclick="update_visibility();"><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
+													<input type="radio" name="vpn_server_x_dns" class="input" value="0" onclick="update_visibility();"><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
+												</td>
+		 									</tr>
+											<tr id="server_pdns">
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,16);"><%tcWebApi_Get("String_Entry","vpn_openvpn_AdvDNS","s")%></a></th>
+												<td>
+													<input type="radio" name="vpn_server_pdns" class="input" value="1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "push_dns", "1", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
+													<input type="radio" name="vpn_server_pdns" class="input" value="0" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "push_dns", "0", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
+												</td>
+		 									</tr>
+											<tr>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,17);"><%tcWebApi_Get("String_Entry","vpn_openvpn_Encrypt","s")%></a></th>
+												<td>
+													<select name="vpn_server_cipher" class="input_option"></select>
+													<span id="cipher_hint" style="color:#FC0">(Default : BF-CBC)</span>
+												</td>
+											</tr>
+											<tr>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,18);"><%tcWebApi_Get("String_Entry","vpn_openvpn_Compression","s")%></a></th>
+												<td>
+													<select name="vpn_server_comp" class="input_option">
+														<option value="-1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "comp","-1","selected"); %> ><%tcWebApi_Get("String_Entry","WC11b_WirelessCtrl_buttonname","s")%></option>
+														<option value="no" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "comp","no","selected"); %> ><%tcWebApi_Get("String_Entry","wl_securitylevel_0","s")%></option>
+														<option value="yes" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "comp","yes","selected"); %> ><%tcWebApi_Get("String_Entry","WC11b_WirelessCtrl_button1name","s")%></option>
+														<option value="adaptive" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "comp","adaptive","selected"); %> ><%tcWebApi_Get("String_Entry","Adaptive","s")%></option>
+													</select>
+												</td>
+											</tr>
+
+											<!--rm 2017/07/21 tr style="display:none">
 												<th><%tcWebApi_Get("String_Entry","menu5_5","s")%></th>
 												<td>
 													<select name="vpn_server_firewall" class="input_option">
@@ -1408,22 +1629,32 @@ function vpnServerTlsKeysize(_obj) {
 														<option value="custom" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "firewall","custom","selected"); %> ><%tcWebApi_Get("String_Entry","Custom","s")%></option>
 													</select>
 												</td>
+											</tr-->
+
+											<tr>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,9);"><%tcWebApi_Get("String_Entry","vpn_openvpn_AuthOnly","s")%></a></th>
+												<td>
+													<input type="radio" name="vpn_server_igncrt" class="input" value="1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "igncrt", "1", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
+													<input type="radio" name="vpn_server_igncrt" class="input" value="0" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "igncrt", "0", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
+													<span id="Hint_fixed_tls_crypto" style="display:none;">Authorization Mode fixes on TLS</span><!--untranslated-->
+												</td>
 											</tr>
 											<tr>
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_Auth","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);"><%tcWebApi_Get("String_Entry","vpn_openvpn_Auth","s")%></a></th>
 												<td>
 													<select name="vpn_server_crypt" class="input_option" onChange="update_visibility();">
 														<option value="tls" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "crypt","tls","selected"); %> >TLS</option>
 														<option value="secret" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "crypt","secret","selected"); %> >Static Key</option>
 														<!--option value="custom" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "crypt","custom","selected"); %> >Custom</option-->
 													</select>
+													<span id="Fixed_tls_crypto" style="color:#FFFFFF;display:none;">TLS</span>
 													<span id="server_tls_crypto_text" onclick="set_Keys('tls');" style="text-decoration:underline;cursor:pointer;"><%tcWebApi_Get("String_Entry","vpn_openvpn_ModifyKeys","s")%></span>
 													<span id="server_static_crypto_text" onclick="set_Keys('secret');" style="text-decoration:underline;cursor:pointer;"><%tcWebApi_Get("String_Entry","vpn_openvpn_ModifyKeys","s")%></span>
-													<span id="server_custom_crypto_text"><%tcWebApi_Get("String_Entry","vpn_openvpn_MustManual","s")%></span>
+													<!-- rm 2017/07/21 span id="server_custom_crypto_text"><%tcWebApi_Get("String_Entry","vpn_openvpn_MustManual","s")%></span-->
 												</td>
 											</tr>
 											<tr>
-												<th>RSA Encryption<!--untranslated--></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,8);">RSA Encryption</a><!--untranslated--></th>
 												<td>
 													<input type="radio" name="vpn_server_tls_keysize_adv" id="vpn_server_tls_keysize_adv_0" class="input" value="0" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "tls_keysize", "0", "checked"); %> onchange="vpnServerTlsKeysize(this);">
 													<label for='vpn_server_tls_keysize_adv_0'>1024 bit<!--untranslated--></label>
@@ -1431,15 +1662,9 @@ function vpnServerTlsKeysize(_obj) {
 													<label for='vpn_server_tls_keysize_adv_1'>2048 bit<!--untranslated--></label>
 												</td>
 											</tr>
-											<tr id="server_useronly">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_AuthOnly","s")%></th>
-												<td>
-													<input type="radio" name="vpn_server_igncrt" class="input" value="1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "igncrt", "1", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
-													<input type="radio" name="vpn_server_igncrt" class="input" value="0" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "igncrt", "0", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
-												</td>
-											</tr>
+											
 											<tr id="server_authhmac">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_AuthHMAC","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,10);"><%tcWebApi_Get("String_Entry","vpn_openvpn_AuthHMAC","s")%></a></th>
 												<td>
 													<select name="vpn_server_hmac" class="input_option">
 														<option value="-1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "hmac","-1","selected"); %> ><%tcWebApi_Get("String_Entry","WC11b_WirelessCtrl_buttonname","s")%></option>
@@ -1451,89 +1676,58 @@ function vpnServerTlsKeysize(_obj) {
 												</td>
 											</tr>
 											<tr id="server_snnm">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_SubnetMsak","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,11);"><%tcWebApi_Get("String_Entry","vpn_openvpn_SubnetMsak","s")%></a></th>
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_sn" onkeypress="return validator.isIPAddr(this, event);" value="<% tcWebApi_Get("OpenVPN_Entry", "subnet", "s") %>" autocorrect="off" autocapitalize="off">
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_nm" onkeypress="return validator.isIPAddr(this, event);" value="<% tcWebApi_Get("OpenVPN_Entry", "netmask", "s") %>" autocorrect="off" autocapitalize="off">
 												</td>
 											</tr>
 											<tr id="server_dhcp">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_dhcp","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,13);"><%tcWebApi_Get("String_Entry","vpn_openvpn_dhcp","s")%></a></th>
 												<td>
 													<input type="radio" name="vpn_server_dhcp" class="input" value="1" onclick="update_visibility();" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "dhcp", "1", "checked") %>><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
 													<input type="radio" name="vpn_server_dhcp" class="input" value="0" onclick="update_visibility();" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "dhcp", "0", "checked") %>><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
 												</td>
 		 									</tr>
 											<tr id="server_range">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_ClientPool","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,14);"><%tcWebApi_Get("String_Entry","vpn_openvpn_ClientPool","s")%></a></th>
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_r1" onkeypress="return validator.isIPAddr(this, event);" value="<% tcWebApi_Get("OpenVPN_Entry", "pool_start", "s") %>" autocorrect="off" autocapitalize="off">
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_r2" onkeypress="return validator.isIPAddr(this, event);" value="<% tcWebApi_Get("OpenVPN_Entry", "pool_end", "s") %>" autocorrect="off" autocapitalize="off">
 												</td>
 											</tr>
 											<tr id="server_local">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_LocalRemote_IP","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,12);"><%tcWebApi_Get("String_Entry","vpn_openvpn_LocalRemote_IP","s")%></a></th>
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_local" onkeypress="return validator.isIPAddr(this, event);" value="<% tcWebApi_Get("OpenVPN_Entry", "local", "s") %>" autocorrect="off" autocapitalize="off">
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_remote" onkeypress="return validator.isIPAddr(this, event);" value="<% tcWebApi_Get("OpenVPN_Entry", "remote", "s") %>" autocorrect="off" autocapitalize="off">
 												</td>
 											</tr>
-											<tr>
+											<!-- tr> rm 2017/07/21
 												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_PollInterval","s")%></th>
 												<td>
-													<input type="text" maxlength="4" class="input_6_table" name="vpn_server_poll" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, 0, 1440)" value="<% tcWebApi_Get("OpenVPN_Entry", "poll", "s") %>" autocorrect="off" autocapitalize="off"> <%tcWebApi_Get("String_Entry","Minute","s")%>
+													<input type="text" maxlength="4" class="input_6_table" name="vpn_server_poll" onKeyPress="return validator.isNumber(this,event);" value="<% tcWebApi_Get("OpenVPN_Entry", "poll", "s") %>" autocorrect="off" autocapitalize="off"> <%tcWebApi_Get("String_Entry","Minute","s")%>
 													<span style="color:#FC0">(<%tcWebApi_Get("String_Entry","zero_disable","s")%>)</span>
 												</td>
-											</tr>
+											</tr-->
 											<tr id="server_plan">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_PushLAN","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,2);"><%tcWebApi_Get("String_Entry","vpn_openvpn_PushLAN","s")%></a></th>
 												<td>
 													<input type="radio" name="vpn_server_plan" class="input" value="1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "push_lan", "1", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
 													<input type="radio" name="vpn_server_plan" class="input" value="0" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "push_lan", "0", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
 												</td>
 		 									</tr>
 											<tr id="server_rgw">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_RedirectInternet","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,3);"><%tcWebApi_Get("String_Entry","vpn_openvpn_RedirectInternet","s")%></a></th>
 												<td>
 													<input type="radio" name="vpn_server_rgw" class="input" value="1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "redirect_gateway", "1", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
 													<input type="radio" name="vpn_server_rgw" class="input" value="0" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "redirect_gateway", "0", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
 												</td>
 		 									</tr>
-											<tr>
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_ResponseDNS","s")%></th>
-												<td>
-													<input type="radio" name="vpn_server_x_dns" class="input" value="1" onclick="update_visibility();"><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
-													<input type="radio" name="vpn_server_x_dns" class="input" value="0" onclick="update_visibility();"><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
-												</td>
-		 									</tr>
-											<tr id="server_pdns">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_AdvDNS","s")%></th>
-												<td>
-													<input type="radio" name="vpn_server_pdns" class="input" value="1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "push_dns", "1", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
-													<input type="radio" name="vpn_server_pdns" class="input" value="0" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "push_dns", "0", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
-												</td>
-		 									</tr>
-											<tr>
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_Encrypt","s")%></th>
-												<td>
-													<select name="vpn_server_cipher" class="input_option"></select>
-												</td>
-											</tr>
-											<tr>
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_Compression","s")%></th>
-												<td>
-													<select name="vpn_server_comp" class="input_option">
-														<option value="-1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "comp","-1","selected"); %> ><%tcWebApi_Get("String_Entry","WC11b_WirelessCtrl_buttonname","s")%></option>
-														<option value="no" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "comp","no","selected"); %> ><%tcWebApi_Get("String_Entry","wl_securitylevel_0","s")%></option>
-														<option value="yes" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "comp","yes","selected"); %> ><%tcWebApi_Get("String_Entry","WC11b_WirelessCtrl_button1name","s")%></option>
-														<option value="adaptive" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "comp","adaptive","selected"); %> ><%tcWebApi_Get("String_Entry","Adaptive","s")%></option>
-													</select>
-												</td>
-											</tr>
 											<tr id="server_reneg">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_TLSTime","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,19);"><%tcWebApi_Get("String_Entry","vpn_openvpn_TLSTime","s")%></a></th>
 												<td>
-													<input type="text" maxlength="5" class="input_6_table" name="vpn_server_reneg" onblur="validator.range(this, -1, 2147483647)" value="<% tcWebApi_Get("OpenVPN_Entry","reneg","s") %>" autocorrect="off" autocapitalize="off"> <%tcWebApi_Get("String_Entry","Second","s")%>
+													<input type="text" maxlength="5" class="input_6_table" name="vpn_server_reneg" value="<% tcWebApi_Get("OpenVPN_Entry","reneg","s") %>" autocorrect="off" autocapitalize="off"> <%tcWebApi_Get("String_Entry","Second","s")%>
 													<span style="color:#FC0">(<%tcWebApi_Get("String_Entry","Setting_factorydefault_value","s")%> : -1)</span>
 												</td>
 											</tr>
@@ -1545,14 +1739,14 @@ function vpnServerTlsKeysize(_obj) {
 												</td>
 		 									</tr>
 											<tr id="server_c2c">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_ClientMutual","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,20);"><%tcWebApi_Get("String_Entry","vpn_openvpn_ClientMutual","s")%></a></th>
 												<td>
 													<input type="radio" name="vpn_server_c2c" class="input" value="1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "c2c", "1", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
 													<input type="radio" name="vpn_server_c2c" class="input" value="0" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "c2c", "0", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
 												</td>
 											</tr>
 											<tr id="server_ccd_excl">
-												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_ClientSpecified","s")%></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,21);"><%tcWebApi_Get("String_Entry","vpn_openvpn_ClientSpecified","s")%></a></th>
 												<td>
 													<input type="radio" name="vpn_server_ccd_excl" class="input" value="1" onclick="update_visibility();" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "ccd_excl", "1", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
 													<input type="radio" name="vpn_server_ccd_excl" class="input" value="0" onclick="update_visibility();" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "ccd_excl", "0", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_No","s")%>
@@ -1568,10 +1762,10 @@ function vpnServerTlsKeysize(_obj) {
 											</tr>
 											</thead>
 											<tr>
-												<th width="36%"><%tcWebApi_Get("String_Entry","HSDPAC_Username_in","s")%></th>
-												<th width="20%"><%tcWebApi_Get("String_Entry","IPC_ExternalIPAddress_in","s")%></th>
-												<th width="20%"><%tcWebApi_Get("String_Entry","IPC_x_ExternalSubnetMask_in","s")%></th>
-												<th width="12%"><%tcWebApi_Get("String_Entry","Push","s")%></th>
+												<th width="36%"><a id="allowed_client_name" class="hintstyle" href="javascript:void(0);" onClick="openHint(32,22);">Common Name(CN)</a></th>	<!--<%tcWebApi_Get("String_Entry","HSDPAC_Username_in","s")%>-->
+												<th width="20%"><a id="allowed_client_name" class="hintstyle" href="javascript:void(0);" onClick="openHint(32,23);"><%tcWebApi_Get("String_Entry","Subnet","s")%></a></th>
+												<th width="20%"><a id="allowed_client_name" class="hintstyle" href="javascript:void(0);" onClick="openHint(32,23);">Mask</a></th>	<!-- Untranslated -->
+												<th width="12%"><a id="allowed_client_name" class="hintstyle" href="javascript:void(0);" onClick="openHint(32,23);"><%tcWebApi_Get("String_Entry","Push","s")%></a></th>
 												<th width="12%"><%tcWebApi_Get("String_Entry","list_add_delete","s")%></th>
 											</tr>
 											<tr>

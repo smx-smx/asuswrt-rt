@@ -95,6 +95,7 @@ typedef struct Mult_Rule
     char server_ip[256];
     int server_ip_len;
     char hardware[256];
+    int ssl;
 }MultRule;
 typedef struct _Config
 {
@@ -380,5 +381,6 @@ int debugFun(CURL *curl,curl_infotype type,char *str,size_t len,void *stream);
 void my_mkdir_r(char *path,int index);
 int create_xml(int status);
 int socket_check(char *dir,char *name,int index);
-int usr_auth(char *ip,char *user_pwd);
+int usr_auth(char *ip,char *user_pwd, int index);
+int is_support_ssl(char *ip,char *user_pwd, int index);
 #endif  //BASE_H

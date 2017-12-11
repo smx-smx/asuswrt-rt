@@ -60,6 +60,8 @@
 #include "../../public/mtd/tc_partition.h"
 #endif
 
+#define CFGMGR_VER	1
+
 #define GUEST_NETWORK_MARK	8 /* guest mark only 8 ~ 13 (6 guestnetwork) */
 
 #define MAX_TCAPI_TIME	10
@@ -518,6 +520,8 @@ typedef struct log_record_s{
 int write_cur_romfile_in_flash(mxml_node_t *node, const int write_type);
 int remove_dup_node_in_romfile(mxml_node_t *top);
 
-//#define NEW_IGMPPROXY 1
+#ifdef TCSUPPORT_WEBMON
+extern int backup_webmon(void);
+#endif
 
 #endif

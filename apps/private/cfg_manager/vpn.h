@@ -9,6 +9,7 @@ int vpncontrol_init(void);
 
 #ifdef RTCONFIG_ACCEL_PPTPD
 int pptp_init(void);
+int pptp_boot(mxml_node_t *top);
 int pptp_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
 #endif
 

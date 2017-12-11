@@ -38,7 +38,7 @@ if [ -f $CONFFILE ]; then
 	chmod 777 $CONFFILE
 	. $CONFFILE
 fi
-if [ "$Active" = "Yes" ]; then
+if [ "$Active" = "Yes" -a "$DEFAULTROUTE" = "Yes" ]; then
 	tcapi set Wanduck_Common link_internet 0 &
 fi
 

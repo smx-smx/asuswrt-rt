@@ -119,7 +119,22 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 	strcpy(buf, s1);
 	strcat(buf, s2);
 	return buf;
-}	
+}
+
+/*
+ * Concatenate two strings together into a caller supplied buffer
+ * @param	s1	first string
+ * @param	s2	second string
+ * @param	buf	buffer large enough to hold both strings
+ * @param	buf_len	the length of buf
+ * @return	buf
+ */
+static inline char * strcat_rs(const char *s1, const char *s2, char *buf, const size_t buf_len)
+{
+	snprintf(buf, buf_len, "%s", s1);
+	snprintf(buf + strlen(buf), buf_len - strlen(buf), "%s", s2);
+	return buf;
+}
 
 /* Check for a blank character; that is, a space or a tab */
 #ifndef isblank

@@ -755,7 +755,7 @@ function check_vpn_conflict() {		//if conflict with LAN ip & DHCP ip pool & stat
 
 function update_vpn_client_state() {
 	$j.ajax({
-		url: 'ajax_pptp_client_status.asp',
+		url: '/cgi-bin/ajax_pptp_client_status.xml?hash=' + Math.random().toString(),
 		dataType: 'xml',
 
 		error: function(xml) {

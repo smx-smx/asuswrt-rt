@@ -95,9 +95,9 @@ function updateLAN()
 {
 var ie = window.ActiveXObject;
 if (ie)
-makeRequest_ie_lan('/httpd_check.asp');
+makeRequest_ie_lan('/cgi-bin/httpd_check.xml?hash=' + Math.random().toString());
 else
-makeRequest_lan('/httpd_check.asp');
+makeRequest_lan('/cgi-bin/httpd_check.xml?hash=' + Math.random().toString());
 }
 function refresh_laninfo(xmldoc)
 {

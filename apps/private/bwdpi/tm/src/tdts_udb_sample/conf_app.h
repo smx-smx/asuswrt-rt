@@ -28,6 +28,9 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "tdts/tmcfg.h"
 #include "udb/tmcfg_udb.h"
@@ -36,16 +39,12 @@
 
 #include "linux/list.h"
 
-#define TMP_PATH  			"./"//"/tmp/media/nand/brcm/" //!! Notice !! customize
+#define APP_INF_DB_PATH		"bwdpi.app.db"
+#define APP_CAT_DB_PATH		"bwdpi.cat.db"
+#define DEV_OS_DB_PATH		"bwdpi.devdb.db"
+#define RULE_DB_PATH		"bwdpi.rule.db"
 
-#define APP_INF_DB_PATH		TMP_PATH"bwdpi.app.db"
-#define APP_CAT_DB_PATH		TMP_PATH"bwdpi.cat.db"
-#define DEV_OS_DB_PATH		TMP_PATH"bwdpi.devdb.db"
-#define RULE_DB_PATH		TMP_PATH"bwdpi.rule.db"
-
-//#define SYSTEM_CONF  		TMP_PATH"bwdpi.txt"
-
-#define CONF_PATH_MAX_LEN 128
+#define CONF_PATH_MAX_LEN	128
 
 #define MAC_OCTET_FMT "%02X:%02X:%02X:%02X:%02X:%02X"
 #define MAC_OCTET_EXPAND(o) \
@@ -107,23 +106,6 @@ do { \
 #define HELP_INDENT_L 18
 #define HELP_INDENT_S 6
 
-#ifdef SYSTEM_CONF
-/*
- * system config file
- */
-typedef struct system_conf
-{
-	char* filepath;
-	char* filename;
-
-	struct list_head list;
-} system_conf_t;
-
-int init_system_conf(struct list_head *head);
-char *search_sys_conf(struct list_head *head, char* filename);
-void free_system_conf(struct list_head *head);
-#endif
-
 /*
  * app info
  */
@@ -172,7 +154,8 @@ typedef struct qos_tc_cls
 {
 	int id;
 	int p_id;
-	char rate[64];
+	uint32_t sent_bytes;
+	uint32_t rate;
 } qos_tc_cls_t;
 
 /*
@@ -198,6 +181,40 @@ typedef struct qos_app_stat
 	qos_tc_cls_t *tc_dl_cls;
 	qos_tc_cls_t *tc_ul_cls;
 } qos_app_stat_t;
+
+#define ENV_SHN_HOME_DIR "SHN_HOME_DIR"
+
+static char *shn_path(const char *path)
+{	
+	static char abs_path[CONF_PATH_MAX_LEN];
+	char *home = getenv(ENV_SHN_HOME_DIR);
+
+	memset(abs_path, 0, sizeof(abs_path));
+
+	if (home)
+	{
+		if (strlen(home) + strlen(path) + 2 >= sizeof(abs_path))
+		{
+			ERR("path is too long!\n");
+			goto __ret;
+		}
+		
+		snprintf(abs_path, sizeof(abs_path) - 1, "%s/%s", home, path);
+	}
+	else
+	{
+		if (strlen(path) + 3 >= sizeof(abs_path))
+		{
+			ERR("path is too long!\n");
+			goto __ret;
+		}
+
+		snprintf(abs_path, sizeof(abs_path) - 1, "./%s", path);
+	}
+
+__ret:
+	return abs_path;
+}
 
 int init_app_inf(struct list_head *head);
 void free_app_inf(struct list_head *head);

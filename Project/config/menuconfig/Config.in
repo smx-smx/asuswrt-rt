@@ -1668,10 +1668,27 @@ config TCSUPPORT_MLD_PROXY
 	      Support MLD proxy for IPv6
 
 endif
+
 config TCSUPPORT_IGMP_PROXY_V3
 	bool "TCSUPPORT_IGMP_PROXY_V3 Support"
 	help
-	      igmp proxy function support,igmp v1/2/3	
+	      igmp proxy function support,igmp v1/2/3
+
+choice
+	prompt "TCSUPPORT_IGMP_PROXY_V3"
+
+config TCSUPPORT_IGMP_PROXY_V3_SDK
+	bool "SDK"
+	depends on TCSUPPORT_IGMP_PROXY_V3
+	help
+		igmp proxy function support,igmp v1/2/3
+
+config TCSUPPORT_IGMP_PROXY_V3_OPEN
+	bool "OPEN SOURCE"
+	depends on TCSUPPORT_IGMP_PROXY_V3
+	help
+		igmp proxy function support,igmp v1/2/3
+endchoice
 
 config TCSUPPORT_IGMP_SNOOPING
 	bool "TCSUPPORT_IGMP_SNOOPING Support"

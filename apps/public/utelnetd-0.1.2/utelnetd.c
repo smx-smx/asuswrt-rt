@@ -69,10 +69,6 @@
 #define IPV4_TO_V6_PREFIX	"::ffff:"
 #endif
 									 
-#if !defined(TCSUPPORT_C1_NEW_GUI) 
-int telnet_timeout = 300;
-#endif
-
 static char *loginpath = NULL;
 
 /* shell name and arguments */
@@ -487,6 +483,7 @@ int main(int argc, char **argv)
 	int portnbr = 23;
 	int c, ii;
 	int daemonize = 0;
+	int timeout = 0;
 
 #ifdef TCSUPPORT_TFTP_UPGRADE_PROTECT
 	FILE *fp = NULL;
@@ -496,9 +493,12 @@ int main(int argc, char **argv)
 	/* check if user supplied a port number */
 
 	for (;;) {
-		c = getopt( argc, argv, "p:l:hd");
+		c = getopt( argc, argv, "p:l:I:hd");
 		if (c == EOF) break;
 		switch (c) {
+			case 'I':
+				timeout = atoi(optarg);
+				break;
 			case 'p':
 				portnbr = atoi(optarg);
 				break;
@@ -582,12 +582,16 @@ int main(int argc, char **argv)
 #endif	
 	do {
 		struct tsession *ts;
-		struct timeval timeout;
+		struct timeval  *tv_ptr = NULL;
+		struct timeval  tmout;
 
 		FD_ZERO(&rdfdset);
 		FD_ZERO(&wrfdset);
-		timeout.tv_sec = telnet_timeout; // 5 mins
-		timeout.tv_usec = 0;
+		if (timeout) {
+			tmout.tv_sec = timeout;
+			tmout.tv_usec = 0;
+			tv_ptr = &tmout;
+		}
 
 		/* select on the master socket, all telnet sockets and their
 		 * ptys if there is room in their respective session buffers.
@@ -615,7 +619,7 @@ int main(int argc, char **argv)
 			ts = ts->next;
 		}
 
-		selret = select(maxfd + 1, &rdfdset, &wrfdset, 0, &timeout);
+		selret = select(maxfd + 1, &rdfdset, &wrfdset, 0, tv_ptr);
 
 		if (!selret) {
 			/* timeout occurred. Let us do some clean up and exit */

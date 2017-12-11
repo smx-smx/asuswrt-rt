@@ -42,8 +42,8 @@ typedef enum rename_type_t
 
 typedef struct server_capacity_tag
 {
-    int total;
-    int used;
+    long long int total;
+    long long int used;
 } server_capacity;
 
 server_capacity pre_cap;
@@ -60,6 +60,7 @@ extern struct sync_item *down_head;
 extern struct sync_item *up_head;
 extern long long int MySyncFolder;
 extern int exit_loop;
+extern int error_flag;
 extern struct sync_item *from_server_sync_head;
 extern sync_item_t up_excep_fail;
 extern sync_item_t download_only_socket_head;
@@ -67,7 +68,7 @@ extern int upload_only;
 double start_time;
 extern int server_space_full;
 extern int local_space_full;
-extern int max_upload_filesize;
+extern long long int max_upload_filesize;
 extern int copying_file_number;
 extern struct asus_config cfg;
 extern int IsAccountFrozen;
@@ -243,7 +244,7 @@ void
 
             if( !(xmlStrcmp(cur->name, (const xmlChar *)"servicegateway")))
             {
-                strcpy(sg->gateway,(const char *)key);
+                snprintf(sg->gateway, MINSIZE, "%s", (const char *)key);
             }
 
             xmlFree(key);
@@ -308,7 +309,7 @@ int
         }
         else if (!(xmlStrcmp(cur->name, (const xmlChar *)"script")))
         {
-            strcpy(gp->script,(const char *)key);
+            snprintf(gp->script, 16, "%s", (const char *)key);
         }
         else if (!(xmlStrcmp(cur->name, (const xmlChar *)"folderid")))
         {
@@ -351,19 +352,19 @@ int
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"email")))
         {
-            strcpy(gi->email,(const char *)key);
+            snprintf(gi->email, NORMALSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"regyear")))
         {
-            strcpy(gi->regyear,(const char *)key);
+            snprintf(gi->regyear, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"language")))
         {
-            strcpy(gi->language,(const char *)key);
+            snprintf(gi->language, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"activateddate")))
         {
-            strcpy(gi->activateddate,(const char *)key);
+            snprintf(gi->activateddate, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"credentialstate")))
         {
@@ -379,11 +380,11 @@ int
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"name")))
         {
-            strcpy(gi->backuppc.name,(const char *)key);
+            snprintf(gi->backuppc.name, NORMALSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"createdtime")))
         {
-            strcpy(gi->backuppc.createdtime,(const char *)key);
+            snprintf(gi->backuppc.createdtime, NORMALSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"package")))
         {
@@ -395,7 +396,7 @@ int
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"display")))
         {
-            strcpy(gi->package.display,(const char *)key);
+            snprintf(gi->package.display, NORMALSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"capacity")))
         {
@@ -423,7 +424,7 @@ int
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"maxfilesize")))
         {
-            gi->package.maxfilesize = atoi((const char *)key);
+            gi->package.maxfilesize = atoll((const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"sharegroup")))
         {
@@ -435,7 +436,7 @@ int
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"expire")))
         {
-            strcpy(gi->package.expire,(const char *)key);
+            snprintf(gi->package.expire, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"maxbackuppc")))
         {
@@ -443,11 +444,11 @@ int
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"usedcapacity")))
         {
-            gi->usedcappacity = atoi((const char *)key);
+            gi->usedcappacity = atoll((const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"freecapacity")))
         {
-            gi->freecapacity = atoi((const char *)key);
+            gi->freecapacity = atoll((const char *)key);
         }
 
         xmlFree(key);
@@ -479,35 +480,35 @@ static int
 
         if( !(xmlStrcmp(cur->name, (const xmlChar *)"token")))
         {
-            strcpy(aaa->token,(const char *)key);
+            snprintf(aaa->token, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"contentrelay")))
         {
-            strcpy(aaa->contentrelay,(const char *)key);
+            snprintf(aaa->contentrelay, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"filerelay")))
         {
-            strcpy(aaa->filerelay,(const char *)key);
+            snprintf(aaa->filerelay, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"inforelay")))
         {
-            strcpy(aaa->inforelay,(const char *)key);
+            snprintf(aaa->inforelay, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"jobrelay")))
         {
-            strcpy(aaa->jobrelay,(const char *)key);
+            snprintf(aaa->jobrelay, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"rssrelay")))
         {
-            strcpy(aaa->rssrelay,(const char *)key);
+            snprintf(aaa->rssrelay, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"searchrelay")))
         {
-            strcpy(aaa->searchrelay,(const char *)key);
+            snprintf(aaa->searchrelay, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"webrelay")))
         {
-            strcpy(aaa->webrelay,(const char *)key);
+            snprintf(aaa->webrelay, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"package")))
         {
@@ -516,7 +517,7 @@ static int
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"auxpasswordurl")))
         {
             char *p = oauth_url_unescape((const char *)key,NULL);
-            strcpy(aaa->auxpasswordurl,p);
+            snprintf(aaa->auxpasswordurl, 256, "%s", p);
             free(p);
         }
 
@@ -550,7 +551,7 @@ int
         {
             if( !(xmlStrcmp(cur->name, (const xmlChar *)"transid")))
             {
-                strcpy(ibu->transid,(const char *)key);
+                snprintf(ibu->transid, NORMALSIZE, "%s", (const char *)key);
             }
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"offset")))
             {
@@ -562,14 +563,14 @@ int
             }
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"latestchecksum")))
             {
-                strcpy(ibu->latestchecksum,(const char *)key);
+                snprintf(ibu->latestchecksum, 256, "%s", (const char *)key);
             }
         }
         else
         {
             if( !(xmlStrcmp(cur->name, (const xmlChar *)"logmessage")))
             {
-                strcpy(ibu->logmessage,(const char *)key);
+                snprintf(ibu->logmessage, NORMALSIZE, "%s", (const char *)key);
             }
         }
 
@@ -765,12 +766,12 @@ static int
                 if( !(xmlStrcmp(cur->parent->name, (const xmlChar *)"folder")))
                 {
                     browse->folderlist[foldernum]->display = calloc(len,sizeof(char));
-                    strcpy((browse->folderlist)[foldernum]->display,(const char *)key);
+                    snprintf((browse->folderlist)[foldernum]->display, len*sizeof(char), "%s", (const char *)key);
                 }
                 else if( !(xmlStrcmp(cur->parent->name, (const xmlChar *)"file")))
                 {
                     (browse->filelist)[filenum]->display = calloc(len,sizeof(char));
-                    strcpy((browse->filelist)[filenum]->display,(const char *)key);
+                    snprintf((browse->filelist)[filenum]->display, len*sizeof(char), "%s", (const char *)key);
                 }
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"attribute")))
@@ -780,12 +781,12 @@ static int
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"lastaccesstime")))
         {
                 if( !(xmlStrcmp(cur->parent->parent->name, (const xmlChar *)"file")))
-                    strcpy((browse->filelist)[filenum]->attribute.lastaccesstime,(const char *)key);
+                    snprintf((browse->filelist)[filenum]->attribute.lastaccesstime, 16, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"lastwritetime")))
         {
                  if( !(xmlStrcmp(cur->parent->parent->name, (const xmlChar *)"file")))
-                    strcpy((browse->filelist)[filenum]->attribute.lastwritetime,(const char *)key);
+                    snprintf((browse->filelist)[filenum]->attribute.lastwritetime, 16, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"file")))
         {
@@ -853,8 +854,8 @@ char *get_xml_value(const char *buf,const char *key)
     char stag[64]={0},etag[64]={0};
     int len = 0;
 
-    sprintf(stag,"<%s>",key);
-    sprintf(etag,"</%s>",key);
+    snprintf(stag, 64, "<%s>",key);
+    snprintf(etag, 64, "</%s>",key);
 
     start = strstr(buf,stag);
     end = strstr(buf,etag);
@@ -881,13 +882,13 @@ int get_item_num(const char *buf,int isfile)
     p = buf;
     if(isfile)
     {
-        strcpy(stag,"<file>");
-        strcpy(etag,"</file>");
+        snprintf(stag, 16, "%s", "<file>");
+        snprintf(etag, 16, "%s", "</file>");
     }
     else
     {
-        strcpy(stag,"<folder>");
-        strcpy(etag,"</folder>");
+        snprintf(stag, 16, "%s", "<folder>");
+        snprintf(etag, 16, "%s", "</folder>");
     }
 
     nodeStart = strstr(p,stag);
@@ -920,13 +921,13 @@ int get_item_list(const char *buf,Browse *br,int isfile)
 
     if(isfile)
     {
-        strcpy(stag,"<file>");
-        strcpy(etag,"</file>");
+        snprintf(stag, 16, "%s", "<file>");
+        snprintf(etag, 16, "%s", "</file>");
     }
     else
     {
-        strcpy(stag,"<folder>");
-        strcpy(etag,"</folder>");
+        snprintf(stag, 16, "%s", "<folder>");
+        snprintf(etag, 16, "%s", "</folder>");
     }
 
     nodeStart = strstr(buf,stag);
@@ -958,7 +959,7 @@ int get_item_list(const char *buf,Browse *br,int isfile)
         if(value)
         {
             temp = (char *)calloc(strlen(value)+1,sizeof(char));
-            strcpy(temp,value);
+            snprintf(temp, (strlen(value)+1)*sizeof(char), "%s", value);
             if(isfile)
                 br->filelist[index]->display = temp;
             else
@@ -978,14 +979,14 @@ int get_item_list(const char *buf,Browse *br,int isfile)
             value = get_xml_value(node,"lastaccesstime");
             if(value)
             {
-                strcpy(br->filelist[index]->attribute.lastaccesstime,value);
+                snprintf(br->filelist[index]->attribute.lastaccesstime, 16, "%s", value);
                 my_free(value);
             }
 
             value = get_xml_value(node,"lastwritetime");
             if(value)
             {
-                strcpy(br->filelist[index]->attribute.lastwritetime,value);
+                snprintf(br->filelist[index]->attribute.lastwritetime, 16, "%s", value);
                 my_free(value);
             }
 
@@ -1090,7 +1091,7 @@ void
             }
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"type")))
             {
-                strcpy(pfind->type,(const char *)key);
+                snprintf(pfind->type, MINSIZE, "%s", (const char *)key);
             }
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"id")))
             {
@@ -1131,7 +1132,7 @@ void
 
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"scrip")))
             {
-               strcpy(createfolder->scrip,(const char *)key);
+               snprintf(createfolder->scrip, MINSIZE, "%s", (const char *)key);
             }
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"id")))
             {
@@ -1171,7 +1172,7 @@ void
 
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"scrip")))
             {
-               strcpy(changeseq->scrip,(const char *)key);
+               snprintf(changeseq->scrip, MINSIZE, "%s", (const char *)key);
             }
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"changeseq")))
             {
@@ -1207,7 +1208,7 @@ static int
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"scrip")))
         {
-           strcpy(ge->scrip,(const char *)key);
+           snprintf(ge->scrip, MINSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"isfolder")))
         {
@@ -1215,7 +1216,7 @@ static int
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"display")))
         {
-           strcpy(ge->display,(const char *)key);
+           snprintf(ge->display, NORMALSIZE, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"parent")))
         {
@@ -1231,11 +1232,11 @@ static int
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"lastaccesstime")))
         {
-             strcpy(ge->attr.lastaccesstime,(const char *)key);
+             snprintf(ge->attr.lastaccesstime, 16, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"lastwritetime")))
         {
-            strcpy(ge->attr.lastwritetime,(const char *)key);
+            snprintf(ge->attr.lastwritetime, 16, "%s", (const char *)key);
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"filesize")))
         {
@@ -1267,7 +1268,7 @@ static int
         }
         else if( !(xmlStrcmp(cur->name, (const xmlChar *)"createdtime")))
         {
-            strcpy(ge->createdtime,(const char *)key);
+            snprintf(ge->createdtime, MINSIZE, "%s", (const char *)key);
         }
 
         xmlFree(key);
@@ -1296,7 +1297,7 @@ void parseOperateEntry(xmlDocPtr doc, xmlNodePtr cur,Operateentry *oe)
             }
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"scrip")))
             {
-               strcpy(oe->script,(const char *)key);
+               snprintf(oe->script, MINSIZE, "%s", (const char *)key);
             }
 
 
@@ -1325,11 +1326,11 @@ void parseMoveEntry(xmlDocPtr doc, xmlNodePtr cur,Moveentry *me)
             }
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"scrip")))
             {
-               strcpy(me->script,(const char *)key);
+               snprintf(me->script, MINSIZE, "%s", (const char *)key);
             }
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"logmessage")))
             {
-               strcpy(me->logmessage,(const char *)key);
+               snprintf(me->logmessage, NORMALSIZE, "%s", (const char *)key);
             }
 
             xmlFree(key);
@@ -1343,7 +1344,7 @@ int StrToHex(char *src,int len)
     char str[4] = {0};
     if(len == 1)
     {
-       strcpy(str,src);
+       snprintf(str, 4, "%s", src);
        sum = atoi(str);
     }
     else if(len == 2)
@@ -1352,7 +1353,7 @@ int StrToHex(char *src,int len)
        sum = atoi(str)*16;
 
        memset(str,0,sizeof(str));
-       strcpy(str,src+1);
+       snprintf(str, 4, "%s", src+1);
        sum += atoi(str);
    }
 
@@ -1387,11 +1388,11 @@ void parseGetUserState(xmlDocPtr doc, xmlNodePtr cur,Getuserstate *gu)
             }
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"extensionstarttime")))
             {
-               strcpy(gu->extensionstarttime,(const char *)key);
+               snprintf(gu->extensionstarttime, 32, "%s", (const char *)key);
             }
             else if( !(xmlStrcmp(cur->name, (const xmlChar *)"extensionendtime")))
             {
-               strcpy(gu->extensionendtime,(const char *)key);
+               snprintf(gu->extensionendtime, 32, "%s", (const char *)key);
             }
 
             xmlFree(key);
@@ -1879,7 +1880,7 @@ int getToken(char *username, char *password,char *key,int first)
 
        if(status == S_AUTH_FAIL)
        {
-           strcpy(msg,"Authentication Failed");
+           snprintf(msg, 512, "%s", "Authentication Failed");
        }
        else if(status == S_OTP_AUTH_FAIL)
        {
@@ -1895,10 +1896,10 @@ int getToken(char *username, char *password,char *key,int first)
                               "official website ,OTP can be used again after unlock it",512);
                }
                else
-                   strcpy(msg,"OTP athentication failed.Please input Security Code");
+                   snprintf(msg, 512, "%s", "OTP athentication failed.Please input Security Code");
            }
            else
-               strcpy(msg,"Security Code has expired, please re-enter");
+               snprintf(msg, 512, "%s", "Security Code has expired, please re-enter");
 
        }
        else if(status == S_OTP_ID_LOCKED)
@@ -1909,8 +1910,8 @@ int getToken(char *username, char *password,char *key,int first)
        else if(status == S_CAPTCHA_FAIL)
        {
            error_type = S_NEEDCAPTCHA;
-           strcpy(msg,"Need to enter the CAPTCHA");
-           strcpy(filename,aaa.auxpasswordurl);
+           snprintf(msg, 512, "%s", "Need to enter the CAPTCHA");
+           snprintf(filename, 512, "%s", aaa.auxpasswordurl);
        }
 
 
@@ -1955,12 +1956,12 @@ int obtainToken(char *user,char *pwd,struct asus_config *cfg,int first)
 
     if(strlen(cfg->captcha) > 0)
     {
-        strcpy(temp_key,cfg->captcha);
+        snprintf(temp_key, 8, "%s", cfg->captcha);
         if(strlen(cfg->otp_key) >0)
             otp_and_captcha = 1;
     }
     else if(strlen(cfg->otp_key) > 0)
-            strcpy(temp_key,cfg->otp_key);
+            snprintf(temp_key, 8, "%s", cfg->otp_key);
 
     while(exit_loop != 1)
     {
@@ -1987,7 +1988,7 @@ int obtainToken(char *user,char *pwd,struct asus_config *cfg,int first)
             {
 #ifdef IPKG
                 char fullname[256] = {0};
-                sprintf(fullname,"%s/%s",mount_path,token_filename);
+                snprintf(fullname, 256, "%s/%s",mount_path,token_filename);
                 remove(fullname);
                 remove(record_token_file);
 #endif
@@ -1997,7 +1998,7 @@ int obtainToken(char *user,char *pwd,struct asus_config *cfg,int first)
                     printf("need captcha and otp\n");
 #endif
                     memset(temp_key,0,sizeof(temp_key));
-                    strcpy(temp_key,cfg->otp_key);
+                    snprintf(temp_key, 8, "%s", cfg->otp_key);
                     otp_and_captcha = 0;
                     continue;
                 }
@@ -2460,10 +2461,10 @@ Browse *GetServerList(char *username,long long int id,int issibiling)
 }
 #endif
 
-int get_max_upload_filesize(char *username)
+long long int get_max_upload_filesize(char *username)
 {
     Getinfo *gi = NULL;
-    int filesize = 0;
+    long long int filesize = 0;
 
     while(!exit_loop)
     {
@@ -2601,7 +2602,7 @@ Propfind *checkEntryExisted(char *userid,long long int parentID,char *filename,c
 
     memset(find,0,sizeof(Propfind));
 
-    strcpy(entryName,filename);
+    snprintf(entryName, NORMALSIZE, "%s", filename);
     encode = oauth_encode_base64(0,(const unsigned char *)entryName);
 
     if(NULL == encode)
@@ -2742,11 +2743,11 @@ Operateentry *renameEntry(char *username,long long int id,int isencrpted,char *n
 
     if(isfolder)
     {
-        strcpy(type,"folder");
+        snprintf(type, MINSIZE, "%s", "folder");
     }
     else
     {
-        strcpy(type,"file");
+        snprintf(type, MINSIZE, "%s", "file");
     }
 
     entryName = oauth_encode_base64(0,(const unsigned char *)newname);
@@ -2803,16 +2804,16 @@ Moveentry *moveEntry(char *username,long long int id,char *name,long long int pa
 
     if(isfolder)
     {
-        strcpy(type,"folder");
+        snprintf(type, MINSIZE, "%s", "folder");
     }
     else
     {
-        strcpy(type,"file");
+        snprintf(type, MINSIZE, "%s", "file");
     }
 
     if( NULL == name)
     {
-        strcpy(entryName,name);
+        snprintf(entryName, NORMALSIZE, "%s", name);
         encode = oauth_encode_base64(0,(const unsigned char *)entryName);
         if(NULL == encode)
         {
@@ -2826,7 +2827,7 @@ Moveentry *moveEntry(char *username,long long int id,char *name,long long int pa
     }
     else
     {
-        strcpy(entryName,"");
+        snprintf(entryName, NORMALSIZE, "%s", "");
         snprintf(postdata,MAXSIZE,"<move><token>%s</token><userid>%s</userid><id>%lld</id><display>%s</display><parent>%lld</parent></move>"
                 ,aaa.token,username,id,entryName,parentID);
     }
@@ -2877,14 +2878,14 @@ Operateentry *removeEntry(char *username,long long int id,int ischildonly,int is
 
     if(isfolder)
     {
-        strcpy(type,"folder");
+        snprintf(type, MINSIZE, "%s", "folder");
         snprintf(postdata,MAXSIZE,"<remove><token>%s</token><userid>%s</userid><id>%lld</id><ischildonly>%d</ischildonly></remove>"
                 ,aaa.token,username,id,ischildonly);
 
     }
     else
     {
-        strcpy(type,"file");
+        snprintf(type, MINSIZE, "%s", "file");
         snprintf(postdata,MAXSIZE,"<remove><token>%s</token><userid>%s</userid><id>%lld</id></remove>"
                 ,aaa.token,username,id);
     }
@@ -2927,13 +2928,13 @@ int updateEntryAttribute(char *username,long long int id,long long int parentID,
 
     if(isfolder)
     {
-        strcpy(type,"folder");
+        snprintf(type, MINSIZE, "%s", "folder");
         snprintf(postdata,MAXSIZE,"<updateattribute><token>%s</token><userid>%s</userid><folder>%lld</folder><parent>%lld</parent><isencrypted>%d</isencrypted><attribute>%s</attribute></updateattribute>"
                 ,aaa.token,username,id,parentID,isencrpted,at);
     }
     else
     {
-        strcpy(type,"file");
+        snprintf(type, MINSIZE, "%s", "file");
         snprintf(postdata,MAXSIZE,"<updateattribute><token>%s</token><userid>%s</userid><folder>%lld</folder><attribute>%s</attribute></updateattribute>"
                 ,aaa.token,username,id,at);
     }
@@ -3135,8 +3136,8 @@ int getSharedFiles(char *username,int count)
     /*obtain token and inforelay*/
     parseDoc(infofilename);
 
-    sprintf(url,"https://%s/fsentry/getsharedfiles/",aaa.inforelay);
-    sprintf(postdata,"<getsharedfiles><token>%s</token><userid>%s</userid><count>%d</count></getsharedfiles>"
+    snprintf(url, NORMALSIZE, "https://%s/fsentry/getsharedfiles/",aaa.inforelay);
+    snprintf(postdata, MAXSIZE, "<getsharedfiles><token>%s</token><userid>%s</userid><count>%d</count></getsharedfiles>"
             ,aaa.token,username,count);
 
     sendRequest(getsharedfiles_filename,url,postdata,NULL,NULL);
@@ -3260,8 +3261,8 @@ void pt(unsigned char *md, char *checksum)
     for (i=0; i<SHA512_DIGEST_LENGTH; i++)
     {
         memset(temp,0,sizeof(temp));
-        sprintf(temp,"%02x",md[i]);
-        strcat(checksum,temp);
+        snprintf(temp, 3, "%02x",md[i]);
+        snprintf(checksum+strlen(checksum), NORMALSIZE-strlen(checksum), "%s", temp);
     }
 }
 
@@ -3361,7 +3362,7 @@ Initbinaryupload  *initBinaryUpload(char *filename,long long int parentID,char *
     }
 
     p++;
-    strcpy(name_raw,p);
+    snprintf(name_raw, NORMALSIZE, "%s", p);
 
     encode = oauth_encode_base64(0,(const unsigned char *)name_raw);
 
@@ -3470,7 +3471,7 @@ Resumebinaryupload *resumeBinaryUpload(char *filename, Initbinaryupload *ibu)
     char cookies[NORMALSIZE];
     char url[NORMALSIZE];
     struct stat filestat;
-    int filesize;
+    long long int filesize;
     Resumebinaryupload *rbu = NULL;
     char range[128];
     int offset;
@@ -3489,7 +3490,7 @@ Resumebinaryupload *resumeBinaryUpload(char *filename, Initbinaryupload *ibu)
     filesize = filestat.st_size;
 
 #ifdef DEBUG
-        printf("######filesize is %d,offset is %d #####\n",filesize,offset);
+        printf("######filesize is %lld,offset is %d #####\n",filesize,offset);
 #endif
 
 
@@ -3647,7 +3648,7 @@ int is_local_file_newer(char *filename,long long int parentID,cmp_item_t *cmp,lo
         return S_UPLOAD_DELETED;
     }
 
-    max_filesize = (long long int)max_upload_filesize * 1024 *1024;
+    max_filesize = max_upload_filesize * 1024 *1024;
 
     if(filestat.st_size > max_filesize)
     {
@@ -3672,7 +3673,7 @@ int is_local_file_newer(char *filename,long long int parentID,cmp_item_t *cmp,lo
     if(p)
     {
         p++;
-        strcpy(finalname,p);
+        snprintf(finalname, NORMALSIZE, "%s", p);
     }
 
 
@@ -3782,7 +3783,7 @@ int uploadFile(char *filename,long long int parentID,char *transid,long long int
         if(check_res == S_FILE_TOO_LARGE)
         {
            add_sync_item(excep_action,filename,up_excep_fail);
-           snprintf(error_message,512,"%s filesize too large,max upload file size is %dMB",
+           snprintf(error_message,512,"%s filesize too large,max upload file size is %lldMB",
                     filename,max_upload_filesize);
 #ifdef DEBUG
            printf("%s\n",error_message);
@@ -4077,13 +4078,14 @@ char *get_temp_name(char *fullname)
         temp_name = (char *)malloc(sizeof(char)*(strlen(path)+strlen("/")+
                      strlen(newfilename)+strlen(temp_suffix)+1));
         memset(temp_name,0,sizeof(temp_name));
-        sprintf(temp_name,"%s/%s%s",path,newfilename,temp_suffix);
+        snprintf(temp_name, sizeof(char)*(strlen(path)+strlen("/")+
+                                          strlen(newfilename)+strlen(temp_suffix)+1), "%s/%s%s",path,newfilename,temp_suffix);
     }
     else
     {
         temp_name = (char *)malloc(sizeof(char)*(strlen(fullname)+strlen(temp_suffix)+1));
         memset(temp_name,0,sizeof(temp_name));
-        sprintf(temp_name,"%s%s",fullname,temp_suffix);
+        snprintf(temp_name, sizeof(char)*(strlen(fullname)+strlen(temp_suffix)+1), "%s%s",fullname,temp_suffix);
     }
 
     my_free(filename);
@@ -4257,7 +4259,7 @@ int downloadFile(long long int fileID,char *filename,long long int size,int ismo
     long long int disk_free_size;
     struct stat filestat;
     int file_exist =  -1;
-    int local_file_len = -1;
+    long long int local_file_len = -1;
     char error_message[NORMALSIZE];
     int status;
     int IsExistList = 0 ;
@@ -4551,14 +4553,14 @@ int handle_error(int code,char *type)
         {
 #ifdef DEBUG
             printf("username is error \n");
-            strcpy(error_message,"username is error");
+            snprintf(error_message, NORMALSIZE, "%s", "username is error");
 #endif
         }
         else
         {
 #ifdef DEBUG
             printf("auth failed ,please check username and password\n");
-            strcpy(error_message,"auth failed ,please check username and password");
+            snprintf(error_message, NORMALSIZE, "%s", "auth failed ,please check username and password");
 #endif
         }
         break;
@@ -4566,13 +4568,13 @@ int handle_error(int code,char *type)
     case CURLE_COULDNT_RESOLVE_HOST:
 #ifdef DEBUG
         printf("can't resolve host,please check connection \n");
-        strcpy(error_message,"can't resolve host,please check connection");
+        snprintf(error_message, NORMALSIZE, "%s", "can't resolve host,please check connection");
 #endif
         break;
     case CURLE_COULDNT_CONNECT:
 #ifdef DEBUG
         printf("can't connect to host,please check connection \n");
-        strcpy(error_message,"can't connect to host,please check connection");
+        snprintf(error_message, NORMALSIZE, "%s", "can't connect to host,please check connection");
 #endif
         break;
     case CURLE_PARTIAL_FILE:
@@ -4590,20 +4592,20 @@ int handle_error(int code,char *type)
     case S_LOCAL_SPACE_FULL:
 #ifdef DEBUG
         printf("local space is not enough \n");
-        strcpy(error_message,"local space is not enough");
+        snprintf(error_message, NORMALSIZE, "%s", "local space is not enough");
 #endif
         break;
     case S_SERVER_SPACE_FULL:
 #ifdef DEBUG
         printf("server space is not enough \n");
-        strcpy(error_message,"server space is not enough");
+        snprintf(error_message, NORMALSIZE, "%s", "server space is not enough");
 #endif
         break;
     case S_MEMORY_FAIL:
 #ifdef DEBUG
         printf("create dynamic memory fail \n");
 #endif
-        strcpy(error_message,"create dynamic memory fail");
+        snprintf(error_message, NORMALSIZE, "%s", "create dynamic memory fail");
         break;
 
     case S_MKDIR_FAIL:
@@ -4616,14 +4618,14 @@ int handle_error(int code,char *type)
 #ifdef DEBUG
         printf("update attr fail\n");
 #endif
-        strcpy(error_message,"update file attr fail");
+        snprintf(error_message, NORMALSIZE, "%s", "update file attr fail");
         break;
 
     case S_OPENDIR_FAIL:
 #ifdef DEBUG
         printf("open dir fail\n");
 #endif
-        strcpy(error_message,"open dir fail");
+        snprintf(error_message, NORMALSIZE, "%s", "open dir fail");
         break;
 
     default:
@@ -4652,7 +4654,7 @@ long long int getParentID(char *path)
     char *p2;
 
     memset(parse_path,0,sizeof(parse_path));
-    strcpy(parse_path,path);
+    snprintf(parse_path, 512, "%s", path);
 
     if( !strcmp(parse_path,sync_path) ) // path is sync root path
     {
@@ -4782,32 +4784,33 @@ int write_log(int status, char *message, char *filename)
 
     if(log_s.status == S_ERROR)
     {
-        strcpy(log_s.error,message);
-        fprintf(fp,"STATUS:%d\nERR_MSG:%s\nTOTAL_SPACE:%u\nUSED_SPACE:%u\n",log_s.status,log_s.error,pre_cap.total,pre_cap.used);
+        error_flag = 1;
+        snprintf(log_s.error, 512, "%s", message);
+        fprintf(fp,"STATUS:%d\nERR_MSG:%s\nTOTAL_SPACE:%lld\nUSED_SPACE:%lld\n",log_s.status,log_s.error,pre_cap.total,pre_cap.used);
 
     }
     else if(log_s.status == S_NEEDCAPTCHA)
     {
-        fprintf(fp,"STATUS:%d\nERR_MSG:%s\nTOTAL_SPACE:%u\nUSED_SPACE:%u\nCAPTCHA_URL:%s\n",
+        fprintf(fp,"STATUS:%d\nERR_MSG:%s\nTOTAL_SPACE:%lld\nUSED_SPACE:%lld\nCAPTCHA_URL:%s\n",
                 status,message,pre_cap.total,pre_cap.used,filename);
     }
     else if(log_s.status == S_DOWNLOAD)
     {
-    	strcpy(log_s.path,filename);
-        fprintf(fp,"STATUS:%d\nMOUNT_PATH:%s\nFILENAME:%s\nTOTAL_SPACE:%u\nUSED_SPACE:%u\n",
+        snprintf(log_s.path, 512, "%s", filename);
+        fprintf(fp,"STATUS:%d\nMOUNT_PATH:%s\nFILENAME:%s\nTOTAL_SPACE:%lld\nUSED_SPACE:%lld\n",
                 log_s.status,mount_path,log_s.path+mount_path_length,pre_cap.total,pre_cap.used);
     }
     else if(log_s.status == S_UPLOAD)
     {
-        strcpy(log_s.path,filename);
-        fprintf(fp,"STATUS:%d\nMOUNT_PATH:%s\nFILENAME:%s\nTOTAL_SPACE:%u\nUSED_SPACE:%u\n",log_s.status,mount_path,log_s.path+mount_path_length,cap.total,cap.used);
+        snprintf(log_s.path, 512, "%s", filename);
+        fprintf(fp,"STATUS:%d\nMOUNT_PATH:%s\nFILENAME:%s\nTOTAL_SPACE:%lld\nUSED_SPACE:%lld\n",log_s.status,mount_path,log_s.path+mount_path_length,cap.total,cap.used);
     }
     else
     {
         if (log_s.status == S_SYNC)
-            fprintf(fp,"STATUS:%d\nTOTAL_SPACE:%u\nUSED_SPACE:%u\n",log_s.status,cap.total,cap.used);
+            fprintf(fp,"STATUS:%d\nTOTAL_SPACE:%lld\nUSED_SPACE:%lld\n",log_s.status,cap.total,cap.used);
         else
-            fprintf(fp,"STATUS:%d\nTOTAL_SPACE:%u\nUSED_SPACE:%u\n",log_s.status,pre_cap.total,pre_cap.used);
+            fprintf(fp,"STATUS:%d\nTOTAL_SPACE:%lld\nUSED_SPACE:%lld\n",log_s.status,pre_cap.total,pre_cap.used);
 
     }
 
@@ -4826,7 +4829,7 @@ int write_finish_log()
         IsSyncError = 0 ;
     }
     else
-        write_log(S_SYNC,"","");
+        show_finish_log();
 
     return 0;
 }
@@ -4912,11 +4915,11 @@ int write_trans_excep_log(char *fullname,int type,char *msg)
     char ctype[16] = {0};
 
     if(type == 1)
-        strcpy(ctype,"Error");
+        snprintf(ctype, 16, "%s", "Error");
     else if(type == 2)
-        strcpy(ctype,"Info");
+        snprintf(ctype, 16, "%s", "Info");
     else if(type == 3)
-        strcpy(ctype,"Warning");
+        snprintf(ctype, 16, "%s", "Warning");
 
     if(access(trans_excep_file,0) == 0)
         fp = fopen(trans_excep_file,"a");
@@ -5295,7 +5298,7 @@ int handle_rename(long long int parentID,char *fullname,int type,char *prepath,
        if( oe->status != 0 )
        {
            handle_error(oe->status,"renameEntry");
-           sprintf(newfullname,"%s/%s",path,newfilename);
+           snprintf(newfullname, 512, "%s/%s",path,newfilename);
            res_value = handle_rename_fail_code(oe->status,parentID,newfullname,path,isfolder);
            if(res_value != 0)
            {
@@ -5391,7 +5394,7 @@ int is_exist_case_conflicts(char *fullname,char *pre_name)
         if(!strcmp(p1,p2))
         {
            count++;
-           strcpy(pre_name,ent->d_name);
+           snprintf(pre_name, 256, "%s", ent->d_name);
         }
         my_free(p2);
     }
@@ -5602,8 +5605,8 @@ long long int create_server_folder_r(const char *path)
 
     memset(parse_path,0,sizeof(parse_path));
     memset(fullname,0,sizeof(fullname));
-    strcpy(parse_path,path);
-    strcpy(fullname,sync_path);
+    snprintf(parse_path, 512, "%s", path);
+    snprintf(fullname, 512, "%s", sync_path);
 
     if( !strcmp(parse_path,sync_path) ) // path is sync root path
     {
@@ -5619,8 +5622,8 @@ long long int create_server_folder_r(const char *path)
     int j=0;
     while(p2!=NULL)
     {
-        strcat(fullname,"/");
-        strcat(fullname,p2);
+        snprintf(fullname+strlen(fullname), 512-strlen(fullname), "%s", "/");
+        snprintf(fullname+strlen(fullname), 512-strlen(fullname), "%s", p2);
 
         if(j == 0)
             parentID = MySyncFolder;

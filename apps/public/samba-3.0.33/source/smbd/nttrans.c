@@ -324,7 +324,12 @@ static int nt_open_pipe(char *fname, connection_struct *conn,
 	smb_np_struct *p = NULL;
 	uint16 vuid = SVAL(inbuf, smb_uid);
 	int i;
- 
+
+	if (strchr(fname, '/')) {
+		DEBUG(1, ("nt_open_pipe: Refusing open on pipe %s\n", fname));
+		return(ERROR_BOTH(NT_STATUS_OBJECT_NAME_NOT_FOUND,ERRDOS,ERRbadpipe));
+	}
+
 	DEBUG(4,("nt_open_pipe: Opening pipe %s.\n", fname));
     
 	/* See if it is one we want to handle. */

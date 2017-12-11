@@ -42,7 +42,10 @@ int sigterm_flag = 0;           /* lame duck mode */
 time_t current_time;
 int max_fd = 0;
 int pending_requests = 0;
-char lan_ip[64];
+char lan_ip[20], lan_netmask[20];
+char https_lanport[8] = {0};
+char def_passwd[128];
+int compare_passwd = 0;
 
 struct pageset* pageMap[PAGEMAP_I_NUM][PAGEMAP_J_NUM];
 
@@ -326,11 +329,35 @@ int main(int argc, char **argv)
 
     //get lan ip
     memset(lan_ip, 0, sizeof(lan_ip));
-    if(tcapi_get("Lan_Entry0", "IP", lan_ip))
+    if(tcapi_get("Lan_Entry0", "IP", lan_ip) != TCAPI_PROCESS_OK)
     {
 	DIE("can't get lan ip");
     }
 	
+	//get lan netmask
+	memset(lan_netmask, 0, sizeof(lan_netmask));
+	if(tcapi_get("Lan_Entry0", "netmask", lan_netmask) != TCAPI_PROCESS_OK)
+	{
+		DIE("can't get lan netmask");
+	}
+
+	//get http lan port
+	memset(https_lanport, 0, sizeof(https_lanport));
+	if(tcapi_get("Https_Entry", "https_lanport", https_lanport) != TCAPI_PROCESS_OK)
+	{
+		DIE("can't get lan netmask");
+	}
+	
+	//get default_passwd
+	memset(def_passwd, 0, sizeof(def_passwd));
+	if(tcapi_get("Account_Entry0", "default_passwd", def_passwd) != TCAPI_PROCESS_OK)
+	{
+		DIE("can't get default password");
+	}
+
+	//compare current password and default password
+	compare_passwd = tcapi_match("Account_Entry0", "web_passwd", def_passwd)? 0: 1;
+
     /* but first, update timestamp, because log_error_time uses it */
     (void) time(&current_time);
 

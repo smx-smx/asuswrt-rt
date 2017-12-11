@@ -7,6 +7,9 @@
 #define CMD_WRED_SET		"wred_set_conf"
 #define CMD_RULE_AGENT	"tdts_rule_agent"
 #define CMD_SHN_CTRL		"shn_ctrl"
+#define CMD_GEN_LIC		"gen_lic"
+#define CMD_LIC_CTRL		"lic_ctrl"
+#define CMD_LIC_SETUP	"lic-setup.sh"
 
 #define PATH_CMD_BWDPI	"/usr/bin/bwdpi/"
 #define PATH_CMD_WRED	PATH_CMD_BWDPI	CMD_WRED
@@ -21,6 +24,8 @@
 #define PATH_WRS_CONF	PATH_TMP_BWDPI "wred.conf"
 #define PATH_APP_PATROL_CONF	PATH_TMP_BWDPI "app_patrol.conf"
 #define PATH_DPI_CERT		PATH_TMP_BWDPI "ntdasus2014.cert"
+#define PATH_CMD_LIC_CTRL	PATH_TMP_BWDPI	CMD_LIC_CTRL
+#define PATH_CMD_LIC_SETUP	PATH_TMP_BWDPI	CMD_LIC_SETUP
 
 // kernel module
 #define PATH_TDTS	"/lib/modules/bwdpi/tdts.ko"

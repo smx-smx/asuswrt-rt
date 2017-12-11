@@ -529,6 +529,9 @@ void qos_drop_set_rule(int interface, int pvc);
 void qos_drop_unset_rule();
 #endif
 
+#if (defined(TCSUPPORT_WEBMON) || defined(TCSUPPORT_ACCESSLOG)) && defined(TCSUPPORT_USBHOST)
+int backupLog_init(void);
+#endif
 #ifdef TCSUPPORT_WEBMON
 int webHistory_init(void);
 int webHistory_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);

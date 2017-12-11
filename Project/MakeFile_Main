@@ -1748,24 +1748,32 @@ endif
 #Build igmpproxy
 ifneq ($(strip $(TC_BUILD_RELEASECODE)),)
 ifneq ($(strip $(TCSUPPORT_IGMP_PROXY_V3)),)
+ifneq ($(strip $(TCSUPPORT_IGMP_PROXY_V3_SDK)),)
 igmpproxy:
 	cp $(APP_BINARY_DIR)/$(TCPLATFORM)/igmpproxy $(FILESYSTEM_DIR)/userfs/bin/
 igmpproxy_clean:
 	echo "TC_BUILD_RELEASECODE: Build igmpproxy, do nothing!"
 else
-igmpproxy:
-	echo "Build igmpproxy"
-	$(MAKE) -C $(APP_IGMPPROXY_DIR)
-	if test -e $(APP_IGMPPROXY_DIR)/igmpproxy; \
-	then echo "Compile igmpproxy success"; \
-	else echo "Compile igmpproxy error!"; exit 1; \
+igmpproxy/stamp-h1:
+	if test ! -e $(APP_IGMPPROXY_DIR)/stamp-h1; then \
+		cd $(APP_IGMPPROXY_DIR) && CFLAGS="-O2 -Wall -ffunction-sections -fdata-sections" \
+		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		./configure --host=mips-linux --prefix=/usr --disable-dependency-tracking \
+		&& touch stamp-h1; \
 	fi
-	$(STRIP) $(APP_IGMPPROXY_DIR)/igmpproxy
-	cp $(APP_IGMPPROXY_DIR)/igmpproxy  $(FILESYSTEM_DIR)/userfs/bin/
+
+igmpproxy: igmpproxy/stamp-h1
+	@$(SEP)
+	$(MAKE) -C $(APP_IGMPPROXY_DIR)/src
+	@$(STRIP) $(APP_IGMPPROXY_DIR)/src/igmpproxy
+	install -D $(APP_IGMPPROXY_DIR)/src/igmpproxy  $(FILESYSTEM_DIR)/userfs/bin/igmpproxy
 
 igmpproxy_clean:
-	echo "Clean igmpproxy"
-	$(MAKE) -C $(APP_IGMPPROXY_DIR) clean
+	@$(SEP)
+	-@$(MAKE) -C $(APP_IGMPPROXY_DIR) clean
+	rm -f $(APP_IGMPPROXY_DIR)/stamp-h1
+	rm -f $(FILESYSTEM_DIR)/userfs/bin/igmpproxy
+
 endif
 else
 igmpproxy:
@@ -1781,6 +1789,7 @@ igmpproxy:
 igmpproxy_clean:
 	echo "Clean igmpproxy"
 	$(MAKE) -C $(APP_IGMPPROXY_DIR) clean
+endif
 endif
 ifneq ($(strip $(TCSUPPORT_CT)),)
 traceroute:
@@ -3271,8 +3280,10 @@ openssl_clean:
 curl/stamp-h1:
 	if test ! -e $(APP_CURL_DIR)/stamp-h1; then \
 		cd $(APP_CURL_DIR) && \
-		./configure --build=i686-linux --host=mips-linux --enable-http --with-ssl=$(APP_OPENSSL_DIR) && \
-		touch stamp-h1; \
+		./configure --build=i686-linux --host=mips-linux --enable-http \
+		--with-ssl=$(APP_OPENSSL_DIR) \
+		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
+		&& touch stamp-h1; \
 	fi
 
 curl: curl/stamp-h1

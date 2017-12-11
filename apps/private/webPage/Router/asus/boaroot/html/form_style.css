@@ -599,6 +599,7 @@
 	cursor:pointer;
 	outline: none; /* for Firefox */
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+	white-space:normal;
 }
 .button_gen_long:hover	/*, .button:active*/{
   background: transparent url(/images/New_ui/logout_btover.png) no-repeat scroll center top;
@@ -612,6 +613,7 @@
 	cursor:pointer;
 	outline: none; /* for Firefox */
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+	white-space:normal;
 }
 
 .button_gen_long_dis{
@@ -628,6 +630,7 @@
 	/*cursor:pointer;*/
 	outline: none; /* for Firefox */
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+	white-space:normal;
 }
 .button_gen_long_dis:hover	/*, .button:active*/{
   background: transparent url(/images/New_ui/logout_btover.png) no-repeat scroll center top;
@@ -641,6 +644,7 @@
 	/*cursor:pointer;*/
 	outline: none; /* for Firefox */
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+	white-space:normal;
 }
 
 .button_gen_long_touch{
@@ -652,7 +656,6 @@
  	background-position:0px;
 	cursor:pointer;
 }
-
 
 .button_gen_short{
 	font-weight: bolder;

@@ -386,11 +386,31 @@ stop_notification_center(void)
 }
 #endif
 
+#ifdef RTCONFIG_PROTECTION_SERVER
+int
+start_ptcsrv(void)
+{
+	char *ptcsrv_argv[] = {"protect_srv", NULL};
+	pid_t pid;
+
+	return _eval(ptcsrv_argv, NULL, 0, &pid);
+}
+
+int
+stop_ptcsrv(void)
+{
+	killall_tk("protect_srv");
+}
+#endif
+
 int
 start_services(void)
 {
 #ifdef RTCONFIG_NOTIFICATION_CENTER
 	start_notification_center();
+#endif
+#ifdef RTCONFIG_PROTECTION_SERVER
+	start_ptcsrv();
 #endif
 #ifdef TCSUPPORT_SSH
 	start_sshd();
@@ -437,11 +457,14 @@ stop_services(void)
 #ifdef RTCONFIG_CROND
 	stop_cron();
 #endif
-#ifdef RTCONFIG_NOTIFICATION_CENTER
-	stop_notification_center();
-#endif
 #ifdef TCSUPPORT_SSH
 	stop_sshd();
+#endif
+#ifdef RTCONFIG_PROTECTION_SERVER
+	stop_ptcsrv();
+#endif
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+	stop_notification_center();
 #endif
 }
 /*

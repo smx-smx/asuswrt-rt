@@ -32,5 +32,5 @@ extern int tdts_core_ioctl_op_tq_construct(char *buf, uint32_t tbl_len);
 extern int tdts_core_ioctl_app_op_tq_get(char *tbl, uint32_t tbl_len, uint32_t *tbl_used_len);
 extern int tdts_core_ioctl_app_op_tq_log_get(char *tbl, uint32_t tbl_len, uint32_t *tbl_used_len);
 extern int tdts_core_calc_patrol_tq(uint8_t uid, uint8_t cat_id, uint16_t app_id, uint32_t bytes, uint8_t is_download, uint8_t new_session);
-
+extern int tdts_core_ioctl_op_tq_reset(void);
 #endif // __UDB_PATROL_TQ_H__

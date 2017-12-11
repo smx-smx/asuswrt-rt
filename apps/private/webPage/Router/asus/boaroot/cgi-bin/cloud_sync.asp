@@ -570,8 +570,14 @@ function showcloud_synclist(){
 
 function getDropBoxClientName(token, uid){
     $j.ajax({
-    	url: 'https://api.dropbox.com/1/account/info?access_token=' + token,
-    	dataType: 'json', 
+    	type: 'POST',
+		headers: {
+			'Content-Type': 'application/json; charset=utf-8',
+			'Authorization': 'Bearer ' + token
+		},
+		data: JSON.stringify(null),
+		url: 'https://api.dropboxapi.com/2/users/get_current_account',
+		dataType: 'json',
     	error: function(xhr){
       		getDropBoxClientName();
     	},
@@ -1736,10 +1742,10 @@ function dropbox_login(){
 		}
 		callback_url += not_use; 
 	}
-	var url = "https://www.dropbox.com/1/oauth2/authorize?response_type=token&client_id=" + app_key;
+	var url = "https://www.dropbox.com/oauth2/authorize?response_type=token&client_id=" + app_key;
 	url += "&redirect_uri=" + encodeURIComponent(redirect_url);
 	url += "&state=base64_" + base64Encode(callback_url);
-	url += "&force_reapprove=true";
+	url += "&force_reapprove=true&force_reauthentication=true";
 			
 	window.open(url,"mywindow","menubar=1,resizable=0,width=630,height=550");
 }

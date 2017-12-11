@@ -1,11 +1,13 @@
 ﻿<%
 If Request_Form("logFlag") = "1" Then
+	If Request_Form("usb_support_Flag") = "1" Then
+		TCWebApi_set("BackupLog_Entry", "log_bkp_nonhide","log_bkp_nonhide")
+	End if	
 	TCWebApi_set("AccessLog_Entry", "al_enable","al_enable")
 	TCWebApi_set("AccessLog_Entry", "al_bkp_enable","al_bkp_enable_x")
 	TCWebApi_set("AccessLog_Entry", "al_bkp_path","al_bkp_path_x")
 	TCWebApi_set("AccessLog_Entry", "al_clear","al_clear")
-	TCWebApi_set("AccessLog_Entry", "al_bkp_nonhide","al_bkp_nonhide")
-	TCWebApi_set("AccessLog_Entry", "al_bkp_period","al_bkp_period_x")	
+	TCWebApi_set("AccessLog_Entry", "al_bkp_period","al_bkp_period_x")
 	tcWebApi_commit("AccessLog_Entry")
 End if
 %>
@@ -35,7 +37,7 @@ End if
 var $j = jQuery.noConflict();
 <% disk_pool_mapping_info(); %>
 <% available_disk_names_and_sizes(); %>
-<% check_log_path("access_log_backup"); %>
+<% check_log_path("AccessLog"); %>
 
 if(usb_support != -1){
 	var al_bkp_path_orig = '<% tcWebApi_get("AccessLog_Entry", "al_bkp_path","s") %>';
@@ -63,6 +65,7 @@ function initial(){
 			change_al_bkp_enable('<%tcWebApi_get("AccessLog_Entry","al_bkp_enable","s")%>');
 			document.getElementById("submitBtn").style.display = "";
 		}
+		corrected_timezone(DAYLIGHT_orig, TZ_orig);
 	}
 	else{
 		document.getElementById("log_field").style.display = "none";
@@ -108,13 +111,13 @@ function change_al_bkp_enable(flag){
 	if(flag == 1){
 		document.getElementById("al_bkp_path_div").style.display = "";
 		document.getElementById("al_clear_div").style.display = "";
-		document.getElementById("al_bkp_nonhide_div").style.display = "";
+		document.getElementById("log_bkp_nonhide_div").style.display = "";
 		inputCtrl(document.form.al_bkp_period_x, 1);
 	}
 	else{
 		document.getElementById("al_bkp_path_div").style.display = "none";
 		document.getElementById("al_clear_div").style.display = "none";
-		document.getElementById("al_bkp_nonhide_div").style.display = "none";
+		document.getElementById("log_bkp_nonhide_div").style.display = "none";
 		inputCtrl(document.form.al_bkp_period_x, 0);
 	}	
 }
@@ -141,16 +144,19 @@ function applyRule(){
 		document.form.al_clear.value = 1;
 	else
 		document.form.al_clear.value = 0;
-		
-	if(document.form.al_bkp_nonhide_x.checked == true)
-		document.form.al_bkp_nonhide.value = 1;
-	else
-		document.form.al_bkp_nonhide.value = 0;	
-																					
+
+	if(usb_support != -1){
+		if(document.form.log_bkp_nonhide_x.checked == true)
+			document.form.log_bkp_nonhide.value = 1;
+		else
+			document.form.log_bkp_nonhide.value = 0;
+		document.form.usb_support_Flag.value = 1;
+	}
+
 	document.form.logFlag.value = 1;
 	showLoading(3);
 	setTimeout("redirect();", 3000);
-	document.form.submit();	
+	document.form.submit();
 }
 
 function clear_bkup_path_fail(){
@@ -173,9 +179,10 @@ function clear_bkup_path_fail(){
 <input type="hidden" name="current_page" value="/Main_AccessLog_Content.asp">
 <input type="hidden" name="next_page" value="/Main_AccessLog_Content.asp">
 <input type="hidden" name="logFlag" value="0">
+<input type="hidden" name="usb_support_Flag" value="0">
 <input type="hidden" name="al_enable" value="<%tcWebApi_get("AccessLog_Entry","al_enable","s")%>">
 <input type="hidden" name="al_clear" value="<%tcWebApi_get("AccessLog_Entry","al_clear","s")%>">
-<input type="hidden" name="al_bkp_nonhide" value="<%tcWebApi_get("AccessLog_Entry","al_bkp_nonhide","s")%>">
+<input type="hidden" name="log_bkp_nonhide" value="<%tcWebApi_get("BackupLog_Entry","log_bkp_nonhide","s")%>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>
@@ -221,6 +228,7 @@ function clear_bkup_path_fail(){
 															}
 														);
 													</script>
+												<div style="margin-left:15px;"><br><br><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;display:none;"></span></div>	
 												</td>
 											</tr>
 											<tr>
@@ -235,7 +243,7 @@ function clear_bkup_path_fail(){
 														<span id="bkup_path_fail" style="display:none;color:#FC0"><br>* Current auto backup path is not exist. Make sure the USB disk is plugged in and setup again.</span>	<!-- untranslated -->
 													</div>													
 													<div id="al_clear_div" style="display:none;"><input type="checkbox" name="al_clear_x" id="al_clear_x" value="1" <% if tcWebApi_get("AccessLog_Entry","al_clear","h") = "1" then asp_Write("checked") end if %>> <label for="al_clear_x">Clear Old Access Log After Backup<label></div> <!-- untranslated -->
-													<div id="al_bkp_nonhide_div" style="display:none;"><input type="checkbox" name="al_bkp_nonhide_x" id="al_bkp_nonhide_x" value="1" <% if tcWebApi_get("AccessLog_Entry","al_bkp_nonhide","h") = "1" then asp_Write("checked") end if %>> <label for="al_bkp_nonhide_x">Non-hidden backup files<label></div> <!-- untranslated -->
+													<div id="log_bkp_nonhide_div" style="display:none;"><input type="checkbox" name="log_bkp_nonhide_x" id="log_bkp_nonhide_x" value="1" <% if tcWebApi_get("BackupLog_Entry","log_bkp_nonhide","h") = "1" then asp_Write("checked") end if %>> <label for="log_bkp_nonhide_x">Non-hidden backup files<label></div> <!-- untranslated -->
 												</td>	
 											</tr>
 											<tr>

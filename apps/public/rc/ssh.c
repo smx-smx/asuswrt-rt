@@ -22,11 +22,13 @@ void start_sshd(void)
 {
 	char keyvalue[2048];
 	char enable[4];
+	char timeout[20];
 	char cmd[128];
 	int pass;
 	int chk = 0;
 	
 	memset(enable, 0, sizeof(enable));
+	memset(timeout, 0, sizeof(timeout));
 	memset(keyvalue, 0, sizeof(keyvalue));
 	
 	if (!tcapi_match("SSH_Entry", "Enable", "Yes"))
@@ -52,9 +54,15 @@ void start_sshd(void)
 		check_host_key("dss", "sshd_dsskey",  "/etc/dropbear/dropbear_dss_host_key");
 	}
 	
-	snprintf(cmd, sizeof(cmd), "dropbear -p %d %s -a &", 
+	if(tcapi_get_int("SSH_Entry", "timeout")) {
+		snprintf(timeout, sizeof(timeout), "-I %d",
+			tcapi_get_int("SSH_Entry", "timeout") * 60);
+	}
+	
+	snprintf(cmd, sizeof(cmd), "dropbear -p %d %s %s -a &",
 			tcapi_get_int("SSH_Entry", "sshport"), 
-			(tcapi_get_int("SSH_Entry", "Need_Pass")==0)? "-s":"");
+			(tcapi_get_int("SSH_Entry", "Need_Pass")==0)? "-s":"",
+			timeout);
 	system(cmd);
 
 	if(chk) {

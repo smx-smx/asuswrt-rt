@@ -26,7 +26,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Thu Oct  6 12:17:48 2016
+ * Date: Fri May  5 16:53:34 2017
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
@@ -60,7 +60,7 @@
 /*
  * Target device toolchain (cross utilities)
  */
-#define TMCFG_TC_PFX "/opt/trendchip/mips-linux-uclibc/usr/bin/mips-linux-uclibc-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/mips-linux-uclibc/usr/bin/mips-linux-uclibc-"
 #define TMCFG_TC_BIT_FIELD_ORDER_LITTLE_ENDIAN 0 // n
 #define TMCFG_TC_BIT_FIELD_ORDER_BIG_ENDIAN 1 // y
 #define TMCFG_TC_CC "$(TMCFG_TC_PFX)gcc"
@@ -98,6 +98,7 @@
 #define TMCFG_E_KMOD_IOCTL_DEV_NAME "detector"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
 #define TMCFG_E_KMOD_IOCTL_DEV_MIN 0
+#define TMCFG_E_KMOD_IOCTL_DEV_MAGIC 190
 
 /*
  * ******
@@ -105,7 +106,7 @@
 #define TMCFG_E_MAJ_VER 2
 #define TMCFG_E_MID_VER 0
 #define TMCFG_E_MIN_VER 1
-#define TMCFG_E_LOCAL_VER "r2974221"
+#define TMCFG_E_LOCAL_VER "r3273244"
 
 /*
  * Engine core
@@ -122,7 +123,8 @@
 #define TMCFG_E_CORE_STREAMING_DECODE 1 // y
 #define TMCFG_E_CORE_METADATA_EXTRACT 1 // y
 #define TMCFG_E_CORE_METADATA_MAX_HANDLER 128
-#define TMCFG_E_CORE_TLS_DECODE 0 // n
+#define TMCFG_E_CORE_TLS_DECODE 1 // y
+#define TMCFG_E_CORE_TLS_DECODE_MAX_SESS 1
 
 /*
  * UPnP decoder
@@ -140,6 +142,13 @@
 #define TMCFG_E_CORE_TCP_CHECKSUM 0 // n
 #define TMCFG_E_CORE_RULE_FORMAT_NK 0 // n
 #define TMCFG_E_CORE_RULE_FORMAT_FM 1 // y
+
+/*
+ * Rule Limits
+ */
+#define TMCFG_E_CORE_CONFIG_POLICY_NUM 12000
+#define TMCFG_E_CORE_CONFIG_CONTENT_NUM 26100
+#define TMCFG_E_CORE_CONFIG_TOTAL_CONTENT_LENGTH 290000
 #define TMCFG_E_CORE_RULE_FORMAT_V2 0 // n
 #define TMCFG_E_CORE_RULE_BINDING 1 // y
 #define TMCFG_E_CORE_RULE_BINDING_CATEGORY_CHIPSET_PROVIDER 0 // n
@@ -155,13 +164,14 @@
 #define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_TPLINK 0 // n
 #define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_BUFFALO 0 // n
 #define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_BELKIN 0 // n
+#define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_LENOVO 0 // n
 #define TMCFG_E_CORE_IP6 1 // y
 #define TMCFG_E_CORE_TCP_STREAM_REASM 0 // n
 #define TMCFG_E_CORE_FINE_GRAIN_TCP_LOCK 0 // n
 #define TMCFG_E_CORE_CONFIG_TCP_CHAIN_LAYOUT 3
 #define TMCFG_E_CORE_CONFIG_TCP_CONN_NUM 8
 #define TMCFG_E_CORE_CONFIG_TCP_HASH_SIZE 1
-#define TMCFG_E_CORE_CONFIG_TCP_REASM_FLOW_NUM 1
+#define TMCFG_E_CORE_CONFIG_TCP_TURBO_MODE 0 // n
 #define TMCFG_E_CORE_UDP_FLOW_TRACKING 1 // y
 #define TMCFG_E_CORE_CONFIG_UDP_FLOW_NUM 4
 #define TMCFG_E_CORE_CONFIG_UDP_HASH_SIZE 1
@@ -179,7 +189,7 @@
 #define TMCFG_E_CORE_AC_STATE_NUM 64
 #define TMCFG_E_CORE_DYNAMIC_SIGNATURE_TABLE 1 // y
 #define TMCFG_E_CORE_DYNAMIC_MEMORY_ALLOC 0 // n
-#define TMCFG_E_CORE_CONNECTION_DYNAMIC_ALLOC 1 // y
+#define TMCFG_E_CORE_CONNECTION_DYNAMIC_ALLOC 0 // n
 #define TMCFG_E_CORE_CONFIG_HTTP_DECODER_NUM 1
 #define TMCFG_E_CORE_CONFIG_HTTP_URI_LENGTH 2048
 #define TMCFG_E_CORE_CONFIG_HTTP_REPLY_DECODE 0 // n
@@ -203,7 +213,7 @@
  * DevID
  */
 #define TMCFG_E_CORE_DEVID_UA 1 // y
-#define TMCFG_E_CORE_DEVID_COLLECT_UN 0 // n
+#define TMCFG_E_CORE_DEVID_COLLECT_UN 1 // y
 
 /*
  * Engine shell
@@ -220,12 +230,24 @@
  * Kernel
  */
 #define TMCFG_APP_K_EXTRA_CFLAGS ""
-#define TMCFG_APP_K_TDTS_NFFW 1 // y
+#define TMCFG_APP_K_TDTS_NFFW 0 // n
+#define TMCFG_APP_K_TDTS_NFFW_INTERNAL 0 // n
 #define TMCFG_APP_K_TEMPLATE 0 // n
 
 /*
  * Userland
  */
+
+/*
+ * Userspace toolchain
+ */
+#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/mips-linux-uclibc/usr/bin/mips-linux-uclibc-"
+#define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
+#define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
+#define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"
+#define TMCFG_APP_U_TC_RANLIB "$(TMCFG_APP_U_TC_PFX)ranlib"
+#define TMCFG_APP_U_TC_STRIP "$(TMCFG_APP_U_TC_PFX)strip"
+#define TMCFG_APP_U_TC_OBJDUMP "$(TMCFG_APP_U_TC_PFX)objdump"
 #define TMCFG_APP_U_EXTRA_CFLAGS ""
 #define TMCFG_APP_U_EXTRA_LDFLAGS ""
 #define TMCFG_APP_U_KA_API 1 // y

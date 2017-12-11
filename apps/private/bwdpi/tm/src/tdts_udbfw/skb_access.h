@@ -141,9 +141,15 @@
 
 #endif	/* ! (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 22)) */
 
-#define SKB_ETH_DST(skb)	( SKB_ETH((skb))->h_dest )
-#define SKB_ETH_SRC(skb)	( SKB_ETH((skb))->h_source )
-#define SKB_ETH_PRO(skb)	( SKB_ETH((skb))->h_proto )
+/* Might be NULL if SKB_ETH((skb)) is NULL */
+#define SKB_ETH_DST(skb)	( SKB_ETH((skb)) ? SKB_ETH((skb))->h_dest : NULL)
+#define SKB_ETH_SRC(skb)	( SKB_ETH((skb)) ? SKB_ETH((skb))->h_source : NULL)
+#define SKB_ETH_PRO(skb)	( SKB_ETH((skb)) ? SKB_ETH((skb))->h_proto : NULL)
+
+/* SKB_ETH((skb)) must not be NULL */
+#define __SKB_ETH_DST(skb)	( SKB_ETH((skb))->h_dest )
+#define __SKB_ETH_SRC(skb)	( SKB_ETH((skb))->h_source )
+#define __SKB_ETH_PRO(skb)	( SKB_ETH((skb))->h_proto )
 
 /* IPv4 header */
 #define SKB_IP_HEAD_ADDR(skb)	( SKB_IP(skb) )

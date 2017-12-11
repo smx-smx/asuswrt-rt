@@ -39,6 +39,9 @@ var iptv_atm_pvc_str = "";
 var iptv_ptm_pvc_str = "";
 var dsltmp_cfg_iptv_pvclist = decodeURIComponent('<%tcWebApi_char_to_ascii("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist", "s")%>');															
 var iptv_num_pvc_val = "<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_num_pvc","s") %>";
+var mac_addr_2g = "<%tcWebApi_get("WLan_Common","wl0_MacAddress","s")%>";
+var mac_addr_last_3bytes = "\"" + mac_addr_2g.substring(9, 11) + mac_addr_2g.substring(12, 14) + mac_addr_2g.substring(15, 17) + "\"";
+var model_name = "<%tcWebApi_get("SysInfo_Entry","ProductName","s")%>";
 
 //udpate iptv information
 if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
@@ -111,6 +114,7 @@ function QKfinish_load_body(){
 	document.form.wan_dnsenable_x[1].checked = 1;
 	show_dhcpenable(1);
 
+	/* Renjie: Remove this field, we will use Option 61 and 12 for UK Sky.
 	if (country_str == "United Kingdom" && (ispname_str == "SKY (MER)" || ispname_str == "Sky - Fibre Broadband"))
 	{
 		//UK ISP SKY Broadband, MER requires some tweak.
@@ -120,6 +124,7 @@ function QKfinish_load_body(){
 		document.getElementById("ppp_password1").style.display = "";
 		document.getElementById("ppp_password2").style.display = "";
 	}
+	*/
 
 	if(transfer_mode == "ATM")
 		document.form.prev_page.value = "/cgi-bin/qis/QIS_manual_setting.asp";
@@ -232,12 +237,23 @@ function submitForm(){
 	if (country_str == "United Kingdom" && (ispname_str == "SKY (MER)" || ispname_str == "Sky - Fibre Broadband"))
 	{
 		//Only for UK ISP SKY Broadband
+		/* Renjie: Remove this field, we will use Option 61 and 12 for UK Sky.
 		if(document.form.ppp_username.value != "")
 			document.form.dsltmp_dhcp_clientid.value = document.form.ppp_username.value + "|" + document.form.ppp_password.value;
 
 		document.form.ppp_username.disabled = true;
 		document.form.ppp_password.disabled = true;
+		*/
+
+		document.form.dsltmp_dhcp_clientid.value = mac_addr_last_3bytes;
+		document.form.dsltmp_dhcp_hostname.value = model_name;
 	}
+	else
+	{
+		document.form.dsltmp_dhcp_clientid.value = "";
+		document.form.dsltmp_dhcp_hostname.value = "";
+	}
+
 	document.form.dsl_ipaddr.disabled = true;
 	document.form.dsl_netmask.disabled = true;
 	document.form.dsl_gateway.disabled = true;
@@ -265,7 +281,8 @@ function submitForm(){
 <input type="hidden" name="dsltmp_cfg_dnsenable" id="dsltmp_cfg_dnsenable" value="1">
 <input type="hidden" name="dsltmp_cfg_dns1" id="dsltmp_cfg_dns1" value="">
 <input type="hidden" name="dsltmp_cfg_dns2" id="dsltmp_cfg_dns2" value="">
-<input type="hidden" name="dsltmp_dhcp_clientid" id="dsltmp_dhcp_clientid" value="">
+<input type="hidden" name="dsltmp_dhcp_clientid" value="">
+<input type="hidden" name="dsltmp_dhcp_hostname" value="">
 <input type="hidden" name="dsltmp_wanTypeOption" value="">
 <input type="hidden" name="with_wan_setting" value="1">
 <div class="QISmain">
@@ -525,6 +542,7 @@ autocomplete="off" />
 </table>
 </fieldset>
 <br>
+<!-- Renjie: Remove this field, we will use Option 61 and 12 for UK Sky.
 <table id="tblsetting_2" class="QISform" width="400" border="0" align="center" cellpadding="3" cellspacing="0">
   <tr>
 	<th width="120"><span id="ppp_username1" style="display:none"><% tcWebApi_Get("String_Entry", "PPPC_UserName_in", "s") %>:</span></th>
@@ -543,10 +561,11 @@ autocomplete="off" />
 	</td>
   </tr>
 </table>
+-->
 </td></tr></table>
 <div class="apply_gen" style="margin-top:30px">
 <input type="button" id="prevButton" value="<% tcWebApi_Get("String_Entry", "Manual_Setting_btn", "s") %>" tabindex="13" onclick="gotoprev(document.form);" class="button_gen_long">
-<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" tabindex="12" onclick="submitForm();" class="button_gen">
+<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" tabindex="12" onclick="submitForm();" class="button_gen_long">
 </div>
 </div>
 </form>

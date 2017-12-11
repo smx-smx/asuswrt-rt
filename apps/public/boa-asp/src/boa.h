@@ -55,7 +55,7 @@
 #include <mssl.h>
 #endif 
 #include <arpa/inet.h>
-
+#include <tcapi.h>
 /*------------------------lee------------------------*/ 
 //DEBUG
 #if 0

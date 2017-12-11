@@ -22,8 +22,8 @@ Hb_TreeNode *create_tree_rootnode(const char *path)
         return NULL;
     }
     DirTreeRoot->level=0;
-    strcpy(DirTreeRoot->FileName,path);
-    strcpy(DirTreeRoot->FilePath,path);
+    snprintf(DirTreeRoot->FileName, 64, "%s", path);
+    snprintf(DirTreeRoot->FilePath, 256, "%s", path);
     DirTreeRoot->NextBrother=NULL;
     DirTreeRoot->pattr = NULL;
     DirTreeRoot->Child = NULL;
@@ -42,7 +42,7 @@ Hb_TreeNode *get_tree_node(const char *filename, Hb_TreeNode *treeRoot)
         memset(fullname,0,sizeof(fullname));
 
         if(treeRoot->level == 0)
-            strcpy(fullname,treeRoot->FilePath);
+            snprintf(fullname, NORMALSIZE, "%s", treeRoot->FilePath);
         else
             snprintf(fullname,NORMALSIZE,"%s/%s",treeRoot->FilePath,treeRoot->FileName);
 
@@ -110,13 +110,13 @@ Hb_TreeNode *insert_new_node(const char *filename, const char *path,int isfolder
         tempnode->pattr->creationtime = (char *)malloc(sizeof(char)*16);
         tempnode->pattr->lastwritetime = (char *)malloc(sizeof(char)*16);
 
-        sprintf(tempnode->pattr->lastaccesstime,"%lu",asec);
-        sprintf(tempnode->pattr->creationtime,"%lu",csec);
-        sprintf(tempnode->pattr->lastwritetime,"%lu",msec);
+        snprintf(tempnode->pattr->lastaccesstime, sizeof(char)*16, "%lu",asec);
+        snprintf(tempnode->pattr->creationtime, sizeof(char)*16, "%lu",csec);
+        snprintf(tempnode->pattr->lastwritetime, sizeof(char)*16, "%lu",msec);
     }
 
-    strcpy(tempnode->FilePath,path);
-    strcpy(tempnode->FileName,filename);
+    snprintf(tempnode->FilePath, 256, "%s", path);
+    snprintf(tempnode->FileName, 64, "%s", filename);
 
     if(TreeNode->Child == NULL)
     {
@@ -225,7 +225,7 @@ int modify_tree_node(char *fullname, Hb_TreeNode *rootnode,int type)
     {
         strncpy(path,fullname,strlen(fullname)-strlen(p));
         p++;
-        strcpy(filename,p);
+        snprintf(filename, NORMALSIZE, "%s", p);
 
         if(test_if_dir(fullname) == 1)
         {
@@ -348,13 +348,13 @@ void FindDir(Hb_TreeNode *TreeNode,const char *path)
            tempnode->pattr->creationtime = (char *)malloc(sizeof(char)*16);
            tempnode->pattr->lastwritetime = (char *)malloc(sizeof(char)*16);
 
-           sprintf(tempnode->pattr->lastaccesstime,"%lu",asec);
-           sprintf(tempnode->pattr->creationtime,"%lu",csec);
-           sprintf(tempnode->pattr->lastwritetime,"%lu",msec);
+           snprintf(tempnode->pattr->lastaccesstime, sizeof(char)*16, "%lu",asec);
+           snprintf(tempnode->pattr->creationtime, sizeof(char)*16, "%lu",csec);
+           snprintf(tempnode->pattr->lastwritetime, sizeof(char)*16, "%lu",msec);
         }
 
-        strcpy(tempnode->FilePath,path);
-        strcpy(tempnode->FileName,ent->d_name);
+        snprintf(tempnode->FilePath, 256, "%s", path);
+        snprintf(tempnode->FileName, 64, "%s", ent->d_name);
 
         if(TreeNode->Child == NULL)
         {
@@ -394,7 +394,7 @@ void update_node_child(Hb_TreeNode *node)
     if(node->NextBrother != NULL)
     {
         memset(node->NextBrother->FilePath,0,sizeof(node->NextBrother->FilePath));
-        strcpy(node->NextBrother->FilePath,node->FilePath);
+        snprintf(node->NextBrother->FilePath, 256, "%s", node->FilePath);
         update_node_child(node->NextBrother);
     }
 
@@ -402,7 +402,7 @@ void update_node_child(Hb_TreeNode *node)
     {
         snprintf(newpath,NORMALSIZE,"%s/%s",node->FilePath,node->FileName);
         memset(node->Child->FilePath,0,sizeof(node->Child->FilePath));
-        strcpy(node->Child->FilePath,newpath);
+        snprintf(node->Child->FilePath, 256, "%s", newpath);
         update_node_child(node->Child);
     }
 }
@@ -415,14 +415,14 @@ void rename_update_tree(const char *oldname,const char *newname)
 
     Hb_TreeNode *node = get_tree_node(oldname,DirRootNode);
     memset(node->FileName,0,sizeof(node->FileName));
-    strcpy(node->FileName,newname);
+    snprintf(node->FileName, 64, "%s", newname);
     if(node->isfolder)
     {
         if(node->Child)
         {
             memset(node->Child->FilePath,0,sizeof(node->Child->FilePath));
             snprintf(fullname,NORMALSIZE,"%s/%s",node->FilePath,newname);
-            strcpy(node->Child->FilePath,fullname);
+            snprintf(node->Child->FilePath, 256, "%s", fullname);
             update_node_child(node->Child);
         }
     }
@@ -554,10 +554,10 @@ Hb_TreeNode *read_file_to_tree(const char *logname)
                     switch (i)
                     {
                     case 0 :
-                        strcpy(tempnode->FilePath,p);
+                        snprintf(tempnode->FilePath, 256, "%s", p);
                         break;
                     case 1:
-                        strcpy(tempnode->FileName,p);
+                        snprintf(tempnode->FileName, 64, "%s", p);
                         break;
                     case 2:
                         tempnode->level = atoi(p);
@@ -576,21 +576,21 @@ Hb_TreeNode *read_file_to_tree(const char *logname)
                         {
                             tempnode->pattr = (Attr *)malloc(sizeof(Attr));
                             tempnode->pattr->lastaccesstime = (char *)malloc(sizeof(char)*16);
-                            strcpy(tempnode->pattr->lastaccesstime,p);
+                            snprintf(tempnode->pattr->lastaccesstime, sizeof(char)*16, "%s", p);
                         }
                         break;
                     case 7:
                         if(!tempnode->isfolder)
                         {
                             tempnode->pattr->creationtime = (char *)malloc(sizeof(char)*16);
-                            strcpy(tempnode->pattr->lastaccesstime,p);
+                            snprintf(tempnode->pattr->lastaccesstime, sizeof(char)*16, "%s", p);
                         }
                         break;
                     case 8:
                         if(!tempnode->isfolder)
                         {
                             tempnode->pattr->lastwritetime = (char *)malloc(sizeof(char)*16);
-                            strcpy(tempnode->pattr->lastwritetime,p);
+                            snprintf(tempnode->pattr->lastwritetime, sizeof(char)*16, "%s", p);
                         }
                         break;
                     default:

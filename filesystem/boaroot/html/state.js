@@ -615,7 +615,7 @@ tabtitle[10] = new Array("", "QoS", "<%tcWebApi_get("String_Entry","traffic_moni
 tabtitle[11] = new Array("");
 
 if(bwdpi_support != -1){
-	tabtitle[12] = new Array("", "Network Protection", "<%tcWebApi_get("String_Entry","Parental_Control","s")%>");
+	tabtitle[12] = new Array("", "<%tcWebApi_get("String_Entry","AiProtection_Home","s")%>", "<%tcWebApi_get("String_Entry","Parental_Control","s")%>");
 }
 
 var tablink = new Array();
@@ -1300,7 +1300,7 @@ cal_height();
 	if(dsl_diag_support >= 0 && wan_diag_state == "4"){               //case11
 		notification.array[11] = 'noti_send_debug_log';
 		notification.send_debug_log = 1;
-		notification.desc[11] = "-	Diagnostic DSL debug log capture completed.";
+		notification.desc[11] = "-	The debug log of diagnostic DSL captured.";
 		notification.action_desc[11] = "Send debug log now";
 		notification.clickCallBack[11] = "setTimeout('notification.redirectFeedbackInfo()', 1000);";
 	
@@ -2275,9 +2275,9 @@ function updateStatus_AJAX()
 		
 	var ie = window.ActiveXObject;
 	if(ie)
-		makeRequest_status_ie('/ajax_status.asp'+ '?hash=' + Math.random().toString());
+		makeRequest_status_ie('/cgi-bin/ajax_status.xml?hash=' + Math.random().toString());
 	else
-		makeRequest_status('/ajax_status.asp'+ '?hash=' + Math.random().toString());
+		makeRequest_status('/cgi-bin/ajax_status.xml?hash=' + Math.random().toString());
 
 	//setTimeout("updateStatus_AJAX();", 3000);
 }

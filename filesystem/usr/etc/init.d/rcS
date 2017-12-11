@@ -307,17 +307,6 @@ echo "TCSUPPORT_VOIP"
 userfs/bin/tcVoIPApiServer &
 fi
 
-#if [ "ASUS_NOTIFICATION_CENTER" != "" ]; then
-#echo "ASUS_NOTIFICATION_CENTER"
-#/usr/sbin/nt_monitor &
-#fi
-
-if [ "ASUS_PROTECTION_SERVER" != "" ]; then
-echo "ASUS_PROTECTION_SERVER"
-/usr/sbin/protect_srv &
-fi
-
-
 /userfs/bin/cfg_manager & 
 sleep 2
 
@@ -443,6 +432,8 @@ fi
 if [ -f "/proc/tc3162/sys_has_hwnat" ] ;then
 if [ "$TCSUPPORT_HWNAT" != "" ] ;then
 insmod /lib/modules/hwnat.ko
+hwnat qos policy sp 0
+hwnat qos policy sp 2
 fi
 fi	
 fi

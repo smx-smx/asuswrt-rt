@@ -48,7 +48,7 @@ typedef struct pseduohdr_type2 {
 	unsigned char zero;
 	unsigned char ip_pro;
 	unsigned short len;
-	unsigned char data[500];
+	unsigned char data[1000]; //--mit
 } pseudohdr_t2;
 
 typedef struct pseduohdr_v6_type2 {
@@ -57,7 +57,7 @@ typedef struct pseduohdr_v6_type2 {
 	unsigned int len;
 	unsigned char zero[3];
 	unsigned char next_hdr;
-	unsigned char data[500];
+	unsigned char data[1000]; //--mit
 } pseudohdr_v6_t2;
 
 void send_action_pkt(struct sk_buff *skb
@@ -73,4 +73,7 @@ void prepare_ford_dev(tdts_udb_param_t *fw_param
 		, struct sock *sk
 		, struct net_device *in_dev
 		, struct net_device *out_dev);
+
+int send_redir_page(void *skb_ptr, redir_param_t *redir_param, tdts_net_device_t *dev);
+	
 #endif

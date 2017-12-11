@@ -14,6 +14,9 @@
 /* if more than al_max entries, delete the top 50 data */
 #define DEL_TOP_ENTRY		50
 
+#define FAIL -1
+#define SUCCESS 0
+
 //#define DEBUG_ACCESS_LOG
 
 #ifdef DEBUG_ACCESS_LOG

@@ -158,7 +158,7 @@ helpcontent[11] = new Array("",
 "This feature allows browser to redirect to failed connection warning page when Internet is down, if disabled warning page would not appear.",	/* untranslated */
 "",
 "",
-"This feature allows you to restrict only specified IP address could access the wireless router via SSH / Telnet / Web Access from WAN (if SSH/ Telnet/ Web Access from WAN Enabled) from WAN or LAN side."	/* untranslated */);
+"This feature allows you to restrict only specified IP address could access the wireless router via \"SSH\" / \"Telnet\" / \"Web Access from WAN\" (if Enabled) from WAN or LAN side(SSH LAN only)"	/* untranslated */);
 
 helpcontent[12] = new Array("",
 "<%tcWebApi_get("String_Entry","General_x_SystemUpTime_id","s")%>",
@@ -293,4 +293,33 @@ helpcontent[26] = new Array("",
 			"In the event that Primary WAN connection disconnected, with Enable Guest Network Terminate Switch turned on would block Guest Network clients from access Internet via Secondary WAN.",
 			"Once Primary WAN connection restored, Guest Network clients Internet access could resume."	/* untranslated */
 		);
+
+//VPN Fusion
+helpcontent[32] = new Array("",
+							"The client device which doesn't exist in the exception list will connect to default connection. You can set the default as VPN tunnel once VPN profile created. If the VPN tunnel setting as default is disconnected or deactivate, the client device will connect to Internet.",/*untranslated*/
+							"Enable this option allows VPN clients to access the subnet of your LAN",/*untranslated*/
+							"Enable this option allows VPN clients use the Internet from your router instead of the one at their location.",/*untranslated*/
+							"Virtual network device type. TUN devices encapsulate IPv4 or IPv6 (OSI Layer 3) while TAP devices encapsulate Ethernet 802.3 (OSI Layer 2).",/*untranslated*/
+							"Choose the communicating protocol with remote host.",/*untranslated*/
+							"Set the port number to bind. The current default of 1194 represents the official IANA port number assignment for OpenVPN.",/*untranslated*/
+							"<b>TLS</b>: OpenVPN runs in server mode and SSL/TLS authentication will be used;<br> <b>Static Key</b>: OpenVPN runs in P2P mode.",/*untranslated*/
+							"The bits size of automatically generated certificate.",/*untranslated*/
+							"Use username/password only allows client connect to server without certification and authentication by username/password. Be aware that using this directive is less secure than requiring certificates.",/*untranslated*/
+							"Add an additional layer of HMAC authentication on top of the TLS control channel to protect against DoS attacks. An OpenVPN static key will be used.",/*untranslated*/	//10
+							"This directive will set up an OpenVPN server which will allocate addresses to clients out of the given network/netmask. The server itself will take the \".1\" address of the given network for use as the server-side end‐point of the local TUN/TAP interface.",/*untranslated*/
+							"The IP address of the local and remote VPN endpoint in p2p mode.",/*untranslated*/
+							"<b>Yes</b>: Use LAN DHCP server to allocate IP address;<br> <b>No</b>: Allocate IP address from the Address Pool",/*untranslated*/
+							"The first address and the last address in the pool to be assigned to clients.",/*untranslated*/							
+							"Response the DNS query from clients.",/*untranslated*/
+							"In server mode, provide DNS information to clients.",/*untranslated*/
+							"The cipher algorithm to encrypt packets in transmission. AES-128-CBC is recommendation.",/*untranslated*/
+							"Use fast LZO compression. It may add up to 1 byte per packet for incompressible data.",/*untranslated*/
+							"This option can be used on both the client and server, and whichever uses the lower value will be the one to trigger the renegotiation. Renegotiate data channel key after n seconds (default=3600), 0 to disable.",/*untranslated*/
+							"When this option is enabled, each client can view the other clients which are currently connected. Otherwise, each client will only see the server.",/*untranslated*/	//20
+							"Only the client in the \"Allowed Clients\" table could be authenticated.",/*untranslated*/
+							"The Username / Common Name(CN) of client certificate.<br> If setting authenticated by username / password only, this field should be the username in the \"Username and Password\" table.",/*untranslated*/
+							"The Network Address of a subnet to generate an internal route to a specific client. This specific client should own this subnet.",/*untranslated*/
+							"The Network Mask of a subnet to generate an internal route to a specific client. This specific client should own this subnet.",/*untranslated*/
+							" If you would like other clients to be able to this specific client's subnet, choose Yes and Enable \"Allow Client <-> Client\"."/*untranslated*/
+							);
 

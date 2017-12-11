@@ -33,6 +33,7 @@
 enum
 {
 	ACT_ANOMALY_GET_LOG = 0,	/* get_anomaly */
+	ACT_ANOMALY_GET_LOG_V2,	    /* get_anomaly_v2 */
 	ACT_ANOMALY_MAX
 };
 

@@ -26,7 +26,7 @@
 #define LOG_SIZE                sizeof(struct LOG_STRUCT)
 
 #define CONFIG_PATH "/tmp/smartsync/asuswebstorage/config/Cloud.conf"
-#define CA_INFO_FILE "/tmp/smartsync/asuswebstorage/cert/GeoTrustGlobalCA.crt"
+#define CA_INFO_FILE "/tmp/smartsync/asuswebstorage/cert/GeoTrustPrimaryCertificationAuthority-G3.crt"
 
 #ifdef IPKG
 #define NOTIFY_PATH "/tmp/notify/usb"
@@ -265,7 +265,7 @@ typedef struct INFOPACKAGE
     int upload;
     int download;
     int concurrentsession;
-    int maxfilesize;
+    long long int maxfilesize;
     int sharegroup;
     int hasencrption;
     char expire[MINSIZE];
@@ -287,8 +287,8 @@ typedef struct GETINFO
    int usedbackuppc;
    Backuppc backuppc;
    Infopackage package;
-   int usedcappacity;
-   int freecapacity;
+   long long int usedcappacity;
+   long long int freecapacity;
 }Getinfo;
 
 /*get MySyncFolder data struct*/

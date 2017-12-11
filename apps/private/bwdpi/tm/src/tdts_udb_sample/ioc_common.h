@@ -41,6 +41,7 @@ enum
 	ACT_COMMON_SET_WPR_CONF,	/* set_wpr_conf */
 	ACT_COMMON_SET_WPR_ON,		/* set_wpr_on */
 	ACT_COMMON_SET_WPR_OFF,		/* set_wpr_off */
+	ACT_COMMON_SET_REDIRECT_URL,	/* set_redirect_url */
 	ACT_COMMON_MAX
 };
 

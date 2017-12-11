@@ -26,8 +26,6 @@
 #ifndef _SHELL_CT_EXTRA_H_
 #define _SHELL_CT_EXTRA_H_
 
-//int ct_nf_init(void);
-//void ct_nf_exit(void);
 #if !TMCFG_E_UDB_SHELL_CT_MARK_RSV
 #define TMCFG_E_UDB_SHELL_CT_MARK_RSV_BITS 0
 #endif
@@ -36,6 +34,7 @@ int udb_shell_ct_extra_init(void);
 void udb_shell_ct_extra_exit(void);
 
 void udb_shell_ct_event_handler(void *conntrack, uint32_t mark, int ct_evt);
+void udb_shell_reg_func_reset_ct(int (*func)(skb_tuples_t *, ct_data_t *));
 
 #endif
 

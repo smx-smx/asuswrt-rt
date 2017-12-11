@@ -119,9 +119,8 @@ Local_Str LOCAL_FILE;
 #define Con(TMP_R,b) TMP_R#b
 
 /*#####server space######*/
-long long int server_shared;
-long long int server_quota;
-long long int server_normal;
+long long int server_used;
+long long int server_allocated;
 /*######Global var*/
 
 int local_sync;
@@ -141,7 +140,6 @@ typedef struct Upload_chunk
     char *upload_id;
     unsigned long chunk;
     unsigned long offset;
-    time_t expires;
 } Upload_chunked;
 
 Upload_chunked *upload_chunk;

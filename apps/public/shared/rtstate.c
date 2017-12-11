@@ -190,6 +190,18 @@ int get_wan_unit_ex(const char *ifname, int *unit, int *subunit)
 		}
 		ret = 0;
 	}
+	else if(!strncmp(ifname, "usb", 3))
+	{
+		*unit = 11;
+		*subunit = -1;
+		ret = 0;
+	}
+	else if(!strncmp(ifname, "eth", 3))
+	{
+		*unit = 11;
+		*subunit = -1;
+		ret = 0;
+	}
 
 	return ret;
 }

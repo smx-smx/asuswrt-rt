@@ -32,8 +32,10 @@
 #include <unistd.h>
 #include <arpa/inet.h> //for inet_ntop()
 #include <netdb.h>	// for struct addrinfo
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(TCSUPPORT_ADD_JFFS)
 #define JFFS_TR_FOLDER		"/jffs/tr"
+#else
+#define JFFS_TR_FOLDER		"/yaffs/tr"
 #endif
 #define TR_FOLDER			"/tmp/tr"
 #define DEFAULT_TR_XML		"/usr/tr/tr.xml"
@@ -484,31 +486,29 @@ start_tr(void)
 	if (!check_if_dir_exist(TR_FOLDER))
 		mkdir(TR_FOLDER, 0744);
 
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
-	/* Check tr folder on jffs whether exists or not */
+	/* Check tr folder on jffs(or yaffs) whether exists or not */
 	if (!check_if_dir_exist(JFFS_TR_FOLDER))
 		mkdir(JFFS_TR_FOLDER, 0744);
 
-	/* copy /jffs/tr/tr.xml to /tmp/tr and then delete it */
+	/* copy /jffs(or yaffs)/tr/tr.xml to /tmp/tr and then delete it */
 	if (check_if_file_exist(JFFS_TR_FOLDER"/"TR_XML_FILE)) {
 		eval("cp", JFFS_TR_FOLDER"/"TR_XML_FILE, TR_FOLDER);
 		unlink(JFFS_TR_FOLDER"/"TR_XML_FILE);
 	}
 
-	/* copy /jffs/tr/tr.xml.bak to /tmp/tr and then delete it */
+	/* copy /jffs(or yaffs)/tr/tr.xml.bak to /tmp/tr and then delete it */
 	if (check_if_file_exist(JFFS_TR_FOLDER"/"TR_XML_BAK_FILE)) {
 		eval("cp", JFFS_TR_FOLDER"/"TR_XML_BAK_FILE, TR_FOLDER);
 		unlink(JFFS_TR_FOLDER"/"TR_XML_BAK_FILE);
 	}
 
-	/* untar /jffs/tr/tr.xml.tz to /tmp/tr */
+	/* untar /jffs(or yaffs)/tr/tr.xml.tz to /tmp/tr */
 	if (check_if_file_exist(JFFS_TR_FOLDER"/"TR_XML_TAR_FILE))
 		eval("tar", "-zxf", JFFS_TR_FOLDER"/"TR_XML_TAR_FILE);
 
-	/* untar /jffs/tr/tr.xml.bak.tz to /tmp/tr */
+	/* untar /jffs(or yaffs)/tr/tr.xml.bak.tz to /tmp/tr */
 	if (check_if_file_exist(JFFS_TR_FOLDER"/"TR_XML_BAK_TAR_FILE))
 		eval("tar", "-zxf", JFFS_TR_FOLDER"/"TR_XML_BAK_TAR_FILE);
-#endif
 
 	/* Check IPDRDoc folder whether exists or not */
 	//if (!check_if_dir_exist(IPDRDOC_FOLDER));

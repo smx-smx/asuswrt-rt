@@ -174,7 +174,7 @@ function reset_diag_state(unit){
 <div id="fb_send_debug_log" style="display:none;">
 	<br>
 	<br>
-	<div class="feedback_info_0">Diagnostic DSL debug log capture completed.</div>
+	<div class="feedback_info_0">The debug log of diagnostic DSL captured.</div>
 	<br>
 	<div class="feedback_info_1" id="dl_diag_log_0" onClick="reset_diag_state(0);" style="display:none; text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Click here to download the debug log and add as mail attachment.<br></div>
 

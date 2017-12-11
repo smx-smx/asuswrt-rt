@@ -572,7 +572,7 @@ SIPAuthenticationName="" SIPPassword="" />
 	<Entry
 		modem_enable_qmi="0"
 		Dev3G="AUTO"
-		modem_enable="1"
+		modem_enable="0"
 		modem_android="0"
 		modem_apn="internet"
 		modem_country=""

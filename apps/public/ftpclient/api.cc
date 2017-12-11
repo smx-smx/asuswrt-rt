@@ -170,6 +170,13 @@ int download_(char *serverpath,int index)
         curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1);
         curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 30);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+        if(1 == ftp_config.multrule[index]->ssl)
+        {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+        }
         res = curl_easy_perform(curl);
         DEBUG("\nres:%d\n",res);
         if(res != CURLE_OK && res != CURLE_PARTIAL_FILE && res != CURLE_OPERATION_TIMEDOUT)
@@ -270,6 +277,13 @@ int upload(char *localpath1,int index)
         curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME,30);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
         curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);//设置一个长整形数，作为最大延续多少秒
+        if(1 == ftp_config.multrule[index]->ssl)
+        {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+        }
         res = curl_easy_perform(curl);
         DEBUG("\nres = %d\n",res);
         free(fullserverpath);
@@ -396,6 +410,13 @@ int my_delete_DELE(char *localpath,int index)
             curl_easy_setopt(curl,CURLOPT_LOW_SPEED_LIMIT,1);
             curl_easy_setopt(curl,CURLOPT_LOW_SPEED_TIME,30);
             curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+            if(1 == ftp_config.multrule[index]->ssl)
+            {
+                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+                curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+                curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+            }
             res = curl_easy_perform(curl);
             DEBUG("\nres = %d\n",res);
             if(res != CURLE_OK)
@@ -481,6 +502,13 @@ int my_delete_RMD(char *localpath,int index)
             curl_easy_setopt(curl,CURLOPT_LOW_SPEED_LIMIT,1);
             curl_easy_setopt(curl,CURLOPT_LOW_SPEED_TIME,30);
             curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+            if(1 == ftp_config.multrule[index]->ssl)
+            {
+                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+                curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+                curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+            }
             res = curl_easy_perform(curl);
             DEBUG("\nres = %d\n",res);
             if(res != CURLE_OK)
@@ -626,6 +654,13 @@ int my_rename_(char *localpath,char *newername,int index)
         curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1);
         curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 30);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+        if(1 == ftp_config.multrule[index]->ssl)
+        {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+        }
         res=curl_easy_perform(curl);
         if(res != CURLE_OK)
         {    //2014.10.30 by sherry  处理“rename会挂掉"的bug
@@ -712,6 +747,13 @@ int my_mkdir_(char *localpath,int index)
         curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1);
         curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 30);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+        if(1 == ftp_config.multrule[index]->ssl)
+        {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
+        }
         res = curl_easy_perform(curl);
         DEBUG("res:%d\n",res);
         if(res != CURLE_OK)
