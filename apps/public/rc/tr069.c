@@ -30,7 +30,8 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <arpa/inet.h> //for inet_ntop()
+#include <netdb.h>	// for struct addrinfo
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
 #define JFFS_TR_FOLDER		"/jffs/tr"
 #endif
@@ -48,7 +49,7 @@
 #define CLIENT_KEY_FILE		TR_FOLDER"/client.key"
 //#define IPDRDOC_FOLDER		TR_FOLDER"/IPDRDoc"
 #define TR069_NODE	"TR069_Entry"
-
+#define FIREWALL_NODE_ENTRY "Firewall_Entry"
 int generate_tr_config()
 {
 	FILE *fp;
@@ -108,7 +109,7 @@ int generate_tr_config()
 		fprintf(fp, "LogMode = NONE\n");
 	fprintf(fp, "LogLimit = 1MB\n");
 	fprintf(fp, "TaskQueueLenLimit = 64\n");
-	fprintf(fp, "Upload = 1:1 Vendor Configuration File:/tmp/Settings_%s.CFG\n", tcapi_get_string("SysInfo_Entry", "ProductName", tmp));
+	fprintf(fp, "Upload = 1:1 Vendor Configuration File:/tmp/Settings_%s.CFG\n", get_productid());
 	fprintf(fp, "Upload = 0:2 Vendor Log File:/var/log/currLogFile\n");
 	//fprintf(fp, "Upload = 0:X 00256D 3GPP Performance File:pm.xml\n");
 	fprintf(fp, "Download = 1 Firmware Upgrade Image:/var/tmp/tclinux.bin\n");
@@ -296,10 +297,167 @@ void save_cert_from_config()
 	}
 }
 
+
+char *skip_blanks( const char *str )
+{
+    while( *str && ( ( unsigned char ) *str ) < 33 ) {
+        str++;
+    }
+
+    return ( char * )str;
+}
+/*   
+******************************
+To convert url into ip  
+******************************
+URL type:
+     * Domain name:port/
+     * Domain name/
+     * [ipv6_addr(:)]:port/
+     * [ipv6_addr(:)]/
+     * ipv4_addr:port/
+     * ipv4_addr/
+*/
+int url2ip(const char *u , struct addrinfo **res)
+{
+    char url[1025];
+    char *proto = "http";
+    char *host = NULL;
+    char hostname[257]; /*The HTTP server host address*/
+    char port[10];  /*The HTTP server port*/
+    char *c;
+
+    u = skip_blanks( u );
+    snprintf( url, sizeof( url ), "%s", u );
+    c = strstr( url, "://" );
+
+    if( c ) {
+        *c = '\0';
+        host = c + 3;
+
+        if( strcasecmp( url, "https" ) == 0 ) {
+            proto = "https";
+        } else if( strcasecmp( url, "http" ) ) {
+                _dprintf("Unsupported protocol: %s", url );
+                return -1;
+            }
+    } else {
+        host = url;
+    }
+
+    c = strchr( host, '/' );
+
+    if( c ) {
+        *c = '\0';  
+    } 
+
+    if( *host == '[' ) { /* [ipv6_addr] */
+        char *c1 = NULL;
+        host++;
+        c = strchr( host, ']' );
+
+        if( c == NULL ) {
+            _dprintf("[] not match\n");
+            return -1;
+        }
+
+        *c = '\0';
+        snprintf( hostname, sizeof(hostname), "%s", host );
+        c++;
+
+        if( ( c1 = strchr( c, ':' ) ) != NULL ) {
+           snprintf( port, sizeof( port ), "%s", c1 + 1 );
+
+        } else if( strcasecmp( proto, "https" ) == 0 ) {
+            snprintf( port, sizeof( port ), "443" );   /* The default port for HTTPS */
+        } else {
+            snprintf(port, sizeof( port ), "80" );
+        }
+    } else {
+        /* Domain name and ipv4_addr */
+        c = strchr( host, ':' );
+
+        if( c ) {
+            snprintf( port, sizeof( port ), "%s", c + 1 );
+            *c = '\0';
+
+        } else if( strcasecmp( proto, "https" ) == 0 ) {
+            snprintf( port, sizeof( port ), "443" );   /* The default port for HTTPS */
+        } else {
+            snprintf( port, sizeof(port ), "80" );
+        }
+         snprintf( hostname, sizeof(hostname), "%s", host );
+    }
+
+    _dprintf("sherry_debug1 hostname=%s\n,port=%s\n", hostname, port );
+
+   /* A host name or address be converted to ip */
+    int ret;
+    struct addrinfo hints;
+    memset( &hints, 0, sizeof( hints ) );
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if( ( ret = getaddrinfo( hostname, port, &hints, res ) ) != 0 ) {
+        _dprintf("Get server(%s) address information failed: %s!\n", host, gai_strerror( ret ) );
+    	return -1;
+    }
+
+    return 0;
+}
+
+
 void
 stop_tr(void)
 {
+	char tmp[1024];
+	memset(tmp, 0, sizeof(tmp));
 	killall_tk("tr069");
+
+	char logaccept[32];
+	if(tcapi_get_int(TR069_NODE, "tr_stop") != 1){
+	
+		if (tcapi_get_int(TR069_NODE, "tr_conn_port")) {
+			if(!tcapi_match(TR069_NODE, "tr_acs_url", "")){
+				struct addrinfo *res, *ressave;
+	        	int ret;	        	
+	        	tcapi_get_string("TR069_Entry", "tr_acs_url", tmp);
+				ret=url2ip(tmp, &res);
+				ressave = res;
+				if( (ret != -1) && (res!=NULL) && (res->ai_addr !=NULL) ){
+	        		do {
+	        			if(res->ai_family == AF_INET){//ipv4
+	                        char ipv4str[INET_ADDRSTRLEN];
+	                        if (inet_ntop(AF_INET, &(((struct sockaddr_in *)(res->ai_addr))->sin_addr),ipv4str, INET_ADDRSTRLEN) == NULL)
+	                           	perror("inet_ntop"); 
+	                        /* Determine the log type */
+	                        char value[32] = {0};
+				if (tcapi_match(FIREWALL_NODE_ENTRY, "fw_log_x", "accept") || tcapi_match(FIREWALL_NODE_ENTRY, "fw_log_x", "both")) {
+									strcpy(logaccept, "logaccept" );
+								}
+								else{
+										strcpy(logaccept, "ACCEPT" );
+								}
+                            eval("iptables", "-t", "filter", "-D", "INPUT", "-s", ipv4str, "-p", "tcp", "-m", "tcp", "--dport", tcapi_get_string(TR069_NODE, "tr_conn_port",tmp) ,"-j", logaccept);
+
+
+	                    }else if(res->ai_family == AF_INET6){
+	                        char ipv6str[INET6_ADDRSTRLEN];
+	                        if(inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)(res->ai_addr))->sin6_addr),ipv6str, INET6_ADDRSTRLEN) == NULL)
+	                            perror("inet_ntop"); 
+	                        //TODO
+	                        //add ipv6 addr to ip6tables
+	                    }
+	           
+	        		} while( ( res = res->ai_next ) != NULL );
+	       			freeaddrinfo( ressave );
+	       		}
+	       	}
+	       	 eval("iptables", "-t", "filter", "-D", "INPUT", "-p", "udp", "--dport", tcapi_get_string(TR069_NODE, "tr_conn_port",tmp), "-j", logaccept);
+		}
+	}
+	tcapi_set("TR069_Entry", "tr_stop", "1"); /*add for ui disable tr firt and then enable tr, will do restart_tr ,iptables will be delete twice*/
+
 }
 
 int 
@@ -320,8 +478,8 @@ start_tr(void)
 	}*/
 
 	/* Shut down previous instance if any */
-	stop_tr();
-
+	//stop_tr();
+	killall_tk("tr069");
 	/* Check tr folder whether exists or not */
 	if (!check_if_dir_exist(TR_FOLDER))
 		mkdir(TR_FOLDER, 0744);
@@ -374,6 +532,51 @@ start_tr(void)
 	/* write cert and key to file */
 	//save_cert_from_nvram();
 	save_cert_from_config();
+
+	/* add 7547 port iptables*/
+	char tmp[1024];
+	memset(tmp, 0, sizeof(tmp));
+	char logaccept[32];
+	if (tcapi_get_int(TR069_NODE, "tr_conn_port")) {
+		if(!tcapi_match(TR069_NODE, "tr_acs_url", "")){
+			struct addrinfo *res, *ressave;
+	        int ret;
+	        
+	        tcapi_get_string("TR069_Entry", "tr_acs_url", tmp);
+			ret=url2ip(tmp, &res);
+			ressave = res;
+			if( (ret != -1) && (res!=NULL) && (res->ai_addr !=NULL) ){
+	        	do {
+	        		if(res->ai_family == AF_INET){//ipv4
+	                    char ipv4str[INET_ADDRSTRLEN];
+	                    if (inet_ntop(AF_INET, &(((struct sockaddr_in *)(res->ai_addr))->sin_addr),ipv4str, INET_ADDRSTRLEN) == NULL)
+	                        perror("inet_ntop"); 
+	                    /* Determine the log type */
+			    char value[32] = {0};                   
+			if (tcapi_match(FIREWALL_NODE_ENTRY, "fw_log_x", "accept") || tcapi_match(FIREWALL_NODE_ENTRY, "fw_log_x", "both")) {
+								strcpy(logaccept, "logaccept" );
+							}
+							else{
+									strcpy(logaccept, "ACCEPT" );
+							}
+                          eval("iptables", "-t", "filter", "-I", "INPUT", "-s", ipv4str, "-p", "tcp", "-m", "tcp", "--dport", tcapi_get_string(TR069_NODE, "tr_conn_port",tmp) ,"-j", logaccept);
+	                }else if(res->ai_family == AF_INET6){
+	                    char ipv6str[INET6_ADDRSTRLEN];
+	                    if(inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)(res->ai_addr))->sin6_addr),ipv6str, INET6_ADDRSTRLEN) == NULL)
+	                        perror("inet_ntop"); 
+	                    //TODO
+	                    //add ipv6 addr to ip6tables
+	                }
+	           
+	        	} while( ( res = res->ai_next ) != NULL );
+
+	       		freeaddrinfo( ressave );
+	       	}
+	    }
+         eval("iptables", "-t", "filter", "-I", "INPUT", "-p", "udp", "--dport", tcapi_get_string(TR069_NODE, "tr_conn_port",tmp), "-j", logaccept);
+	}
+	tcapi_set("TR069_Entry", "tr_stop", "0"); /*add for ui disable tr firt and then enable tr, will do restart_tr ,iptables will be delete twice*/
+
 
 	/* Execute tr agent */
 	//ret = _eval(tr_argv, NULL, 0, NULL);

@@ -59,32 +59,22 @@ int USB_download(char *serverpath, int index)
         int buflen;
 
         char *localpath = serverpath_to_localpath(serverpath, index);
-        //char *localpath_td = my_malloc(strlen(localpath) + strlen(".asus.td") + 1);
         char *localpath_td = my_malloc(strlen(localpath) + 9);
-        //2014.10.20 by sherry malloc申请内存是否成功
-        //if(localpath_td==NULL)
-          //  return NULL;
-        sprintf(localpath_td, "%s%s", localpath, ".asus.td");
+        snprintf(localpath_td, sizeof(char)*(strlen(localpath) + 9), "%s%s", localpath, ".asus.td");
 
         write_log(S_DOWNLOAD, "", serverpath, index);
 
         unsigned long long halfsize = 0;
         int dst_fd;
+
+        dst_fd = open(localpath_td, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+        if(dst_fd < 0){
+                printf("open() - %s failed\n", localpath_td);
+                return -1;
+        }
+
         if(access(localpath_td, F_OK) != 0)
         {
-                dst_fd = open(localpath_td, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-                if(dst_fd < 0){
-                        printf("open() - %s failed\n", localpath_td);
-                        return -1;
-                }
-        }
-        else
-        {
-                dst_fd = open(localpath_td, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-                if(dst_fd < 0){
-                        printf("open() - %s failed\n", localpath_td);
-                        return -1;
-                }
                 halfsize = lseek(dst_fd, 0L, SEEK_END);
                 lseek(dst_fd, halfsize, SEEK_SET);
         }
@@ -119,6 +109,7 @@ int USB_download(char *serverpath, int index)
                         close(dst_fd);
                         return -1;
                 }
+
         }
         else
         {
@@ -147,6 +138,11 @@ int USB_upload(char *localpath, int index)
 
     char *serverpath = localpath_to_serverpath(localpath, index);
     FILE *smb_fd = fopen(serverpath, "w+");
+    if(smb_fd == NULL) //2016.9.5 tina add to check if open file success or fail
+    {
+        free(serverpath);
+        return -1;
+    }
     int cli_fd;
     if((cli_fd = open(localpath, O_RDONLY, FILE_MODE)) > 0)
     {//以只读的方式打开，文件
@@ -155,16 +151,9 @@ int USB_upload(char *localpath, int index)
             unsigned long long smb_filesize = 0;
             cli_filesize = lseek(cli_fd, 0L, SEEK_END);
             lseek(cli_fd, 0L, SEEK_SET);//read or write 文件的偏移量
-            //2014.11.19 by sherry 判断上传是否成功
-
-            //buflen = read(cli_fd, buffer, sizeof(buffer));
-            //DEBUG("buflen=%d\n",buflen);
-            //while(buflen > 0 && exit_loop == 0)
             while((buflen = read(cli_fd, buffer, sizeof(buffer))) > 0 && exit_loop == 0)
             {
                     smb_filesize += buflen;
-                    //2014.11.19 by sherry 判断上传是否成功
-                    //smbc_write(smb_fd, buffer, buflen);//smb_fd为server端的文件
                     int res=0;
                     res=fwrite(buffer, buflen, 1, smb_fd);
                     if(res==-1)

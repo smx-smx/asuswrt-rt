@@ -130,6 +130,39 @@ function overHint(itemNum){
 	var lineDesc = "";
 	var title2 = 0;
 	var title5 = 0;
+
+	//for AiProtection-Router Security Assessment
+	if(itemNum == 25)
+		statusmenu += "<span>Disable Wi-Fi Protected Setup to avoid attacker to obtain the keys via an intelligent brute force </span>";
+	else if(itemNum == 23)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note23","s")%></span>";
+	else if(itemNum == 22)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note22","s")%></span>";
+	else if(itemNum == 21)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note21","s")%></span>";
+	else if(itemNum == 20)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note20","s")%></span>";
+	else if(itemNum == 19)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note19","s")%></span>";
+	else if(itemNum == 18)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note18","s")%></span>";
+	else if(itemNum == 17)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note17","s")%></span>";
+	else if(itemNum == 16)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note16","s")%></span>";
+	else if(itemNum == 15)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note15","s")%></span>";
+	else if(itemNum == 14)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note14","s")%></span>";
+	else if(itemNum == 13)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note13","s")%></span>";
+	else if(itemNum == 12)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note12","s")%></span>";
+	else if(itemNum == 11)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note11","s")%></span>";	
+	else if(itemNum == 10)		
+		statusmenu += "<span><%tcWebApi_get("String_Entry","AiProtection_scan_note10","s")%></span>";
+	
 	if(itemNum == 9){		//Viz add 2013.03 for adsl sync status
 		statusmenu = "<div class='StatusHint'>DSL :</div>";
 		if(wan_line_state == "up")

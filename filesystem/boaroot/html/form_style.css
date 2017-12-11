@@ -1922,6 +1922,18 @@ font-size:12px;
 	background-image:url(/images/Tree/bg_01.png);
 	background-repeat:no-repeat;
 }
+
+.eula_panel_container{
+	display: none;
+	position: absolute;
+	margin-top: -100px;
+	width: 500px;
+	height: 558px;
+	z-index: 2000;
+	border: 3px solid #4D5C63;
+	border-radius: 4px;
+}
+
 /*Folder Tree*/
 .folder_tree{
 	font-size:10pt;

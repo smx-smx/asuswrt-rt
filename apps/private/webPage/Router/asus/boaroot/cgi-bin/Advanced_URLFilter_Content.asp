@@ -23,10 +23,11 @@ end if
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" language="JavaScript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
@@ -52,32 +53,35 @@ function show_url_rulelist(){
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="url_rulelist_table">';
 	if(url_rulelist_row.length == 1)
 		code +='<tr><td style="color:#FFCC00;"><%tcWebApi_get("String_Entry","IPC_VSList_Norule","s")%></td>';
-	else{
-		for(var i =1; i < url_rulelist_row.length; i++){
+	else{		
+		for(var i=1; i < url_rulelist_row.length; i++){
+			//Read new url_rulelist format, get keyword of URL only
+			var url_rulelist_col = url_rulelist_row[i].split('>');
 			code +='<tr id="row'+i+'">';
-			code +='<td width="80%">'+ url_rulelist_row[i] +'</td>'; //Url keyword
+			code +='<td width="80%">'+ url_rulelist_col[2] +'</td>';	//2: Url keyword  0: enable/disabled  1: ALL/MAC/IP/IP range
 			code +='<td width="20%">';
 			code +="<input class=\"remove_btn\" type=\"button\" onclick=\"deleteRow(this);\" value=\"\"/></td>";
 		}
 	}
 	code +='</tr></table>';
-	$("url_rulelist_Block").innerHTML = code;
+	document.getElementById("url_rulelist_Block").innerHTML = code;
 }
 function deleteRow(r){
 	var i=r.parentNode.parentNode.rowIndex;
-	$('url_rulelist_table').deleteRow(i);
+	document.getElementById("url_rulelist_table").deleteRow(i);
 	var url_rulelist_value = "";
-	for(i=0; i<$('url_rulelist_table').rows.length; i++){
-		url_rulelist_value += "<";
-		url_rulelist_value += $('url_rulelist_table').rows[i].cells[0].innerHTML;
+	for(i=0; i<document.getElementById("url_rulelist_table").rows.length; i++){
+		//Add default field value for "enable" "ALL LAN"  ==>   1>ALL>URL_1<1>ALL>URL_2<1>ALL>URL_3             
+		url_rulelist_value += "<1>ALL>";
+		url_rulelist_value += document.getElementById("url_rulelist_table").rows[i].cells[0].innerHTML;
 	}
-	url_rulelist_array =url_rulelist_value;
+	url_rulelist_array = url_rulelist_value;
 	if(url_rulelist_array == "")
 		show_url_rulelist();
 }
 function addRow(obj, upper){
-	var rule_num = $('url_rulelist_table').rows.length;
-	var item_num = $('url_rulelist_table').rows[0].cells.length;
+	var rule_num = document.getElementById("url_rulelist_table").rows.length;
+	var item_num = document.getElementById("url_rulelist_table").rows[0].cells.length;
 	if(rule_num >= upper){
 		alert("<%tcWebApi_get("String_Entry","JS_itemlimit1","s")%> " + upper + " <%tcWebApi_get("String_Entry","JS_itemlimit2","s")%>");
 		return false;
@@ -89,13 +93,15 @@ function addRow(obj, upper){
 	}else{
 		for(i=0; i<rule_num; i++){
 			for(j=0; j<item_num-1; j++){ //only 1 value column
-				if(obj.value == $('url_rulelist_table').rows[i].cells[j].innerHTML){
+				if(obj.value == document.getElementById("url_rulelist_table").rows[i].cells[j].innerHTML){
 					alert("<%tcWebApi_get("String_Entry","JS_duplicate","s")%>");
 					return false;
 				}
 			}
 		}
-		url_rulelist_array += "<";
+
+		//Add default field value for "enable" "ALL LAN"  ==>   1>ALL>URL_1<1>ALL>URL_2<1>ALL>URL_3
+		url_rulelist_array += "<1>ALL>";
 		url_rulelist_array += obj.value;
 		obj.value = "";
 		show_url_rulelist();
@@ -106,13 +112,16 @@ return changeDate();
 }
 function applyRule(){
 	if(validForm()){
-		var rule_num = $('url_rulelist_table').rows.length;
-		var item_num = $('url_rulelist_table').rows[0].cells.length;
+		var rule_num = document.getElementById("url_rulelist_table").rows.length;
+		var item_num = document.getElementById("url_rulelist_table").rows[0].cells.length;
 		var tmp_value = "";
 		for(i=0; i<rule_num; i++){
-			tmp_value += "<"
+			tmp_value += "<"			
 			for(j=0; j<item_num-1; j++){
-				tmp_value += $('url_rulelist_table').rows[i].cells[j].innerHTML;
+				//Add default field value for "enable" "ALL LAN"  ==>   1>ALL>URL_1<1>ALL>URL_2<1>ALL>URL_3
+				tmp_value += "1>ALL>";
+
+				tmp_value += document.getElementById("url_rulelist_table").rows[i].cells[j].innerHTML;
 				if(j != item_num-2)
 					tmp_value += ">";
 			}
@@ -134,17 +143,17 @@ return true;
 }
 function enable_url(){
 	if(document.form.url_enable_x[1].checked == 1)
-		$("url_time").style.display = "none";
+		document.getElementById("url_time").style.display = "none";
 	else
-		$("url_time").style.display = "";
+		document.getElementById("url_time").style.display = "";
 	return change_common_radio(document.form.url_enable_x, 'FirewallConfig', 'url_enable_x', '1')
 }
 function enable_url_1(){
-if(document.form.url_enable_x_1[1].checked == 1)
-$("url_time_1").style.display = "none";
-else
-$("url_time_1").style.display = "";
-return change_common_radio(document.form.url_enable_x_1, 'FirewallConfig', 'url_enable_x_1', '1')
+	if(document.form.url_enable_x_1[1].checked == 1)
+		document.getElementById("url_time_1").style.display = "none";
+	else
+		document.getElementById("url_time_1").style.display = "";
+	return change_common_radio(document.form.url_enable_x_1, 'FirewallConfig', 'url_enable_x_1', '1')
 }
 function done_validating(action){
 refreshpage();
@@ -230,10 +239,10 @@ refreshpage();
 <tr id="url_time" style="display:none;">
           <th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(9,2);"><%tcWebApi_get("String_Entry","FC_URLActiveTime_in","s")%> 1:</a></th>
 <td>
-<input type="text" maxlength="2" class="input_3_table" name="url_time_x_starthour" onKeyPress="return is_number(this,event);" onblur="validate_timerange(this, 0);">:
-<input type="text" maxlength="2" class="input_3_table" name="url_time_x_startmin" onKeyPress="return is_number(this,event);" onblur="validate_timerange(this, 1);">-
-<input type="text" maxlength="2" class="input_3_table" name="url_time_x_endhour" onKeyPress="return is_number(this,event);" onblur="validate_timerange(this, 2);">:
-<input type="text" maxlength="2" class="input_3_table" name="url_time_x_endmin" onKeyPress="return is_number(this,event);" onblur="validate_timerange(this, 3);">
+<input type="text" maxlength="2" class="input_3_table" name="url_time_x_starthour" onKeyPress="return validator.isNumber(this,event);" onblur="validate_timerange(this, 0);">:
+<input type="text" maxlength="2" class="input_3_table" name="url_time_x_startmin" onKeyPress="return validator.isNumber(this,event);" onblur="validate_timerange(this, 1);">-
+<input type="text" maxlength="2" class="input_3_table" name="url_time_x_endhour" onKeyPress="return validator.isNumber(this,event);" onblur="validate_timerange(this, 2);">:
+<input type="text" maxlength="2" class="input_3_table" name="url_time_x_endmin" onKeyPress="return validator.isNumber(this,event);" onblur="validate_timerange(this, 3);">
 </td>
 </tr>
 <tr>
@@ -246,31 +255,31 @@ refreshpage();
 <tr id="url_time_1" style="display:none;">
           <th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(9,2);"><%tcWebApi_get("String_Entry","FC_URLActiveTime_in","s")%> 2:</a></th>
 <td>
-<input type="text" maxlength="2" class="input_3_table" name="url_time_x_starthour_1" onKeyPress="return is_number(this,event);" onblur="validate_timerange(this, 0);">:
-<input type="text" maxlength="2" class="input_3_table" name="url_time_x_startmin_1" onKeyPress="return is_number(this,event);" onblur="validate_timerange(this, 1);">-
-<input type="text" maxlength="2" class="input_3_table" name="url_time_x_endhour_1" onKeyPress="return is_number(this,event);" onblur="validate_timerange(this, 2);">:
-<input type="text" maxlength="2" class="input_3_table" name="url_time_x_endmin_1" onKeyPress="return is_number(this,event);" onblur="validate_timerange(this, 3);">
+<input type="text" maxlength="2" class="input_3_table" name="url_time_x_starthour_1" onKeyPress="return validator.isNumber(this,event);" onblur="validate_timerange(this, 0);">:
+<input type="text" maxlength="2" class="input_3_table" name="url_time_x_startmin_1" onKeyPress="return validator.isNumber(this,event);" onblur="validate_timerange(this, 1);">-
+<input type="text" maxlength="2" class="input_3_table" name="url_time_x_endhour_1" onKeyPress="return validator.isNumber(this,event);" onblur="validate_timerange(this, 2);">:
+<input type="text" maxlength="2" class="input_3_table" name="url_time_x_endmin_1" onKeyPress="return validator.isNumber(this,event);" onblur="validate_timerange(this, 3);">
 </td>
 </tr>
 <tr>
           <th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(9,1);"><%tcWebApi_get("String_Entry","FC_URLActiveDate_in","s")%></a></th>
 <td>
-<input type="checkbox" name="url_date_x_Sun" class="input" onChange="return changeDate();">Sun
-<input type="checkbox" name="url_date_x_Mon" class="input" onChange="return changeDate();">Mon
-<input type="checkbox" name="url_date_x_Tue" class="input" onChange="return changeDate();">Tue
-<input type="checkbox" name="url_date_x_Wed" class="input" onChange="return changeDate();">Wed
-<input type="checkbox" name="url_date_x_Thu" class="input" onChange="return changeDate();">Thu
-<input type="checkbox" name="url_date_x_Fri" class="input" onChange="return changeDate();">Fri
-<input type="checkbox" name="url_date_x_Sat" class="input" onChange="return changeDate();">Sat
+<input type="checkbox" name="url_date_x_Sun" class="input" onChange="return changeDate();"><%tcWebApi_get("String_Entry","date_Sun_id","s")%>
+<input type="checkbox" name="url_date_x_Mon" class="input" onChange="return changeDate();"><%tcWebApi_get("String_Entry","date_Mon_id","s")%>
+<input type="checkbox" name="url_date_x_Tue" class="input" onChange="return changeDate();"><%tcWebApi_get("String_Entry","date_Tue_id","s")%>
+<input type="checkbox" name="url_date_x_Wed" class="input" onChange="return changeDate();"><%tcWebApi_get("String_Entry","date_Wed_id","s")%>
+<input type="checkbox" name="url_date_x_Thu" class="input" onChange="return changeDate();"><%tcWebApi_get("String_Entry","date_Thu_id","s")%>
+<input type="checkbox" name="url_date_x_Fri" class="input" onChange="return changeDate();"><%tcWebApi_get("String_Entry","date_Fri_id","s")%>
+<input type="checkbox" name="url_date_x_Sat" class="input" onChange="return changeDate();"><%tcWebApi_get("String_Entry","date_Sat_id","s")%>
 </td>
 </tr>
 <!--tr>
           <th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(9,2);"><%tcWebApi_get("String_Entry","FC_URLActiveTime_in","s")%></a></th>
 <td>
-<input type="text" maxlength="2" class="input" size="2" name="url_time_x_starthour" onKeyPress="return is_number(this)">:
-<input type="text" maxlength="2" class="input" size="2" name="url_time_x_startmin" onKeyPress="return is_number(this)">-
-<input type="text" maxlength="2" class="input" size="2" name="url_time_x_endhour" onKeyPress="return is_number(this)">:
-<input type="text" maxlength="2" class="input" size="2" name="url_time_x_endmin" onKeyPress="return is_number(this)">
+<input type="text" maxlength="2" class="input" size="2" name="url_time_x_starthour" onKeyPress="return validator.isNumber(this)">:
+<input type="text" maxlength="2" class="input" size="2" name="url_time_x_startmin" onKeyPress="return validator.isNumber(this)">-
+<input type="text" maxlength="2" class="input" size="2" name="url_time_x_endhour" onKeyPress="return validator.isNumber(this)">:
+<input type="text" maxlength="2" class="input" size="2" name="url_time_x_endmin" onKeyPress="return validator.isNumber(this)">
 </td>
 </tr-->
 </table>
@@ -286,7 +295,7 @@ refreshpage();
 </tr>
 <tr>
 <td width="80%">
-<input type="text" maxlength="20" class="input_32_table" name="url_keyword_x_0" onKeyPress="return is_string(this, event)">
+<input type="text" maxlength="20" class="input_32_table" name="url_keyword_x_0" onKeyPress="return validator.isString(this, event)">
 </td>
 <td width="20%">
 <input class="add_btn" type="button" onClick="if(validForm()){addRow(document.form.url_keyword_x_0, 27);}" value="">

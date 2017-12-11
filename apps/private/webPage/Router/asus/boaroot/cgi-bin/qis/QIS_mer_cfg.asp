@@ -370,7 +370,7 @@ function setIptvNumPvc() {
 </table>	
 </div>
 
-<div style="margin-left:-80px;margin-top:-90px;">
+<div style="margin-left:-90px;">
 <table id="ISP_table" class="FormTable" width="475px" border="0" align="center" cellpadding="3" cellspacing="0">
 	<tbody>		
 		<tr id="Country_tr">
@@ -401,7 +401,7 @@ function setIptvNumPvc() {
 </table>
 </div>
 </div>
-<div class="apply_gen" style="margin-top:30px">
+<div class="apply_gen" style="margin-top:20px">
 	<input type="button" id="prevButton" value="<% tcWebApi_Get("String_Entry", "Manual_Setting_btn", "s") %>" onclick="gotoprev(document.form);" class="button_gen_long">
 	<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" onclick="submitForm();" class="button_gen">
 </div>

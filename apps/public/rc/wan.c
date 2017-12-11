@@ -33,6 +33,7 @@
 #include "libtcapi.h"
 #include "tcapi.h"
 #include "rc.h"
+#include "network_utility.h"
 
 #ifdef RTCONFIG_USB_MODEM
 #include "usb_info.h"
@@ -1036,15 +1037,140 @@ int do_dns_detect()
 		_dprintf("[%s(%d)] Try %s\n", __FUNCTION__, __LINE__, word);
 		if(gethostbyname(word) != NULL){
 			_dprintf("[%s(%d)]  %s -> OK.\n", __FUNCTION__, __LINE__, word);
-			nvram_set_int("link_internet", 2);
 			return 1;
 		}
 	}
 
 	_dprintf("[%s(%d)]  DNS Detect  -> Fail.\n", __FUNCTION__, __LINE__);
-	nvram_set_int("link_internet", 1);
 	
 	return 0;
+}
+
+#if defined(RTCONFIG_APP_PREINSTALLED) || defined(RTCONFIG_APP_NETINSTALLED)
+void update_apps_list(void)
+{
+	if(check_if_dir_exist("/opt/lib/ipkg")) {
+		_dprintf("[%s(%d)] update the APP's lists...\n", __FUNCTION__, __LINE__);
+		char *apps_argv[] = {"/usr/script/app_update.sh", NULL};
+		//system("app_update.sh");
+		_eval(apps_argv, NULL, 0, NULL);
+	}
+}
+#endif
+
+#if defined(RTCONFIG_BWDPI)
+int restart_dpi_service()
+{
+	char *argv[7];
+
+	//system("bwdpi service restart");
+	argv[0] = "bwdpi";
+	argv[1] = "service";
+	argv[2] = "restart";
+	argv[3] = NULL;
+	_eval(argv, NULL, 0, NULL);
+	
+	return 0;
+}
+#endif
+
+static int _add_static_route(char *route, const char *wan_ifname)
+{
+	char *pch, *ptr;
+	int i = 0, cidr, flag = 0;
+	char dst[20], gw[20], mask[20];
+
+	if(!route || !wan_ifname)
+		return -1;
+
+	//parse route
+	pch = strtok(route, " ");
+	while(pch)
+	{
+		if(!(i%2))	//destination and mask
+		{
+			//init all
+			memset(dst, 0, sizeof(dst));
+			memset(gw, 0, sizeof(gw));
+			memset(mask, 0, sizeof(mask));
+
+			ptr = strchr(pch, '/');
+			if(ptr)
+			{
+				*ptr = '\0';
+				++ptr;
+				cidr = atoi(ptr);
+				snprintf(dst, sizeof(dst), "%s", pch);
+				if(convert_cidr_to_subnet_mask(cidr, mask, sizeof(mask)))
+					flag = 1;
+			}
+		}
+		else		//gateway
+		{
+			if(flag)
+			{
+				snprintf(gw, sizeof(gw), "%s", pch);
+				//add to routing table
+				route_add(wan_ifname, 0, dst, gw, mask);
+				flag = 0;
+			}
+		}
+		++i;
+		pch = strtok(NULL, " ");
+	}
+	return 0;
+}
+
+static int is_mr_wan(char *wan_ifname, int unit, int subunit)
+{
+	int ret = 0;
+
+	if( tcapi_match("IPTV_Entry", "ad_mr_enable_x", "1")
+		&& unit == tcapi_get_int("IPTV_Entry", "ad_wan_port")
+	) {
+		ret = 1;
+	}
+	else if(unit == WAN_UNIT_PTM0
+		&& tcapi_match("IPTV_Entry", "vd_mr_enable_x", "1")
+#if defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+		&& subunit == tcapi_get_int("IPTV_Entry", "vd_wan_port")
+#endif
+	) {
+		ret = 1;
+	}
+	else if(unit == WAN_UNIT_ETH
+		&& tcapi_match("IPTV_Entry", "eth_mr_enable_x", "1")
+#if defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+		&& subunit == tcapi_get_int("IPTV_Entry", "eth_wan_port")
+#endif
+	) {
+		ret = 1;
+	}
+
+	if(unit == 1 && tcapi_match("IPTV_Entry", "auto_detect_bng", "1"))	//ADSL non-default gateway WAN
+	{
+		if(tcapi_match("IPTV_Entry", "ad_mr_enable_x", "1")	&&	//adsl enable iptv
+			!strcmp(wan_ifname, "nas1"))	//pvc1 interface is nas1
+		{
+			tcapi_set("IPTV_Entry", "auto_detect_bng", "0");
+			tcapi_set("IPTV_Entry", "ad_wan_port", "1");
+			ret = 1;
+		}
+	}
+#if defined(TCSUPPORT_WAN_PTM) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+	else if(tcapi_match("IPTV_Entry", "auto_detect_bng", "1"))
+	{
+		if(tcapi_match("IPTV_Entry", "vd_mr_enable_x", "1")	&&	//vdsl enable iptv
+			!strcmp(wan_ifname, "nas8_1"))	//pvc8_1 interface is nas8_1
+		{
+			tcapi_set("IPTV_Entry", "auto_detect_bng", "0");
+			tcapi_set("IPTV_Entry", "vd_wan_port", "1");
+			ret = 1;
+		}
+	}
+#endif
+
+	return ret;
 }
 
 void
@@ -1056,28 +1182,42 @@ wan_up(char *wan_ifname)	// oleg patch, replace
 	char wan_proto[8] = {0};
 	char gateway[16] = {0};
 	char dns[64] = {0};
+	char staticroute[MAXLEN_TCAPI_MSG] = {0};
 	int wan_unit;
+	int wan_subunit;
 
 	_dprintf("%s(%s)\n", __FUNCTION__, wan_ifname);
 
-	if ((wan_unit = wan_ifunit(wan_ifname)) < 0)
+	if(get_wan_unit_ex(wan_ifname, &wan_unit, &wan_subunit) < 0)
 	{
 		_dprintf("get wan_unit fail.\n");
 		return;
 	}
 
-	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
+	_dprintf("unit: %d, %d\n", wan_unit, wan_subunit);
+
+	if(wan_subunit > 0)
+	{
+		snprintf(prefix, sizeof(prefix), "wan%d%d_", wan_unit, wan_subunit);
+	}
+	else
+	{
+		snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
+	}
 #ifdef TCSUPPORT_MULTISERVICE_ON_WAN
 	if(wan_unit == WAN_UNIT_PTM0 || wan_unit == WAN_UNIT_ETH)
 	{
-		snprintf(wanpvc_prefix, sizeof(wanpvc_prefix), "WanExt_PVC%de0", wan_unit);
+		if(wan_subunit > 0)
+			snprintf(wanpvc_prefix, sizeof(wanpvc_prefix), "WanExt_PVC%de%d", wan_unit, wan_subunit);
+		else
+			snprintf(wanpvc_prefix, sizeof(wanpvc_prefix), "WanExt_PVC%de0", wan_unit);
 	}
 	else
 #endif
 	{
 		snprintf(wanpvc_prefix, sizeof(wanpvc_prefix), "Wan_PVC%d", wan_unit);
 	}
-	_dprintf("%s\n", wanpvc_prefix);
+	//_dprintf("%s\n", wanpvc_prefix);
 
 	memset(tmp, 0, sizeof(tmp));
 	strncpy(wan_proto, nvram_safe_get(strcat_r(prefix, "proto", tmp)), sizeof(wan_proto)-1);
@@ -1092,6 +1232,17 @@ wan_up(char *wan_ifname)	// oleg patch, replace
 		/* the gateway is in the local network */
 		if (strlen(gateway))
 			route_add(wan_ifname, 0, gateway, NULL, "255.255.255.255");
+	}
+
+	//update dhcp option 121
+	if (strcmp(wan_proto, "dhcp") == 0) {
+		snprintf(tmp, sizeof(tmp), "%sstaticroutes", prefix);
+		if(!tcapi_get("Wanduck_Common", tmp, staticroute))
+			_add_static_route(staticroute, wan_ifname);
+		memset(staticroute, 0, sizeof(staticroute));
+		snprintf(tmp, sizeof(tmp), "%smsstaticroutes", prefix);
+		if(!tcapi_get("Wanduck_Common", tmp, staticroute))
+			_add_static_route(staticroute, wan_ifname);
 	}
 
 	//update dns info
@@ -1109,7 +1260,7 @@ wan_up(char *wan_ifname)	// oleg patch, replace
 		}
 	}
 
-	update_wan_state(prefix, WAN_STATE_CONNECTED, 0);
+	update_wan_state(prefix, WAN_STATE_CONNECTED, WAN_STOPPED_REASON_NONE);
 
 	//restart dns
 	start_dnsmasq();
@@ -1117,27 +1268,31 @@ wan_up(char *wan_ifname)	// oleg patch, replace
 	//restart firewall
 	tcapi_commit("Firewall");
 
+	//restart igmp
+	if(is_mr_wan(wan_ifname, wan_unit, wan_subunit))
+		tcapi_commit("IPTV");
+
 	//re-write routing table
 	tcapi_commit("Route");
 
 	/* default route via default gateway */
 	add_multi_routes();
 
-	//restart igmp?
+	if(!tcapi_match(wanpvc_prefix, "DEFAULTROUTE", "Yes")) {
+		_dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
+		return;
+	}
 
 	//restart QoS
 	tcapi_commit("QoS");
 
 	//restart upnp?
 
-	//restart ddns for ppp interface
-	tcapi_commit("Ddns");
-
 	//Sync time?
 	tcapi_commit("Timezone");
 
 #ifdef RTCONFIG_OPENVPN
-	start_vpn_eas();
+	start_ovpn_eas();
 #endif
 #ifdef RTCONFIG_VPNC
 	// check and start vpnc
@@ -1162,7 +1317,15 @@ wan_up(char *wan_ifname)	// oleg patch, replace
 	//start/stop hw_nat according to setting
 	tcapi_commit("Misc");
 
-	do_dns_detect();
+	if(do_dns_detect()) {
+		nvram_set_int("link_internet", 2);
+#if defined(RTCONFIG_APP_PREINSTALLED) || defined(RTCONFIG_APP_NETINSTALLED)
+		update_apps_list();
+#endif
+	}
+	else {
+		nvram_set_int("link_internet", 1);
+	}
 
 #if defined(TCSUPPORT_6RD)
 	tcapi_commit("ipv6rd");
@@ -1176,27 +1339,31 @@ wan_up(char *wan_ifname)	// oleg patch, replace
 	}
 #endif
 
+#if defined(RTCONFIG_BWDPI)
+	restart_dpi_service();
+#endif
+
+	//restart ddns
+	tcapi_commit("Ddns");
+
 	_dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
 }
 
 void
 wan_down(char *wan_ifname)
 {
-	int wan_unit;
-	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
-	char *wan_proto;
+	int wan_unit, wan_subunit;
+	char prefix[] = "wanXXXXXXXXXX_";
 
 	_dprintf("%s(%s)\n", __FUNCTION__, wan_ifname);
 
-	/* Skip physical interface of VPN connections */
-	if ((wan_unit = wan_ifunit(wan_ifname)) < 0)
+	if(get_wan_unit_ex(wan_ifname, &wan_unit, &wan_subunit) < 0)
 		return;
 
-	/* Figure out nvram variable name prefix for this i/f */
-	if(wan_prefix(wan_ifname, prefix) < 0)
-		return;
-
-	wan_proto = nvram_safe_get(strcat_r(prefix, "proto", tmp));
+	if(wan_subunit > 0)
+		snprintf(prefix, sizeof(prefix), "wan%d%d_", wan_unit, wan_subunit);
+	else
+		snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 
 	update_wan_state(prefix, WAN_STATE_DISCONNECTED, WAN_STOPPED_REASON_NONE);
 

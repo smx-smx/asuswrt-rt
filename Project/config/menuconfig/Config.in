@@ -166,6 +166,10 @@ config TCSUPPORT_BB_NAND_4K
 
 endchoice
 
+config TCSUPPORT_FLASH_SUPPORT_CHECK
+	bool "Check Flash support"
+	help
+			Check whether current flash is supported on upgraded FW or not
 
 config TCSUPPORT_DDR_CALI
 	depends (TCSUPPORT_CPU_MT7510 || TCSUPPORT_CPU_MT7520)
@@ -587,6 +591,12 @@ config TCSUPPORT_DUAL_WLAN_MT7612E
 	bool "TCSUPPORT_DUAL_WLAN_MT7612E Support"
 	help
 	      MT7612E WiFi Driver support
+
+config TCSUPPORT_DUAL_WLAN_MT7610E
+	depends TCSUPPORT_WLAN
+	bool "TCSUPPORT_DUAL_WLAN_MT7610E Support"
+	help
+	      MT7610E WiFi Driver support
 
 endchoice
 
@@ -1085,11 +1095,6 @@ config ASUS_SPECTRUM
 	help
 		Shows SNR and bits per carrier information on GUI
 
-config ASUS_HWINFO
-	bool "HWINFO FEATURE"
-	help
-		Shows some hardware information
-
 config ASUS_SYSSTATE
 	bool "SYSSTATE FEATURE"
 	help
@@ -1220,6 +1225,11 @@ config TCSUPPORT_WEBMON
 	help
 		Support Web History display on QoS - Web History GUI.
 
+config TCSUPPORT_ACCESSLOG
+	bool "TCSUPPORT_ACCESSLOG"
+	help
+		Support Access Log on System Log - Access Log GUI.
+
 config TCSUPPORT_NETSTAT_NAT
 	bool "TCSUPPORT_NETSTAT_NAT"
 	help
@@ -1236,6 +1246,21 @@ config ASUS_LETSENCRYPT
 	depends TCSUPPORT_WEBSERVER_SSL && (TCSUPPORT_ADD_JFFS || TCSUPPORT_SQUASHFS_ADD_YAFFS)
 	help
 	   Support Let's Encrypt Certificate
+
+config ASUS_BWDPI
+	bool "DPI engine based function"
+	help
+	   Support DPI engine based function
+
+config ASUS_NEWSSID_REV3
+	bool "ASUS SSID rule Rev3"
+	help
+		Support ASUS SSID rule Rev3 - ASUS_xx_2G or ASUS_xx_5G, used in model after 2016/05/18
+
+config TCSUPPORT_PIMD
+	bool "TCSUPPORT_PIMD"
+	help
+		Support PIMD
 
 endmenu
 

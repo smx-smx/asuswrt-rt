@@ -8,9 +8,10 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <link rel="stylesheet" type="text/css" href="/qis/qis_style.css">
-<script type="text/Javascript" src="/state.js"></script>
-<script type="text/Javascript" src="/general.js"></script>
-<script type="text/JavaScript" src="/help.js"></script>
+<script language="JavaScript" type="text/Javascript" src="/state.js"></script>
+<script language="JavaScript" type="text/Javascript" src="/general.js"></script>
+<script language="JavaScript" type="text/JavaScript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
 <style>
 span{
@@ -293,7 +294,7 @@ function validForm(){
 <%tcWebApi_get("String_Entry","IPC_ExternalIPAddress_in","s")%>
 </th>
 <td class="QISformtd">
-<input type="text" id="dsl_ipaddr" name="dsl_ipaddr" tabindex="1" class="input_15_table" value="" maxlength="15" onkeypress="return is_ipaddr(this);" title="WAN IP" autocorrect="off" autocapitalize="off">
+<input type="text" id="dsl_ipaddr" name="dsl_ipaddr" tabindex="1" class="input_15_table" value="" maxlength="15" onkeypress="return validator.isIPAddr(this,event);" title="WAN IP" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 <tr>
@@ -301,7 +302,7 @@ function validForm(){
 <%tcWebApi_get("String_Entry","IPC_x_ExternalSubnetMask_in","s")%>
 </th>
 <td class="QISformtd">
-<input type="text" id="dsl_netmask" name="dsl_netmask" tabindex="2" class="input_15_table" value="" onkeypress="return is_ipaddr(this);" maxlength="15" title="WAN Subnet Mask" autocorrect="off" autocapitalize="off">
+<input type="text" id="dsl_netmask" name="dsl_netmask" tabindex="2" class="input_15_table" value="" onkeypress="return validator.isIPAddr(this,event);" maxlength="15" title="WAN Subnet Mask" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 <tr>
@@ -309,7 +310,7 @@ function validForm(){
 <%tcWebApi_get("String_Entry","IPC_x_ExternalGateway_in","s")%>
 </th>
 <td class="QISformtd">
-<input type="text" id="dsl_gateway" name="dsl_gateway" tabindex="3" class="input_15_table" value="" maxlength="15" onkeypress="return is_ipaddr(this);" class="input" autocorrect="off" autocapitalize="off">
+<input type="text" id="dsl_gateway" name="dsl_gateway" tabindex="3" class="input_15_table" value="" maxlength="15" onkeypress="return validator.isIPAddr(this,event);" class="input" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 </table>
@@ -326,7 +327,7 @@ function validForm(){
 <%tcWebApi_get("String_Entry","IPC_x_DNSServer1_in","s")%>:
 </th>
 <td class="QISformtd">
-<input type="text" id="dsl_dns1_x" name="dsl_dns1_x" tabindex="4" class="input_15_table" value="" onkeypress="return is_ipaddr(this);" maxlength="15" autocorrect="off" autocapitalize="off">
+<input type="text" id="dsl_dns1_x" name="dsl_dns1_x" tabindex="4" class="input_15_table" value="" onkeypress="return validator.isIPAddr(this,event);" maxlength="15" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 <tr>
@@ -334,7 +335,7 @@ function validForm(){
 <%tcWebApi_get("String_Entry","IPC_x_DNSServer2_in","s")%>:
 </th>
 <td class="QISformtd">
-<input type="text" id="dsl_dns2_x" name="dsl_dns2_x" tabindex="5" class="input_15_table" value="" maxlength="15" onkeypress="return is_ipaddr(this);" autocorrect="off" autocapitalize="off">
+<input type="text" id="dsl_dns2_x" name="dsl_dns2_x" tabindex="5" class="input_15_table" value="" maxlength="15" onkeypress="return validator.isIPAddr(this,event);" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 </table>

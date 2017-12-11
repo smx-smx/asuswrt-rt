@@ -24,7 +24,7 @@
 #endif
 
 #ifdef RTCONFIG_PROTECTION_SERVER
-#include <shared.h>
+#include <libptcsrv.h>
 #endif
 
 
@@ -229,8 +229,16 @@ extern int login_main(int argc, char **argv)
 		failed = 1;
 
 auth_ok:
+#ifdef RTCONFIG_PROTECTION_SERVER
+		if ( !failed) {
+			if (remoteIP != NULL)
+				SEND_PTCSRV_EVENT(PROTECTION_SERVICE_TELNET, RPT_SUCCESS, remoteIP, "From busybox login, LOGIN SUCCESS");
+			break;
+		}
+#else
 		if ( !failed)
 			break;
+#endif
 
 		{ // delay next try
 			time_t start, now;
@@ -247,21 +255,17 @@ auth_ok:
 		puts("Login incorrect");
 #endif
 #ifdef RTCONFIG_PROTECTION_SERVER
-		STATE_REPORT_T report;
-		strcpy(report.ip_addr, remoteIP);
-		report.loginType = PROTECTION_SERVICE_TELNET;
-		strcpy(report.note, "From busybox login, LOGIN FAIL");
-		send_protect_event(report);
+		SEND_PTCSRV_EVENT(PROTECTION_SERVICE_TELNET, RPT_FAIL, remoteIP, "From busybox login, LOGIN FAIL");
 #endif
 		username[0] = 0;
-		if ( ++count == 3 ) {
+		if ( ++count == 1 ) {
 #ifdef RTCONFIG_PROTECTION_SERVER
 			syslog ( LOG_WARNING, "invalid password for `%s'%s via %s\n", pw->pw_name, fromhost, remoteIP);
 #else
 			syslog ( LOG_WARNING, "invalid password for `%s'%s\n", pw->pw_name, fromhost);
 #endif
 			return EXIT_FAILURE;
-	}
+		}
 	}
 
 	alarm ( 0 );

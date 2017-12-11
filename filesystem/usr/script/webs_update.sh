@@ -3,8 +3,16 @@
 forsq=`/userfs/bin/tcapi get Apps_Entry apps_sq`
 echo "forsq = ${forsq}" >> /tmp/webs_upgrade.log #1 for sq
 model=`/userfs/bin/tcapi get SysInfo_Entry ProductName`
-model="$model#"
-echo "model = ${model}" >> /tmp/webs_upgrade.log #DSL-N66U#
+model_GEN="$model#"
+odmpid=`/userfs/bin/tcapi get SysInfo_Entry odmpid`
+odmpid_GEN="$odmpid#"
+echo "model_GEN = ${model_GEN}  ; odmpid_GEN = ${odmpid_GEN}" >> /tmp/webs_upgrade.log #      eg. DSL-N66U#  
+
+# get signature information
+territory_code=`ATE Get_TerritoryCode`
+model_SKU="$model"_"$territory_code"#
+odmpid_SKU="$odmpid"_"$territory_code"#
+echo "model_SKU = ${model_SKU}  ; odmpid_SKU = ${odmpid_SKU}" >> /tmp/webs_upgrade.log #	eg. DSL-N66U_CN#
 
 touch /tmp/update_url
 update_url=`cat /tmp/update_url`
@@ -28,6 +36,7 @@ current_extendno=`echo $current_extendno | sed s/-g.*//;`
 /userfs/bin/tcapi set WebCustom_Entry webs_state_reboot 0 &
 /userfs/bin/tcapi set WebCustom_Entry webs_state_info "" &
 /userfs/bin/tcapi set WebCustom_Entry webs_state_error_msg "" &
+/userfs/bin/tcapi set WebCustom_Entry webs_state_odm 0 &
 
 if [ "$update_url" != "" ]; then
 	echo "---- update_url exist HTTPS ----" >> /tmp/webs_upgrade.log
@@ -41,18 +50,40 @@ else
 fi
 
 if [ "$?" != "0" ]; then
+	echo "FW INFO download failed"
+	echo "FW INFO download failed" >> /tmp/webs_upgrade.log
 	/userfs/bin/tcapi set WebCustom_Entry webs_state_error 1 &
 	/userfs/bin/tcapi set WebCustom_Entry webs_state_error_msg "download wlan_update.zip fail" &
 else
 	##FW1106_86-g09787df
-	buildno=`grep $model /tmp/wlan_update.txt | sed 's/.*#FW//;' | sed 's/#.*//;'`
-	extendno=`grep $model /tmp/wlan_update.txt | sed 's/.*#EXT//;' | sed 's/#.*//;'`
+	buildno=`grep $odmpid_SKU /tmp/wlan_update.txt | sed 's/.*#FW//;' | sed 's/#.*//;'`
+	if [ "$buildno" == "" ]; then
+		buildno=`grep $odmpid_GEN /tmp/wlan_update.txt | sed 's/.*#FW//;' | sed 's/#.*//;'`
+		if [ "$buildno" == "" ]; then
+			buildno=`grep $model_SKU /tmp/wlan_update.txt | sed 's/.*#FW//;' | sed 's/#.*//;'`
+			if [ "$buildno" == "" ]; then
+				model_grep=$model_GEN
+			else
+				model_grep=$model_SKU
+			fi
+		else
+			model_grep=$odmpid_GEN
+			/userfs/bin/tcapi set WebCustom_Entry webs_state_odm 1 &
+		fi
+	else
+		model_grep=$odmpid_SKU
+		/userfs/bin/tcapi set WebCustom_Entry webs_state_odm 1 &
+	fi
+	echo "model_grep = ${model_grep}" >> /tmp/webs_upgrade.log
+	
+	buildno=`grep $model_grep /tmp/wlan_update.txt | sed 's/.*#FW//;' | sed 's/#.*//;'`
+	extendno=`grep $model_grep /tmp/wlan_update.txt | sed 's/.*#EXT//;' | sed 's/#.*//;'`
 	lextendno=`echo $extendno | sed s/-g.*//;`
-	buildno_beta=`grep $model /tmp/wlan_update.txt | sed 's/.*#BETAFW//;' | sed 's/#.*//;'`
-	extendno_beta=`grep $model /tmp/wlan_update.txt | sed 's/.*#BETAEXT//;' | sed 's/#.*//;'`
+	buildno_beta=`grep $model_grep /tmp/wlan_update.txt | sed 's/.*#BETAFW//;' | sed 's/#.*//;'`
+	extendno_beta=`grep $model_grep /tmp/wlan_update.txt | sed 's/.*#BETAEXT//;' | sed 's/#.*//;'`
 	lextendno_beta=`echo $extendno_beta | sed s/-g.*//;`
-	url_path=`grep $model /tmp/wlan_update.txt | sed 's/.*#URL//;' | sed 's/#.*//;'`
-	need_reset=`grep $model /tmp/wlan_update.txt | grep '#RBT' /tmp/wlan_update.txt`
+	url_path=`grep $model_grep /tmp/wlan_update.txt | sed 's/.*#URL//;' | sed 's/#.*//;'`
+	need_reset=`grep $model_grep /tmp/wlan_update.txt | grep '#RBT' /tmp/wlan_update.txt`
 	if [ "$buildno" = "" ]; then
 		/userfs/bin/tcapi set WebCustom_Entry webs_state_error 1 &
 		/userfs/bin/tcapi set WebCustom_Entry webs_state_error_msg "parse wlan_update.txt fail" &
@@ -75,6 +106,7 @@ rm /tmp/wlan_update.txt
 #set webs_state_flag=1
 echo "---- current fw info : $current_buildno $current_extendno ----" >> /tmp/webs_upgrade.log
 echo "---- formal fw info : $buildno $lextendno ----" >> /tmp/webs_upgrade.log
+echo "---- beta fw info : $buildno_beta $lextendno_beta ----" >> /tmp/webs_upgrade.log
 update_webs_state_info=`/userfs/bin/tcapi get WebCustom_Entry webs_state_info`
 last_webs_state_info=`/userfs/bin/tcapi get WebCustom_Entry webs_last_info`
 if [ "$buildno" == "" ] || [ "$lextendno" == "" ]; then
@@ -105,8 +137,12 @@ else
 fi
 
 
-# download releasee note
+# download release note
 get_productid=`/userfs/bin/tcapi get SysInfo_Entry ProductName`
+odmpid_support=`/userfs/bin/tcapi get WebCustom_Entry webs_state_odm`
+if [ "$odmpid_support" == "1" ]; then
+	get_productid=`/userfs/bin/tcapi get SysInfo_Entry odmpid`
+fi
 get_productid=`echo $get_productid | sed s/+/plus/;`	#replace 'plus' to '+' for one time
 
 #releasenote_file0=`echo $get_productid`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info`_"$LANG"_note.zip
@@ -124,10 +160,10 @@ if [ "$forsq" == "1" ]; then
 			echo "https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file0_US" >> /tmp/webs_upgrade.log
 		#fi	
 	#wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1 -O $releasenote_path1
-	#if [ "$?" != "0" ]; then
-		wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1_US -O $releasenote_path1
-		echo "https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1_US" >> /tmp/webs_upgrade.log
-	#fi	
+		#if [ "$?" != "0" ]; then
+			wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1_US -O $releasenote_path1
+			echo "https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file1_US" >> /tmp/webs_upgrade.log
+		#fi	
 else
 	echo "---- download real release note ----" >> /tmp/webs_upgrade.log
 	#wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file0 -O $releasenote_path0

@@ -74,14 +74,14 @@ void create_passwd(void)
 		"password optional pam_unix.so\n"
 		"session optional pam_unix.so\n"
 		, 0, 0644);
-	create_openvpn_passwd();
+	create_ovpn_passwd();
 #endif
 
 	tcapi_commit("Account");
 
 	fappend_file("/etc/passwd", "/etc/passwd.custom");
 #ifdef RTCONFIG_OPENVPN
-	add_openvpn_account("/etc/passwd", "/etc/passwd.openvpn");
+	append_ovpn_accnt("/etc/passwd", "/etc/passwd.openvpn");
 #endif
 }
 
@@ -121,9 +121,8 @@ void start_dnsmasq(void)
 			//Exclusive: use server DNS. Period.
 		}
 		else {	//pptp, l2p
-			if( (tcapi_match("VPNC_Entry", "state_t", "2")
-					&& tcapi_match("VPNC_Entry", "sbstate_t", "0"))	//if force restart dnsmasq
-				|| getenv("DNS1")	//vpnc-ipup
+			if( tcapi_match("VPNC_Entry", "state_t", "2")
+					&& tcapi_match("VPNC_Entry", "sbstate_t", "0")
 				) {
 				tcapi_get("VPNC_Entry", "dns_x", vpn_dns);
 			}
@@ -177,7 +176,6 @@ void start_dnsmasq(void)
 	char node[MAXLEN_NODE_NAME];
 
 	if(tcapi_match("VPNControl_Entry", "VPNServer_enable", "1")
-		&& tcapi_match("VPNControl_Entry", "VPNServer_mode", "openvpn")
 		) {
 		tcapi_get("OpenVPN_Common", "vpn_serverx_dns", vpn_serverx_dns);
 		for ( pos = strtok(&vpn_serverx_dns[0],","); pos != NULL; pos=strtok(NULL, ",") )
@@ -185,9 +183,9 @@ void start_dnsmasq(void)
 			cur = atoi(pos);
 			if ( cur )
 			{
-				snprintf(node, sizeof(node), "OpenVPN_Entry%d", SERVER_IF_START+cur);
+				snprintf(node, sizeof(node), "OpenVPN_Entry%d", OVPN_SERVER_BASE + cur);
 				tcapi_get(node, "iface", value);
-				snprintf(tmp, sizeof(tmp), " -i %s%d", value, SERVER_IF_START+cur);
+				snprintf(tmp, sizeof(tmp), " -i %s%d", value, OVPN_SERVER_BASE + cur);
 				strncat(cmd, tmp, (sizeof(cmd) - strlen(cmd) -1));
 			}
 		}
@@ -288,6 +286,10 @@ ddns_updated_main(int argc, char *argv[])
 	tcapi_set(DDNS_INFO, "ddns_check", "0");
 
 	logmessage("ddns", "ddns update ok");
+
+#ifdef RTCONFIG_OPENVPN
+	update_ovpn_profie_remote();
+#endif
 
 	_dprintf("done\n");
 
@@ -391,8 +393,6 @@ start_services(void)
 	start_notification_center();
 #endif
 #ifdef TCSUPPORT_SSH
-	check_host_key("rsa", "sshd_hostkey", "/etc/dropbear/dropbear_rsa_host_key");
-	check_host_key("dss", "sshd_dsskey",  "/etc/dropbear/dropbear_dss_host_key");
 	start_sshd();
 #endif
 #ifdef RTCONFIG_CROND
@@ -704,12 +704,12 @@ again:
 
 #ifdef RTCONFIG_OPENVPN
 	else if (strncmp(script, "vpnclient", 9) == 0) {
-		if (action & RC_SERVICE_STOP) stop_vpnclient(atoi(&script[9]));
-		if (action & RC_SERVICE_START) start_vpnclient(atoi(&script[9]));
+		if (action & RC_SERVICE_STOP) stop_ovpn_client(atoi(&script[9]));
+		if (action & RC_SERVICE_START) start_ovpn_client(atoi(&script[9]));
 	}
 	else if (strncmp(script, "vpnserver" ,9) == 0) {
-		if (action & RC_SERVICE_STOP) stop_vpnserver(atoi(&script[9]));
-		if (action & RC_SERVICE_START) start_vpnserver(atoi(&script[9]));
+		if (action & RC_SERVICE_STOP) stop_ovpn_server(atoi(&script[9]));
+		if (action & RC_SERVICE_START) start_ovpn_server(atoi(&script[9]));
 	}
 #endif
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
@@ -729,10 +729,10 @@ again:
 	{
 		int openvpn_unit = tcapi_get_int("OpenVPN_Common", "vpn_server_unit");
 		if (action & RC_SERVICE_STOP){
-			stop_vpnserver(openvpn_unit);
+			stop_ovpn_server(openvpn_unit);
 		}
 		if (action & RC_SERVICE_START){
- 			start_vpnserver(openvpn_unit);
+			start_ovpn_server(openvpn_unit);
  		}
  	}
 #endif
@@ -747,12 +747,12 @@ again:
 		if (action & RC_SERVICE_STOP){
 			stop_vpnc();
 #if defined(RTCONFIG_OPENVPN)
-			for( i = 1; i <= MAX_OVPN_CLIENT; i++ )
+			for( i = 1; i <= OVPN_CLIENT_MAX; i++ )
 			{
 				sprintf(buf, "vpnclient%d", i);
 				if ( pidof(buf) >= 0 )
 				{
-					stop_vpnclient(i);
+					stop_ovpn_client(i);
 				}
 			}
 #endif
@@ -762,16 +762,16 @@ again:
 #if defined(RTCONFIG_OPENVPN)
 			if(tcapi_match("VPNC_Entry", "proto", "openvpn")){
 				if(openvpnc_unit)
-					start_vpnclient(openvpnc_unit);
+					start_ovpn_client(openvpnc_unit);
 				stop_vpnc();
 			}
 			else{
-				for( i = 1; i <= MAX_OVPN_CLIENT; i++ )
+				for( i = 1; i <= OVPN_CLIENT_MAX; i++ )
 				{
 					sprintf(buf, "vpnclient%d", i);
 					if ( pidof(buf) >= 0 )
 					{
-						stop_vpnclient(i);
+						stop_ovpn_client(i);
 					}
 				}
 #endif
@@ -831,6 +831,22 @@ again:
 	{
 		if(action & RC_SERVICE_STOP) stop_letsencrypt();
 		if(action & RC_SERVICE_START) start_letsencrypt();
+	}
+#endif
+#ifdef RTCONFIG_BWDPI
+	else if (strcmp(script, "sig_check") == 0)
+	{
+		int sig_state_flag = 0;
+
+		if(action & RC_SERVICE_START){
+			eval("sig2nd_update.sh");
+			sig_state_flag = tcapi_get_int("Vram_Entry", "sig_state_flag");
+
+			if(sig_state_flag == 1)
+			{
+				eval("sig2nd_upgrade.sh");
+			}
+		}
 	}
 #endif
 	else

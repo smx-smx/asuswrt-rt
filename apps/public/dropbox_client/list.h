@@ -16,14 +16,9 @@ typedef struct node{
     struct node *next;
     time_t mtime;
 }CloudFile;
-//CloudFile *FolderList;
-//CloudFile *FileList;
-//CloudFile *FolderTail;
-//CloudFile *FileTail;
+
 CloudFile *FolderCurrent;
 CloudFile *FolderTmp;
-//CloudFile *OldFolderList;
-//CloudFile *OldFileList;
 CloudFile *FileList_one;
 CloudFile *FileTail_one;
 CloudFile *FileTmp_one;
@@ -51,9 +46,6 @@ struct ServerTreeNode
 
 typedef struct ServerTreeNode Server_TreeNode;
 
-//Server_TreeNode *ServerRootNode;
-//Server_TreeNode *OldServerRootNode;
-
 
 /*Local item struct and function of every floor*/
 typedef struct LOCALFOLDER{
@@ -71,15 +63,6 @@ typedef struct LOCALFILE{
     long long size;
     struct LOCALFILE *next;
 }LocalFile;
-
-//LocalFile *LocalFileList;
-//LocalFolder *LocalFolderList;
-//LocalFolder *LocalFolderTmp;
-//LocalFile *LocalFileTmp;
-//LocalFolder *LocalFolderTail;
-//LocalFile *LocalFileTail;
-//LocalFolder *LocalFolderCurrent;
-//LocalFile *SavedLocalFileList;
 
 
 typedef struct LOCAL

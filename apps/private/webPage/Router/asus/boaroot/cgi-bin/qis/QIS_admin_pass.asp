@@ -18,10 +18,11 @@
 	line-height: 20px;
 }
 </style>
-<script type="text/javascript" language="JavaScript" src="/state.js"></script>
-<script type="text/javascript" language="JavaScript" src="/general.js"></script>
-<script type="text/javascript" language="JavaScript" src="/help.js"></script>
-<script type="text/JavaScript" src="/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script language="JavaScript" type="text/javascript" src="/general.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/JavaScript" src="/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript">
 <% auto_detection() %>
 
@@ -190,9 +191,9 @@ function clean_scorebar(obj){
 	<span><%tcWebApi_get("String_Entry","QIS_pass_desc1","s")%></span><br><br>
 	<table id="tblsetting_1" class="QISform" width="400" border=0 align="center" cellpadding="5" cellspacing="0">
 		<tr>
-		  <th width="200"><%tcWebApi_get("String_Entry","Router_Login_Name","s")%></th>
+		  <th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,5)"><%tcWebApi_get("String_Entry","Router_Login_Name","s")%></a></th>
 		  <td class="QISformtd">
-		  		<input type="text" name="uiViewUsername" maxlength="20" tabindex="1" value="<% tcWebApi_Get("Account_Entry0","username","s") %>" onKeyPress="return is_string(this, event);"" class="input_18_table" autocapitalization="off" autocomplete="off">
+		  		<input type="text" name="uiViewUsername" maxlength="20" tabindex="1" value="<% tcWebApi_Get("Account_Entry0","username","s") %>" onKeyPress="return validator.isString(this, event);"" class="input_18_table" autocapitalization="off" autocomplete="off">
 				<br/><span id="alert_msg1" style="color:#FFCC00;"></span>
 		  </td>
 		</tr>

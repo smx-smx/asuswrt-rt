@@ -10,6 +10,9 @@
 #define	MAX_STREAM	MAX_KEY+MAX_VALUE+4
 #define	PATH_LENGTH	32
 #define	STRING_PATH	"/userfs/%s.dict" /* Paul modify 2013/2/7 */
+#ifdef RTCONFIG_ODMPID
+#define	ODMPID_PATH	"/tmp/odm.dict"
+#endif
 
 typedef unsigned int	uint;
 

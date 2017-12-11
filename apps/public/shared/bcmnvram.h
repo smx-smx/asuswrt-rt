@@ -28,6 +28,10 @@ static inline char *tcapi_x_get(char *flag){
 		ret = tcapi_get(SYSINFO, flag, str);
 	if(!strncmp(flag, "productid", strlen("productid")))
 		ret = tcapi_get(SYSINFO, "ProductName", str);
+#ifdef RTCONFIG_ODMPID
+	else if(!strncmp(flag, "odmpid", strlen("odmpid")))
+		ret = tcapi_get(SYSINFO, "odmpid", str);
+#endif
 	else if(!strcmp(flag, "x_Setting"))
 		ret = tcapi_get(SYSINFO, flag, str);
 	else if(!strncmp(flag, "nat_", 4))
@@ -133,6 +137,10 @@ static inline int tcapi_x_set(char *flag, char *value){
 		ret = tcapi_set(SYSINFO, flag, value);
 	if(!strncmp(flag, "productid", strlen("productid")))
 		ret = tcapi_set(SYSINFO, "ProductName", value);
+#ifdef RTCONFIG_ODMPID
+	else if(!strncmp(flag, "odmpid", strlen("odmpid")))
+		ret = tcapi_set(SYSINFO, "odmpid", value);
+#endif
 	else if(!strcmp(flag, "x_Setting"))
 		ret = tcapi_set(SYSINFO, flag, value);
 	else if(!strncmp(flag, "nat_", 4))

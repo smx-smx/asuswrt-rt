@@ -360,12 +360,6 @@ function check_Timefield_checkbox(){	// To check Date checkbox checked or not an
 	}		
 }
 
-/*Viz 2011.03 start*/
-function valid_icmp_portlist(){
-	if(!validate_portlist(document.form.filter_lw_icmp_x, 'filter_lw_icmp_x'))
-	return false;
-}
-/*Viz 2011.03 end */
 </script>
 </head>
 <body onload="initial();" onunLoad="return unload_body();">
@@ -465,7 +459,7 @@ function valid_icmp_portlist(){
 <tr>
           						<th ><a class="hintstyle" href="javascript:void(0);" onClick="openHint(10,4);"><%tcWebApi_get("String_Entry","FC_LanWanICMP_in","s")%></a></th>
 <td>
-<input type="text" maxlength="32" class="input_32_table" name="filter_lw_icmp_x" value="<% If tcWebApi_get("IpMacFilter_Entry","LtoW_ICMP","h") <> "" then  tcWebApi_get("IpMacFilter_Entry","LtoW_ICMP","s") end if %>" onKeyPress="return is_portlist(this,event)" onblur="valid_icmp_portlist()">
+<input type="text" maxlength="32" class="input_32_table" name="filter_lw_icmp_x" value="<% If tcWebApi_get("IpMacFilter_Entry","LtoW_ICMP","h") <> "" then  tcWebApi_get("IpMacFilter_Entry","LtoW_ICMP","s") end if %>" onKeyPress="return validator.isPortlist(this,event)">
 </td>
 </tr>
 </table>
@@ -484,10 +478,10 @@ function valid_icmp_portlist(){
 								<th><% tcWebApi_Get("String_Entry", "list_add_delete", "s") %></th>
 </tr>
 <tr>
-<td width="20%"><input type="text" maxlength="15" class="input_15_table" name="filter_lw_srcip_x_0" onKeyPress="return is_iprange(this, event)"></td>
-<td width="15%"><input type="text" maxlength="11" class="input_12_table" name="filter_lw_srcport_x_0" onKeyPress="return is_portrange(this,event)" value=""></td>
-<td width="20%"><input type="text" maxlength="15" class="input_15_table" name="filter_lw_dstip_x_0" onKeyPress="return is_iprange(this, event)"></td>
-<td width="15%"><input type="text" maxlength="11" class="input_12_table" name="filter_lw_dstport_x_0" onKeyPress="return is_portrange(this,event)" value=""></td>
+<td width="20%"><input type="text" maxlength="15" class="input_15_table" name="filter_lw_srcip_x_0" onKeyPress="return validator.isIPRange(this, event)"></td>
+<td width="15%"><input type="text" maxlength="11" class="input_12_table" name="filter_lw_srcport_x_0" onKeyPress="return validator.isPortRange(this,event)" value=""></td>
+<td width="20%"><input type="text" maxlength="15" class="input_15_table" name="filter_lw_dstip_x_0" onKeyPress="return validator.isIPRange(this, event)"></td>
+<td width="15%"><input type="text" maxlength="11" class="input_12_table" name="filter_lw_dstport_x_0" onKeyPress="return validator.isPortRange(this,event)" value=""></td>
 <td width="15%">
 	<select name="filter_lw_proto_x_0" class="input_option">
 		<option value="TCP" >TCP</option>

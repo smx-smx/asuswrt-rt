@@ -366,8 +366,11 @@ void
 stop_vpnc(void)
 {
 	char pidfile[sizeof("/var/run/ppp-vpnXXXXXXXXXX.pid")];
-	//char tmp[100], prefix[] = "vpnc_";
-	
+	FILE *fp;
+	char buf[256];
+	pid_t pid = 0;
+	int n;
+
 	snprintf(pidfile, sizeof(pidfile), "/var/run/ppp-vpn%d.pid", vpnc_unit);
 
 	/* Reset the state of dut_disc */
@@ -381,10 +384,25 @@ stop_vpnc(void)
 	}
 
 	/* Stop pppd */
-	if (kill_pidfile_s(pidfile, SIGHUP) == 0 &&
-	    kill_pidfile_s(pidfile, SIGTERM) == 0) {
-		sleep(2);
-		kill_pidfile_tk(pidfile);
+	if ((fp = fopen(pidfile, "r")) != NULL) {
+		if (fgets(buf, sizeof(buf), fp) != NULL)
+			pid = strtoul(buf, NULL, 0);
+		fclose(fp);
+	}
+	if (pid > 1 && kill(pid, SIGHUP) == 0 && kill(pid, SIGTERM) == 0) {
+		n = 10;
+		while ((kill(pid, 0) == 0) && (n-- > 0)) {
+			_dprintf("%s: waiting pid=%d n=%d\n", __FUNCTION__, pid, n);
+			sleep(1);
+		}
+		if (n < 0) {
+			n = 10;
+			while ((kill(pid, SIGKILL) != 0) && (n-- > 0)) {
+				_dprintf("%s: SIGKILL pid=%d n=%d\n", __FUNCTION__, pid, n);
+				sleep(1);
+			}
+			start_dnsmasq();
+		}
 	}
 }
 
@@ -424,128 +442,6 @@ void update_vpnc_state(int state, int reason)
 		unlink("/tmp/vpncstatus.log");
 	}
 }
-
-int update_resolv_conf(char *dns)
-{
-	FILE *fp;
-	char word[256], *next;
-	int lock;
-
-	lock = file_lock("dnsmasq");
-
-	if (!(fp = fopen("/etc/resolv.conf", "w"))) {
-		perror("/etc/resolv.conf");
-		file_unlock(lock);
-		return errno;
-	}
-
-	foreach(word, dns, next)
-		fprintf(fp, "nameserver %s\n", word);
-
-	fclose(fp);
-
-	file_unlock(lock);
-
-	return 1;
-}
-
-int vpnc_restart_dnsmasq(char *ifname, int vpnc_conn)
-{
-#if 0
-	char wan_dns[128];
-
-	memset(wan_dns, 0, sizeof(wan_dns));
-	if (vpnc_conn)	/* connected */
-	{
-		tcapi_get(VPNC_NODE, "dns_x", wan_dns);
-		restart_dnsmasq(ifname, wan_dns);
-	}
-	else	/* disconnected */
-	{
-		restart_dnsmasq(NULL, NULL);
-	}
-#else
-	start_dnsmasq();
-#endif
-	return 0;
-}
-
-#if 0
-int vpnc_restart_dnsmasq(char *ifname, int vpnc_conn)
-{
-	FILE *fp;
-	char tmp[32];
-	char word[256], *next;
-	int lock;
-	char wan_dns[128];//, *wan_xdns;
-	int start_dnsmasq_f = 0;
-	char wan_prefix[] = "WanXXXXXXXXXX_";
-
-	snprintf(wan_prefix, sizeof(wan_prefix), "Wan_PVC%d", wan_primary_ifunit());
-
-	lock = file_lock("dnsmasq");
-
-	tcapi_get(wan_prefix, "ISP", tmp);
-
-	if (atoi(tmp) == 1)	/* Static IP - update /etc/resolv.conf */
-		fp = fopen("/etc/resolv.conf", "w");
-	else	/* DHCP/PPPoE - update /etc/dnsmasq.conf */
-		fp = fopen("/etc/dnsmasq.conf", "w");
-		
-	if (!fp) {
-		perror("/etc/resolv.conf(static) or /etc/dnsmasq.conf(dhcp/pppoe)");
-		file_unlock(lock);
-		return errno;
-	}
-
-#if 0
-#ifdef RTCONFIG_IPV6
-	/* Handle IPv6 DNS before IPv4 ones */
-	if (ipv6_enabled()) {
-		if ((get_ipv6_service() == IPV6_NATIVE_DHCP) && nvram_get_int("ipv6_dnsenable")) {
-			foreach(word, nvram_safe_get("ipv6_get_dns"), next)
-				fprintf(fp, "nameserver %s\n", word);
-		} else
-		for (unit = 1; unit <= 3; unit++) {
-			sprintf(tmp, "ipv6_dns%d", unit);
-			next = nvram_safe_get(tmp);
-			if (*next && strcmp(next, "0.0.0.0") != 0)
-				fprintf(fp, "nameserver %s\n", next);
-		}
-	}
-#endif
-#endif
-
-
-	//wan_dns = nvram_safe_get(strcat_r(prefix, "dns", tmp));
-	//wan_xdns = nvram_safe_get(strcat_r(prefix, "xdns", tmp));
-	memset(wan_dns, 0, sizeof(wan_dns));
-	if (vpnc_conn)	/* connected */
-		tcapi_get(VPNC_NODE, "dns", wan_dns);
-	else	/* disconnected */
-		tcapi_get(wan_prefix, "dns_x", wan_dns);
-
-	if (strlen(wan_dns)) {
-		killall_tk("dnsmasq");
-		start_dnsmasq_f = 1;
-		foreach(word, wan_dns, next) {
-			if (atoi(tmp) == 1)	/* Static IP */
-				fprintf(fp, "nameserver %s\n", word);
-			else	/* DHCP/PPPoE */
-				fprintf(fp, "server=%s@%s\n", word, ifname);
-		}
-	}
-
-	fclose(fp);
-
-	file_unlock(lock);
-
-	if (start_dnsmasq_f)
-		eval("/userfs/bin/dnsmasq");
-
-	return 0;
-}
-#endif
 
 void vpnc_add_firewall_rule(char *vpnc_ifname)
 {
@@ -635,13 +531,13 @@ vpnc_up(char *vpnc_ifname)
 	//route_del(vpnc_ifname, 0, nvram_safe_get(strcat_r(prefix, "gateway", tmp)), NULL, "255.255.255.255");
 	eval("route", "del", "-net", tmp, "netmask", "255.255.255.255", "dev", vpnc_ifname);
 
-	/* Restart dnsmasq for vpnc */
-	vpnc_restart_dnsmasq(vpnc_ifname, 1);
-
 	/* Add firewall rules for VPN client */
 	vpnc_add_firewall_rule(vpnc_ifname);
 
 	update_vpnc_state(WAN_STATE_CONNECTED, 0);
+
+	/* Restart dnsmasq for vpnc */
+	start_dnsmasq();
 }
 
 int
@@ -796,7 +692,6 @@ vpnc_ipdown_main(int argc, char **argv)
 	char *vpnc_linkname = safe_getenv("LINKNAME");
 	char tmp[100];//, prefix[] = "vpnc_";
 	int unit;
-	char wan_ifname[16], wan_prefix[] = "wanXXXXXXXXXX_";
 
 	_dprintf("%s():: %s\n", __FUNCTION__, argv[0]);
 
@@ -811,19 +706,7 @@ vpnc_ipdown_main(int argc, char **argv)
 
 	vpnc_down(vpnc_ifname);
 
-	/* Restart dnsmasq for wan connect */
-	//snprintf(wan_prefix, sizeof(wan_prefix), "Wan_PVC%d", wan_primary_ifunit());
-	//tcapi_get(wan_prefix, "ISP", tmp);
-	//if (atoi(tmp) == 2)	/* PPPoE */
-		//snprintf(wan_ifname, sizeof(wan_ifname), "ppp%d", wan_primary_ifunit());
-	//else	/* DHCP/Static ip */
-		//snprintf(wan_ifname, sizeof(wan_ifname), "nas%d", wan_primary_ifunit());
-	snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
-	if(!strcmp(nvram_safe_get(strcat_r(wan_prefix, "proto", tmp)), "pppoe"))
-		strncpy(wan_ifname, nvram_safe_get(strcat_r(wan_prefix, "pppoe_ifname", tmp)), sizeof(wan_ifname)-1);
-	else
-		strncpy(wan_ifname, nvram_safe_get(strcat_r(wan_prefix, "ifname", tmp)), sizeof(wan_ifname)-1);
-	vpnc_restart_dnsmasq(wan_ifname, 0);
+	start_dnsmasq();
 
 	unlink(strcat_r("/tmp/ppp/link.", vpnc_ifname, tmp));
 

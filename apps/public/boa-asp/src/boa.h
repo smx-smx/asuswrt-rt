@@ -118,14 +118,6 @@ typedef struct param_s {
 #define NOLOGIN		9
 
 #define ASUS_TOKEN_LEN	32
-#define LOGINCGI	"login.cgi"
-
-/* MIME referer */
-struct mime_referer {
-	char *pattern;
-	int flag;
-};
-#define NO_CHECK_REFERER	1
 
 //Andy Chiu, 2016/02/25. Use a link list to record the tokens for clients.
 typedef enum CLIENT_TYPE_T
@@ -134,6 +126,7 @@ typedef enum CLIENT_TYPE_T
 	CLI_TYPE_APP,
 	CLI_TYPE_ATE,
 	CLI_TYPE_ASSIA,
+	CLI_TYPE_IFTTT
 }CLIENT_TYPE;
 
 typedef struct asus_token_table asus_token_t;
@@ -152,13 +145,21 @@ extern asus_token_t *token_head;
 typedef struct login_retry login_retry_t;
 struct login_retry
 {
-	char ipaddr[16];
 	long last_login_timestamp;		//last login time stamp
 	int try_num;	//the counter of trying to do login in one minute.
 	int is_lock;	//0: unlock, 1:locked
+	int err_status;
+#ifdef USE_RETRY_LIST
+	char ipaddr[16];
 	login_retry_t *next;
+#endif
 };
+#ifdef USE_RETRY_LIST
 extern login_retry_t * retry_head;
+#else
+extern login_retry_t retry_flag, retry_flag_wan;
+#endif
+#define MAX_LOGIN_BLOCK_TIME	300
 
 //The attribute "login_ip_tmp" in the node "WebCurSet_Entry" is ONLY for the user login via browser.
 
@@ -166,11 +167,12 @@ extern login_retry_t * retry_head;
 #define ASUSROUTER_APP	"DUTUtil"
 #define ASUSROUTER_ATE	"ATE"
 #define ASUSROUTER_ASSIA "ASSIA"
+#define ASUSROUTER_IFTTT "IFTTT"
 
 #define APP_LOGOUT_TIME 6000
 
 char *generate_token(char *token, int len);
-int http_login_header(const char *token, request *req);
+int http_login_header(const char *token, request *req, const CLIENT_TYPE cli_type);
 void send_r_redirect_page(request *req, const int with_token);
 void dbgprintf (const char * format, ...);
 
@@ -185,12 +187,13 @@ asus_token_t* search_token_list(const char *token, const char *ipaddr, CLIENT_TY
 #define SEARCH_TOKEN_LST_BY_IP(ipaddr)	search_token_list(NULL, ipaddr, -1)
 #define SEARCH_TOKEN_LST_BY_CLITYPE(type)	search_token_list(NULL, NULL, type)
 
+#ifdef USE_RETRY_LIST
 login_retry_t* add_login_retry(const char *ipaddr);
 login_retry_t* search_retry_list(const char *ipaddr);
 void rm_retry_in_list(const char *ipaddr);
-
-void dump_token(asus_token_t *token);
 void dump_retry(login_retry_t *retry);
+#endif
+void dump_token(asus_token_t *token);
 
 #endif
 
@@ -283,6 +286,8 @@ void send_r_not_implemented(request * req); /* 501 */
 void send_r_bad_gateway(request * req); /* 502 */
 void send_r_service_unavailable(request * req); /* 503 */
 void send_r_bad_version(request * req); /* 505 */
+void send_r_password_page(request *req, char* url);
+void send_r_login_page(request *req, int error_status, char* url, int lock_time);
 
 /* cgi */
 void create_common_env(void);
@@ -315,6 +320,9 @@ int create_temporary_file(short want_unlink, char *storage, int size);
 char * normalize_path(char *path);
 int real_set_block_fd(int fd);
 int real_set_nonblock_fd(int fd);
+int check_current_ip_is_lan_or_wan(const char *target_ip);
+int check_xss_blacklist(char* para, int check_www);
+login_retry_t* get_login_retry_by_url(const char* remote_ip);
 
 /* buffer */
 int req_write(request * req, char *msg);
@@ -358,10 +366,12 @@ void boa_sslUninit();
 int boa_sslAccept(mssl_conn_t **conn, const int fd, SSL_CTX *ctx);
 int boa_sslWrite(mssl_conn_t *conn, char *buf, const int buflen);
 int boa_sslRead(mssl_conn_t *conn, char *buf, const int len);
+int boa_sslClose(mssl_conn_t *conn);
+
 enum { HTTP_ONLY = 1, HTTPS_ONLY, BOTH_HTTP_HTTPS };
 #endif 
 
 void *rfc822_base64 (unsigned char *src,unsigned long srcl,unsigned long *len);
 
-
+int encryptRomfile(char *src, char *dst, char *productName);
 #endif

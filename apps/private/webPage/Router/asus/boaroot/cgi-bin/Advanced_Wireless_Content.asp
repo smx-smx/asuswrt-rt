@@ -12,6 +12,7 @@ If Request_Form("editFlag") = "1" then
 	tcWebApi_Set("WLan_Common","WirelessMode","wl_nmode_x")
 	tcWebApi_Set("WLan_Common","BGProtection","wl_gmode_protection")
 	tcWebApi_Set("WLan_Common","Channel","wl_channel")
+	tcWebApi_Set("WLan_Common","acs_ch13","acs_ch13")
 	tcWebApi_Set("WLan_Common","HT_BW","wl_bw")
 	tcWebApi_Set("WLan_Common","HT_EXTCHA","wl_nctrlsb")
 	tcWebApi_Set("WLan_Entry","auth_mode_x","wl_auth_mode_save")
@@ -51,18 +52,21 @@ load_parameters_to_generic()
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <link rel="stylesheet" type="text/css" href="/usp_style.css">
 <link href="/other.css" rel="stylesheet" type="text/css">
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/md5.js"></script>
-<script type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/general.js"></script>
+<script language="JavaScript" type="text/javascript" src="/popup.js"></script>
+<script language="JavaScript" type="text/javascript" src="/md5.js"></script>
+<script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'pppoe';
 var wireless = []; // [[MAC, associated, authorized], ...]
 var cur_control_channel = ["<% tcWebApi_get("Info_WLan","wlanCurChannel_2G","s"); %>", "<% tcWebApi_get("Info_WLan","wlanCurChannel_5G","s"); %>"];
+
+var wl_unit = "<% tcWebApi_get("WLan_Common","wl_unit","s") %>";
 
 function login_ip_str() { return '<% tcWebApi_get("WebCurSet_Entry","login_ip_tmp","s"); %>'; }
 
@@ -140,6 +144,10 @@ function initial(){
 	if(document.form.wl_channel.value  == '0'){
 		document.getElementById("auto_channel").style.display = "";
 		document.getElementById("auto_channel").innerHTML = "Current control channel: "+cur_control_channel[document.form.wl_unit.value];
+
+		if (wl_unit == '0') {
+			document.getElementById('acs_ch13_checkbox').style.display = "";				
+		}
 	}
 }
 
@@ -199,6 +207,17 @@ function TranslateWRTtoMTK(){
 		document.form.wl_crypto_save.value = "NONE";
 	else
 		document.form.wl_crypto_save.value = document.form.wl_crypto.value;
+}
+
+function check_acs_ch13_support(obj){
+	if(obj.checked)
+	{
+		document.form.acs_ch13.value = 1;
+	}
+	else
+	{
+		document.form.acs_ch13.value = 0;
+	}
 }
 
 function redirect(flag){
@@ -406,6 +425,7 @@ function check_NOnly_to_GN(){
 <input type="hidden" name="wl_nctrlsb_old" value="<% tcWebApi_get("WLan_Common","HT_EXTCHA","s"); %>">
 <input type="hidden" name="wl_key_type" value='0'>
 <input type="hidden" name="wl_channel_orig" value='<% tcWebApi_get("WLan_Common","Channel","s"); %>'>
+<input type="hidden" name="acs_ch13" value='<% tcWebApi_get("WLan_Common","acs_ch13","s"); %>'>
 <input type="hidden" name="wl_wep_x_orig" value='0'>
 <input type="hidden" name="wl_subunit" value='-1'>
 <input type="hidden" name="editFlag" value="0">
@@ -464,7 +484,7 @@ function check_NOnly_to_GN(){
 	<tr>
 		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 1);">SSID</a></th>
 		<td>
-			<input type="text" maxlength="32" class="input_32_table" id="wl_ssid" name="wl_ssid" value="<% If tcWebApi_get("WLan_Entry","ssid","h") <> "" then  tcWebApi_get("WLan_Entry","ssid","s") else asp_Write("ASUS_VSL_N66U") end if %>" onkeypress="return is_string(this, event)">
+			<input type="text" maxlength="32" class="input_32_table" id="wl_ssid" name="wl_ssid" value="<% If tcWebApi_get("WLan_Entry","ssid","h") <> "" then  tcWebApi_get("WLan_Entry","ssid","s") else asp_Write("ASUS_VSL_N66U") end if %>" onkeypress="return validator.isString(this, event)">
 		</td>
 	</tr>
 	<tr>
@@ -500,8 +520,9 @@ function check_NOnly_to_GN(){
 	<tr id="wl_channel_field">
 		<th><a id="wl_channel_select" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 3);"><% tcWebApi_Get("String_Entry", "WC11b_Channel_in", "s") %></a></th>
 		<td>
-			<select name="wl_channel" class="input_option" onChange="return change_common(this, 'WLANConfig11b', 'wl_channel')"></select>
-			<span id="auto_channel" style="display:none;margin-left:10px;"></span>
+			<select name="wl_channel" class="input_option" onChange="change_channel();"></select>
+			<span id="auto_channel" style="display:none;margin-left:10px;"></span><br>
+			<span id="acs_ch13_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_ch13_support(this);"  <% tcWebApi_MatchThenWrite("WLan_Common","acs_ch13","1","checked") %>>Auto select channel including channel 12, 13</input></span>
 		</td>
 	</tr>
 	<tr id="wl_nctrlsb_field">
@@ -590,7 +611,7 @@ function check_NOnly_to_GN(){
 	</tr>
 	<tr>
 		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 11);"><% tcWebApi_Get("String_Entry", "WC11b_x_Rekey_in", "s") %></a></th>
-		<td><input type="text" maxlength="7" name="wl_wpa_gtk_rekey" class="input_6_table" value="<% If tcWebApi_get("WLan_Entry","RekeyInterval","h") <> "" then  tcWebApi_get("WLan_Entry","RekeyInterval","s") else asp_Write("3600") end if %>" onKeyPress="return is_number(this,event);" onblur="validate_number_range(this, 0, 2592000)"></td>
+		<td><input type="text" maxlength="7" name="wl_wpa_gtk_rekey" class="input_6_table" value="<% If tcWebApi_get("WLan_Entry","RekeyInterval","h") <> "" then  tcWebApi_get("WLan_Entry","RekeyInterval","s") else asp_Write("3600") end if %>" onKeyPress="return validator.isNumber(this,event);" onblur="validate_number_range(this, 0, 2592000)"></td>
 	</tr>
 </table>
 

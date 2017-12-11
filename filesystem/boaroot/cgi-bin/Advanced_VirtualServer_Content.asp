@@ -39,11 +39,12 @@ end if
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" language="JavaScript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <style>
 #ClientList_Block{
 border:1px outset #999;
@@ -861,21 +862,21 @@ function redirect(){
 </tr>
 <tr>
 <td width="20%">
-<input type="text" maxlength="30" class="input_15_table" name="vts_desc_x_0" onkeypress="return is_string(this, event)"/>
+<input type="text" maxlength="30" class="input_15_table" name="vts_desc_x_0" onkeypress="return validator.isString(this, event)"/>
 </td>
 <td width="17%">
-<input type="text" maxlength="15" class="input_15_table" name="vts_srcipaddr_x_0"  onKeyPress="return is_iprange(this, event)"/>
+<input type="text" maxlength="15" class="input_15_table" name="vts_srcipaddr_x_0"  onKeyPress="return validator.isIPRange(this, event)"/>
 </td>
 <td width="14%">
-<input type="text" maxlength="30" class="input_12_table" name="vts_port_x_0" onkeypress="return is_portrange(this, event)"/>
+<input type="text" maxlength="30" class="input_12_table" name="vts_port_x_0" onkeypress="return validator.isPortRange(this, event)"/>
 </td>
 <td width="22%">
-<input type="text" maxlength="15" class="input_15_table" name="vts_ipaddr_x_0" align="left" onkeypress="return is_ipaddr(this, event)" style="float:left;"/ autocomplete="off" onblur="if(!over_var){hideClients_Block();}" onClick="hideClients_Block();">
+<input type="text" maxlength="15" class="input_15_table" name="vts_ipaddr_x_0" align="left" onkeypress="return validator.isIPAddr(this, event)" style="float:left;"/ autocomplete="off" onblur="if(!over_var){hideClients_Block();}" onClick="hideClients_Block();">
 <img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" align="right" onclick="pullLANIPList(this);" title="<% tcWebApi_Get("String_Entry", "select_IP", "s") %>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 <div id="ClientList_Block" class="ClientList_Block"></div>
 </td>
 <td width="9%">
-<input type="text" maxlength="5" class="input_6_table" name="vts_lport_x_0" onKeyPress="return is_number(this,event);"/>
+<input type="text" maxlength="5" class="input_6_table" name="vts_lport_x_0" onKeyPress="return validator.isNumber(this,event);"/>
 </td>
 <td width="10%">
 <select name="vts_proto_x_0" class="input_option">

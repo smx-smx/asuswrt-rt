@@ -297,7 +297,11 @@ int main(int argc, char **argv)
 #endif
 #endif
       
-	
+#ifndef USE_RETRY_LIST
+	memset(&retry_flag, 0, sizeof(retry_flag));
+	memset(&retry_flag_wan, 0, sizeof(retry_flag_wan));
+#endif
+
     /* set umask to u+rw, u-x, go-rwx */
     c = umask(~0600);
     if (c == -1) {

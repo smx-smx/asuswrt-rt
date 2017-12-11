@@ -86,11 +86,12 @@ cursor:default;
 }
 </style>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" language="JavaScript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
 <script language="JavaScript" type="text/JavaScript" src="/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
@@ -540,7 +541,7 @@ function wl_bwch_hint(){
 </tr>
 <tr>
 <td width="70%">
-	<input type="text" style="margin-left:180px;float:left;" maxlength="17" class="input_macaddr_table" name="wl_wdslist_0" onKeyPress="return is_hwaddr(this,event)">
+	<input type="text" style="margin-left:180px;float:left;" maxlength="17" class="input_macaddr_table" name="wl_wdslist_0" onKeyPress="return validator.isHWAddr(this,event)">
 	<img style="float:left;" id="pull_arrow" height="14px;" src="/images/arrow-down.gif" onclick="pullLANIPList(this);" title="<% tcWebApi_Get("String_Entry", "select_AP", "s") %>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 	<div id="WDSAPList" class="WDSAPList">
 		<div style="width:98px">

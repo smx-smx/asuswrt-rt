@@ -160,7 +160,7 @@ typedef struct _RT_802_11_MAC_TABLE {
 } RT_802_11_MAC_TABLE, *PRT_802_11_MAC_TABLE;
 
 //Andy Chiu, 2015/06/30. Add 5G mac table
-#if defined(MT7612E)
+#if defined(MT7612E) || defined(MT7610E)
 typedef union _MACHTTRANSMIT_SETTING_5G{
 	//Andy Chiu, 2015/08/25. update date structure.
 	struct {

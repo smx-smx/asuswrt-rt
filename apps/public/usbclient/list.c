@@ -18,12 +18,8 @@ char *my_malloc(size_t len)
         s = (char *)malloc(sizeof(char) * len);
         if(s == NULL)
         {
-                //printf("Out of memory.\n");
-                //exit(1);  //exit(1)直接退出了，换成return NULL 可以让程序一层一层的退出。
                 return NULL;
         }
-        //memset(s, '\0', sizeof(s));//指针与静态数组的sizeof操作，指针均可以看作变量类型的一种，
-                                //所有指针变量的sizeof操作的结果均为4
         memset(s, '\0', sizeof(char) * len);//2014.10.10 by sherry
         return s;
 }
@@ -35,7 +31,6 @@ action_item *create_action_item_head()
         head = (action_item *)malloc(sizeof(action_item));
         if(head == NULL)
         {
-                //printf("create memory error!\n");
                 return NULL;
         }
         memset(head, '\0', sizeof(action_item));
@@ -46,23 +41,17 @@ action_item *create_action_item_head()
 
 Server_TreeNode *create_server_treeroot()
 {
-    //printf("######create_server_treeroot start######\n");
         Server_TreeNode *TreeRoot = NULL;
         TreeRoot = (Server_TreeNode *)malloc(sizeof (Server_TreeNode));
         memset(TreeRoot, 0, sizeof(Server_TreeNode));
         if(TreeRoot == NULL)
         {
-                //printf("create memory error!\n");
                 return NULL;
         }
-        //TreeRoot->level=0;
         TreeRoot->NextBrother = NULL;
-        //TreeRoot->browse = NULL;
-        //sprintf(TreeRoot->parenthref,"%s%s/",HOST,ROOTFOLDER);
         TreeRoot->parenthref = NULL;
         TreeRoot->browse = NULL;
         TreeRoot->Child = NULL;
-    //printf("######create_server_treeroot end######\n");
         return TreeRoot;
 }
 
@@ -94,29 +83,26 @@ char *serverpath_to_localpath(char *serverpath, int index)//2014.10.08 by sherry
 
         if(!strcmp(serverpath,smb_config.multrule[index]->server_root_path))
         {//在根目录下进行操作
-            //printf("root dir\n");
             localpath = my_malloc(strlen(smb_config.multrule[index]->client_root_path) + 1);
             if(localpath==NULL)//2014.10.17 by sherry malloc申请内存是否成功
             {
-               //printf("create memory error!\n");
                return NULL;
             }
-            sprintf(localpath,"%s",smb_config.multrule[index]->client_root_path);
+            snprintf(localpath, sizeof(char)*(strlen(smb_config.multrule[index]->client_root_path) + 1), "%s",smb_config.multrule[index]->client_root_path);
             return localpath;
         }
         else
         {//深目录的情况
-            //printf("root submit dir\n");
             localpath = my_malloc(strlen(serverpath) - strlen(smb_config.multrule[index]->server_root_path)
                                         + strlen(smb_config.multrule[index]->client_root_path) + 1);
             //2014.10.17 by sherry malloc申请内存是否成功
             if(localpath==NULL)
             {
-               //printf(" create memory error!\n");
                return NULL;
             }
             p = p + strlen(smb_config.multrule[index]->server_root_path);
-            sprintf(localpath, "%s%s", smb_config.multrule[index]->client_root_path, p);
+            snprintf(localpath, sizeof(char)*(strlen(serverpath) - strlen(smb_config.multrule[index]->server_root_path)
+                                        + strlen(smb_config.multrule[index]->client_root_path) + 1),  "%s%s", smb_config.multrule[index]->client_root_path, p);
             return localpath;
        }
 
@@ -136,7 +122,7 @@ char *localpath_to_serverpath(char *localpath, int index)//2014.10.08 by sherry 
             {
                 return NULL;
             }
-            sprintf(serverpath,"%s", smb_config.multrule[index]->server_root_path);
+            snprintf(serverpath, sizeof(char)*(strlen(smb_config.multrule[index]->server_root_path) + 3), "%s", smb_config.multrule[index]->server_root_path);
             return serverpath;
 
         }
@@ -150,7 +136,8 @@ char *localpath_to_serverpath(char *localpath, int index)//2014.10.08 by sherry 
                 return NULL;
             }
             p = p + strlen(smb_config.multrule[index]->client_root_path);
-            sprintf(serverpath, "%s%s", smb_config.multrule[index]->server_root_path, p);
+            snprintf(serverpath, sizeof(char)*(strlen(localpath) - strlen(smb_config.multrule[index]->client_root_path)
+                                              + strlen(smb_config.multrule[index]->server_root_path) + 3), "%s%s", smb_config.multrule[index]->server_root_path, p);
             return serverpath;
 
         }
@@ -158,7 +145,6 @@ char *localpath_to_serverpath(char *localpath, int index)//2014.10.08 by sherry 
 
 void free_server_tree(Server_TreeNode *node)
 {
-        //printf("free_server_tree\n");
         if(node != NULL)
         {
 
@@ -178,20 +164,16 @@ void free_server_tree(Server_TreeNode *node)
                 }
                 free(node);
         }
-                //printf("free_server_tree end\n");
 }
 
 void free_CloudFile_item(CloudFile *head)
 {
-        //printf("***************free_CloudFile_item*********************\n");
-
         CloudFile *p = head;
         while(p != NULL)
         {
                 head = head->next;
                 if(p->href != NULL)
                 {
-                        //printf("free CloudFile %s\n",p->href);
                         free(p->href);
                         free(p->filename);
                 }
@@ -202,7 +184,6 @@ void free_CloudFile_item(CloudFile *head)
 
 long long int get_local_freespace(int index)
 {
-        //printf("***********get %s freespace!***********\n", smb_config.multrule[index]->client_root_path);
         long long int freespace = 0;
         struct statvfs diskdata;
         if(!statvfs(smb_config.multrule[index]->client_root_path, &diskdata))
@@ -220,7 +201,6 @@ int is_local_space_enough(CloudFile *do_file, int index)
 {
         long long int freespace;
         freespace = get_local_freespace(index);
-        //printf("freespace = %lld, do_file->size = %lld\n", freespace, do_file->size);
         if(freespace <= do_file->size)
                 return 0;
         else
@@ -243,8 +223,8 @@ int add_action_item(const char *action, const char *path, action_item *head)
         {
             return -1;
         }
-        sprintf(p2->action, "%s", action);
-        sprintf(p2->path,   "%s", path);
+        snprintf(p2->action, sizeof(char)*(strlen(action) + 1), "%s", action);
+        snprintf(p2->path, sizeof(char)*(strlen(path) + 1),  "%s", path);
 
         while(p1->next != NULL)
                 p1 = p1->next;
@@ -264,13 +244,13 @@ int test_if_download_temp_file(char *filename)
         {
             return -1;
         }
-        strcpy(temp_suffix, ".asus.td");
+        snprintf(temp_suffix, sizeof(char)*9, "%s", ".asus.td");
 
         memset(file_suffix, 0, sizeof(file_suffix));
         char *p = filename;
         if(strstr(filename, temp_suffix))
         {
-                strcpy(file_suffix, p + (strlen(filename) - strlen(temp_suffix)));
+            snprintf(file_suffix, 9, "%s", p + (strlen(filename) - strlen(temp_suffix)));
                 if(!strcmp(file_suffix, temp_suffix))
                 {
                         free(temp_suffix);
@@ -298,7 +278,6 @@ void free_LocalFolder_item(LocalFolder *head)
                 head = head->next;
                 if(p->path != NULL)
                 {
-                        //DEBUG("free LocalFolder %s\n",point->path);
                         free(p->path);
                         free(p->name);
                 }
@@ -315,7 +294,6 @@ void free_LocalFile_item(LocalFile *head)
                 head = head->next;
                 if(p->path != NULL)
                 {
-                        //DEBUG("free LocalFile %s\n",point->path);
                         free(p->path);
                         free(p->name);
                 }
@@ -396,7 +374,6 @@ action_item *get_action_item(const char *action,const char *path,action_item *he
                 }
                 p = p->next;
         }
-        //printf("can not find action item\n");
         return NULL;
 }
 
@@ -418,21 +395,16 @@ int del_action_item(const char *action,const char *path,action_item *head)
                 p2 = p1;
                 p1 = p1->next;
         }
-        //printf("can not find action item\n");
-
         return 1;
 }
 
 void local_mkdir(char *path)
 {
-        //char error_message[256];
         DIR *dir;
         if(NULL == (dir = opendir(path)))
         {
                 if(-1 == mkdir(path, 0777))//创建目录，0777默认模式 最大可能访问权
                 {
-                        //printf("please check disk can write or dir has exist???");
-                        //printf("mkdir %s fail\n", path);
                         return;
                 }
         }
@@ -465,13 +437,73 @@ Node *queue_dequeue (Node *q)
         return first;
 }
 
+#ifdef OLEG_ARM
+int detect_process(char * process_name)
+{
+    DEBUG("@@@@@OLEG_ARM\n");
+    FILE *ptr;
+    char buff[512];
+    char ps[128];
+    int n=0;
+    snprintf(ps, 128, "ps | awk '{print $3}' |grep  %s",process_name);
+    snprintf(buff, 512, "%s", "ABNORMAL");
+    if((ptr=popen(ps, "r")) != NULL)
+    {
+        while (fgets(buff, 512, ptr) != NULL)
+        {
+            if(strcmp(buff, "nvram") == 0)
+            n++;
+
+            if(n>0)
+            {
+                pclose(ptr);
+                return 1;
+            }
+        }
+    }
+    if(strcmp(buff,"ABNORMAL")==0)  /*ps command error*/
+    {
+        return 0;
+    }
+    pclose(ptr);
+    return 0;
+}
+#else
+#ifdef I686
+int detect_process(char * process_name)
+{
+    DEBUG("@@@@@I686\n");
+    FILE *ptr;
+    char buff[512];
+    char ps[128];
+    snprintf(ps, 128, "ps | awk '{print $5  $6}' |grep -c %s",process_name);
+    snprintf(buff, 512, "%s", "ABNORMAL");
+    if((ptr=popen(ps, "r")) != NULL)
+    {
+        while (fgets(buff, 512, ptr) != NULL)
+        {
+            if(atoi(buff)>2)
+            {
+                pclose(ptr);
+                return 1;
+            }
+        }
+    }
+    if(strcmp(buff,"ABNORMAL")==0)  /*ps command error*/
+    {
+        return 0;
+    }
+    pclose(ptr);
+    return 0;
+}
+#else
 int detect_process(char *process_name)
 {
         FILE *ptr;
         char buff[512] = {0};
         char ps[128] = {0};
-        sprintf(ps, "ps | grep -c %s", process_name);
-        strcpy(buff, "ABNORMAL");
+        snprintf(ps, 128, "ps | grep -c %s", process_name);
+        snprintf(buff, 512, "%s", "ABNORMAL");
         if((ptr = popen(ps, "r")) != NULL)
         {
                 while (fgets(buff, 512, ptr) != NULL)
@@ -490,12 +522,14 @@ int detect_process(char *process_name)
         pclose(ptr);
         return 0;
 }
+#endif
+#endif
+
 
 char *my_nstrchr(const char chr,char *str,int n){
 
         if(n<1)
         {
-                //printf("my_nstrchr need n>=1\n");
                 return NULL;
         }
 
@@ -520,7 +554,6 @@ char *my_nstrchr(const char chr,char *str,int n){
 
 int get_path_to_index(char *path)
 {
-        //printf("%s\n", path);
         int i;
         char *root_path = NULL;
         char *temp = NULL;
@@ -533,7 +566,7 @@ int get_path_to_index(char *path)
         temp = my_nstrchr('/', path, 5);
         if(temp == NULL)
         {
-                sprintf(root_path, "%s", path);
+                snprintf(root_path, sizeof(char)*512, "%s", path);
         }
         else
         {
@@ -545,8 +578,6 @@ int get_path_to_index(char *path)
                 if(!strcmp(root_path, smb_config.multrule[i]->client_root_path))
                         break;
         }
-        //printf("get_path_to_index root_path = %s\t%d\n", root_path, i);
-
         free(root_path);
 
         return i;
@@ -566,7 +597,7 @@ char *get_socket_base_path(char *cmd)
                 //2014.10.17 by sherry malloc申请内存是否成功
                 if(root_path==NULL)
                     return NULL;
-                sprintf(root_path, "%s", temp);
+                snprintf(root_path, sizeof(char)*128, "%s", temp);
         }
         else
         {
@@ -581,7 +612,7 @@ char *get_socket_base_path(char *cmd)
                 temp = my_nstrchr('/', path, 5);
                 if(temp == NULL)
                 {
-                        sprintf(root_path, "%s", path);
+                    snprintf(root_path, sizeof(char)*128, "%s", path);
                 }
                 else
                 {
@@ -593,7 +624,6 @@ char *get_socket_base_path(char *cmd)
 
 void del_download_only_action_item(const char *action,const char *path,action_item *head)
 {
-        //DEBUG("del_sync_item action=%s,path=%s\n",action,path);
         action_item *p1, *p2;
         char *cmp_name;
         char *p1_cmp_name;
@@ -604,7 +634,7 @@ void del_download_only_action_item(const char *action,const char *path,action_it
         //2014.10.17 by sherry malloc申请内存是否成功
         if(cmp_name==NULL)
             return;
-        sprintf(cmp_name,"%s/",path);    //add for delete folder and subfolder in download only socket list
+        snprintf(cmp_name, sizeof(char)*(strlen(path)+2), "%s/",path);    //add for delete folder and subfolder in download only socket list
 
         while(p1 != NULL)
         {
@@ -612,17 +642,13 @@ void del_download_only_action_item(const char *action,const char *path,action_it
                 //2014.10.17 by sherry malloc申请内存是否成功
                 if(p1_cmp_name==NULL)
                     return;
-                sprintf(p1_cmp_name,"%s/",p1->path);      //add for delete folder and subfolder in download only socket list
-                //DEBUG("del_download_only_sync_item  p1->name = %s\n",p1->name);
-                //DEBUG("del_download_only_sync_item  cmp_name = %s\n",cmp_name);
+                snprintf(p1_cmp_name, sizeof(char)*(strlen(p1->path)+2), "%s/",p1->path);      //add for delete folder and subfolder in download only socket list
                 if(strstr(p1_cmp_name,cmp_name) != NULL)
                 {
                         p2->next = p1->next;
                         free(p1->action);
                         free(p1->path);
                         free(p1);
-                        //DEBUG("del sync item ok\n");
-                        //break;
                         p1 = p2->next;
                 }
                 else
@@ -634,7 +660,6 @@ void del_download_only_action_item(const char *action,const char *path,action_it
         }
 
         free(cmp_name);
-        //DEBUG("del sync item fail\n");
 }
 
 int add_all_download_only_dragfolder_socket_list(const char *dir,int index)
@@ -665,7 +690,7 @@ int add_all_download_only_dragfolder_socket_list(const char *dir,int index)
                     return -1;
 
 
-                sprintf(fullname,"%s/%s",dir,ent->d_name);
+                snprintf(fullname, sizeof(char)*(strlen(dir)+strlen(ent->d_name)+2), "%s/%s",dir,ent->d_name);
 
                 if( test_if_dir(fullname) == 1)
                 {
@@ -705,7 +730,7 @@ void del_all_items(char *dir,int index)
                         //2014.10.17 by sherry malloc申请内存是否成功
                         if(fullname==NULL)
                             return;
-                        sprintf(fullname,"%s/%s",dir,ent->d_name);
+                        snprintf(fullname, sizeof(char)*len, "%s/%s",dir,ent->d_name);
 
                         if(test_if_dir(fullname) == 1)
                         {
@@ -791,24 +816,8 @@ CloudFile *get_CloudFile_node(Server_TreeNode* treeRoot, const char *dofile_href
                                 de_foldercurrent = de_foldercurrent->next;
                         }
                 }
-                //2014.10.15 by sherry
-//                if((a&int_file) && de_filecurrent != NULL)
-//                {
-//                        while(de_filecurrent != NULL)
-//                        {
-//                                if(de_filecurrent->href != NULL)
-//                                {
-//                                        DEBUG("de_filecurrent->href = %s\n",de_filecurrent->href);
-//                                        if(!(strncmp(de_filecurrent->href,dofile_href,href_len)))
-//                                        {
-//                                                DEBUG("get it\n");
-//                                                return de_filecurrent;
-//                                        }
-//                                }
-//                                de_filecurrent = de_filecurrent->next;
-//                        }
-//                }
 
+                //2014.10.15 by sherry
                 if((a&int_file) && de_filecurrent != NULL)
                 {
                         while(de_filecurrent != NULL)
@@ -822,7 +831,7 @@ CloudFile *get_CloudFile_node(Server_TreeNode* treeRoot, const char *dofile_href
                                         {
                                             return NULL;
                                         }
-                                        sprintf(filecurrent_href, "%s%s", smb_config.multrule[index]->server_root_path, de_filecurrent->href);
+                                        snprintf(filecurrent_href, sizeof(char)*(strlen(de_filecurrent->href) + strlen(smb_config.multrule[index]->server_root_path) + 1), "%s%s", smb_config.multrule[index]->server_root_path, de_filecurrent->href);
                                         if(!(strncmp(filecurrent_href,dofile_href,href_len)))
                                         {
                                                 DEBUG("get it\n");
@@ -858,11 +867,11 @@ int write_conflict_log(char *fullname, int type, char *msg)
         char ctype[16] = {0};
 
         if(type == 1)
-                strcpy(ctype, "Error");
+            snprintf(ctype, 16, "%s", "Error");
         else if(type == 2)
-                strcpy(ctype, "Info");
+            snprintf(ctype, 16, "%s", "Info");
         else if(type == 3)
-                strcpy(ctype, "Warning");
+            snprintf(ctype, 16, "%s", "Warning");
 
 
         if(access(CONFLICT_DIR, 0) == 0)
@@ -875,12 +884,7 @@ int write_conflict_log(char *fullname, int type, char *msg)
         {
                 return -1;
         }
-
-        //len = strlen(mount_path);
-        //fprintf(fp,"TYPE:%s\nUSERNAME:%s\nFILENAME:%s\nMESSAGE:%s\n", ctype, "NULL", fullname, msg);
-        //printf("TYPE:%s\nUSERNAME:%s\nFILENAME:%s\nMESSAGE:%s\n", ctype, "NULL", fullname, msg);
         fclose(fp);
-        //printf("write_conflict_log() - end\n");
         return 0;
 }
 
@@ -893,42 +897,20 @@ char *insert_suffix(char *name, char *suffix)
             return NULL;
 
         //2014.10.13 by sherry
-//        char *p = name;
-//        p = p + strlen(name);
-//        while(p[0] != '.' && strlen(p) < strlen(name)){
-//            p--;
-//        }
-
-//        printf("p_len = %d\nname_len = %d\n", strlen(p), strlen(name));
-//        printf("p = %s\n", p);
-
-//        if(strlen(p) == strlen(name)){
-//            sprintf(new_name, "%s%s", name, suffix);
-//        }else{
-//            name1 = my_malloc(strlen(name) - strlen(p) + 1);
-//            snprintf(name1, strlen(name) - strlen(p) + 1, "%s", name);
-//            sprintf(new_name, "%s%s%s", name1, suffix, p);
-//            free(name1);
-//        }
-
         char *p;
         p=strrchr(name,'.');
 
-        //printf("p_len = %d\nname_len = %d\n", strlen(p), strlen(name));
-        //printf("p = %s\n", p);
-
         if(p==NULL){
-                sprintf(new_name, "%s%s", name, suffix);
+            snprintf(new_name, sizeof(char)*(strlen(name) + strlen(suffix) + 1), "%s%s", name, suffix);
         }else{
                 name1 = my_malloc(strlen(name) - strlen(p) + 1);
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(name1==NULL)
                     return NULL;
                 snprintf(name1, strlen(name) - strlen(p) + 1, "%s", name);
-                sprintf(new_name, "%s%s%s", name1, suffix, p);
+                snprintf(new_name, sizeof(char)*(strlen(name) + strlen(suffix) + 1), "%s%s%s", name1, suffix, p);
                 free(name1);
         }
-        //printf("new_name = %s\n", new_name);
         return new_name;
 }
 
@@ -937,7 +919,6 @@ char *insert_suffix(char *name, char *suffix)
  */
 char *change_same_name(char *localpath, int index, int flag)
 {
-        //printf("###################change same name...##################\n");
         int i = 1;
         char *filename = NULL;
         char *new_path = NULL;
@@ -946,10 +927,6 @@ char *change_same_name(char *localpath, int index, int flag)
         char suffix[6] = {0};
 
         //2014.10.13 by sherry
-//        char *p = localpath;
-//        p = p + strlen(localpath);
-//        while(p[0] != '/' && strlen(p) < strlen(localpath))
-//                p--;
         char *p;
         p=strrchr(localpath,'/');
         if(p==NULL)
@@ -960,15 +937,12 @@ char *change_same_name(char *localpath, int index, int flag)
         //2014.10.20 by sherry malloc申请内存是否成功
         if(filename==NULL)
             return NULL;
-        sprintf(filename, "%s", p + 1);
+        snprintf(filename, sizeof(char)*(strlen(p) + 1), "%s", p + 1);
         path = my_malloc(strlen(localpath) - strlen(p) + 1);
         //2014.10.20 by sherry malloc申请内存是否成功
         if(path==NULL)
             return NULL;
         snprintf(path, strlen(localpath) - strlen(p) + 1, "%s", localpath);
-
-        //printf("%s, %s\n", path, filename);
-
         int exit = 1;
         while(exit)
         {
@@ -976,12 +950,11 @@ char *change_same_name(char *localpath, int index, int flag)
                 int j = 0;
                 while((n = (n / 10)))
                 {
-                    //printf("n=%d\n",n);
                         j++;
                 }
                 memset(temp, '\0', sizeof(temp));
                 snprintf(temp, 252 - j, "%s", filename);
-                sprintf(suffix, "(%d)", i);
+                snprintf(suffix, 6, "(%d)", i);
                 char *new_name = insert_suffix(temp, suffix);
                 if(new_name==NULL)
                     return NULL;
@@ -991,7 +964,7 @@ char *change_same_name(char *localpath, int index, int flag)
                 //2014.10.20 by sherry malloc申请内存是否成功
                 if(new_path==NULL)
                     return NULL;
-                sprintf(new_path, "%s/%s", path, new_name);
+                snprintf(new_path, sizeof(char)*(strlen(path) + strlen(new_name) + 2), "%s/%s", path, new_name);
 
                 if(flag == 0)
                         exit = is_server_exist(new_path, index);
@@ -1004,7 +977,6 @@ char *change_same_name(char *localpath, int index, int flag)
         }
         free(path);
         free(filename);
-        //printf("new_path = %s\n", new_path);
         return new_path;
 }
 
@@ -1021,9 +993,8 @@ void my_mkdir_r(char *path,int index)
         temp = strstr(path, smb_config.multrule[index]->mount_path);
 
         len = strlen(smb_config.multrule[index]->mount_path);
-        strcpy(str, temp + len);
+        snprintf(str, 512, "%s", temp + len);
 
-        //strncpy(str,path,512);
         len = strlen(str);
         for(i = 0; i < len; i++)
         {
@@ -1031,7 +1002,7 @@ void my_mkdir_r(char *path,int index)
                 {
                         str[i] = '\0';
                         memset(fullname, 0, sizeof(fullname));
-                        sprintf(fullname, "%s%s", smb_config.multrule[index]->mount_path, str);
+                        snprintf(fullname,  512, "%s%s", smb_config.multrule[index]->mount_path, str);
                         if(access(fullname, F_OK) != 0)
                         {
                                 DEBUG("%s\n", fullname);
@@ -1043,7 +1014,7 @@ void my_mkdir_r(char *path,int index)
 
 
         memset(fullname, 0, sizeof(fullname));
-        sprintf(fullname, "%s%s", smb_config.multrule[index]->mount_path, str);
+        snprintf(fullname, 512, "%s%s", smb_config.multrule[index]->mount_path, str);
 
         if(len > 0 && access(fullname, F_OK) != 0)
         {
@@ -1080,15 +1051,14 @@ void replace_char_in_str(char *str,char newchar,char oldchar){
 
 int create_shell_file()
 {
-        //printf("create shell file\n");
         FILE *fp = NULL;
         char contents[256] = {0};
 #ifndef USE_TCAPI
-        strcpy(contents,"#! /bin/sh\n" \
+        snprintf(contents, 256, "%s", "#! /bin/sh\n" \
                "nvram set $2=\"$1\"\n" \
                "nvram commit");
 #else
-        strcpy(contents,"#! /bin/sh\n" \
+        snprintf(contents, 256, "%s", "#! /bin/sh\n" \
                "tcapi set AiCloud_Entry $2 \"$1\"\n" \
                "tcapi commit AiCloud\n" \
                "tcapi save");
@@ -1109,7 +1079,7 @@ int write_get_nvram_script(char *name,char *shell_dir,char *val_dir)
 {
         FILE *fp = NULL;
         char contents[512] = {0};
-        sprintf(contents,"#! /bin/sh\n" \
+        snprintf(contents, 512, "#! /bin/sh\n" \
                 "NV=`nvram get %s`\n" \
                 "if [ ! -f \"%s\" ]; then\n" \
                 "touch %s\n" \
@@ -1144,7 +1114,7 @@ int write_notify_file(char *path, int signal_num)
 
         local_mkdir("/tmp/notify");
         local_mkdir("/tmp/notify/usb");
-        sprintf(fullname, "%s/usbclient", path);
+        snprintf(fullname, 64, "%s/usbclient", path);
         fp = fopen(fullname, "w");
         if(NULL == fp)
         {

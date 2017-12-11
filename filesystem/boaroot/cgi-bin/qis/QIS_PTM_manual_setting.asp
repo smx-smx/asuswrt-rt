@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <!--qis/QIS_PTM_manual_setting.asp-->
@@ -93,7 +93,7 @@ function showNomoISPList(country){
 	var showed_isp = "";
 	var first_element = 0;
 
-	code +="<select id='ISP' name='ISP' onChange='ShowPVC(this.value); showNomoISPServiceByIdx(this.value);' tabindex='3' class='input_option'>";
+	code +="<select id='ISP' name='ISP' onChange='ShowPVC(this.value); showNomoISPServiceByIdx(this.value); showSpecificSetting(this.value);' tabindex='3' class='input_option'>";
 	for(var i = 0; i < ISP_List.length; i++){
 		if(country == ISP_List[i][1]){
 			if(showed_isp == ISP_List[i][4]){	//same isp internet setting with additional service
@@ -404,6 +404,14 @@ function btnNext() {
 		document.form.dsltmp_cfg_de17a.value = "1";	//flag
 		document.form.dsltmp_cfg_vdslprofile.value = "1";
 	}
+	if(document.form.dsltmp_cfg_ispname.value.search("Deutsche Telekom") >= 0 && document.form.dsltmp_cfg_iptv_idx.value > 0){
+		document.form.dsltmp_auto_detect_bng_flag.value = 1;
+	}
+	if( document.form.dsltmp_cfg_country.value=='United Kingdom'
+		&& document.form.dsltmp_cfg_ispname.value=='Sky - Fibre Broadband'
+	){
+		document.form.dsltmp_cfg_uksky.value = "1";	//flag
+	}
 
 	if (connection_type==0) //PPPoE
 	{
@@ -438,6 +446,29 @@ function submit_detect(){
 	document.form.next_page.value = "QIS_detect.asp";
 	document.form.submit();
 }
+
+function check_ginp_try(obj){
+	if(obj.checked)
+	{
+		document.form.dsltmp_cfg_ginp_try_enable.value = 1;
+	}
+	else
+	{
+		document.form.dsltmp_cfg_ginp_try_enable.value = 0;
+	}
+}
+
+function showSpecificSetting(idx) {
+	if(ISP_List[idx][4] == 'Sky - Fibre Broadband') {
+		document.getElementById('dslx_ginp_try_checkbox').style.display = "";
+		document.form.dsltmp_cfg_ginp_try_enable.value = 1;
+	}
+	else {
+		document.getElementById('dslx_ginp_try_checkbox').style.display = "none";
+		document.form.dsltmp_cfg_ginp_try_enable.value = 0;
+	}
+}
+
 </script>
 </head>
 <body onLoad="QIS_menual_setting_load_body();" >
@@ -451,6 +482,7 @@ function submit_detect(){
 <input type="hidden" name="dsltmp_cfg_country" value="">
 <input type="hidden" name="dsltmp_cfg_ispname" value="">
 <input type="hidden" name="dsltmp_cfg_ispservice" value="">
+<input type="hidden" name="dsltmp_auto_detect_bng_flag" value="0">
 <input type="hidden" name="dsltmp_cfg_prctl" value="">
 <input type="hidden" name="dsltmp_cfg_vlanid" value="">
 <input type="hidden" name="dsltmp_cfg_iptv_rmvlan" value="">
@@ -471,6 +503,8 @@ function submit_detect(){
 <input type="hidden" name="dsltmp_cfg_annex" value="">
 <input type="hidden" name="dsltmp_cfg_de17a" value="">
 <input type="hidden" name="dsltmp_cfg_vdslprofile" value="<%tcWebApi_Get("Adsl_Entry","vdsl_profile","s")%>">
+<input type="hidden" name="dsltmp_cfg_uksky" value="">
+<input type="hidden" name="dsltmp_cfg_ginp_try_enable" value="0">
 
 <div class="QISmain">
 <div class="formfonttitle" style="padding:6 0 0 10;">
@@ -520,6 +554,9 @@ function submit_detect(){
 			<th width="40%"><%tcWebApi_get("String_Entry","HSDPAC_ISP_in","s")%></th>
 			<td>
 				<div id="ISPList"></div>
+				<span id="dslx_ginp_try_checkbox" style="display:none;">
+					<input type="checkbox" onClick="check_ginp_try(this);" checked>Try to connect with G.INP Enabled</input>
+				</span>
 			</td>
 		</tr>
 		<tr id="Service_tr">

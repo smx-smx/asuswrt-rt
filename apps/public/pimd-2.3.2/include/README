@@ -1,0 +1,17 @@
+This directory contains missing system headers.
+
+These files should only be used as a last ditch effort on systems that miss, e.g.
+netinet/ip_mroute.h, netinet/in.h or similar.  Some effort have been made to see
+to different locations across systems in the file defs.h.
+
+In most cases, the use of these files is activated by uncommenting the matching
+section in config.mk, or adding to the DEFS and INCLUDES.
+
+linux/	  - For *really* old kernels, possibly pre-2.0.  Do NOT include for any
+            recent systems, at all!  Only pim.h missing, even on 2.6.32.
+openbsd/  - For older releases, not needed for releases after, at least, 2003.
+netbsd/   - For older releases, not needed for releases after, at least, 2003.
+freebsd/  - For older releases, not needed for releases after, at least, 2003.
+freebsd2/ - For *really* old FreeBSD 2.x releases.
+sunos-*/  - For *really* old SunOS/OSF1 based systems.
+

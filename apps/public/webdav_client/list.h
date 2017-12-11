@@ -22,16 +22,6 @@ typedef struct node{
     struct node *next;
 }CloudFile;
 
-CloudFile *FolderCurrent;
-CloudFile *FolderTmp;
-
-CloudFile *FileList_one;
-CloudFile *FileTail_one;
-CloudFile *FileTmp_one;
-CloudFile *TreeFolderList;
-CloudFile *TreeFileList;
-CloudFile *TreeFolderTail;
-CloudFile *TreeFileTail;
 
 typedef struct BROWSE
 {
@@ -44,7 +34,6 @@ typedef struct BROWSE
 
 struct ServerTreeNode
 {
-    //int level;
     char *parenthref;
     Browse *browse;
     struct ServerTreeNode *Child;
@@ -86,9 +75,4 @@ typedef struct LOCAL
 
 Local *Find_Floor_Dir(const char *path);
 void free_localfloor_node(Local *local);
-
-
 #endif
-
-
-

@@ -12,18 +12,24 @@ echo "---- rsa_enabled= $rsa_enabled  ----" >> /tmp/webs_upgrade.log
 forsq=`/userfs/bin/tcapi get Apps_Entry apps_sq`
 url_path=`/userfs/bin/tcapi get WebCustom_Entry webs_state_url`
 firmware_path=`/userfs/bin/tcapi get Misc_Entry firmware_path`
+get_productid=`/userfs/bin/tcapi get SysInfo_Entry ProductName`
+odmpid_support=`/userfs/bin/tcapi get WebCustom_Entry webs_state_odm`
+if [ "$odmpid_support" = "1" ]; then
+	get_productid=`/userfs/bin/tcapi get SysInfo_Entry odmpid`
+fi
+
 if [ "$firmware_path" = "1" ]; then
-	firmware_file=`/userfs/bin/tcapi get SysInfo_Entry ProductName`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info_beta`.zip
+	firmware_file=`echo $get_productid`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info_beta`.zip
 else
-	firmware_file=`/userfs/bin/tcapi get SysInfo_Entry ProductName`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info`.zip
+	firmware_file=`echo $get_productid`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info`.zip
 fi
 
 if [ "$rsa_enabled" != "" ]; then
 	if [ "$firmware_path" = "1" ]; then
-		firmware_rsasign=`/userfs/bin/tcapi get SysInfo_Entry ProductName`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info_beta`_rsa.zip
+		firmware_rsasign=`echo $get_productid`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info_beta`_rsa.zip
 	else
-		firmware_rsasign=`/userfs/bin/tcapi get SysInfo_Entry ProductName`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info`_rsa.zip
-	fi		
+		firmware_rsasign=`echo $get_productid`_`/userfs/bin/tcapi get WebCustom_Entry webs_state_info`_rsa.zip
+	fi
 fi
 
 touch /tmp/update_url

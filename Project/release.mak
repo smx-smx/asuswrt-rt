@@ -60,6 +60,9 @@ endif
 #Release rstats
 	cp -rf $(APP_RSTATS_DIR)/rstats  $(APP_BINARY_DIR)/$(TCPLATFORM)
 
+#Release access log
+	cp -rf $(APP_ACCESSLOG_DIR)/access_log  $(APP_BINARY_DIR)/$(TCPLATFORM)
+
 ##Release infosvr
 	cp -rf $(APP_INFOSVR_DIR)/infosvr  $(APP_BINARY_DIR)/$(TCPLATFORM)
 
@@ -69,11 +72,6 @@ endif
 #Release spectrum
 ifneq ($(strip $(ASUS_SPECTRUM)),)
 	cp -rf $(APP_SPECTRUM_DIR)/spectrum  $(APP_BINARY_DIR)/$(TCPLATFORM)
-endif
-
-#Release hwinfo
-ifneq ($(strip $(ASUS_HWINFO)),)
-	cp -rf $(APP_HWINFO_DIR)/hwinfo  $(APP_BINARY_DIR)/$(TCPLATFORM)
 endif
 
 #Release sysstate

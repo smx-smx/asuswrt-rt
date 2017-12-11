@@ -28,6 +28,7 @@ End If
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <style>
 #ClientList_Block_PC{
 border:1px outset #999;
@@ -498,13 +499,13 @@ function Ctrl_LANIPList(obj){
 </tr>
 <tr>
 <td width="34%">
-<input type="text" class="input_20_table" maxlength="15" name="sr_ipaddr_x_0" style="margin-left:-22px;width:215px;" onKeyPress="return is_ipaddr(this, event)" onClick="hideClients_Block();" onblur="if(!over_var){hideClients_Block();}">
+<input type="text" class="input_20_table" maxlength="15" name="sr_ipaddr_x_0" style="margin-left:-22px;width:215px;" onKeyPress="return validator.isIPAddr(this, event)" onClick="hideClients_Block();" onblur="if(!over_var){hideClients_Block();}">
 <img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<% tcWebApi_Get("String_Entry", "select_IP", "s") %>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 <div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
 </td>
-<td width="18%"><input type="text" maxlength="15" class="input_15_table" name="sr_netmask_x_0" onKeyPress="return is_ipaddr(this, event)" ></td>
-<td width="18%"><input type="text" maxlength="15" class="input_15_table" name="sr_gateway_x_0" onKeyPress="return is_ipaddr(this, event)" ></td>
-<td width="8%"><input type="text" maxlength="3" class="input_3_table" name="sr_matric_x_0" onKeyPress="return is_number(this, event);"></td>
+<td width="18%"><input type="text" maxlength="15" class="input_15_table" name="sr_netmask_x_0" onKeyPress="return validator.isIPAddr(this, event)" ></td>
+<td width="18%"><input type="text" maxlength="15" class="input_15_table" name="sr_gateway_x_0" onKeyPress="return validator.isIPAddr(this, event)" ></td>
+<td width="8%"><input type="text" maxlength="3" class="input_3_table" name="sr_matric_x_0" onKeyPress="return validator.isNumber(this, event);"></td>
 <td width="10%">
 <select name="sr_if_x_0" class="input_option" style="width:62px;" onchange="Ctrl_LANIPList(this);">
 <option  value="LAN">LAN</option>

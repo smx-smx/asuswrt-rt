@@ -357,12 +357,18 @@ function setIptvNumPvc() {
 					+ ">" + ISP_List_IPTV[i][5]
 			}
 		}
+
+		if(document.form.ISP.value.search("Deutsche Telekom") >= 0){
+			document.form.dsltmp_auto_detect_bng_flag.value = 1;
+		}
 	}
 	document.form.dsltmp_cfg_iptv_num_pvc.value = pvc_cnt.toString();
 	document.form.dsltmp_cfg_iptv_rmvlan.value = ISP_List[isp_idx][11];
 	document.form.dsltmp_cfg_iptv_mr.value = ISP_List[isp_idx][12];
 	document.form.dsltmp_cfg_iptv_pvclist.value = dsltmp_cfg_iptv_pvclist_value;
+
 }
+
 /* password item show or not */
 function pass_checked(obj){
 	if(obj.name == "dsltmp_cfg_pppoe_passwd")
@@ -391,6 +397,7 @@ function pass_checked(obj){
 <input type="hidden" name="dsltmp_transfer_mode" value="<% tcWebApi_get("AutoPVC_Common","Detect_XDSL","s") %>">
 <input type="hidden" name="dsltmp_wanTypeOption" value="2">
 <input type="hidden" name="with_wan_setting" value="1">
+<input type="hidden" name="dsltmp_auto_detect_bng_flag" value="0">
 <div class="QISmain">
 <div>
 	<table width="730px">
@@ -481,7 +488,7 @@ function pass_checked(obj){
 </table>	
 </div>
 
-<div style="margin-left:-80px;margin-top:-90px;">
+<div style="margin-left:-90px;">
 <table id="ISP_table" class="FormTable" width="475px" border="0" align="center" cellpadding="3" cellspacing="0">
 	<tbody>		
 		<tr id="Country_tr">
@@ -512,7 +519,7 @@ function pass_checked(obj){
 </table>
 </div>
 </div>
-<div class="apply_gen" style="margin-top:40px">
+<div class="apply_gen" style="margin-top:20px">
 	<input type="button" id="prevButton" value="<% tcWebApi_Get("String_Entry", "Manual_Setting_btn", "s") %>" onclick="gotoprev(document.form);" class="button_gen_long" >
 	<input type="button" id="nextButton" value="<% tcWebApi_Get("String_Entry", "btn_next", "s") %>" onclick="submitForm();" class="button_gen">
 </div>

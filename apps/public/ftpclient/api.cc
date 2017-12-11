@@ -34,7 +34,7 @@ char *to_utf8(char *buf,int index)
     char *out = my_str_malloc(256);
     if(ftp_config.multrule[index]->encoding == 0)
     {
-        sprintf(out,"%s",buf);
+        snprintf(out, sizeof(char)*256, "%s",buf);
         return out;
     }
     else if(ftp_config.multrule[index]->encoding == 1)
@@ -47,7 +47,7 @@ char *to_utf8(char *buf,int index)
             return out;
         }else{
             DEBUG("convert failed\n");
-            sprintf(out,"%s",buf);
+            snprintf(out, sizeof(char)*256, "%s",buf);
             return out;
         }
     }
@@ -61,7 +61,7 @@ char *to_utf8(char *buf,int index)
             return out;
         }else{
             DEBUG("convert failed\n");
-            sprintf(out,"%s",buf);
+            snprintf(out, sizeof(char)*256, "%s",buf);
             return out;
         }
     }
@@ -73,7 +73,7 @@ char *utf8_to(char *buf,int index)
     char *out = my_str_malloc(256);
     if(ftp_config.multrule[index]->encoding == 0)
     {
-        sprintf(out,"%s",buf);
+        snprintf(out, sizeof(char)*256, "%s",buf);
         return out;
     }
     else if(ftp_config.multrule[index]->encoding == 1)
@@ -86,7 +86,7 @@ char *utf8_to(char *buf,int index)
             return out;
         }else{
             DEBUG("convert failed\n");
-            sprintf(out,"%s",buf);
+            snprintf(out, sizeof(char)*256, "%s",buf);
             return out;
         }
     }
@@ -100,7 +100,7 @@ char *utf8_to(char *buf,int index)
             return out;
         }else{
             DEBUG("convert failed\n");
-            sprintf(out,"%s",buf);
+            snprintf(out, sizeof(char)*256, "%s",buf);
             return out;
         }
     }
@@ -112,13 +112,13 @@ int download_(char *serverpath,int index)
     char *temp = serverpath_to_localpath(serverpath,index);
     char *where_it_put = (char*)malloc(sizeof(char)*(strlen(temp) + 9));
     memset(where_it_put,'\0',sizeof(char)*(strlen(temp) + 9));
-    sprintf(where_it_put,"%s%s",temp,".asus.td");
+    snprintf(where_it_put, sizeof(char)*(strlen(temp) + 9), "%s%s",temp,".asus.td");
 
     char *chr_coding = utf8_to(serverpath,index);
     char *url_coding = oauth_url_escape(chr_coding);
     char *where_it_from = (char*)malloc(sizeof(char)*(ftp_config.multrule[index]->server_ip_len + strlen(url_coding) + 2));
     memset(where_it_from,'\0',sizeof(char)*(ftp_config.multrule[index]->server_ip_len + strlen(url_coding) + 2));
-    sprintf(where_it_from,"%s/%s",ftp_config.multrule[index]->server_ip,url_coding);
+    snprintf(where_it_from, sizeof(char)*(ftp_config.multrule[index]->server_ip_len + strlen(url_coding) + 2), "%s/%s",ftp_config.multrule[index]->server_ip,url_coding);
     DEBUG("from:%s\n",where_it_from);
     DEBUG("put:%s\n",where_it_put);
     free(url_coding);
@@ -140,8 +140,6 @@ int download_(char *serverpath,int index)
         local_file_len = info.st_size;
         use_resume = 1;
     }
-    DEBUG("download-info.st_size=%lld\n",info.st_size);
-
     fp = fopen(where_it_put,"ab+");
     if(fp == NULL)
     {
@@ -151,7 +149,7 @@ int download_(char *serverpath,int index)
     if(SERVER_FILE.path != NULL)
         free(SERVER_FILE.path);
     SERVER_FILE.path = (char*)malloc(sizeof(char)*(strlen(temp) + 1));
-    sprintf(SERVER_FILE.path,"%s",temp);
+    snprintf(SERVER_FILE.path, sizeof(char)*(strlen(temp) + 1), "%s",temp);
     SERVER_FILE.index = index;
 
     curl = curl_easy_init();
@@ -227,7 +225,7 @@ int upload(char *localpath1,int index)
 
     char *fullserverpath = (char*)malloc(sizeof(char)*(ftp_config.multrule[index]->server_ip_len + strlen(url_coding) + 2));
     memset(fullserverpath,'\0',sizeof(char)*(ftp_config.multrule[index]->server_ip_len + strlen(url_coding) + 2));
-    sprintf(fullserverpath,"%s/%s",ftp_config.multrule[index]->server_ip,url_coding);
+    snprintf(fullserverpath, sizeof(char)*(ftp_config.multrule[index]->server_ip_len + strlen(url_coding) + 2), "%s/%s",ftp_config.multrule[index]->server_ip,url_coding);
 
     free(url_coding);
     CURL *curl;
@@ -235,7 +233,6 @@ int upload(char *localpath1,int index)
     struct stat info;
     if(stat(localpath1,&info) == -1)
         return LOCAL_FILE_LOST;//902
-    DEBUG("...CURLOPT_INFILESIZE=%lld\n",info.st_size);
 
     FILE *g_stream,*fp;
     g_stream = fopen(localpath1,"rb");
@@ -249,8 +246,9 @@ int upload(char *localpath1,int index)
     LOCAL_FILE.path = (char*)malloc(sizeof(char)*(strlen(localpath1) + 1));
      //2014.10.29 by sherry 未初始化
     memset(LOCAL_FILE.path,'\0',sizeof(char)*(strlen(localpath1) + 1));
-    sprintf(LOCAL_FILE.path,"%s",localpath1);
+    snprintf(LOCAL_FILE.path, sizeof(char)*(strlen(localpath1) + 1), "%s",localpath1);
     LOCAL_FILE.index = index;
+
     curl = curl_easy_init();
     if(curl)
     {
@@ -260,7 +258,6 @@ int upload(char *localpath1,int index)
         curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, progress_data);
 #endif
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-        //curl_easy_setopt(curl, CURLOPT_INFILESIZE, (curl_off_t)info.st_size);//2014.12.02 by sherry
         curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)info.st_size);
         curl_easy_setopt(curl, CURLOPT_URL, fullserverpath);
         if(strlen(ftp_config.multrule[index]->user_pwd) != 1)
@@ -269,19 +266,14 @@ int upload(char *localpath1,int index)
         curl_easy_setopt(curl, CURLOPT_READDATA, g_stream);
         curl_easy_setopt(curl, CURLOPT_WRITEHEADER, fp);
         curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10);
-        //curl_easy_setopt(curl, CURLOPT_FTPPORT, "-");
-        //curl_easy_setopt(curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
         curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT,1);
         curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME,30);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
         curl_easy_setopt(curl,CURLOPT_TIMEOUT,90);//设置一个长整形数，作为最大延续多少秒
-        //curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, debugFun);
-        //curl_easy_setopt(curl, CURLOPT_DEBUGDATA, debugFile);
         res = curl_easy_perform(curl);
         DEBUG("\nres = %d\n",res);
         free(fullserverpath);
         //2014.11.06 by sherry
-        //if(res != CURLE_OK && res != CURLE_OPERATION_TIMEDOUT)
         if(res != CURLE_OK)
         {
             curl_easy_cleanup(curl);
@@ -332,6 +324,10 @@ int upload(char *localpath1,int index)
             }
 
             FILE *fp1 = fopen(CURL_HEAD,"rb");
+            if(fp1 == NULL)
+            {
+                return -1;
+            }
             char buff[512]={0};
             char *p;
             while(fgets(buff,sizeof(buff),fp1) != NULL)
@@ -376,11 +372,17 @@ int my_delete_DELE(char *localpath,int index)
         char *serverpath = localpath_to_serverpath(localpath,index);
         char *command = (char *)malloc(sizeof(char)*(strlen(serverpath) + 6));
         memset(command,'\0',sizeof(command));
-        sprintf(command,"DELE %s",serverpath);
+        snprintf(command, sizeof(char)*(strlen(serverpath) + 6), "DELE %s",serverpath);
         DEBUG("%s\n",command);
         char *temp = utf8_to(command,index);
         free(command);
         FILE *fp = fopen(CURL_HEAD,"w");
+        if(fp == NULL)
+        {
+            free(temp);
+            free(serverpath);
+            return -1;
+        }
         CURL *curl;
         CURLcode res;
         curl = curl_easy_init();
@@ -403,6 +405,10 @@ int my_delete_DELE(char *localpath,int index)
                 fclose(fp);
                 free(serverpath);
                 FILE *fp1 = fopen(CURL_HEAD,"r");
+                if(fp1 == NULL)
+                {
+                    return -1;
+                }
                 char buff[512]={0};
                 const char *split=" ";
                 char *p;
@@ -451,11 +457,17 @@ int my_delete_RMD(char *localpath,int index)
         char *serverpath = localpath_to_serverpath(localpath,index);
         char *command = (char *)malloc(sizeof(char)*(strlen(serverpath) + 5));
         memset(command,'\0',sizeof(command));
-        sprintf(command,"RMD %s",serverpath);
+        snprintf(command, sizeof(char)*(strlen(serverpath) + 5), "RMD %s",serverpath);
         DEBUG("%s\n",command);
         char *temp = utf8_to(command,index);
         free(command);
         FILE *fp = fopen(CURL_HEAD,"w");
+        if(fp == NULL)
+        {
+            free(temp);
+            free(serverpath);
+            return -1;
+        }
         CURL *curl;
         CURLcode res;
         curl = curl_easy_init();
@@ -478,6 +490,10 @@ int my_delete_RMD(char *localpath,int index)
                 fclose(fp);
                 free(serverpath);
                 FILE *fp1 = fopen(CURL_HEAD,"r");
+                if(fp1 == NULL)
+                {
+                    return -1;
+                }
                 char buff[512]={0};
                 const char *split=" ";
                 char *p;
@@ -527,7 +543,6 @@ void SearchServerTree_(Server_TreeNode* treeRoot,int index)
 {
     DEBUG("#################### SsarchServerTree ###################\n");
     int i;
-    //int j;
     for(i=0;i<treeRoot->level;i++)
         DEBUG("-");
 
@@ -544,7 +559,6 @@ void SearchServerTree_(Server_TreeNode* treeRoot,int index)
         de_filecurrent = treeRoot->browse->filelist->next;
         while(de_foldercurrent != NULL)
         {
-            //DEBUG("serverfolder->href = %s\n",de_foldercurrent->href);
             char *temp = serverpath_to_localpath(de_foldercurrent->href,index);
             my_delete_RMD(temp,index);
             free(temp);
@@ -552,7 +566,6 @@ void SearchServerTree_(Server_TreeNode* treeRoot,int index)
         }
         while(de_filecurrent != NULL)
         {
-            //DEBUG("serverfile->href = %s\n",de_filecurrent->href);
             char *temp = serverpath_to_localpath(de_filecurrent->href,index);
             my_delete_DELE(temp,index);
             free(temp);
@@ -573,7 +586,6 @@ int Delete(char *localpath,int index)
         free_server_tree(ServerNode_del);
         flag = my_delete_RMD(localpath,index);
     }
-    //my_delete_RMD(localpath,index);
     return flag;
 }
 
@@ -587,9 +599,9 @@ int my_rename_(char *localpath,char *newername,int index)
     char *str2 = my_str_malloc(strlen(oldname) + 6);
     char *str3 = my_str_malloc(strlen(newername) + 6);
 
-    sprintf(str1,"CWD %s",cd_path);
-    sprintf(str2,"RNFR %s",oldname + 1);
-    sprintf(str3,"RNTO %s",newername);
+    snprintf(str1, sizeof(char)*(strlen(cd_path) + 5), "CWD %s",cd_path);
+    snprintf(str2, sizeof(char)*(strlen(oldname) + 6), "RNFR %s",oldname + 1);
+    snprintf(str3, sizeof(char)*(strlen(newername) + 6), "RNTO %s",newername);
 
     char *A = utf8_to(str1,index);
     char *B = utf8_to(str2,index);
@@ -617,12 +629,9 @@ int my_rename_(char *localpath,char *newername,int index)
         res=curl_easy_perform(curl);
         if(res != CURLE_OK)
         {    //2014.10.30 by sherry  处理“rename会挂掉"的bug
-//            char *temp = (char*)malloc(sizeof(char)*(strlen(prepath) + strlen(newername) + 1));
-//            memset(temp,'\0',sizeof(char)*(strlen(prepath) + strlen(newername) + 1));
-//            sprintf(temp,"%s/%s",prepath,newername);
             char *temp = (char*)malloc(sizeof(char)*(strlen(prepath) + strlen(newername) + 2));
             memset(temp,'\0',sizeof(char)*(strlen(prepath) + strlen(newername) + 2));
-            sprintf(temp,"%s/%s",prepath,newername);
+            snprintf(temp, sizeof(char)*(strlen(prepath) + strlen(newername) + 2), "%s/%s",prepath,newername);
             int status = 0;
             if(!test_if_dir(temp))//test_if_dir如果是folder则返回1
             {
@@ -676,21 +685,20 @@ int my_mkdir_(char *localpath,int index)
         DEBUG("Local has no %s\n",localpath);
         return LOCAL_FILE_LOST;
     }
-
-//    if(strcmp(localpath,ftp_config.multrule[index]->base_path) == 0)
-//    {
-//        write_log(S_ERROR,"Server Del Sync Folder!","",index);
-//        return SERVER_ROOT_DELETED;
-//    }
-
     char *serverpath = localpath_to_serverpath(localpath,index);
     char *command = (char *)malloc(sizeof(char)*(strlen(serverpath) + 5));
     memset(command,'\0',sizeof(command));
-    sprintf(command,"MKD %s",serverpath);
+    snprintf(command, sizeof(char)*(strlen(serverpath) + 5), "MKD %s",serverpath);
     DEBUG("%s\n",command);
     char *temp = utf8_to(command,index);
     free(command);
     FILE *fp = fopen(CURL_HEAD,"w");
+    if(fp == NULL)
+    {
+        free(temp);//free(command);
+        free(serverpath);
+        return -1;
+    }
     CURL *curl;
     CURLcode res;
     curl = curl_easy_init();
@@ -713,6 +721,8 @@ int my_mkdir_(char *localpath,int index)
             free(temp);//free(command);
             free(serverpath);
             FILE *fp1 = fopen(CURL_HEAD,"rb");
+            if(fp1 == NULL)
+                return -1;
             char buff[512]={0};
             const char *split=" ";
             char *p = NULL;
@@ -761,7 +771,6 @@ int my_mkdir_(char *localpath,int index)
 
 int moveFolder(char *old_dir,char *new_dir,int index)
 {
-    //my_delete(old_dir,index);
     Delete(old_dir,index);
     int status;
 
@@ -787,8 +796,8 @@ int moveFolder(char *old_dir,char *new_dir,int index)
             char *old_fullname = my_str_malloc(strlen(old_dir)+strlen(ent->d_name)+2);
             char *new_fullname = my_str_malloc(strlen(new_dir)+strlen(ent->d_name)+2);
 
-            sprintf(new_fullname,"%s/%s",new_dir,ent->d_name);
-            sprintf(old_fullname,"%s/%s",old_dir,ent->d_name);
+            snprintf(new_fullname, sizeof(char)*(strlen(new_dir)+strlen(ent->d_name)+2), "%s/%s",new_dir,ent->d_name);
+            snprintf(old_fullname, sizeof(char)*(strlen(old_dir)+strlen(ent->d_name)+2), "%s/%s",old_dir,ent->d_name);
 
             if(socket_check(new_dir,ent->d_name,index) == 1)
                 continue;
@@ -855,9 +864,9 @@ int socket_check(char *dir,char *name,int index)
     char *p = NULL;
     char *q = NULL;
 
-    //char *fullpath = my_str_malloc(strlen(dir) + strlen(name) + 1);//2014.11.5 by sherry
+//2014.11.5 by sherry
     char *fullpath = my_str_malloc(strlen(dir) + strlen(name) + 2);//内存分配不足
-    sprintf(fullpath,"%s/%s",dir,name);
+    snprintf(fullpath, sizeof(char)*(strlen(dir) + strlen(name) + 2), "%s/%s",dir,name);
 
     DEBUG("fullpath:%s\n",fullpath);
 
@@ -868,7 +877,7 @@ int socket_check(char *dir,char *name,int index)
         if(!strncmp(pTemp->cmdName,"move",4) || !strncmp(pTemp->cmdName,"rename",6))
         {
             sock_buf = my_str_malloc(strlen(pTemp->cmdName) + 1);
-            sprintf(sock_buf,"%s",pTemp->cmdName);
+            snprintf(sock_buf, sizeof(char)*(strlen(pTemp->cmdName) + 1), "%s",pTemp->cmdName);
             char *ret = strchr(sock_buf,'\n');
             part_one = my_str_malloc(strlen(sock_buf) - strlen(ret) + 1);
             snprintf(part_one,strlen(sock_buf) - strlen(ret) + 1,"%s",sock_buf);
@@ -918,8 +927,8 @@ int socket_check(char *dir,char *name,int index)
         {
             dir1 = my_str_malloc(strlen(dir) + 3);
             dir2 = my_str_malloc(strlen(dir) + 3);
-            sprintf(dir1,"\n%s\n",dir);
-            sprintf(dir2,"\n%s/",dir);
+            snprintf(dir1, sizeof(char)*(strlen(dir) + 3), "\n%s\n",dir);
+            snprintf(dir2, sizeof(char)*(strlen(dir) + 3), "\n%s/",dir);
 
             DEBUG("dir1:%s\n",dir1);
             DEBUG("dir2:%s\n",dir2);

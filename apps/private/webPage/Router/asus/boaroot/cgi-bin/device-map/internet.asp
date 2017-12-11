@@ -66,6 +66,7 @@ var wans_lanport = '<% tcWebApi_Get("Dualwan_Entry", "wans_lanport", "s") %>';
 var wan0_primary = '<% nvram_get("wan0_primary"); %>';
 var wans_mode = '<%tcWebApi_Get("Dualwan_Entry", "wans_mode", "s")%>';
 var loadBalance_Ratio = '<%tcWebApi_Get("Dualwan_Entry", "wans_lb_ratio", "s")%>';
+var wan_common_transmode = '<%tcWebApi_Get("Wan_Common", "TransMode", "s")%>';
 
 var wan_unit = '<% tcWebApi_Get("WebCurSet_Entry", "wan_unit", "s") %>';
 if('<% tcWebApi_Get("Wan_PVC", "Active", "s") %>' == 'Yes')
@@ -542,8 +543,12 @@ function goToWAN(){
 		else
 			parent.location.href = '/cgi-bin/Advanced_DSL_Content.asp';
 	}
-	else
-		parent.location.href = '/cgi-bin/Advanced_DSL_Content.asp';
+	else {
+		if(wan_common_transmode == "USB")
+			parent.location.href = '/cgi-bin/Advanced_Modem_Content.asp';
+		else
+			parent.location.href = '/cgi-bin/Advanced_DSL_Content.asp';
+	}
 }
 
 function goToDualWAN(){

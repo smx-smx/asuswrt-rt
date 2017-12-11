@@ -14,7 +14,7 @@ End If
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
-<title>ASUS <% tcWebApi_get("SysInfo_Entry","ProductName","s") %> <% tcWebApi_get("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","Bandwidth_Limiter","s")%></title>
+<title>ASUS <% tcWebApi_get("String_Entry","Web_Title2","s") %> <% tcWebApi_get("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","Bandwidth_Limiter","s")%></title>
 <link rel="stylesheet" type="text/css" href="/ParentalControl.css">
 <link rel="stylesheet" type="text/css" href="/index_style.css"> 
 <link rel="stylesheet" type="text/css" href="/form_style.css">
@@ -147,15 +147,14 @@ function addRow_main(obj, length){
 		document.form.PC_devicename.focus();
 		return false;
 	}
-	
-	if(qos_bw_rulelist.search(PC_mac) > -1 && PC_mac != ""){		//check same target
+
+	if(qos_bw_rulelist.search(PC_mac+">") > -1 && PC_mac != ""){		//check same target
 		alert("<%tcWebApi_get("String_Entry","JS_duplicate","s")%>");
 		document.form.PC_devicename.focus();
 		PC_mac = "";
 		return false;
 	}
-	
-	if(qos_bw_rulelist.search(document.form.PC_devicename.value) > -1){
+	if(qos_bw_rulelist.search(document.form.PC_devicename.value+">") > -1){
 		alert("<%tcWebApi_get("String_Entry","JS_duplicate","s")%>");
 		document.form.PC_devicename.focus();
 		return false;

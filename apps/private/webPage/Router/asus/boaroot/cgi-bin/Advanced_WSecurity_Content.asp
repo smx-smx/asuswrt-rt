@@ -39,6 +39,7 @@ load_parameters_to_generic()
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/detect.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
@@ -176,7 +177,7 @@ function _change_wl_unit(wl_unit){
 			  	<%tcWebApi_get("String_Entry","WA11a_ExAuthDBIPAddr_in","s")%></a>			  
 		</th>
 		<td>
-			<input type="text" maxlength="15" class="input_15_table" name="wl_radius_ipaddr" value="<% If tcWebApi_get("WLan_Entry","RADIUS_Server","h") <> "" then  tcWebApi_get("WLan_Entry","RADIUS_Server","s") end if %>" onKeyPress="return is_ipaddr(this, event)" onblur="valid_IP_form(this, 0)">
+			<input type="text" maxlength="15" class="input_15_table" name="wl_radius_ipaddr" value="<% If tcWebApi_get("WLan_Entry","RADIUS_Server","h") <> "" then  tcWebApi_get("WLan_Entry","RADIUS_Server","s") end if %>" onKeyPress="return validator.isIPAddr(this, event)" onblur="valid_IP_form(this, 0)">
 		</td>
 	</tr>
 	<tr>
@@ -185,7 +186,7 @@ function _change_wl_unit(wl_unit){
 			  	<%tcWebApi_get("String_Entry","WA11a_ExAuthDBPortNumber_in","s")%></a>
 		</th>
 		<td>
-			<input type="text" maxlength="5" class="input_6_table" name="wl_radius_port" value="<% If tcWebApi_get("WLan_Entry","RADIUS_Port","h") <> "" then  tcWebApi_get("WLan_Entry","RADIUS_Port","s") end if %>" onkeypress="return is_number(this,event)" onblur="validate_number_range(this, 0, 65535)"/>
+			<input type="text" maxlength="5" class="input_6_table" name="wl_radius_port" value="<% If tcWebApi_get("WLan_Entry","RADIUS_Port","h") <> "" then  tcWebApi_get("WLan_Entry","RADIUS_Port","s") end if %>" onkeypress="return validator.isNumber(this,event)" onblur="validate_number_range(this, 0, 65535)"/>
 		</td>
 	</tr>
 	<tr>

@@ -294,6 +294,18 @@ int translate_uri(request * req)
 		return 1;
 	}
 #endif
+#ifdef RTCONFIG_ODMPID
+	if(strstr(req->request_uri, "Settings_") || strstr(req->request_uri, ".CFG"))
+	{
+		req->pathname = strdup("/tmp/var/romfile_encrypt.cfg");
+		if (!req->pathname) {
+			send_r_error(req);
+			WARN("unable to strdup buffer onto req->pathname");
+			return 0;
+		}
+		return 1;
+	}
+#endif
     uri_len = strlen(req->request_uri);
 
     current = find_alias(req->request_uri, uri_len);

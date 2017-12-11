@@ -738,6 +738,11 @@ int umount_partition(char *dev_name, int host_num, char *dsc_name, char *pt_name
 
 	/* Find all the mountpoints that are for this device and unmount them. */
 	findmntents(dev_name, 0, umount_mountpoint, flags);
+
+#if defined(RTCONFIG_APP_PREINSTALLED) || defined(RTCONFIG_APP_NETINSTALLED)
+	usb_notify();
+#endif
+
 	return 0;
 }
 
@@ -1084,6 +1089,8 @@ done:
 				tcapi_save();	//Andy Chiu, 2015/03/18
 			}
 		}
+
+		usb_notify();
 #endif
 
 #ifdef TCSUPPORT_SWAP_FILE
@@ -1779,7 +1786,7 @@ start_samba(void)
 			suit_double_quote(suit_passwd, char_passwd, 64);
 
 			sprintf(cmd, "smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
-_dprintf("%s: cmd=%s.\n", __FUNCTION__, cmd);
+//_dprintf("%s: cmd=%s.\n", __FUNCTION__, cmd);
 			system(cmd);
 
 			if(++i >= acc_num)
@@ -2999,6 +3006,38 @@ int stop_app(){
 	sync();
 
 	return 0;
+}
+
+void usb_notify(){
+	char target_dir[128], target[128], buf[16];
+	DIR *dp;
+	struct dirent *entry;
+
+	memset(target_dir, 0, 128);
+	sprintf(target_dir, "%s/%s", NOTIFY_DIR, NOTIFY_TYPE_USB);
+	if(!check_if_dir_exist(target_dir))
+		return;
+
+	if(!(dp = opendir(target_dir)))
+		return;
+
+	while((entry = readdir(dp)) != NULL){
+		if(entry->d_name[0] == '.')
+			continue;
+
+		memset(target, 0, 128);
+		sprintf(target, "%s/%s", target_dir, entry->d_name);
+
+		if(!pids(entry->d_name)){
+			unlink(target);
+			continue;
+		}
+
+		f_read_string(target, buf, 16);
+
+		killall(entry->d_name, atoi(buf));
+	}
+	closedir(dp);
 }
 #endif
 #endif // RTCONFIG_USB

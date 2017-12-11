@@ -156,6 +156,8 @@ fi
 /bin/mkdir -m 0777 -p /tmp/ppp
 /bin/mkdir -m 0777 -p /tmp/xdsl
 /bin/mkdir -m 0777 -p /tmp/asusfbsvcs
+/bin/mkdir -m 0700 -p /tmp/home/
+/bin/mkdir -m 0700 -p /tmp/home/root
 /bin/mkdir -m 0755 -p /var/spool/cron/crontabs
 
 if [ "$TCSUPPORT_USB_3G_DONGLE" != "" ] ;then
@@ -312,7 +314,7 @@ fi
 
 if [ "ASUS_PROTECTION_SERVER" != "" ]; then
 echo "ASUS_PROTECTION_SERVER"
-/usr/sbin/protection_server &
+/usr/sbin/protect_srv &
 fi
 
 
@@ -506,10 +508,11 @@ cat /proc/tc3162/reset_rtk_switch
 /userfs/bin/vconfig add eth0 3963
 /userfs/bin/vconfig add eth0 3964
 ip link set eth0.2 name nas10
-ip link set eth0.3961 name lan1
-ip link set eth0.3962 name lan2
-ip link set eth0.3963 name lan3
-ip link set eth0.3964 name lan4
+LAN_PORT_ITF_PREFIX="elan."
+ip link set eth0.3961 name "$LAN_PORT_ITF_PREFIX""1"
+ip link set eth0.3962 name "$LAN_PORT_ITF_PREFIX""2"
+ip link set eth0.3963 name "$LAN_PORT_ITF_PREFIX""3"
+ip link set eth0.3964 name "$LAN_PORT_ITF_PREFIX""4"
 ifconfig eth0.1 up
 echo "RTL8367 models switch init. End"
 fi
@@ -570,6 +573,10 @@ fi
 if [ "$TCSUPPORT_DUAL_WLAN_MT7612E" != "" ] ;then
 echo "TCSUPPORT_DUAL_WLAN_MT7612E"
 insmod /lib/modules/mt7662e_ap.ko
+fi
+if [ "$TCSUPPORT_DUAL_WLAN_MT7610E" != "" ] ;then
+echo "TCSUPPORT_DUAL_WLAN_MT7610E"
+insmod /lib/modules/mt7610e_ap.ko
 fi
 fi
 
@@ -832,11 +839,11 @@ fi
 # if [ "$TCSUPPORT_USB_AUTOMOUNT" != "" ] ;then
 # /userfs/bin/usb_auto_mount &
 # fi
-PRODUCTNAME=`/userfs/bin/tcapi get SysInfo_Entry ProductName`
+# PRODUCTNAME=`/userfs/bin/tcapi get SysInfo_Entry ProductName`
 /sbin/rc_init &
 
 # Set the hostname.
-hostname "$PRODUCTNAME"
+# hostname "$PRODUCTNAME"
 
 # if [ "$TCSUPPORT_TC2031" != "" ] ;then
 # echo "single port"
@@ -931,7 +938,7 @@ if [ -f $CLEAN_CACHE_FILE ] ;then
         $CLEAN_CACHE_FILE &
 fi
 
-echo "Product name=[$PRODUCTNAME]" > /proc/tc3162/dbg_msg
+# echo "Product name=[$PRODUCTNAME]" > /proc/tc3162/dbg_msg
 fwver=`cat /etc/fwver.conf`
 echo "Firmware version=[$fwver]" > /proc/tc3162/dbg_msg
 

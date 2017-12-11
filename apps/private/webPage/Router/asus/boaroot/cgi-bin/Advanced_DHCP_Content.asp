@@ -22,7 +22,7 @@ If Request_Form("lanFlag") <> "" Then
     TCWebApi_set("Dhcpd_Common","lease","dhcp_LeaseTime")
     TCWebApi_set("Dhcpd_Common","router","dhcp_gateway_x")
     TCWebApi_set("Dhcpd_Common","wins_IP","winsIP")
-    TCWebApi_set("Dhcpd_Common", "lan1","DHCPPhyPortEth0")
+    TCWebApi_set("Dhcpd_Common", "elan.1","DHCPPhyPortEth0")
 
     tcWebApi_set("Dproxy_Entry","Active","DNSproxy")
     TCWebApi_set("Dproxy_Entry","type","dnsTypeRadio")
@@ -46,6 +46,7 @@ If Request_Form("lanFlag") <> "" Then
     End If
   End If
 
+  update_variables()
   tcWebApi_Save()
 End If
 %>
@@ -72,6 +73,7 @@ End If
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
 <script language="JavaScript" type='text/javascript' src="/js/ip_new.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <style>
 #ClientList_Block_PC{
 border:1px outset #999;
@@ -483,6 +485,8 @@ function applyRule(){
 	}
 
 	document.uiViewLanForm.dhcpFlag.value = 0;
+	document.uiViewLanForm.action_script.value = "restart_boa";
+	document.uiViewLanForm.action_mode.value = "apply";
 	originData.onlinelist_cache = "";
 	showLoading(42);	//Extend from 17 to 42 to restore_webtype
 	setTimeout("redirect();", 42000);
@@ -650,6 +654,8 @@ $("check_mac").innerHTML="The format for the MAC address is six groups of two he
 <input type="hidden" name="action_script" value="">
 <input type="hidden" name="action_wait" value=""></form>
 <FORM METHOD="POST" ACTION="/cgi-bin/Advanced_DHCP_Content.asp" name="uiViewLanForm" target="hidden_frame">
+<input type="hidden" name="action_mode" value="">
+<input type="hidden" name="action_script" value="">
 <INPUT TYPE="HIDDEN" NAME="lan_VC" value="0">
 <INPUT type="HIDDEN" name="staticNum" value="<%TcWebApi_get("Dhcpd","Static_Num","s")%>">
 <INPUT type="HIDDEN" name="LeaseNum" value="<%TcWebApi_get("DhcpLease","LeaseNum","s")%>">
@@ -713,26 +719,26 @@ $("check_mac").innerHTML="The format for the MAC address is six groups of two he
 <tr>
 			  <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,3);"><%tcWebApi_get("String_Entry","LHC_MinAddress_in","s")%></a></th>
 <td>
-	<INPUT TYPE="TEXT" NAME="StartIp" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<%If tcWebApi_get("Dhcpd_Common","start","h") <> "" then tcWebApi_get("Dhcpd_Common","start","s") end if%>" onKeyPress="return is_ipaddr(this, event);">
+	<INPUT TYPE="TEXT" NAME="StartIp" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<%If tcWebApi_get("Dhcpd_Common","start","h") <> "" then tcWebApi_get("Dhcpd_Common","start","s") end if%>" onKeyPress="return validator.isIPAddr(this, event);">
 </td>
 </tr>
 <tr>
             <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,4);"><%tcWebApi_get("String_Entry","LHC_MaxAddress_in","s")%></a></th>
 <td>
-	<INPUT TYPE="TEXT" NAME="EndIp" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<%If tcWebApi_get("Dhcpd_Common","end","h") <> "" then tcWebApi_get("Dhcpd_Common","end","s") end if%>" onKeyPress="return is_ipaddr(this, event);">
+	<INPUT TYPE="TEXT" NAME="EndIp" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<%If tcWebApi_get("Dhcpd_Common","end","h") <> "" then tcWebApi_get("Dhcpd_Common","end","s") end if%>" onKeyPress="return validator.isIPAddr(this, event);">
 </td>
 </tr>
 <tr>
             <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,5);"><%tcWebApi_get("String_Entry","LHC_LeaseTime_in","s")%></a></th>
 <td>
-	<INPUT TYPE="TEXT" NAME="dhcp_LeaseTime" class="input_15_table" SIZE="6" MAXLENGTH="6" VALUE="<%If tcWebApi_get("Dhcpd_Common","lease","h") <> "" then tcWebApi_get("Dhcpd_Common","lease","s") else asp_Write("0") end if%>"  onKeyPress="return is_number(this,event)">
+	<INPUT TYPE="TEXT" NAME="dhcp_LeaseTime" class="input_15_table" SIZE="6" MAXLENGTH="6" VALUE="<%If tcWebApi_get("Dhcpd_Common","lease","h") <> "" then tcWebApi_get("Dhcpd_Common","lease","s") else asp_Write("0") end if%>"  onKeyPress="return validator.isNumber(this,event)">
 	 <%tcWebApi_get("String_Entry","Second","s")%>
 </td>
 </tr>
 <tr>
 <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,6);"><%tcWebApi_get("String_Entry","IPC_x_ExternalGateway_in","s")%></a></th>
 <td>
-<input type="text" maxlength="15" class="input_15_table" name="dhcp_gateway_x" value="<%tcWebApi_get("Dhcpd_Common", "router", "s")%>" onKeyPress="return is_ipaddr(this,event)" onBlur="valid_IP_form(this,0)">
+<input type="text" maxlength="15" class="input_15_table" name="dhcp_gateway_x" value="<%tcWebApi_get("Dhcpd_Common", "router", "s")%>" onKeyPress="return validator.isIPAddr(this,event)" onBlur="valid_IP_form(this,0)">
 </td>
 </tr>
 </table>
@@ -745,19 +751,19 @@ $("check_mac").innerHTML="The format for the MAC address is six groups of two he
 <tr>
 				<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);"><%tcWebApi_get("String_Entry","LHC_x_LDNSServer1_in","s")%></a></th>
 <td>
-<INPUT TYPE="TEXT" NAME="PrimaryDns" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<% If tcWebApi_get("Dproxy_Entry","type","h") = "1" then tcWebApi_get("Dproxy_Entry","Primary_DNS","s") else asp_Write("") end if %>" onKeyPress="return is_ipaddr(this, event);">
+<INPUT TYPE="TEXT" NAME="PrimaryDns" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<% If tcWebApi_get("Dproxy_Entry","type","h") = "1" then tcWebApi_get("Dproxy_Entry","Primary_DNS","s") else asp_Write("") end if %>" onKeyPress="return validator.isIPAddr(this, event);">
 </td>
 </tr>
 <tr>
 <th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);"><%tcWebApi_get("String_Entry","LHC_x_LDNSServer2_in","s")%></a></th>
 <td>
-<INPUT TYPE="TEXT" NAME="SecondDns" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<% If tcWebApi_get("Dproxy_Entry","type","h") = "1" then tcWebApi_get("Dproxy_Entry","Secondary_DNS","s") else asp_Write("") end if %>" onKeyPress="return is_ipaddr(this, event);">
+<INPUT TYPE="TEXT" NAME="SecondDns" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<% If tcWebApi_get("Dproxy_Entry","type","h") = "1" then tcWebApi_get("Dproxy_Entry","Secondary_DNS","s") else asp_Write("") end if %>" onKeyPress="return validator.isIPAddr(this, event);">
 </td>
 </tr>
 <tr>
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,8);"><%tcWebApi_get("String_Entry","LHC_x_WINSServer_in","s")%></a></th>
 <td>
-<INPUT TYPE="TEXT" NAME="winsIP" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<%If tcWebApi_get("Dhcpd_Common","wins_IP","h") <> "" then tcWebApi_get("Dhcpd_Common","wins_IP","s") end if%>" onKeyPress="return is_ipaddr(this, event);">
+<INPUT TYPE="TEXT" NAME="winsIP" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<%If tcWebApi_get("Dhcpd_Common","wins_IP","h") <> "" then tcWebApi_get("Dhcpd_Common","wins_IP","s") end if%>" onKeyPress="return validator.isIPAddr(this, event);">
 </td>
 </tr>
 </table>
@@ -776,12 +782,12 @@ $("check_mac").innerHTML="The format for the MAC address is six groups of two he
 
 <td width="40%">
 <input type="hidden" name="dhcp_staticnum_x_0" value="" readonly="1" />
-<input type="text" class="input_20_table" maxlength="17" name="MACAddr" style="margin-left:-12px;width:255px;" onKeyPress="return is_hwaddr(this,event)" onClick="hideClients_Block();">
+<input type="text" class="input_20_table" maxlength="17" name="MACAddr" style="margin-left:-12px;width:255px;" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();">
 <img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<% tcWebApi_Get("String_Entry", "select_MAC", "s") %>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 <div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
 </td>
 <td width="40%">
-<input type="text" class="input_15_table" maxlength="15" name="IpAddr" onkeypress="return is_ipaddr(this,event)">
+<input type="text" class="input_15_table" maxlength="15" name="IpAddr" onkeypress="return validator.isIPAddr(this,event)">
 </td>
 <td width="20%">
 <div>

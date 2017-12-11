@@ -41,7 +41,8 @@ ppp_linkunit(char *linkname)
 	if (!isdigit(linkname[3]))
 		return -1;
 	unit = atoi(&linkname[3]);
-	if(unit >= 80)
+	
+	if(unit >= 80 && (unit % 10) == 0)
 		return unit/10;
 	else
 		return unit;

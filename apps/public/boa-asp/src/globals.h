@@ -142,7 +142,7 @@ struct request {                /* pending requests */
 	 char web_api_addr[32];
 	 char val_def_addr[32];
       #endif
-
+	char host[128];	//Andy Chiu, 2017/1/12. Add for 'Host' field.
 	restrict_client_t *restrict_client;
 };
 

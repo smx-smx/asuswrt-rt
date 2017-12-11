@@ -48,8 +48,8 @@ needcrypt-$(CONFIG_VLOCK)	:= y
 ifeq ($(needcrypt-y),y)
   LIBRARIES += -lcrypt
 endif
-CFLAGS += -I$(APP_SHARED_DIR) $(CPPFLAGS)
-LIBRARIES += -L$(APP_SHARED_DIR) -lshared
+CFLAGS += -I$(APP_PROTECTION_SERVER_DIR)/include/ $(CPPFLAGS)
+LIBRARIES += -L$(APP_PROTECTION_SERVER_DIR)/lib/ -lptcsrv
 $(LOGINUTILS_DIR)$(LOGINUTILS_AR): $(patsubst %,$(LOGINUTILS_DIR)%, $(LOGINUTILS-y))
 	$(AR) -ro $@ $(patsubst %,$(LOGINUTILS_DIR)%, $(LOGINUTILS-y))
 

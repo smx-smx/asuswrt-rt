@@ -396,20 +396,27 @@ int main(int argc, char **argv)
 	p->header_len = STORE32_LE(sizeof(struct trx_header));
 	//load config value from config file
 	if(stat(config_file,&stbuf) == 0){
-		#if 1
 		get_config("Model",p->Model,sizeof(p->Model),config_file);
 		fprintf(stderr,"Model %s \n",p->Model);
-		#endif
 		get_config("version",p->version,sizeof(p->version),config_file);
 		fprintf(stderr,"version %s \n",p->version);
 		get_config("customerversion",p->customerversion,sizeof(p->customerversion),config_file);
 		fprintf(stderr,"customerversion %s \n",p->customerversion);
+#if defined(TCSUPPORT_FLASH_SUPPORT_CHECK)
+		do {
+			char config_buf[128] = {0};
+			bzero(config_buf, sizeof(config_buf));
+			get_config("nand_version",config_buf, sizeof(config_buf), config_file);
+			p->nand_version = STORE32_LE(atoi(config_buf));
+			fprintf(stderr,"nand_version %u \n", p->nand_version);
+		} while(0);
+#endif
 	}else{
 		fprintf(stderr,"no config file\n");	
 	}	
 
 	//write Model Name, Sam 2013/3/6
-	strcpy((char*)(p->reserved), PRODUCTNAME);
+	strcpy((char*)(p->modelname), PRODUCTNAME);
 
 	p->len = STORE32_LE(cur_len);
 	if (!fwrite(buf, cur_len, 1, out) || fflush(out)) {

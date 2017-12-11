@@ -49,6 +49,7 @@
 #include "apps.h"
 #include "defaults.h"
 #include "vpn.h"
+#include "bwdpi.h"
 
 #if VOIP
 #include "voip.h"
@@ -58,6 +59,8 @@
 #if 1
 #include "../../public/mtd/tc_partition.h"
 #endif
+
+#define GUEST_NETWORK_MARK	8 /* guest mark only 8 ~ 13 (6 guestnetwork) */
 
 #define MAX_TCAPI_TIME	10
 
@@ -203,6 +206,7 @@
 #define MAXSIZE	160
 #define QM_LEN	2
 
+#define FLASH_NOT_SUPPORT -4
 #define WRONG_ROMFILE -3
 #define SAME	-2
 #define FAIL -1
@@ -222,7 +226,6 @@
 #define UPGRADE_COMPRESSROMFILE_CMD	"/userfs/bin/mtd %s write /tmp/var/romfile.cfg.gz romfile"
 
 #define ATM_VC_NUM			8
-#if (defined(TCSUPPORT_WAN_ETHER) || defined(TCSUPPORT_WAN_PTM)) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
 #define MERGE_FROM_TABLE 	1
 #define MERGE_FROM_USER		0
 #define MAX_SERVICE_NUM 	8
@@ -240,7 +243,6 @@
 #define NATEXT_PATH			"/etc/nat_pvc%d_%d/ipmode"
 #define DMZEXT_PATH 		"/etc/nat_pvc%d_%d/dmz"
 #define VIRSERVEXT_PATH 	"/etc/nat_pvc%d_%d/vserver%d"
-#endif
 
 #define SINGLE_SKU_PATH_2G "/etc/Wireless/RT2860AP/SingleSKU.dat"
 #define SINGLE_SKU_PATH_5G "/etc/Wireless/RT2860AP_AC/SingleSKU.dat"
@@ -515,5 +517,7 @@ typedef struct log_record_s{
 #define WRITE_DEFAULT_ROMFILE	0x0004
 int write_cur_romfile_in_flash(mxml_node_t *node, const int write_type);
 int remove_dup_node_in_romfile(mxml_node_t *top);
+
+//#define NEW_IGMPPROXY 1
 
 #endif

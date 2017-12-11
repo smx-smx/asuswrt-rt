@@ -645,7 +645,11 @@ function initial(){
 			<%if tcWebApi_get("Wan_Common","TransMode","h") = "LAN" then%>
 				showhide("MultiServiceTable", 0);
 				showhide("SummaryTable", 0);
-				document.form.wanTypeOption.remove(3);	//remove BRIDGE
+				if(productid == "DSL-AC51"){	//-- MODELDEP:DSL-AC51 (odmpid:DSL-AC750) LAN port 1,2 only
+					document.form.wans_lanport.remove(3);
+					document.form.wans_lanport.remove(2);
+				}
+				document.form.wanTypeOption.remove(3);	//remove BRIDGE				
 			<%elseif tcWebApi_get("Wan_Common","TransMode","h") = "Ethernet" then%>
 
 				<%if tcWebApi_get("SysInfo_Entry","ProductName","h") = "DSL-N66U" then%>
@@ -662,18 +666,25 @@ function initial(){
 					document.form.wanTypeOption.remove(3);  //remove BRIDGE
 				}
 				<%end if%>
-			<%else%>
+			<%else%>	
+				//PTM
 				showhide("MultiServiceTable", 1);
 				showhide("SummaryTable", 1);
-				//remove bridge if service number is 0, lock to bridge if 1~7
+				/*keep bridge if service number is 0, lock to bridge if 1~7
 				if(document.form.service_num.selectedIndex == 0) {
 					document.form.wanTypeOption.remove(3);	//remove BRIDGE
-				}
+				}*/
 			<%end if%>
 		<%else%>
 			showhide("SummaryTable", 0);
 			if(document.form.wan_TransMode.value == "Ethernet" || document.form.wan_TransMode.value == "LAN")
 				document.form.wanTypeOption.remove(3);	//remove BRIDGE
+			if(document.form.wan_TransMode.value == "LAN"){
+				if(productid == "DSL-AC51"){	//-- MODELDEP:DSL-AC51 (odmpid:DSL-AC750) LAN port 1,2 only
+					document.form.wans_lanport.remove(3);
+					document.form.wans_lanport.remove(2);
+				}	
+			}
 		<%end if%>
 
 	<%end if%>
@@ -1106,17 +1117,37 @@ function validForm(){
 					alert("<%tcWebApi_get("String_Entry","IPC_warning_WANIPEQUALGatewayIP","s")%>");
 					return false;
 				}
-				if(form.PrimaryDns.value == "" && form.SecondDns.value == "") {
-					form.PrimaryDns.focus();
-					alert("<%tcWebApi_get("String_Entry","IPC_x_DNSServer_blank","s")%>");
-					return false;
+				
+			<%if tcWebApi_get("WebCustom_Entry","isMultiSerSupported","h") = "Yes" then%>	
+				<%if tcWebApi_get("Wan_Common","TransMode","h") = "ATM" then%>
+					if(form.wan_VC.value == 0){
+				<%elseif tcWebApi_get("Wan_Common","TransMode","h") = "PTM" then%>
+					if(form.service_num.value == 0){
+				<%elseif tcWebApi_get("Wan_Common","TransMode","h") = "Ethernet" then%>
+					<%if tcWebApi_get("SysInfo_Entry","ProductName","h") = "DSL-N66U" then%>
+						if(1==0){
+					<%else%>
+						if(form.service_num.value == 0){
+					<%end if%>
+				<%else%>
+					if(1==0){
+				<%end if%>
+			<%else%>
+				if(1==0){
+			<%end if%>
+					
+					if(form.PrimaryDns.value == "" && form.SecondDns.value == "") {
+						form.PrimaryDns.focus();					
+						alert("<%tcWebApi_get("String_Entry","IPC_x_DNSServer_blank","s")%>");
+						return false;
+					}
+					if(!valid_IP(form.PrimaryDns, "DNS"))
+						return false;
+					if(!valid_IP(form.SecondDns, "DNS"))
+						return false;
+					//force enable dns
+					form.dnsTypeRadio[1].checked = 1;
 				}
-				if(!valid_IP(form.PrimaryDns, "DNS"))
-					return false;
-				if(!valid_IP(form.SecondDns, "DNS"))
-					return false;
-				//force enable dns
-				form.dnsTypeRadio[1].checked = 1;
 			}
 
 			//ipv6
@@ -1812,6 +1843,12 @@ function doConTypeChange() {
 }
 
 function rm_IPTV_LANPort(){	//remove wans_lanport if dual wan with Ethernet LAN
+	
+	if(productid == "DSL-AC51"){	//-- MODELDEP:DSL-AC51 (odmpid:DSL-AC750) LAN port 1,2 only
+		document.getElementById("IPTV_LANPort_Option").options.remove(3);
+		document.getElementById("IPTV_LANPort_Option").options.remove(2);
+	}
+
 	if(wans_dualwan_orig.search("lan") >= 0 && wans_lanport_orig > 0){
 		var wans_lanport_idx = wans_lanport_orig-1;
 		document.getElementById("IPTV_LANPort_Option").options.remove(wans_lanport_idx);
@@ -2293,7 +2330,7 @@ function pass_checked(obj){
 									<option value="1" <% if tcWebApi_get("Wan_PVC","bridge_lan_port","h") = "1" then asp_Write("selected") end if %>>LAN Port 1</option>
 									<option value="2" <% if tcWebApi_get("Wan_PVC","bridge_lan_port","h") = "2" then asp_Write("selected") end if %>>LAN Port 2</option>
 									<option value="3" <% if tcWebApi_get("Wan_PVC","bridge_lan_port","h") = "3" then asp_Write("selected") end if %>>LAN Port 3</option>
-									<option value="4" <% if tcWebApi_get("Wan_PVC","bridge_lan_port","h") = "4" then asp_Write("selected") end if %>>LAN Port 4</option>
+									<option value="4" <% if tcWebApi_get("Wan_PVC","bridge_lan_port","h") = "4" then asp_Write("selected") end if %>>LAN Port 4</option>									
 								</select>	
 							</td>
 						</tr>
@@ -2335,14 +2372,14 @@ function pass_checked(obj){
 						<tr>
 							<th><%tcWebApi_get("String_Entry","WANVLANIDText","s")%></th>
 							<td align="left">
-								<input type="text" name="wan_vid" maxlength="4" class="input_6_table" onkeypress="return is_number(this,event)" value=<%if tcWebApi_get("Wan_PVC","VLANID","h") <> "" then tcWebApi_get("Wan_PVC","VLANID","s") else asp_Write("0") end if%> > ( 1 ~ 4094 )
+								<input type="text" name="wan_vid" maxlength="4" class="input_6_table" onkeypress="return validator.isNumber(this,event)" value=<%if tcWebApi_get("Wan_PVC","VLANID","h") <> "" then tcWebApi_get("Wan_PVC","VLANID","s") else asp_Write("0") end if%> > ( 1 ~ 4094 )
 							</td>
 						</tr>
 					<%if tcWebApi_get("WebCustom_Entry","isdot1pSupport","h") = "Yes" then %>
 						<tr>
 							<th>802.1P</th>
 							<td align="left">
-								<input type="text" name="wan_dot1p" maxlength="4" class="input_6_table" onkeypress="return is_number(this,event)" value=<%if tcWebApi_get("Wan_PVC","DOT1P","h") <> "" then tcWebApi_get("Wan_PVC","DOT1P","s") else asp_Write("0") end if%> > ( 0 ~ 7 )
+								<input type="text" name="wan_dot1p" maxlength="4" class="input_6_table" onkeypress="return validator.isNumber(this,event)" value=<%if tcWebApi_get("Wan_PVC","DOT1P","h") <> "" then tcWebApi_get("Wan_PVC","DOT1P","s") else asp_Write("0") end if%> > ( 0 ~ 7 )
 							</td>
 						</tr>
 					<%end if%>
@@ -2431,7 +2468,7 @@ function pass_checked(obj){
 						<tr id="wan_TCPMTU">
 							<th>MTU</th>
 							<td align="left">
-								<input type="text" name="wan_TCPMTU" maxlength="4" class="input_6_table" value=<% if tcWebApi_get("Wan_PVC","MTU","h") = "" then asp_write("1492") elseif tcWebApi_get("Wan_PVC","MTU","h") = "0" then asp_write("1492") else tcWebApi_get("Wan_PVC","MTU","s")  end if%> onKeyPress="return is_number(this,event);"> <%tcWebApi_get("String_Entry","WAN_TCPMTU","s")%>
+								<input type="text" name="wan_TCPMTU" maxlength="4" class="input_6_table" value=<% if tcWebApi_get("Wan_PVC","MTU","h") = "" then asp_write("1492") elseif tcWebApi_get("Wan_PVC","MTU","h") = "0" then asp_write("1492") else tcWebApi_get("Wan_PVC","MTU","s")  end if%> onKeyPress="return validator.isNumber(this,event);"> <%tcWebApi_get("String_Entry","WAN_TCPMTU","s")%>
 							</td>
 						</tr>
 
@@ -2457,19 +2494,19 @@ function pass_checked(obj){
 						<tr id="wan_StaticIPaddr">
 							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,1);"><% tcWebApi_Get("String_Entry", "IPC_ExternalIPAddress_in", "s") %></a></th>
 							<td>
-								<input type="text" name="wan_StaticIPaddr" maxlength="15" class="input_15_table" onKeyPress="return is_ipaddr(this,event);" onKeyUp="change_ipaddr(this);" value= <% if tcWebApi_get("Wan_PVC","IPADDR","h") <> "" then tcWebApi_get("Wan_PVC","IPADDR","s") end if%> >
+								<input type="text" name="wan_StaticIPaddr" maxlength="15" class="input_15_table" onKeyPress="return validator.isIPAddr(this,event);" value= <% if tcWebApi_get("Wan_PVC","IPADDR","h") <> "" then tcWebApi_get("Wan_PVC","IPADDR","s") end if%> >
 							</td>
 						</tr>
 						<tr id="wan_StaticIPSubMask">
 							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,2);"><% tcWebApi_Get("String_Entry", "IPC_x_ExternalSubnetMask_in", "s") %></a></th>
 							<td>
-								<input type="text" name="wan_StaticIPSubMask" maxlength="15" class="input_15_table" onKeyPress="return is_ipaddr(this,event);" onKeyUp="change_ipaddr(this);" value=<% if tcWebApi_get("Wan_PVC","NETMASK","h") <> "" then tcWebApi_get("Wan_PVC","NETMASK","s") end if%> >
+								<input type="text" name="wan_StaticIPSubMask" maxlength="15" class="input_15_table" onKeyPress="return validator.isIPAddr(this,event);" value=<% if tcWebApi_get("Wan_PVC","NETMASK","h") <> "" then tcWebApi_get("Wan_PVC","NETMASK","s") end if%> >
 							</td>
 						</tr>
 						<tr id="wan_StaticIpGateway">
 							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,3);"><% tcWebApi_Get("String_Entry", "IPC_x_ExternalGateway_in", "s") %></a></th>
 							<td>
-								<input type="text" name="wan_StaticIpGateway" maxlength="15" class="input_15_table" onKeyPress="return is_ipaddr(this,event);" onKeyUp="change_ipaddr(this);" value= <% if tcWebApi_get("Wan_PVC","GATEWAY","h") <> "" then tcWebApi_get("Wan_PVC","GATEWAY","s") end if%>>
+								<input type="text" name="wan_StaticIpGateway" maxlength="15" class="input_15_table" onKeyPress="return validator.isIPAddr(this,event);" value= <% if tcWebApi_get("Wan_PVC","GATEWAY","h") <> "" then tcWebApi_get("Wan_PVC","GATEWAY","s") end if%>>
 							</td>
 						</tr>
 
@@ -2483,13 +2520,13 @@ function pass_checked(obj){
 						<tr id="PrimaryDns">
 							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,13);"><% tcWebApi_Get("String_Entry", "IPC_x_DNSServer1_in", "s") %></a></th>
 							<td>
-								<INPUT TYPE="TEXT" NAME="PrimaryDns" class="input_15_table" MAXLENGTH="15" onkeypress="return is_ipaddr(this,event)" onkeyup="change_ipaddr(this)" VALUE="<% If tcWebApi_get("Wan_PVC","DNS_type","h") = "1" then tcWebApi_get("Wan_PVC","Primary_DNS","s") end if %>" >
+								<INPUT TYPE="TEXT" NAME="PrimaryDns" class="input_15_table" MAXLENGTH="15" onkeypress="return validator.isIPAddr(this,event)" VALUE="<% If tcWebApi_get("Wan_PVC","DNS_type","h") = "1" then tcWebApi_get("Wan_PVC","Primary_DNS","s") end if %>" >
 							</td>
 						</tr>
 						<tr id="SecondDns">
 							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,14);"><% tcWebApi_Get("String_Entry", "IPC_x_DNSServer2_in", "s") %></a></th>
 							<td>
-								<INPUT TYPE="TEXT" NAME="SecondDns" class="input_15_table" MAXLENGTH="15" onkeypress="return is_ipaddr(this,event)" onkeyup="change_ipaddr(this)" VALUE="<% If tcWebApi_get("Wan_PVC","DNS_type","h") = "1" then tcWebApi_get("Wan_PVC","Secondary_DNS","s") end if %>" >
+								<INPUT TYPE="TEXT" NAME="SecondDns" class="input_15_table" MAXLENGTH="15" onkeypress="return validator.isIPAddr(this,event)" VALUE="<% If tcWebApi_get("Wan_PVC","DNS_type","h") = "1" then tcWebApi_get("Wan_PVC","Secondary_DNS","s") end if %>" >
 							</td>
 						</tr>
 						<tr id="wan_NAT">
@@ -2678,7 +2715,7 @@ function pass_checked(obj){
 						</thead>
 						<tr>
 							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,4);"><% tcWebApi_Get("String_Entry", "PPPC_UserName_in", "s") %></a></th>
-							<td><input type="text" maxlength="64" class="input_32_table" name="wan_PPPUsername" onkeypress="return is_string(this, event)" value="" autocapitalization="off" autocomplete="off"></td>
+							<td><input type="text" maxlength="64" class="input_32_table" name="wan_PPPUsername" onkeypress="return validator.isString(this, event)" value="" autocapitalization="off" autocomplete="off"></td>
 						</tr>
 						<tr>
 							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,5);"><% tcWebApi_Get("String_Entry", "PPPC_Password_in", "s") %></a></th>
@@ -2707,7 +2744,7 @@ function pass_checked(obj){
 								<br/>
 								<div>
 								<INPUT TYPE="RADIO" NAME="wan_ConnectSelect" class="input" VALUE="Connect_on_Demand"   <%if tcWebApi_get("Wan_PVC","CONNECTION","h") = "Connect_on_Demand" then asp_Write("checked") end if%> onClick="WANChkIdleTimeT();"><%tcWebApi_get("String_Entry","WANConnectioncComm1Text","s")%>
-								<INPUT TYPE="TEXT" NAME="wan_IdleTimeT" MAXLENGTH="3" class="input_6_table" onkeypress="return is_number(this,event)" VALUE=<% if tcWebApi_get("Wan_PVC","CLOSEIFIDLE","h") = "" then asp_Write("0") else tcWebApi_get("Wan_PVC","CLOSEIFIDLE","s") end if%> ><%tcWebApi_get("String_Entry","WANConnectioncComm2Text","s")%>
+								<INPUT TYPE="TEXT" NAME="wan_IdleTimeT" MAXLENGTH="3" class="input_6_table" onkeypress="return validator.isNumber(this,event)" VALUE=<% if tcWebApi_get("Wan_PVC","CLOSEIFIDLE","h") = "" then asp_Write("0") else tcWebApi_get("Wan_PVC","CLOSEIFIDLE","s") end if%> ><%tcWebApi_get("String_Entry","WANConnectioncComm2Text","s")%>
 								<br/>
 								</div>
 							</td>
@@ -2721,13 +2758,13 @@ function pass_checked(obj){
 						<tr>
 							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,17);">Host-Uniq (Hexadecimal)</a></th>
 							<td align="left">
-								<INPUT TYPE="TEXT" NAME="wan_pppoe_hostuniq" maxlength="32" class="input_32_table" VALUE="<% tcWebApi_get("Wan_PVC","wan_pppoe_hostuniq","s") %>" onKeyPress="return is_string(this,event);"/>
+								<INPUT TYPE="TEXT" NAME="wan_pppoe_hostuniq" maxlength="32" class="input_32_table" VALUE="<% tcWebApi_get("Wan_PVC","wan_pppoe_hostuniq","s") %>" onKeyPress="return validator.isString(this,event);"/>
 							</td>
 						</tr>
 						<tr>
 							<th><%tcWebApi_get("String_Entry","PPPC_x_AdditionalOptions_in","s")%></th>
 							<td align="left">
-								<input type="text" name="wan_pppoe_options" value="<%tcWebApi_get("Wan_PVC", "wan_pppoe_options", "s")%>" class="input_32_table" maxlength="255" onKeyPress="return is_string(this, event)">
+								<input type="text" name="wan_pppoe_options" value="<%tcWebApi_get("Wan_PVC", "wan_pppoe_options", "s")%>" class="input_32_table" maxlength="255" onKeyPress="return validator.isString(this, event)">
 							</td>
 						</tr>
 						</table>
@@ -2745,14 +2782,14 @@ function pass_checked(obj){
 						<tr id="wan_hostname">
 							<th><%tcWebApi_get("String_Entry","PPPC_x_HostNameForISP_in","s")%></th>
 							<td align="left">
-								<input type="text" name="wan_hostname" class="input_32_table" maxlength="32" value="<% tcWebApi_get("Wan_PVC", "wan_hostname", "s") %>" onkeypress="return is_string(this, event)">
+								<input type="text" name="wan_hostname" class="input_32_table" maxlength="32" value="<% tcWebApi_get("Wan_PVC", "wan_hostname", "s") %>" onkeypress="return validator.isString(this, event)">
 								<br/><span id="alert_msg1" style="color:#FC0;"></span>
 							</td>
 						</tr>
 						<tr id="wan_hwaddr_x">
 							<th><%tcWebApi_get("String_Entry","PPPC_x_MacAddressForISP_in","s")%></th>
 							<td align="left">
-								<input type="text" name="wan_hwaddr_x" class="input_20_table" maxlength="17" value="<% tcWebApi_get("Wan_PVC", "WAN_MAC", "s") %>" onKeyPress="return is_hwaddr(this,event)">
+								<input type="text" name="wan_hwaddr_x" class="input_20_table" maxlength="17" value="<% tcWebApi_get("Wan_PVC", "WAN_MAC", "s") %>" onKeyPress="return validator.isHWAddr(this,event)">
 								<input type="button" class="button_gen_long" onclick="showMAC();" value="<%tcWebApi_get("String_Entry","BOP_isp_MACclone","s")%>">
 							</td>
 						</tr>

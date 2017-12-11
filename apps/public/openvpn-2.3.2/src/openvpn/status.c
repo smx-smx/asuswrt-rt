@@ -301,10 +301,10 @@ void update_nvram_status(int flag)
 
 	psname(pid, name, 16);	//vpnserverX or vpnclientX
 	if(!strncmp(name, "vpnserver", 9)) {
-		sprintf(node, "OpenVPN_Entry%d", atoi(name+9)+SERVER_IF_START);
+		sprintf(node, "OpenVPN_Entry%d", atoi(name+9)+OVPN_SERVER_BASE);
 	}
 	else if(!strncmp(name, "vpnclient", 9)) {
-		sprintf(node, "OpenVPN_Entry%d", atoi(name+9)+CLIENT_IF_START);
+		sprintf(node, "OpenVPN_Entry%d", atoi(name+9)+OVPN_CLIENT_BASE);
 	}
 	else {
 		return;
@@ -354,27 +354,35 @@ void update_nvram_status(int flag)
 
 int current_addr(in_addr_t addr)
 {
-	FILE *fp = fopen("/proc/net/route", "r");
-	in_addr_t dest;
-	char buf[256];
-	int i;
+	int fd;
+	struct ifreq *ifreq;
+	struct ifconf ifconf;
+	char buf[8192];
+	size_t len;
 
-	if(fp) {
-		while(fgets(buf, sizeof(buf), fp)) {
-			if(!strncmp(buf, "Iface", 5))
-				continue;
-
-			i = sscanf(buf, "%*s %x", &dest);
-			if (i != 1)
-				break;
-
-			if(dest == addr) {
-				fclose(fp);
-				return 1;
-			}
-		}
-		fclose(fp);
+	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if(fd < 0) {
+		perror("socket()");
+		return 0;
 	}
+
+	ifconf.ifc_len = sizeof(buf);
+	ifconf.ifc_buf = buf;
+	if( ioctl(fd, SIOCGIFCONF, &ifconf) != 0 ) {
+		perror("ioctl(SIOCGIFCONF)");
+		return 0;
+	}
+
+	ifreq = ifconf.ifc_req;
+	while( (char*)ifreq < buf + ifconf.ifc_len ) {
+		if( ((struct sockaddr_in*)&ifreq->ifr_addr)->sin_addr.s_addr == addr ) {
+			//cprintf("%8X = %8X\n", ((struct sockaddr_in*)&ifreq->ifr_addr)->sin_addr.s_addr, addr);
+			return 1;
+		}
+
+		ifreq = (struct ifreq*)((char*)ifreq + sizeof(*ifreq));
+	}
+
 	return 0;
 }
 

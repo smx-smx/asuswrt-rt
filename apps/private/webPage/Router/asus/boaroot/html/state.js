@@ -126,6 +126,7 @@ var htmlEnDeCode = (function() {
 
 var sw_mode = '1';
 var productid = '<% tcWebApi_staticGet("SysInfo_Entry","ProductName","s") %>';
+var odm_productid = '<% ej_get_productid() %>';
 var uptimeStr = "<% uptime(); %>";
 var timezone = uptimeStr.substring(26,31);
 var boottime = parseInt(uptimeStr.substring(32,42));
@@ -170,7 +171,8 @@ var gn_array_2g = [
 		    "0", "1", "", "", "", \
 		    "", "0", "off", "0", \
 		    "disabled", "0", "", "", \	//Mac Filter
-		    "", "", ""]	\	//Bandwith Limiter
+		    "", "", "",	\	//Bandwith Limiter
+		    "0", "0", ""] \	//URL Filter
 		  ];
 var gn_array_5g = [
 		   ["1", "%41%53%55%53%5F%35%47%5F%47%75%65%73%74%31", "WPAPSKWPA2PSK", "AES", "%35%34%33%32%31%32%33%34%35", \
@@ -187,7 +189,8 @@ var gn_array_5g = [
 		    "0", "1", "", "", "", \
 		    "", "0", "off", "0", \
 		    "disabled", "0", "", "", \	//Mac Filter
-		    "", "", ""] \	//Bandwith Limiter
+		    "", "", "",	\	//Bandwith Limiter
+		    "0", "0", ""] \	//URL Filter
 		  ];
 */
 
@@ -226,6 +229,7 @@ else
 	dsl_loss_sync = '<%tcWebApi_staticGet("WebCurSet_Entry", "loss_sync", "s") %>';
 var experience_DSL_fb = '<%tcWebApi_staticGet("Misc_Entry","experience_DSL_fb", "s") %>';
 var exist_firmver="<% tcWebApi_staticGet("DeviceInfo","FwVer","s") %>";
+var qis_notification_iptv = '<%tcWebApi_staticGet("Misc_Entry","qis_notification_iptv", "s") %>';
 
 /* Hide this function. Unsafe.
 var noti_notif_Flag = '<%tcWebApi_staticGet("WebCustom_Entry","webs_notif_flag", "s") %>';
@@ -324,6 +328,13 @@ banner_code +='<form method="post" name="noti_notif_hint" action="/start_apply.a
 banner_code +='<input type="hidden" name="action_script" value="notif_hint">\n';
 banner_code +='<input type="hidden" name="noti_notif_Flag" value="0">\n';
 banner_code +='</form>\n';
+
+if(iptv_support != -1){
+	banner_code +='<form method="post" name="qis_notification_iptv_form" action="/start_apply.asp" target="hidden_frame">\n';
+	banner_code +='<input type="hidden" name="qis_notification_iptv_Flag" value="1">\n';
+	banner_code +='<input type="hidden" name="qis_notification_iptv" value="0">\n';
+	banner_code +='</form>\n';
+}
 
 banner_code +='<form method="post" name="internetForm_title" action="disconnect_wan.asp" target="hidden_frame">\n';
 banner_code +='<input type="hidden" name="DvInfo_PVC" value="<% tcWebApi_staticGet("WebCurSet_Entry","dev_pvc","s") %>">\n';
@@ -486,104 +497,36 @@ updateStatus_AJAX();
 }
 
 function show_app_table(evt){
+
 	var target = document.getElementById("app_link_table");
-	if(evt.srcElement.id == "app_icon" || evt.srcElement.id == "cancel_app"){
+	var evt_target = evt.target || evt.srcElement;  //evt.target for Firefox patched
+
+	if(evt_target.id == "app_icon" || evt_target.id == "cancel_app"){
 		if(target.style.display == "none"){
 			target.style.display = "";		
 		}
 		else{
 			target.style.display = "none";
-		}				
+		}
+
 	}
-	else if(evt.srcElement.offsetParent == null){
+	else if(evt_target.offsetParent == null){
 		if(target.style.display == ""){
 			target.style.display = "none";
 		}
 		
 	}
-	else if((evt.srcElement.id != "null" && evt.srcElement.id == "app_link_table") || (evt.srcElement.offsetParent.id != "null" && evt.srcElement.offsetParent.id) == "app_link_table"){	
+	else if((evt_target.id != "null" && evt_target.id == "app_link_table") || (evt_target.offsetParent.id != "null" && evt_target.offsetParent.id) == "app_link_table"){	
 		return true;
+
 	}
 	else{
 		if(target.style.display == ""){
 			target.style.display = "none";
-	}	
- }
-}
+		}
 
-var tabtitle = new Array();
-tabtitle[0] = new Array("", "<%tcWebApi_get("String_Entry","menu5_1_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_1_2","s")%>", "WDS" ,"<%tcWebApi_get("String_Entry","menu5_1_4","s")%>", "<%tcWebApi_get("String_Entry","menu5_1_5","s")%>", "<%tcWebApi_get("String_Entry","menu5_1_6","s")%>");
-tabtitle[1] = new Array("", "<%tcWebApi_get("String_Entry","menu5_2_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_2_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_2_3","s")%>", "IPTV", "<%tcWebApi_get("String_Entry","Switch_itemname","s")%>");
-tabtitle[2] = new Array("", "<%tcWebApi_get("String_Entry","menu5_3_1","s")%>", "Dual WAN", "<%tcWebApi_get("String_Entry","menu5_3_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_3_4","s")%>", "<%tcWebApi_get("String_Entry","menu5_3_5","s")%>", "<%tcWebApi_get("String_Entry","menu5_3_6","s")%>", "<%tcWebApi_get("String_Entry","NAT_passthrough_in","s")%>", "<%tcWebApi_get("String_Entry","menu5_4_4","s")%>");
-tabtitle[3] = new Array("", "<%tcWebApi_get("String_Entry","UPnPMediaServer","s")%>", "<%tcWebApi_get("String_Entry","menu5_4_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_4_2","s")%>");
-tabtitle[4] = new Array("", "IPv6");
-tabtitle[5] = new Array("", "<%tcWebApi_get("String_Entry","BOP_isp_heart_item","s")%>", "VPN Client", "IPSec VPN");
-tabtitle[6] = new Array("", "<%tcWebApi_get("String_Entry","menu5_1_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_5","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_4","s")%>");
-tabtitle[7] = new Array("", "<%tcWebApi_get("String_Entry","menu5_6_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_6_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_6_4","s")%>", "Performance tuning", "<%tcWebApi_get("String_Entry","menu_dsl_setting","s")%>", "<%tcWebApi_get("String_Entry","menu_dsl_feedback","s")%>", "CWMP", "TR069");
-tabtitle[8] = new Array("", "<%tcWebApi_get("String_Entry","menu5_7_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_4","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_6","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_5","s")%>", "<%tcWebApi_get("String_Entry","menu_dsl_log","s")%>", "<%tcWebApi_get("String_Entry","Connections","s")%>");
-tabtitle[9] = new Array("", "<%tcWebApi_get("String_Entry","Network_Analysis","s")%>", "Netstat", "<%tcWebApi_get("String_Entry","NetworkTools_WOL","s")%>");
-tabtitle[10] = new Array("", "QoS", "<%tcWebApi_get("String_Entry","traffic_monitor","s")%>", "<% tcWebApi_get("String_Entry","Adaptive_History","s") %>", "Spectrum");
-var tablink = new Array();
-tablink[0] = new Array("", "Advanced_Wireless_Content.asp", "Advanced_WWPS_Content.asp", "Advanced_WMode_Content.asp", "Advanced_ACL_Content.asp", "Advanced_WSecurity_Content.asp", "Advanced_WAdvanced_Content.asp");
-tablink[1] = new Array("", "Advanced_LAN_Content.asp", "Advanced_DHCP_Content.asp", "Advanced_GWStaticRoute_Content.asp", "Advanced_IPTV_Content.asp", "Advanced_SwitchCtrl_Content.asp");
-tablink[2] = new Array("", "Advanced_DSL_Content.asp", "Advanced_WANPort_Content.asp", "Advanced_PortTrigger_Content.asp", "Advanced_VirtualServer_Content.asp", "Advanced_Exposed_Content.asp", "Advanced_ASUSDDNS_Content.asp", "Advanced_NATPassThrough_Content.asp", "Advanced_Modem_Content.asp");
-tablink[3] = new Array("", "mediaserver.asp", "Advanced_AiDisk_samba.asp", "Advanced_AiDisk_ftp.asp");
-tablink[4] = new Array("", "Advanced_IPv6_Content.asp");
-tablink[5] = new Array("", "Advanced_VPN_PPTP.asp", "Advanced_VPNClient_Content.asp", "adv_vpn_setting.asp");
-tablink[6] = new Array("", "Advanced_BasicFirewall_Content.asp", "Advanced_URLFilter_Content.asp", "Advanced_MACFilter_Content.asp", "Advanced_KeywordFilter_Content.asp", "Advanced_Firewall_Content.asp");
-tablink[7] = new Array("", "Advanced_System_Content.asp", "Advanced_FirmwareUpgrade_Content.asp", "Advanced_SettingBackup_Content.asp", "Advanced_PerformanceTuning_Content.asp", "Advanced_ADSL_Content.asp", "Advanced_Feedback.asp", "Advanced_CWMP_Content.asp", "Advanced_TR069_Content.asp");
-tablink[8] = new Array("", "Main_LogStatus_Content.asp", "Main_WStatus_Content.asp", "Main_DHCPStatus_Content.asp", "Main_RouteStatus_Content.asp", "Main_IPTStatus_Content.asp", "Main_AdslStatus_Content.asp", "Main_ConnStatus_Content.asp");
-tablink[9] = new Array("", "Main_Analysis_Content.asp", "Main_Netstat_Content.asp", "Main_WOL_Content.asp");
-tablink[10] = new Array("", "QoS_EZQoS.asp", "Main_TrafficMonitor_realtime.asp", "Main_WebHistory_Content.asp", "Main_Spectrum_Content.asp", "Main_TrafficMonitor_last24.asp", "Main_TrafficMonitor_daily.asp", "Advanced_QOSUserPrio_Content.asp", "Advanced_QOSUserRules_Content.asp");
-
-//Level 2 Menu
-menuL2_title = new Array("", "<%tcWebApi_get("String_Entry","menu5_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_4","s")%>", "IPv6", "VPN", "<%tcWebApi_get("String_Entry","menu5_5","s")%>", "<%tcWebApi_get("String_Entry","menu5_6","s")%>", "<%tcWebApi_get("String_Entry","System_Log","s")%>", "<%tcWebApi_get("String_Entry","Network_Tools","s")%>");
-menuL2_link = new Array("", tablink[0][1], tablink[1][1], tablink[2][1], tablink[3][1], tablink[4][1], tablink[5][1], tablink[6][1], tablink[7][1], tablink[8][1], tablink[9][1]);
-menuL1_title = new Array("", "<%tcWebApi_get("String_Entry","menu1","s")%>", "<%tcWebApi_get("String_Entry","Guest_Network","s")%>", "<%tcWebApi_get("String_Entry","Menu_TrafficManager","s")%>", "<%tcWebApi_get("String_Entry","Parental_Control","s")%>", "<%tcWebApi_get("String_Entry","Menu_usb_application","s")%>", "<%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%>", "<%tcWebApi_get("String_Entry","menu5","s")%>");
-menuL1_link = new Array("", "index2.asp", "Guest_network.asp", "QoS_EZQoS.asp", "ParentalControl.asp", "APP_Installation.asp", "cloud_main.asp", "");
-
-//wireless
-var wl_nband_title = [];
-var wl_nband_array = '<% wl_nband_info(); %>'.toArray();
-var band2g_count = 0;
-var band5g_count = 0;
-for (var j=0; j<wl_nband_array.length; j++) {
-	if(wl_nband_array[j] == '2'){
-		band2g_count++;
-		wl_nband_title.push("2.4 GHz" + ((band2g_count > 1) ? ("-" + band2g_count) : ""));
-	}
-	else if(wl_nband_array[j] == '1'){
-		band5g_count++;
-		wl_nband_title.push("5 GHz" + ((band5g_count > 1) ? ("-" + band5g_count) : ""));
 	}
 }
-if(wl_nband_title.indexOf("2.4 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("2.4 GHz")] = "2.4 GHz-1";
-if(wl_nband_title.indexOf("5 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("5 GHz")] = "5 GHz-1";
-
-var wl_info = {
-	band2g_support:(function(){
-				if(band2g_count > 0)
-					return true;
-				else
-					return false;
-			})(),
-	band5g_support:(function(){
-				if(band5g_count > 0)
-					return true;
-				else
-					return false;
-			})(),
-	band5g_2_support:(function(){
-				if(band5g_count == 2)
-					return true;
-				else
-					return false;
-			})(),
-	band2g_total:band2g_count,
-	band5g_total:band5g_count,
-	wl_if_total:wl_nband_array.length
-};
-//wireless end
 
 // parsing rc_support
 var rc_support = "<% tcWebApi_get("SysInfo_Entry", "rc_support", "s") %>";
@@ -636,10 +579,6 @@ var nodm_support = rc_support.search("nodm");
 var wimax_support = rc_support.search("wimax");
 var tcipsec_support = rc_support.search("tcipsec");
 var wds_support = rc_support.search("wds");
-var calculate_height = menuL1_link.length+tablink.length-3;
-var model_name = "<% tcWebApi_staticGet("SysInfo_Entry","ProductName","s") %>";
-var downsize_support = -1;
-var wl6_support = -1;
 var spectrum_support = rc_support.search("spectrum");
 var userRSSI_support = rc_support.search("user_low_rssi");
 var iptv_support = rc_support.search("iptv");
@@ -655,8 +594,108 @@ var networkTool_support = true;
 var tr069_support = rc_support.search("tr069");
 var gobi_support = rc_support.search("gobi");
 var webmon_support = rc_support.search("ipt_webmon");
+var access_log_support = rc_support.search("access_log");
+var bwdpi_support = rc_support.search("bwdpi");
 var app_support = true;	//all model incleded for now
 // rc_support end
+
+
+var tabtitle = new Array();
+tabtitle[0] = new Array("", "<%tcWebApi_get("String_Entry","menu5_1_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_1_2","s")%>", "WDS" ,"<%tcWebApi_get("String_Entry","menu5_1_4","s")%>", "<%tcWebApi_get("String_Entry","menu5_1_5","s")%>", "<%tcWebApi_get("String_Entry","menu5_1_6","s")%>");
+tabtitle[1] = new Array("", "<%tcWebApi_get("String_Entry","menu5_2_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_2_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_2_3","s")%>", "IPTV", "<%tcWebApi_get("String_Entry","Switch_itemname","s")%>");
+tabtitle[2] = new Array("", "<%tcWebApi_get("String_Entry","menu5_3_1","s")%>", "Dual WAN", "<%tcWebApi_get("String_Entry","menu5_3_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_3_4","s")%>", "<%tcWebApi_get("String_Entry","menu5_3_5","s")%>", "<%tcWebApi_get("String_Entry","menu5_3_6","s")%>", "<%tcWebApi_get("String_Entry","NAT_passthrough_in","s")%>", "<%tcWebApi_get("String_Entry","menu5_4_4","s")%>");
+tabtitle[3] = new Array("", "<%tcWebApi_get("String_Entry","UPnPMediaServer","s")%>", "<%tcWebApi_get("String_Entry","menu5_4_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_4_2","s")%>");
+tabtitle[4] = new Array("", "IPv6");
+tabtitle[5] = new Array("", "<%tcWebApi_get("String_Entry","BOP_isp_heart_item","s")%>", "VPN Client", "IPSec VPN");
+tabtitle[6] = new Array("", "<%tcWebApi_get("String_Entry","menu5_1_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_5","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_4","s")%>");
+tabtitle[7] = new Array("", "<%tcWebApi_get("String_Entry","menu5_6_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_6_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_6_4","s")%>", "Performance tuning", "<%tcWebApi_get("String_Entry","menu_dsl_setting","s")%>", "<%tcWebApi_get("String_Entry","menu_dsl_feedback","s")%>", "CWMP", "TR069");
+tabtitle[8] = new Array("", "<%tcWebApi_get("String_Entry","menu5_7_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_4","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_6","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_5","s")%>", "<%tcWebApi_get("String_Entry","menu_dsl_log","s")%>", "<%tcWebApi_get("String_Entry","Connections","s")%>", "Access Log");
+tabtitle[9] = new Array("", "<%tcWebApi_get("String_Entry","Network_Analysis","s")%>", "Netstat", "<%tcWebApi_get("String_Entry","NetworkTools_WOL","s")%>");
+tabtitle[10] = new Array("", "QoS", "<%tcWebApi_get("String_Entry","traffic_monitor","s")%>", "<% tcWebApi_get("String_Entry","Adaptive_History","s") %>", "Spectrum");
+tabtitle[11] = new Array("");
+
+if(bwdpi_support != -1){
+	tabtitle[12] = new Array("", "Network Protection", "<%tcWebApi_get("String_Entry","Parental_Control","s")%>");
+}
+
+var tablink = new Array();
+tablink[0] = new Array("", "Advanced_Wireless_Content.asp", "Advanced_WWPS_Content.asp", "Advanced_WMode_Content.asp", "Advanced_ACL_Content.asp", "Advanced_WSecurity_Content.asp", "Advanced_WAdvanced_Content.asp");
+tablink[1] = new Array("", "Advanced_LAN_Content.asp", "Advanced_DHCP_Content.asp", "Advanced_GWStaticRoute_Content.asp", "Advanced_IPTV_Content.asp", "Advanced_SwitchCtrl_Content.asp");
+tablink[2] = new Array("", "Advanced_DSL_Content.asp", "Advanced_WANPort_Content.asp", "Advanced_PortTrigger_Content.asp", "Advanced_VirtualServer_Content.asp", "Advanced_Exposed_Content.asp", "Advanced_ASUSDDNS_Content.asp", "Advanced_NATPassThrough_Content.asp", "Advanced_Modem_Content.asp");
+tablink[3] = new Array("", "mediaserver.asp", "Advanced_AiDisk_samba.asp", "Advanced_AiDisk_ftp.asp");
+tablink[4] = new Array("", "Advanced_IPv6_Content.asp");
+tablink[5] = new Array("", "Advanced_VPN_PPTP.asp", "Advanced_VPNClient_Content.asp", "adv_vpn_setting.asp");
+tablink[6] = new Array("", "Advanced_BasicFirewall_Content.asp", "Advanced_URLFilter_Content.asp", "Advanced_MACFilter_Content.asp", "Advanced_KeywordFilter_Content.asp", "Advanced_Firewall_Content.asp");
+tablink[7] = new Array("", "Advanced_System_Content.asp", "Advanced_FirmwareUpgrade_Content.asp", "Advanced_SettingBackup_Content.asp", "Advanced_PerformanceTuning_Content.asp", "Advanced_ADSL_Content.asp", "Advanced_Feedback.asp", "Advanced_CWMP_Content.asp", "Advanced_TR069_Content.asp");
+tablink[8] = new Array("", "Main_LogStatus_Content.asp", "Main_WStatus_Content.asp", "Main_DHCPStatus_Content.asp", "Main_RouteStatus_Content.asp", "Main_IPTStatus_Content.asp", "Main_AdslStatus_Content.asp", "Main_ConnStatus_Content.asp", "Main_AccessLog_Content.asp");
+tablink[9] = new Array("", "Main_Analysis_Content.asp", "Main_Netstat_Content.asp", "Main_WOL_Content.asp");
+tablink[10] = new Array("", "QoS_EZQoS.asp", "Main_TrafficMonitor_realtime.asp", "Main_WebHistory_Content.asp", "Main_Spectrum_Content.asp", "Main_TrafficMonitor_last24.asp", "Main_TrafficMonitor_daily.asp", "Advanced_QOSUserPrio_Content.asp", "Advanced_QOSUserRules_Content.asp");
+tablink[11] = new Array("");
+
+if(bwdpi_support != -1){
+	tablink[12] = new Array("", "AiProtection_HomeProtection.asp", "AiProtection_WebProtector.asp");
+}
+
+//Level 2 Menu
+menuL2_title = new Array("", "<%tcWebApi_get("String_Entry","menu5_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_4","s")%>", "IPv6", "VPN", "<%tcWebApi_get("String_Entry","menu5_5","s")%>", "<%tcWebApi_get("String_Entry","menu5_6","s")%>", "<%tcWebApi_get("String_Entry","System_Log","s")%>", "<%tcWebApi_get("String_Entry","Network_Tools","s")%>");
+menuL2_link = new Array("", tablink[0][1], tablink[1][1], tablink[2][1], tablink[3][1], tablink[4][1], tablink[5][1], tablink[6][1], tablink[7][1], tablink[8][1], tablink[9][1]);
+
+if(bwdpi_support != -1){
+	menuL1_title = new Array("", "<%tcWebApi_get("String_Entry","menu1","s")%>", "<%tcWebApi_get("String_Entry","Guest_Network","s")%>", "<%tcWebApi_get("String_Entry","Menu_TrafficManager","s")%>", "<%tcWebApi_get("String_Entry","AiProtection_title","s")%>", "<%tcWebApi_get("String_Entry","Menu_usb_application","s")%>", "<%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%>", "<%tcWebApi_get("String_Entry","menu5","s")%>");
+	menuL1_link = new Array("", "index2.asp", "Guest_network.asp", "QoS_EZQoS.asp", "AiProtection_HomeProtection.asp", "APP_Installation.asp", "cloud_main.asp", "");
+}
+else {
+	menuL1_title = new Array("", "<%tcWebApi_get("String_Entry","menu1","s")%>", "<%tcWebApi_get("String_Entry","Guest_Network","s")%>", "<%tcWebApi_get("String_Entry","Menu_TrafficManager","s")%>", "<%tcWebApi_get("String_Entry","Parental_Control","s")%>", "<%tcWebApi_get("String_Entry","Menu_usb_application","s")%>", "<%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%>", "<%tcWebApi_get("String_Entry","menu5","s")%>");
+	menuL1_link = new Array("", "index2.asp", "Guest_network.asp", "QoS_EZQoS.asp", "ParentalControl.asp", "APP_Installation.asp", "cloud_main.asp", "");
+}
+
+var calculate_height = menuL1_link.length+tablink.length-3;
+var model_name = "<% tcWebApi_staticGet("SysInfo_Entry","ProductName","s") %>";
+var downsize_support = -1;
+var wl6_support = -1;
+
+//wireless
+var wl_nband_title = [];
+var wl_nband_array = '<% wl_nband_info(); %>'.toArray();
+var band2g_count = 0;
+var band5g_count = 0;
+for (var j=0; j<wl_nband_array.length; j++) {
+	if(wl_nband_array[j] == '2'){
+		band2g_count++;
+		wl_nband_title.push("2.4 GHz" + ((band2g_count > 1) ? ("-" + band2g_count) : ""));
+	}
+	else if(wl_nband_array[j] == '1'){
+		band5g_count++;
+		wl_nband_title.push("5 GHz" + ((band5g_count > 1) ? ("-" + band5g_count) : ""));
+	}
+}
+if(wl_nband_title.indexOf("2.4 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("2.4 GHz")] = "2.4 GHz-1";
+if(wl_nband_title.indexOf("5 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("5 GHz")] = "5 GHz-1";
+
+var wl_info = {
+	band2g_support:(function(){
+				if(band2g_count > 0)
+					return true;
+				else
+					return false;
+			})(),
+	band5g_support:(function(){
+				if(band5g_count > 0)
+					return true;
+				else
+					return false;
+			})(),
+	band5g_2_support:(function(){
+				if(band5g_count == 2)
+					return true;
+				else
+					return false;
+			})(),
+	band2g_total:band2g_count,
+	band5g_total:band5g_count,
+	wl_if_total:wl_nband_array.length
+};
+//wireless end
 
 if(live_update_support){
 	if(exist_firmver[0] == 9)
@@ -868,6 +907,9 @@ function remove_url(){
 	if(webmon_support == -1){
 		remove_menu_item(10, "Main_WebHistory_Content.asp");
 	}
+	if(access_log_support == -1){
+		remove_menu_item(8, "Main_AccessLog_Content.asp");
+	}
 }
 function remove_menu_item(L2, remove_url){
 var dx;
@@ -966,17 +1008,42 @@ L1 = traffic_L1_dx;
 L2 = traffic_L2_dx;
 L3 = 4;
 }
-else if(current_url.indexOf("ParentalControl") == 0){
-L1 = traffic_L1_dx;
-L2 = traffic_L2_dx;
-L3 = 3;
-}
 else{
 L1 = traffic_L1_dx;
 L2 = traffic_L2_dx;
 L3 = 1;
 }
 }
+
+	if(bwdpi_support != -1){
+	
+		if(current_url.indexOf("AiProtection_HomeProtection.asp") == 0){
+			L1 = 4;
+			traffic_L2_dx = 13;
+			traffic_L3_dx = 1;
+			L2 = traffic_L2_dx;
+			L3 = traffic_L3_dx;
+		}
+		if(current_url.indexOf("AiProtection_WebProtector.asp") == 0 ||
+			current_url.indexOf("ParentalControl") == 0){
+			traffic_L1_dx = 4;
+			traffic_L2_dx = 13;
+			traffic_L3_dx = 2;
+			
+			L1 = traffic_L1_dx;	
+			L2 = traffic_L2_dx;
+			L3 = traffic_L3_dx;
+		}	
+	}
+	else{
+		if(current_url.indexOf("ParentalControl") == 0){
+			traffic_L2_dx = 12;
+			traffic_L3_dx = 5;
+			
+			L2 = traffic_L2_dx;
+			L3 = traffic_L3_dx;		
+		}
+	}
 
 	if(current_url.indexOf("Advanced_VPNAdvanced") == 0){
 			traffic_L1_dx = 0;
@@ -995,6 +1062,7 @@ L3 = 1;
 			L3 = 2;
 		}
 	}
+
 	if('<%tcwebApi_get("Wan_Common","TransMode","s")%>' == 'USB'){
 			menuL2_link[3] = "Advanced_Modem_Content.asp";
 			tablink[2][1] = "Advanced_Modem_Content.asp";
@@ -1113,7 +1181,7 @@ cal_height();
         }else
                 notification.acpw = 0;
 
-        if(isNewFW('<% tcWebApi_get("WebCustom_Entry", "webs_state_info", "s" ) %>', 0, current_firmware_path)){     //case2
+        if(isNewFW('<% tcWebApi_get("WebCustom_Entry", "webs_state_info", "s" ) %>', current_firmware_path, current_firmware_path)){     //case2
                 notification.array[1] = 'noti_upgrade';
                 notification.upgrade = 1;
                 notification.desc[1] = '<%tcWebApi_get("String_Entry","ASUSGATE_note2","s")%>';
@@ -1123,7 +1191,7 @@ cal_height();
                 }
                 else{
                 	notification.action_desc[1] = '<%tcWebApi_get("String_Entry","ASUSGATE_act_update","s")%>';
-                	notification.clickCallBack[1] = "location.href = '/Advanced_FirmwareUpgrade_Content.asp?confirm_show=1'";
+                	notification.clickCallBack[1] = "location.href = '/Advanced_FirmwareUpgrade_Content.asp?confirm_show="+current_firmware_path+"'";
                 }	
         }else
                 notification.upgrade = 0;
@@ -1238,8 +1306,22 @@ cal_height();
 	
 	}else
 		notification.send_debug_log = 0;
+
+	//qis_notification_iptv  1: to show re-setup QIS for IPTV setting 0: no show
+	if(iptv_support != -1 && qis_notification_iptv == "1"){              //case13 & case14
+		notification.array[13] = 'noti_iptv';
+		notification.array[14] = 'noti_iptv_cancel';
+		notification.notif_iptv = 1;
+		notification.desc[13] = 'Currently configured IPTV setting might not work, please go through Quick Internet Setup(QIS) again.';	/* untranslated */
+		notification.action_desc[13] = '<%tcWebApi_Get("String_Entry", "btn_go", "s")%>';
+		notification.clickCallBack[13] = "setTimeout('notification.redirectQIS()', 1000);";
+		notification.action_desc[14] = '<%tcWebApi_get("String_Entry","CTL_Cancel","s")%>';
+		notification.clickCallBack[14] = "setTimeout('document.qis_notification_iptv_form.submit();', 1);setTimeout('notification.redirectRefresh()', 1000);";
+	}
+	else
+		notification.notif_iptv = 0;
                         
-        if( notification.acpw || notification.upgrade || notification.wifi_2g || notification.wifi_5g || notification.ftp || notification.samba || notification.loss_sync || notification.experience_DSL || notification.notif_hint || notification.send_debug_log){
+        if( notification.acpw || notification.upgrade || notification.wifi_2g || notification.wifi_5g || notification.ftp || notification.samba || notification.loss_sync || notification.experience_DSL || notification.notif_hint || notification.send_debug_log || notification.notif_iptv){
                 notification.stat = "on";
                 notification.flash = "on";
                 notification.run();
@@ -1249,7 +1331,7 @@ cal_height();
 }
 
 function get_helplink(){
-	var model_name_supportsite = supportsite_model(country_code, model_name);	// @ /js/support_site.js
+	var model_name_supportsite = supportsite_model(country_code, odm_productid);	// @ /js/support_site.js
 
 	var getlink="http://www.asus.com/Networking/" +model_name_supportsite+ "/HelpDesk_Download/";	
 	return getlink;
@@ -1352,12 +1434,14 @@ function Block_chars(obj, keywordArray){
 }
 
 function cal_height(){
-
 	var tableClientHeight;
 	var optionHeight = 52;
 	var manualOffSet = 25;
 	var table_height = Math.round(optionHeight*calculate_height - manualOffSet*calculate_height/14 - document.getElementById("tabMenu").clientHeight);	
-	if(navigator.appName.indexOf("Microsoft") < 0)
+	
+	if(navigator.userAgent.search("MSIE 8") > -1 || navigator.userAgent.search("MSIE 9") > -1 || navigator.userAgent.search("MSIE 10") > -1)
+		var contentObj = document.querySelectorAll('.content');
+	else if(navigator.appName.indexOf("Microsoft") < 0)
 		var contentObj = document.getElementsByClassName("content");
 	else
 		var contentObj = getElementsByClassName_iefix("table", "content");
@@ -1419,7 +1503,7 @@ function show_footer(){
 	footer_code += '<div style="margin-top:-75px;margin-left:205px;"><table width="765px" border="0" align="center" cellpadding="0" cellspacing="0"><tr>';
 	footer_code += '<td width="20" align="right"><div id="bottom_help_icon" style="margin-right:3px;"></div></td><td width="110" id="bottom_help_title" align="left"><%tcWebApi_get("String_Entry","Help","s")%> & <%tcWebApi_get("String_Entry","Support","s")%></td>';
 	
-	var model_name_supportsite = supportsite_model(country_code, model_name);	//  @/js/support_site.js
+	var model_name_supportsite = supportsite_model(country_code, odm_productid);	//  @/js/support_site.js
 	
 	var tracing_path_Manual = "/HelpDesk_Manual/?utm_source=asus-product&utm_medium=referral&utm_campaign=router";
 	var tracing_path_Utility = "/HelpDesk_Download/?utm_source=asus-product&utm_medium=referral&utm_campaign=router";		
@@ -1472,24 +1556,39 @@ var isOpera = navigator.userAgent.search("Opera") > -1;
 var isIE8 = navigator.userAgent.search("MSIE 8") > -1;
 var isiOS = navigator.userAgent.search("iP") > -1;
 function browser_compatibility(){
-var obj_inputBtn;
-if((isFirefox || isOpera) && document.getElementById("FormTitle")){
-document.getElementById("FormTitle").className = "FormTitle_firefox";
-if(current_url.indexOf("ParentalControl") == 0 || current_url.indexOf("Guest_network") == 0)
-document.getElementById("FormTitle").style.marginTop = "-140px";
-}
-if(isiOS){
-obj_inputBtn = document.getElementsByClassName("button_gen");
-for(var i=0; i<obj_inputBtn.length; i++){
-obj_inputBtn[i].addEventListener('touchstart', function(){this.className = 'button_gen_touch';}, false);
-obj_inputBtn[i].addEventListener('touchend', function(){this.className = 'button_gen';}, false);
-}
-obj_inputBtn = document.getElementsByClassName("button_gen_long");
-for(var i=0; i<obj_inputBtn.length; i++){
-obj_inputBtn[i].addEventListener('touchstart', function(){this.className = 'button_gen_long_touch';}, false);
-obj_inputBtn[i].addEventListener('touchend', function(){this.className = 'button_gen_long';}, false);
-}
-}
+	if(isiOS){
+		obj_inputBtn = document.getElementsByClassName("button_gen");
+		for(var i=0; i<obj_inputBtn.length; i++){
+			obj_inputBtn[i].addEventListener('touchstart', function(){this.className = 'button_gen_touch';}, false);
+			obj_inputBtn[i].addEventListener('touchend', function(){this.className = 'button_gen';}, false);
+		}
+		obj_inputBtn = document.getElementsByClassName("button_gen_long");
+		for(var i=0; i<obj_inputBtn.length; i++){
+			obj_inputBtn[i].addEventListener('touchstart', function(){this.className = 'button_gen_long_touch';}, false);
+			obj_inputBtn[i].addEventListener('touchend', function(){this.className = 'button_gen_long';}, false);
+		}
+	}
+
+	if(current_url.indexOf("index2") != 0 && current_url.indexOf("APP_Installation") != 0){
+		try{
+			// if jQuery is available
+			var $container = $j("#tabMenu").parent();
+			$j('<div>')
+				.css({"margin-top":"-140px"})
+				.append($container.children())
+				.appendTo($container)
+		}
+		catch(e){
+			var container = document.getElementById('tabMenu').parentNode;
+			var newDiv = document.createElement('div');	
+			newDiv.style.marginTop = "-140px";
+			for(var i=0; i<container.children.length; i++){
+				newDiv.appendChild(container.children[i].cloneNode(true));
+			}
+			container.innerHTML = "";
+			container.appendChild(newDiv);
+		}
+	}
 }
 function show_top_status(){
 
@@ -1516,7 +1615,9 @@ function show_top_status(){
 		document.getElementById("elliptic_ssid_5g").title = "5 GHz: \n"+ssid_status_5g;	
 	}
 
-	showtext($("firmver"), "<%If tcWebApi_get("DeviceInfo","FwVer","h") <> "" Then tcWebApi_staticGet("DeviceInfo","FwVer","s") end if%>");
+	var firmver="<% tcWebApi_staticGet("DeviceInfo","firmver","s") %>";
+	var extendno="<% tcWebApi_staticGet("DeviceInfo","extendno","s") %>";
+	showtext(document.getElementById("firmver"), firmver + '_' + extendno.split("-g")[0]);
 }
 
 function extend_display_ssid(ssid){		//"&amp;"5&; "&lt;"4< ; "&gt;"4> ; "&nbsp;"6space
@@ -2105,6 +2206,7 @@ function inputCtrl(obj, flag){
 	|| current_url.indexOf("Advanced_DSL_Content.asp") == 0
 	|| current_url.indexOf("Advanced_SwitchCtrl_Content.asp") == 0
 	|| current_url.indexOf("Main_WebHistory_Content.asp") == 0
+	|| current_url.indexOf("Main_AccessLog_Content.asp") == 0
 	|| current_url.indexOf("router.asp") == 0
 	){
 		if(obj.type == "checkbox")
@@ -2286,8 +2388,11 @@ function refresh_info_status(xmldoc)
 		return false;
 	else if(current_url.indexOf("Advanced_VPNClient_Content.asp") == 0)
 		show_vpnc_rulelist();
-	else if(current_url.indexOf("Advanced_Feedback.asp") == 0 || current_url.indexOf("Main_WebHistory_Content.asp") == 0)
-		updateUSBStatus();		
+	else if(current_url.indexOf("Advanced_Feedback.asp") == 0 || 
+			current_url.indexOf("Main_WebHistory_Content.asp") == 0 ||
+			current_url.indexOf("Main_AccessLog_Content.asp") == 0){
+		updateUSBStatus();
+	}
 		
 	//internet	
 	if(sw_mode == 1){
@@ -2556,16 +2661,18 @@ var notification = {
 	experience_DSL: 0,
 	notif_hint: 0,
 	send_debug_log: 0,
+	notif_iptv: 0,
 	clicking: 0,
 	redirectftp:function(){location.href = '/Advanced_AiDisk_ftp.asp';},
 	redirectsamba:function(){location.href = '/Advanced_AiDisk_samba.asp';},
 	redirectFeedback:function(){location.href = '/Advanced_Feedback.asp';},
 	redirectFeedbackInfo:function(){location.href = '/Feedback_Info.asp';},
 	redirectRefresh:function(){location.href = location.pathname;},
+	redirectQIS:function(){location.href = '/QIS_wizard.asp';},
 	clickCallBack: [],
 	notiClick: function(){
 		// stop flashing after the event is checked.
-		cookie_help.set("notification_history", [notification.upgrade, notification.wifi_2g ,notification.wifi_5g ,notification.ftp ,notification.samba ,notification.loss_sync ,notification.experience_DSL ,notification.notif_hint ,notification.send_debug_log].join(), 1000);
+		cookie_help.set("notification_history", [notification.upgrade, notification.wifi_2g, notification.wifi_5g, notification.ftp, notification.samba, notification.loss_sync, notification.experience_DSL, notification.notif_hint, notification.send_debug_log, notification.notif_iptv].join(), 1000);
 		clearInterval(notification.flashTimer);
 		document.getElementById("notification_status").className = "notification_on";
 
@@ -2597,6 +2704,12 @@ var notification = {
 							txt += '<tr><td width="100%"><div style="text-decoration:underline;text-align:right;color:#FFCC00;font-size:14px;cursor: pointer" onclick="' + notification.clickCallBack[i+1] + '">' + notification.action_desc[i+1] + '</div></td></tr>';
 						notification.array[10] = "off";
 					}
+					else if( i == 13){
+						if(notification.array[14] != null)
+							txt += '<tr><td width="100%"><div style="text-align:right;text-decoration:underline;color:#FFCC00;font-size:14px;"><span style="cursor: pointer" onclick="' + notification.clickCallBack[14] + '">' + notification.action_desc[14] + '</span>';
+						notification.array[14] = "off";
+						txt += '<span style="margin-left:10px;cursor: pointer" onclick="' + notification.clickCallBack[i] + '">' + notification.action_desc[i] + '</span></div></td></tr>';
+					}
 		  			else{
 	  					txt += '<tr><td><table width="100%"><div style="text-decoration:underline;text-align:right;color:#FFCC00;font-size:14px;cursor: pointer" onclick="' + notification.clickCallBack[i] + '">' + notification.action_desc[i] + '</div></table></td></tr>';
 		  			}
@@ -2627,7 +2740,7 @@ var notification = {
 			tarObj1.className = "notification_on1";
 		}
 
-		if(this.flash == "on" && getCookie_help("notification_history") != [notification.upgrade, notification.wifi_2g ,notification.wifi_5g ,notification.ftp ,notification.samba ,notification.loss_sync ,notification.experience_DSL ,notification.notif_hint ,notification.send_debug_log].join()){
+		if(this.flash == "on" && getCookie_help("notification_history") != [notification.upgrade, notification.wifi_2g, notification.wifi_5g, notification.ftp, notification.samba, notification.loss_sync, notification.experience_DSL, notification.notif_hint, notification.send_debug_log, notification.notif_iptv].join()){
 			notification.flashTimer = setInterval(function(){
 				tarObj.className = (tarObj.className == "notification_on") ? "notification_off" : "notification_on";
 			}, 1000);
@@ -2649,6 +2762,7 @@ var notification = {
 		this.experience_DSL = 0;
 		this.notif_hint = 0;
 		this.send_debug_log = 0;
+		this.notif_iptv = 0;
 		this.action_desc = [];
 		this.desc = [];
 		this.array = [];

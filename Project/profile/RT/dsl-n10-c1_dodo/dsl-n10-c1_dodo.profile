@@ -123,7 +123,6 @@ ASUS_APP_PREINSTALLED=y
 # ASUS_SWAP_FILE is not set
 # ASUS_ACCEL_PPTPD is not set
 ASUS_SPECTRUM=y
-# ASUS_HWINFO is not set
 # ASUS_DSL_POWER_SAVING is not set
 # ASUS_VPNC is not set
 # ASUS_DUALWAN is not set

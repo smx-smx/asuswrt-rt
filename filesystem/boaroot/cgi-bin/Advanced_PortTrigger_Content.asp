@@ -26,6 +26,7 @@ end if
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script type="text/javascript" language="JavaScript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
@@ -281,10 +282,10 @@ return true;
 </tr>
 <tr>
 <td width="22%">
-<input type="text" maxlength="18" class="input_15_table" name="autofw_desc_x_0" onKeyPress="return is_string(this, event)">
+<input type="text" maxlength="18" class="input_15_table" name="autofw_desc_x_0" onKeyPress="return validator.isString(this, event)">
 </td>
 <td width="21%">
-<input type="text" maxlength="5" class="input_6_table" name="autofw_outport_x_0" onKeyPress="return is_portrange(this,event)">
+<input type="text" maxlength="5" class="input_6_table" name="autofw_outport_x_0" onKeyPress="return validator.isPortRange(this,event)">
 </td>
 <td width="10%">
 <select name="autofw_outproto_x_o" class="input_option">
@@ -295,7 +296,7 @@ return true;
 </div>
 </td>
 <td width="21%">
-<input type="text" maxlength="5" class="input_6_table" name="autofw_inport_x_0" onKeyPress="return is_portrange(this,event)">
+<input type="text" maxlength="5" class="input_6_table" name="autofw_inport_x_0" onKeyPress="return validator.isPortRange(this,event)">
 </td>
 <td width="10%">
 <select name="autofw_inproto_x_o" class="input_option">

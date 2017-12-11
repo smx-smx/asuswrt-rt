@@ -495,12 +495,6 @@ if [ "$1" = "downloadmaster" ] && [ -z "$apps_from_internet" ]; then
 		# apps_state_error was already set by app_base_library.sh.
 		return 1
 	fi
-elif [ "$1" = "mediaserver" ] && [ -z "$apps_from_internet" ]; then
-	app_base_library.sh $APPS_DEV $download_file
-	if [ "$?" != "0" ]; then
-		# apps_state_error was already set by app_base_library.sh.
-		return 1
-	fi
 elif [ "$1" = "asuslighttpd" ] && [ -z "$apps_from_internet" ]; then
 	app_base_library.sh $APPS_DEV
 	if [ "$?" != "0" ]; then
@@ -569,7 +563,7 @@ app_set_enabled.sh $1 "yes"
 
 link_internet=`tcapi get Wanduck_Common link_internet`
 if [ "$link_internet" = "2" ]; then
-	app_update.sh&
+	app_update.sh &
 fi
 
 test_of_var_files "$APPS_MOUNTED_PATH"

@@ -4817,101 +4817,6 @@ long long int
         return(file_info.st_size);
 }
 
-int api_upload_put_test(char *filename,char *serverpath,int flag)
-{
-    CURL *curl;
-    CURLcode res;
-    FILE *fp;
-    FILE *fp_1;
-    FILE *fp_hd;
-
-    struct stat filestat;
-    unsigned long int filesize;
-
-    if( stat(filename,&filestat) == -1)
-    {
-        //perror("stat:");
-        DEBUG("servr sapce full stat error:%s file not exist\n",filename);
-        return -1;
-    }
-
-    filesize = filestat.st_size;
-
-    filesize = filesize / 1024 / 1024;
-
-    fp_1=fopen(filename,"rb");
-    long long int size=get_file_size(filename);
-
-    char *header;
-    static const char buf[]="Content-Type: test/plain";
-#ifdef OAuth1
-    header=makeAuthorize(4);
-#else
-    header=makeAuthorize(2);
-#endif
-    struct curl_slist *headerlist=NULL;
-    char header_l[]="Content-Length: ";
-    char header1_l[128]="\0";
-
-    sprintf(header1_l,"%s%d\n",header_l,size);
-
-    header1_l[strlen(header1_l)-1]='\0';
-    curl=curl_easy_init();
-
-    char myUrl[1024]="\0";
-    DEBUG("serverpath = %s\n",serverpath);
-    if(flag)
-        sprintf(myUrl,"%s%s?%s&%s","https://api-content.google.com/1/files_put/google",serverpath,header,"overwrite=true");
-    else
-        sprintf(myUrl,"%s%s?%s&%s","https://api-content.google.com/1/files_put/google",serverpath,header,"overwrite=false");
-
-    if(curl){
-        curl_easy_setopt(curl,CURLOPT_SSL_VERIFYHOST,0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
-        curl_easy_setopt(curl,CURLOPT_URL,myUrl);
-        CURL_DEBUG;
-        curl_easy_setopt(curl,CURLOPT_READDATA,fp_1);
-        curl_easy_setopt(curl,CURLOPT_UPLOAD,1L);
-
-        curl_easy_setopt(curl, CURLOPT_INFILESIZE,filestat.st_size);
-
-
-        curl_easy_setopt(curl,CURLOPT_NOPROGRESS,0L);
-        curl_easy_setopt(curl,CURLOPT_PROGRESSFUNCTION,my_progress_func);
-        curl_easy_setopt(curl,CURLOPT_PROGRESSDATA,Clientfp);
-
-        curl_easy_setopt(curl,CURLOPT_LOW_SPEED_LIMIT,1);
-        curl_easy_setopt(curl,CURLOPT_LOW_SPEED_TIME,30);
-
-        fp=fopen(Con(TMP_R,upload_chunk_commit.txt),"w");
-        curl_easy_setopt(curl,CURLOPT_WRITEDATA,fp);
-        fp_hd=fopen(Con(TMP_R,upload_header.txt),"w+");
-        curl_easy_setopt(curl,CURLOPT_WRITEHEADER,fp_hd);
-
-        //start_time = time(NULL);
-        res=curl_easy_perform(curl);
-
-        curl_easy_cleanup(curl);
-        if(res==0)
-        {
-            rewind(fp_hd);
-            char tmp_[256];
-            while(!feof(fp_hd))
-            {
-                fgets(tmp_,sizeof(tmp_),fp_hd);
-                printf("tmp_ : %s\n",tmp_);
-                if(strstr(tmp_,"507 Quota Error") != NULL)
-                    printf("server space not enough\n");
-            }
-        }
-        fclose(fp_hd);
-        fclose(fp);
-        fclose(fp_1);
-    }
-    free(header);
-    return 0;
-}
 int api_upload_put( char *filename,char *serverpath,int flag,int index)
 {
     DEBUG("api_upload_put,serverpath = %s\nfilename = %s\nflag = %d\n", serverpath, filename, flag);
@@ -5029,7 +4934,7 @@ int api_upload_put( char *filename,char *serverpath,int flag,int index)
         //curl_easy_setopt(curl,CURLOPT_TIMEOUT,15);
             curl_easy_setopt(curl,CURLOPT_CONNECTTIMEOUT,10);//upload time_out
         //curl_easy_setopt(curl,CURLOPT_INFILESIZE_LARGE,(curl_off_t)size);//put Content-Length
-        curl_easy_setopt(curl, CURLOPT_INFILESIZE,filestat.st_size);
+        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)filestat.st_size);//2016.10.19 tina modify for uploadsize is 0 on mipselbig
         //curl_easy_setopt(curl,CURLOPT_INFILESIZE_LARGE,size);
         //curl_easy_setopt(curl,CURLOPT_POSTFIELDS,data);
         //curl_easy_setopt(curl,CURLOPT_POSTFIELDSIZE,size);

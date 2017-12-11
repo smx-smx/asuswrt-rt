@@ -294,8 +294,8 @@ function detect_CPU_Status(){
 <input type="hidden" name="action_mode" value="">
 <input type="hidden" name="action_script" value="">
 <input type="hidden" name="action_wait" value="">
-<input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
-<input type="hidden" name="wl_unit" value="<% nvram_get("wl_unit"); %>">
+<input type="hidden" name="productid" value="<% tcWebApi_staticGet("SysInfo_Entry","ProductName","s") %>">
+<input type="hidden" name="wl_unit" value="<% tcWebApi_get("WLan_Common","wl_unit","s") %>">
 <input type="hidden" name="wl_subunit" value="-1">
 
 <table border="0" cellpadding="0" cellspacing="0" style="padding-left:5px">

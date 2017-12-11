@@ -29,10 +29,13 @@
 
 //Sam.B	2013/10/31
 #define TYPEDEF_BOOL	//will skip in typedefs.h
+#include <sys/ioctl.h>
+#include <net/if.h>
 #include <unistd.h>
 #include "libtcapi.h"
 #include "tcapi.h"
 #include "shared.h"
+#include "openvpn_config.h"
 
 #define EXIT_GOOD		0
 #define EXIT_ERROR		1

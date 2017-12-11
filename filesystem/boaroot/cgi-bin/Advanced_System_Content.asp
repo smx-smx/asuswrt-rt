@@ -69,6 +69,8 @@ If Request_Form("SaveFirewall") = "1" Then
 	TCWebApi_set("Firewall_Entry","misc_httpport_x","misc_httpport_x")
 	TCWebApi_set("Firewall_Entry","misc_httpsport_x","misc_httpsport_x")
 	TCWebApi_set("SysInfo_Entry","nat_redirect_enable","nat_redirect_enable")
+	TCWebApi_set("Firewall_Entry","enable_acc_restriction","http_client")
+	TCWebApi_set("Firewall_Entry","restrict_rulelist","http_clientlist")
 	tcWebApi_CommitWithoutSave("Firewall_Entry")
 End if
 
@@ -79,12 +81,6 @@ If tcWebApi_Get("WebCustom_Entry", "isSwapFileSupport", "h") = "Yes" then
 	End if
 End if
 
-If Request_Form("http_client") <> "" Then
-	TCWebApi_set("SysInfo_Entry","http_restrict_client","http_client")
-	TCWebApi_set("SysInfo_Entry","http_clientlist","http_clientlist")
-	update_http_clientlist()
-End if
-
 If Request_Form("tcWebApi_Save_Flag") = "1" Then
 	tcWebApi_Save()
 End if
@@ -93,6 +89,7 @@ If Request_Form("SaveHttps") = "1" Then
 	TCWebApi_set("Https_Entry","http_enable","http_enable")
 	TCWebApi_set("Https_Entry","https_lanport","https_lanport")
 	tcWebApi_Commit("Https_Entry")
+	do_aiprotection()
 End if
 
 If Request_Form("SaveSSHd") = "1" Then
@@ -124,6 +121,7 @@ End if
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" src="/jsl.js"></script>
 <script language="JavaScript" src="/ip.js"></script>
 <style>
@@ -164,17 +162,22 @@ cursor:default;
 }
 </style>
 <script>
+var $j = jQuery.noConflict();
 wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'pppoe';
+
+var orig_restrict_rulelist_array = [];
+var restrict_rulelist_array = [];
 var accounts = [<% get_all_accounts(); %>];
+var is_gen_key = "<% get_ssh_first_init() %>";
 
 var isFromHTTPS = false;
 if((location.href.search('https://') >= 0) || (location.href.search('HTTPS://') >= 0)){
         isFromHTTPS = true;
 }
 
-var http_clientlist_array = "<% TCWebApi_get("SysInfo_Entry","http_clientlist","s") %>";
+var http_clientlist_array = "<% TCWebApi_get("Firewall_Entry","restrict_rulelist","s") %>";
 var set_http_autologout = "";
 
 var timezones = [
@@ -197,7 +200,7 @@ var timezones = [
 	["GMT-01:00",	"(GMT+01:00) <% tcWebApi_get("String_Entry","TZ35","s")%>, <% tcWebApi_get("String_Entry","TZ36","s")%>, <% tcWebApi_get("String_Entry","TZ29","s")%>, <% tcWebApi_get("String_Entry","TZ30","s")%>"],
 	["GMT-02:00",	"(GMT+02:00) <% tcWebApi_get("String_Entry","TZ41","s")%>, <% tcWebApi_get("String_Entry","TZ40","s")%>, <% tcWebApi_get("String_Entry","TZ40_2","s")%>, <% tcWebApi_get("String_Entry","TZ38","s")%>, <% tcWebApi_get("String_Entry","TZ33_1","s")%>, <% tcWebApi_get("String_Entry","TZ87","s")%>"],
 	["GMT-02:00",	"(GMT+02:00) <% tcWebApi_get("String_Entry","TZ43_2","s")%>, <% tcWebApi_get("String_Entry","TZ39","s")%>, <% tcWebApi_get("String_Entry","TZ42","s")%>, <% tcWebApi_get("String_Entry","TZ43","s")%>, <% tcWebApi_get("String_Entry","TZ88","s")%>"],
-	["GMT-03:00",	"(GMT+03:00) <% tcWebApi_get("String_Entry","TZ48","s")%>, <% tcWebApi_get("String_Entry","TZ40_1","s")%>, <% tcWebApi_get("String_Entry","TZ47","s")%>, <% tcWebApi_get("String_Entry","TZ46","s")%>, <% tcWebApi_get("String_Entry","TZ44","s")%>, <% tcWebApi_get("String_Entry","TZ45","s")%>"],
+	["GMT-03:00",	"(GMT+03:00) <% tcWebApi_get("String_Entry","TZ48","s")%>, <% tcWebApi_get("String_Entry","TZ48_1","s")%>, <% tcWebApi_get("String_Entry","TZ40_1","s")%>, <% tcWebApi_get("String_Entry","TZ47","s")%>, <% tcWebApi_get("String_Entry","TZ46","s")%>, <% tcWebApi_get("String_Entry","TZ44","s")%>, <% tcWebApi_get("String_Entry","TZ45","s")%>"],
 	["GMT-03:30",	"(GMT+03:30) <% tcWebApi_get("String_Entry","TZ49","s")%>"],
 	["GMT-04:00",	"(GMT+04:00) <% tcWebApi_get("String_Entry","TZ50","s")%>, <% tcWebApi_get("String_Entry","TZ50_1","s")%>, <% tcWebApi_get("String_Entry","TZ50_2","s")%>, <% tcWebApi_get("String_Entry","TZ51","s")%>"],
 	["GMT-04:30",	"(GMT+04:30) <% tcWebApi_get("String_Entry","TZ52","s")%>"],
@@ -250,7 +253,44 @@ function remove_btn_ez_radiotoggle(){
 	}
 }
 
+//parse nvram to array
+var parseNvramToArray = function(oriNvram) {
+	var parseArray = [];
+	var oriNvramRow = decodeURIComponent(oriNvram).split('<');
+	for(var i = 1; i < oriNvramRow.length; i++) {
+		if(oriNvramRow[i] != "") {
+			var oriNvramCol = oriNvramRow[i].split('>');
+			var eachRuleArray = new Array();
+			for(var j = 0; j < oriNvramCol.length; j++) {
+				eachRuleArray.push(oriNvramCol[j]);
+			}
+			parseArray.push(eachRuleArray);
+		}
+	}
+	return parseArray;
+};
+
+//parse type value to strings
+var transformNumToText = function(restrict_type) {
+	var bit_text_array = ["", "Web UI", "SSH", "Telnet"];
+	var type_text = "";
+	for(var i = 1; restrict_type != 0 && i <= 4; i += 1) {
+		if(restrict_type & 1) {
+			if(type_text == "")
+				type_text += bit_text_array[i];
+			else 
+				type_text += ", " + bit_text_array[i];
+		}
+		restrict_type = restrict_type >> 1;
+	}
+	return type_text;
+};
+
 function initial(){
+	
+	orig_restrict_rulelist_array = parseNvramToArray('<% TCWebApi_get("Firewall_Entry","restrict_rulelist","s") %>');
+	restrict_rulelist_array = JSON.parse(JSON.stringify(orig_restrict_rulelist_array));	
+
 	show_menu();
 	autoFocus('<% get_parameter("af"); %>');
 	show_http_clientlist();
@@ -261,11 +301,11 @@ function initial(){
 	init_reboot_schedule_setting();	
 
 	hideport("<% tcWebApi_get("Firewall_Entry","misc_http_x", "s") %>");
-	if("<% TCWebApi_get("SysInfo_Entry","http_restrict_client","s") %>" != "1")	{
+	if("<% TCWebApi_get("Firewall_Entry","enable_acc_restriction","s") %>" != "1")	{
 		display_spec_IP(0);
 	}
 	
-	if(HTTPS_support == -1 || model_name == "DSL-N10-C1" || model_name == "DSL-N10P-C1" || model_name == "DSL-N12E-C1" || model_name == "DSL-N10-D1"){       //MODELDEP: DSL-N10-C1, DSL-N12E-C1, DSL-N10-D1
+	if(HTTPS_support == -1){
 		document.getElementById("https_tr").style.display = "none";
 		document.getElementById("https_lanport").style.display = "none";
 	}
@@ -276,13 +316,12 @@ function initial(){
 	showLANIPList();
 	document.getElementById("accessfromwan_port").style.display = (document.form.misc_http_x[0].checked == 1) ? "" : "none";
 
-	if(HTTPS_support  == -1 || '<% tcWebApi_get("Https_Entry","http_enable","s") %>' == 1)
+	if(HTTPS_support  == -1 || '<% tcWebApi_get("Https_Entry","http_enable","s") %>' == 1){
 		document.getElementById("https_port").style.display = "none";
-	else if(model_name == "DSL-N10-C1" || model_name == "DSL-N10P-C1" || model_name == "DSL-N12E-C1" || model_name == "DSL-N10-D1"){       //MODELDEP: DSL-N10-C1, DSL-N12E-C1, DSL-N10-D1
-		document.getElementById("https_port").style.display = "none";
-	}	
-	else if('<% tcWebApi_get("Https_Entry","http_enable","s") %>' == 2)
+	}
+	else if('<% tcWebApi_get("Https_Entry","http_enable","s") %>' == 2){
 		document.getElementById("http_port").style.display = "none";
+	}
 
 	//Set default http_autologout if value null
 	if("<% tcWebApi_Get("Misc_Entry", "http_autologout", "s") %>" != ""){
@@ -367,15 +406,19 @@ function uiSave() {
 		var item_num = document.getElementById('http_clientlist_table').rows[0].cells.length;
 		var tmp_value = "";
 
-		for(i=0; i<rule_num; i++){
-			tmp_value += ":"		
-			for(j=0; j<item_num-1; j++){	
-				tmp_value += document.getElementById('http_clientlist_table').rows[i].cells[j].innerHTML;
-				if(j != item_num-2)	
-					tmp_value += ":";
+		//parse array to nvram
+		var tmp_value = "";
+		for(var i = 0; i < restrict_rulelist_array.length; i += 1) {
+			if(restrict_rulelist_array[i].length != 0) {
+				tmp_value += "<";
+				for(var j = 0; j < restrict_rulelist_array[i].length; j += 1) {
+					tmp_value += restrict_rulelist_array[i][j];
+					if( (j + 1) != restrict_rulelist_array[i].length)
+						tmp_value += ">";
+				}
 			}
 		}
-		if(tmp_value == ":"+"<% tcWebApi_Get("String_Entry", "IPC_VSList_Norule", "s") %>" || tmp_value == ":")
+		if(tmp_value == "<"+"<% tcWebApi_Get("String_Entry", "IPC_VSList_Norule", "s") %>" || tmp_value == "<")
 			tmp_value = "";	
 		document.form.http_clientlist.value = tmp_value;
 
@@ -394,7 +437,7 @@ function uiSave() {
 		else
 				document.form.misc_http_x.value = "0";
 
-		if(HTTPS_support != -1 && model_name != "DSL-N10-C1"  && model_name != "DSL-N10P-C1" && model_name != "DSL-N12E-C1" && model_name != "DSL-N10-D1"){	//MODELDEP : exclude DSL-N10-C1, DSL-N12E-C1, DSL-N10-D1
+		if(HTTPS_support != -1){
 			if((document.form.http_enable.value != document.form.prev_http_enable.value) || (document.form.https_lanport.value != document.form.prev_https_lanport.value)
 				|| (document.form.adminFlag.value == 1) || (document.form.passwdFlag.value == 1)
 			)
@@ -466,10 +509,41 @@ function uiSave() {
 	else
 		document.form.uiTimezoneSecond.value = "";
 
-	showLoading(20);	//Extend from 10 to 20 to restore_webtype 
-	setTimeout("redirect();", 20000);
+	if(ssh_support != -1 && is_gen_key == "0" && document.form.sshd_enable[0].checked){	//enable ssh at first time without rsa/dss key generated
+		showLoading();
+		document.getElementById("proceeding_txt").innerHTML = "<br><br>SSH key generation in progress, please wait for few minutes."; /* Untranslated */
+		detect_gen_key();
+	}
+	else{
+		showLoading(20);	//Extend from 10 to 20 to restore_webtype 
+		setTimeout("redirect();", 20000);
+	}
 	document.form.submit();
-	return;
+}
+
+var dead = 0;
+function detect_gen_key(){
+	$j.ajax({
+		url: '/cgi-bin/update_gen_key.asp',
+		dataType: 'script',
+		error: function(xhr){
+			dead++;
+			if(dead < 20){
+				setTimeout("detect_gen_key()", 1000);
+			}
+			else{
+				setTimeout("redirect();", 1000);
+			}
+		},
+		success: function(){
+			if(is_gen_key == "0"){
+				setTimeout("detect_gen_key()", 1000);
+			}
+			else{
+				setTimeout("redirect();", 1000);
+			}
+		}
+	});
 }
 
 function validForm(){
@@ -581,6 +655,16 @@ function validForm(){
 		}
 	}
 
+	if(ssh_support != -1){	//support SSH Daemon setting
+		if(document.form.sshd_enable[0].checked && document.form.sshd_pass[1].checked){
+			if(document.form.sshd_authkeys.value <= 0){
+				alert("If Allow Password Login option change to [<%tcWebApi_get("String_Entry","checkbox_No","s")%>], Authorized Keys cannot be Null.");	/* Untranslated */
+				document.form.sshd_authkeys.focus();
+				return false;
+			}
+		}
+	}
+
 	if((document.form.adminFlag.value == 1) || (document.form.passwdFlag.value == 1))
 	{
 		document.form.accountFlag.value = 1;
@@ -589,7 +673,7 @@ function validForm(){
 	if (document.form.misc_http_x[0].checked) {
 		if (!validate_range(document.form.misc_httpport_x, 1024, 65535))
 			return false;
-		if(HTTPS_support != -1 && model_name != "DSL-N10-C1" && model_name != "DSL-N10P-C1" && model_name != "DSL-N12E-C1" && model_name != "DSL-N10-D1"){	//MODELDEP: exclude DSL-N10-C1, DSL-N12E-C1, DSL-N10-D1
+		if(HTTPS_support != -1){
 			if (!validate_range(document.form.https_lanport, 1024, 65535))
 				return false;
 
@@ -608,7 +692,7 @@ function validForm(){
 		return false;
 	}
 	
-	if(HTTPS_support != -1 &&  model_name != "DSL-N10-C1" &&  model_name != "DSL-N10P-C1" && model_name != "DSL-N12E-C1" && model_name != "DSL-N10-D1"){     //MODELDEP: exclude DSL-N10-C1, DSL-N12E-C1, DSL-N10-D1
+	if(HTTPS_support != -1){
 		if(isPortConflict(document.form.misc_httpsport_x.value)){
 			alert(isPortConflict(document.form.misc_httpsport_x.value));
 			document.form.misc_httpsport_x.focus();
@@ -669,22 +753,77 @@ function hide_https_wanport(_value){
 
 // show clientlist
 function show_http_clientlist(){
-	var http_clientlist_row = http_clientlist_array.split(":");
+	
 	var code = "";
-	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="http_clientlist_table">'; 
-	if(http_clientlist_row.length == 1)
+	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="http_clientlist_table">';
+	if(restrict_rulelist_array.length == 0)
 		code +='<tr><td style="color:#FFCC00;"><% tcWebApi_Get("String_Entry", "IPC_VSList_Norule", "s") %></td>';
 	else{
-		for(var i =1; i < http_clientlist_row.length; i++){
-		code +='<tr id="row'+i+'">';
-		code +='<td width="80%">'+ http_clientlist_row[i] +'</td>';		//Url keyword
-		code +='<td width="20%">';
-		code +="<input class=\"remove_btn\" type=\"button\" onclick=\"deleteRow(this);\" value=\"\"/></td>";
+
+		var Ctrl_enable= "";
+		for(var i = 0; i < restrict_rulelist_array.length; i += 1) {
+			code +='<tr id="row'+i+'">';
+				if(restrict_rulelist_array[i][0] == "1")
+					Ctrl_enable= "<%tcWebApi_get("String_Entry","btn_Enabled","s")%>";
+				else
+					Ctrl_enable= "<%tcWebApi_get("String_Entry","btn_Disabled","s")%>";
+
+			code +='<td width="10%" title="'+ Ctrl_enable +'"><input type="checkbox" onclick="control_rule_status(this);" '+genChecked(restrict_rulelist_array[i][0])+'/></td>';
+			code += '<td width="40%">';
+			code += restrict_rulelist_array[i][1];
+			code += "</td>";
+			code += '<td width="40%">';
+			code += transformNumToText(restrict_rulelist_array[i][2]);
+			code += "</td>";
+			code += '<td width="10%">';
+			code += '<input class="remove_btn" type="button" onclick="deleteRow(this);"></td>';
+			code += "</td>";
+			code += '</tr>';
 		}
 	}
   	code +='</tr></table>';
 	
 	document.getElementById("http_clientlist_Block").innerHTML = code;
+}
+
+function control_rule_status(obj) {
+	var $itemObj = $j(obj);
+	var $trObj = $itemObj.closest('tr');
+	var row_idx = $trObj.index();
+	if($itemObj.is(":checked")) {
+		restrict_rulelist_array[row_idx][0] = "1";
+	}
+	else {
+		restrict_rulelist_array[row_idx][0] = "0";
+	}
+
+	if($j("#selAll").is(":checked"))
+		$j("#selAll").attr('checked', false);
+}
+
+function genChecked(_flag){
+	if(_flag == 1)
+		return "checked";
+	else
+		return "";
+}
+
+function control_all_rule_status(obj) {
+	var set_all_rule_status = function(stauts) {
+		for(var i = 0; i < restrict_rulelist_array.length; i += 1) {
+			restrict_rulelist_array[i][0] = stauts;
+		}
+	};
+
+	var $itemObj = $j(obj);
+	if($itemObj.is(":checked")) {		
+		set_all_rule_status("1");
+	}
+	else {
+		set_all_rule_status("0");
+	}
+
+	show_http_clientlist();
 }
 
 function check_Timefield_checkbox(){	// To check Date checkbox checked or not and control Time field disabled or not
@@ -737,26 +876,20 @@ function deleteRow(r){
 	var i=r.parentNode.parentNode.rowIndex;
 	document.getElementById('http_clientlist_table').deleteRow(i);
   
-	var http_clientlist_value = "";
-	for(i=0; i<document.getElementById('http_clientlist_table').rows.length; i++){
-		http_clientlist_value += ":";
-		http_clientlist_value += document.getElementById('http_clientlist_table').rows[i].cells[0].innerHTML;
-	}
-	
-	http_clientlist_array = http_clientlist_value;
-	if(http_clientlist_array == "")
+	restrict_rulelist_array.splice(i,1);
+
+	if(restrict_rulelist_array.length == 0)
 		show_http_clientlist();
 }
 
 function addRow(obj, upper){
-	if('<% TCWebApi_get("SysInfo_Entry","http_restrict_client","h") %>' != "1")
+	if('<% TCWebApi_get("Firewall_Entry","enable_acc_restriction","h") %>' != "1")
 		document.form.http_client[0].checked = true;
 		
 	//Viz check max-limit 
-	var rule_num = document.getElementById('http_clientlist_table').rows.length;
-	var item_num = document.getElementById('http_clientlist_table').rows[0].cells.length;		
+	var rule_num = restrict_rulelist_array.length;
 	if(rule_num >= upper){
-		alert("<% tcWebApi_Get("String_Entry", "JS_itemlimit1", "s") %> " + upper + " <% tcWebApi_Get("String_Entry", "JS_itemlimit2", "s") %>");
+		alert("<%tcWebApi_get("String_Entry","JS_itemlimit1","s")%> " + upper + " <%tcWebApi_get("String_Entry","JS_itemlimit2","s")%>");
 		return false;	
 	}
 			
@@ -766,23 +899,51 @@ function addRow(obj, upper){
 		obj.select();			
 		return false;
 	}
-	else if(valid_IP_form(obj, 0) != true){
+	else if(validator.validIPForm(obj, 2) != true){
+		return false;
+	}
+	
+	var access_type_value = 0;
+	$j(".access_type").each(function() {
+		if(this.checked)
+			access_type_value += parseInt($j(this).val());
+	});	
+
+	if(access_type_value == 0) {
+		alert("Please select at least one Access Type.");/*untranslated*/
 		return false;
 	}
 	else{		
-		//Viz check same rule
-		for(i=0; i<rule_num; i++){
-			for(j=0; j<item_num-1; j++){		//only 1 value column
-				if(obj.value == document.getElementById('http_clientlist_table').rows[i].cells[j].innerHTML){
-					alert(" <% tcWebApi_Get("String_Entry", "JS_duplicate", "s") %>");
+
+		var newRuleArray = new Array();
+		if(document.getElementById("newrule_Enable").checked)
+			newRuleArray.push("1");
+		else
+			newRuleArray.push("0");		
+		newRuleArray.push(obj.value.trim());
+		newRuleArray.push(access_type_value.toString());
+		var newRuleArray_tmp = new Array();
+		newRuleArray_tmp = newRuleArray.slice();
+		newRuleArray_tmp.splice(0, 1);
+		newRuleArray_tmp.splice(1, 1);
+		if(restrict_rulelist_array.length > 0) {
+			for(var i = 0; i < restrict_rulelist_array.length; i += 1) {
+				var restrict_rulelist_array_tmp = restrict_rulelist_array[i].slice();
+				restrict_rulelist_array_tmp.splice(0, 1);
+				restrict_rulelist_array_tmp.splice(1, 1);
+				if(newRuleArray_tmp.toString() == restrict_rulelist_array_tmp.toString()) { //compare IP
+					alert("<% tcWebApi_Get("String_Entry", "JS_duplicate", "s") %>");
 					return false;
-				}	
+				}
 			}
 		}
+		restrict_rulelist_array.push(newRuleArray);
 		
-		http_clientlist_array += ":";
-		http_clientlist_array += obj.value;
-		obj.value = "";		
+		$j(".access_type").each(function() {
+			if(this.checked)
+				$j(this).prop('checked', false);
+		});
+		obj.value = "";
 		show_http_clientlist();
 	}	
 }
@@ -934,7 +1095,7 @@ function updateDateTime()
 <INPUT TYPE="HIDDEN" name="prev_http_enable" VALUE="<%tcWebApi_get("Https_Entry","http_enable","s")%>">
 <INPUT TYPE="HIDDEN" name="prev_https_lanport" VALUE="<%tcWebApi_get("Https_Entry","https_lanport","s")%>">
 <INPUT TYPE="HIDDEN" name="prev_username" VALUE="<%tcWebApi_get("Account_Entry0","username","s")%>">
-<INPUT TYPE="HIDDEN" name="http_clientlist" value="<% TCWebApi_get("SysInfo_Entry","http_clientlist","s") %>">
+<INPUT TYPE="HIDDEN" name="http_clientlist" value="<% TCWebApi_get("Firewall_Entry","restrict_rulelist","s") %>">
 <INPUT TYPE="HIDDEN" name="SaveRebootScheduler" VALUE="0">
 <INPUT TYPE="HIDDEN" name="reboot_schedule_enable" value="<% TCWebApi_get("RebootSchedule_Entry","reboot_schedule_enable","s") %>">
 <INPUT TYPE="HIDDEN" name="reboot_schedule" value="<% TCWebApi_get("RebootSchedule_Entry","reboot_schedule","s") %>">
@@ -968,14 +1129,14 @@ function updateDateTime()
 							<tr>
 								<th width="40%"><% tcWebApi_Get("String_Entry", "Router_Login_Name", "s") %></th>
 								<td>
-									<input type="text" name="uiViewTools_username" maxlength="20" value="<% tcWebApi_Get("Account_Entry0","username","s") %>" onKeyPress="return is_string(this, event);"" class="input_18_table" autocapitalization="off" autocomplete="off">
+									<input type="text" name="uiViewTools_username" maxlength="20" value="<% tcWebApi_Get("Account_Entry0","username","s") %>" onKeyPress="return validator.isString(this, event);"" class="input_18_table" autocapitalization="off" autocomplete="off">
 									<span id="alert_msg1" style="color:#FFCC00;"></span>
 								</td>
 							</tr>
 							<tr>
 								<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,4)"><%tcWebApi_get("String_Entry","PASS_new","s")%></a></th>
 								<td>
-									<input type="password" autocapitalization="off" autocomplete="off" name="uiViewTools_Password" maxlength="16" value="" onKeyPress="return is_string(this, event);" onkeyup="chkPass(this.value, 'http_passwd');" onpaste="return false;" class="input_18_table" onBlur="clean_scorebar(this);">
+									<input type="password" autocapitalization="off" autocomplete="off" name="uiViewTools_Password" maxlength="16" value="" onKeyPress="return validator.isString(this, event);" onkeyup="chkPass(this.value, 'http_passwd');" onpaste="return false;" class="input_18_table" onBlur="clean_scorebar(this);">
 										&nbsp;&nbsp;
 									<div id="scorebarBorder" name="scorebarBorder" style="margin-left:180px; margin-top:-25px; display:none;" title="<%tcWebApi_get("String_Entry","LHC_x_Password_itemSecur","s")%>">
 										<div id="score" name="score"></div>
@@ -986,7 +1147,7 @@ function updateDateTime()
 							<tr>
 								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,4)"><%tcWebApi_get("String_Entry","PASS_retype","s")%></a></th>
 								<td>
-									<INPUT TYPE="PASSWORD" autocapitalization="off" autocomplete="off" NAME="uiViewTools_PasswordConfirm" MAXLENGTH="16" VALUE="" onKeyPress="return is_string(this, event);" onpaste="return false;" class="input_18_table">
+									<INPUT TYPE="PASSWORD" autocapitalization="off" autocomplete="off" NAME="uiViewTools_PasswordConfirm" MAXLENGTH="16" VALUE="" onKeyPress="return validator.isString(this, event);" onpaste="return false;" class="input_18_table">
 									<div style="margin:-25px 0px 5px 175px;"><input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.uiViewTools_Password);pass_checked(document.form.uiViewTools_PasswordConfirm);"><%tcWebApi_get("String_Entry","QIS_show_pass","s")%></div>
 									<span id="alert_msg2" style="color:#FC0;margin-left:8px;"></span>
 								</td>
@@ -1000,7 +1161,7 @@ function updateDateTime()
 				</tr>
 				</thead>
 				<tr>
-					<th width="40%">SSH Enable</th>
+					<th width="40%"><%tcWebApi_get("String_Entry","Enable_SSH","s")%></th>
 					<td>
 						<input type="radio" name="sshd_enable" class="input" value="Yes" onclick="check_sshd_enable(this.value);" <% if tcWebApi_get("SSH_Entry","Enable","h") = "Yes" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
 						<input type="radio" name="sshd_enable" class="input" value="No" onclick="check_sshd_enable(this.value);" <% if tcWebApi_get("SSH_Entry","Enable","h") = "No" then asp_Write("checked") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
@@ -1022,7 +1183,7 @@ function updateDateTime()
 				<tr id="auth_keys_tr">
 					<th>Authorized Keys</th>
 					<td>
-						<textarea rows="5" cols="55" class="textarea_ssh_table" name="sshd_authkeys" maxlength="500"><%tcWebApi_get("SSH_Entry","Authkeys","s")%></textarea>
+						<textarea rows="5" cols="55" class="textarea_ssh_table" name="sshd_authkeys" maxlength="1023"><%tcWebApi_get("SSH_Entry","Authkeys","s")%></textarea>
 					</td>
 				</tr>								
 			</table>						
@@ -1071,7 +1232,7 @@ function updateDateTime()
 							<tr>
 								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,1)"><%tcWebApi_get("String_Entry","LHC_x_ServerLogEnable_in","s")%></a></th>
 								<td>
-									<INPUT TYPE="TEXT" class="input_15_table" NAME="syslogServerAddr" SIZE="25" MAXLENGTH="15" VALUE="<%if tcWebApi_get("Syslog_Entry","remoteHost","h") <> "N/A" then tcWebApi_get("Syslog_Entry","remoteHost","s") else asp_Write("") end if%>" onKeyPress="return is_ipaddr(this, event)">
+									<INPUT TYPE="TEXT" class="input_15_table" NAME="syslogServerAddr" SIZE="25" MAXLENGTH="15" VALUE="<%if tcWebApi_get("Syslog_Entry","remoteHost","h") <> "N/A" then tcWebApi_get("Syslog_Entry","remoteHost","s") else asp_Write("") end if%>" onKeyPress="return validator.isIPAddr(this, event)">
 								</td>
 							</tr>
 							<tr>
@@ -1094,7 +1255,7 @@ function updateDateTime()
 							<tr>
 								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,3)"><%tcWebApi_get("String_Entry","LHC_x_NTPServer_in","s")%></a></th>
 								<td>
-									<INPUT TYPE="TEXT" NAME="uiViewSNTPServer" SIZE="24" MAXLENGTH="48" VALUE="<%if tcWebApi_get("Timezone_Entry","SERVER","h") <> "0.0.0.0" then tcWebApi_get("Timezone_Entry","SERVER","s") else asp_Write("") end if%>" class="input_32_table" onKeyPress="return is_string(this, event);">
+									<INPUT TYPE="TEXT" NAME="uiViewSNTPServer" SIZE="24" MAXLENGTH="48" VALUE="<%if tcWebApi_get("Timezone_Entry","SERVER","h") <> "0.0.0.0" then tcWebApi_get("Timezone_Entry","SERVER","s") else asp_Write("") end if%>" class="input_32_table" onKeyPress="return validator.isString(this, event);">
 									<a href="javascript:openLink('x_NTPServer1')" name="x_NTPServer1_link" style=" margin-left:5px; text-decoration: underline;"><%tcWebApi_get("String_Entry","LHC_x_NTPServer1_linkname","s")%></a>
 								</td>
 							</tr>
@@ -1120,7 +1281,7 @@ function updateDateTime()
 							<tr id="https_lanport">
 								<th>HTTPS Lan port</th>
 								<td>
-									<input type="text" maxlength="5" class="input_6_table" name="https_lanport" value="<%TCWebApi_get("Https_Entry","https_lanport","s")%>" onKeyPress="return is_number(this,event);" onBlur="change_url(this.value, 'https_lan');">
+									<input type="text" maxlength="5" class="input_6_table" name="https_lanport" value="<%TCWebApi_get("Https_Entry","https_lanport","s")%>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');">
 									<span id="https_access_page"></span>
 								</td>
 							</tr>
@@ -1136,21 +1297,21 @@ function updateDateTime()
 							<tr id="accessfromwan_port">
 								<th align="right"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(8,3);"><% tcWebApi_Get("String_Entry", "FC_x_WanWebPort_in", "s") %></a></th>
 								<td>
-									<span style="margin-left:5px;" id="http_port">HTTP: <input type="text" maxlength="5" name="misc_httpport_x" class="input_6_table" value="<% tcWebApi_get("Firewall_Entry","misc_httpport_x", "s") %>" onKeyPress="return is_number(this,event);"/>&nbsp;&nbsp;</span>
-									<span style="margin-left:5px;" id="https_port">HTTPS: <input type="text" maxlength="5" name="misc_httpsport_x" class="input_6_table" value="<% tcWebApi_get("Firewall_Entry","misc_httpsport_x", "s") %>" onKeyPress="return is_number(this,event);"/></span>
+									<span style="margin-left:5px;" id="http_port">HTTP: <input type="text" maxlength="5" name="misc_httpport_x" class="input_6_table" value="<% tcWebApi_get("Firewall_Entry","misc_httpport_x", "s") %>" onKeyPress="return validator.isNumber(this,event);"/>&nbsp;&nbsp;</span>
+									<span style="margin-left:5px;" id="https_port">HTTPS: <input type="text" maxlength="5" name="misc_httpsport_x" class="input_6_table" value="<% tcWebApi_get("Firewall_Entry","misc_httpsport_x", "s") %>" onKeyPress="return validator.isNumber(this,event);"/></span>
 								</td>
 							</tr>
 
 							<tr>
 								<th><% tcWebApi_Get("String_Entry", "System_AutoLogout", "s") %></th>
 								<td>
-									<input type="text" class="input_3_table" maxlength="3" name="http_autologout" value="<% tcWebApi_Get("Misc_Entry", "http_autologout", "s") %>" onKeyPress="return is_number(this,event);">
+									<input type="text" class="input_3_table" maxlength="3" name="http_autologout" value="<% tcWebApi_Get("Misc_Entry", "http_autologout", "s") %>" onKeyPress="return validator.isNumber(this,event);">
 									min<span> ( <% tcWebApi_Get("String_Entry", "zero_disable", "s") %> )</span>
 								</td>
 							</tr>
 
 							<tr>
-								<th align="right"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(8,9);">Enable WAN down browser redirect notice</a></th>
+								<th align="right"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,6);"><% tcWebApi_Get("String_Entry", "Enable_redirect_notice", "s") %></a></th>
 								<td>
 									<input type="radio" name="nat_redirect_enable" class="input" value="1" <% If TCWebApi_get("SysInfo_Entry","nat_redirect_enable","h") <> "0" then asp_Write("checked") end if%> ><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
 									<input type="radio" name="nat_redirect_enable" class="input" value="0" <% If TCWebApi_get("SysInfo_Entry","nat_redirect_enable","h") = "0" then asp_Write("checked") end if%> ><%tcWebApi_get("String_Entry","checkbox_No","s")%>
@@ -1169,8 +1330,8 @@ function updateDateTime()
 							<tr id="http_client_tr">
 								<th><% tcWebApi_Get("String_Entry", "System_login_specified_IP", "s") %></th>
 								<td>
-									<input type="radio" name="http_client" class="input" value="1" onclick="display_spec_IP(1);" <% If TCWebApi_get("SysInfo_Entry","http_restrict_client","h") = "1" then asp_Write("checked") end if%>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
-									<input type="radio" name="http_client" class="input" value="0" onclick="display_spec_IP(0);" <% If TCWebApi_get("SysInfo_Entry","http_restrict_client","h") <> "1" then asp_Write("checked") end if%>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+									<input type="radio" name="http_client" class="input" value="1" onclick="display_spec_IP(1);" <% If TCWebApi_get("Firewall_Entry","enable_acc_restriction","h") = "1" then asp_Write("checked") end if%>><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
+									<input type="radio" name="http_client" class="input" value="0" onclick="display_spec_IP(0);" <% If TCWebApi_get("Firewall_Entry","enable_acc_restriction","h") <> "1" then asp_Write("checked") end if%>><%tcWebApi_get("String_Entry","checkbox_No","s")%>
 								</td>
 							</tr>
 						</table><br>
@@ -1182,20 +1343,28 @@ function updateDateTime()
 							</thead>
 							
 							<tr>
-								<th width="80%"><% tcWebApi_Get("String_Entry", "ConnectedClient", "s") %></th>
-								<th width="20%"><% tcWebApi_Get("String_Entry", "list_add_delete", "s") %></th>
+								<th width="10%" title="<%tcWebApi_get("String_Entry","select_all","s")%>"><input id="selAll" type="checkbox" onclick="control_all_rule_status(this);"></th>
+								<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,9);"><% tcWebApi_Get("String_Entry", "FC_LanWanDstIP_in", "s") %></a></th>
+								<th width="40%">Access Type</th>	<!--untranslated-->
+								<th width="10%"><% tcWebApi_Get("String_Entry", "list_add_delete", "s") %></th>
 							</tr>
 
 							<tr>
-									<!-- client info -->
-								<td width="80%">
-									<input type="text" class="input_32_table" maxlength="15" name="http_client_ip_x_0"  onKeyPress="" onClick="hideClients_Block();" onblur="if(!over_var){hideClients_Block();}">
-									<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title=<% tcWebApi_Get("String_Entry", "select_client", "s") %> onmouseover="over_var=1;" onmouseout="over_var=0;">	
-									<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>	
-								 </td>
-								 <td width="20%">	
+								<!-- client info -->
+								<td width="10%" title="<%tcWebApi_get("String_Entry","btn_Enabled","s")%>/<%tcWebApi_get("String_Entry","btn_disable","s")%>"><input type="checkbox" id="newrule_Enable" checked></td>
+								<td width="40%">
+									<input type="text" class="input_25_table" maxlength="18" name="http_client_ip_x_0"  onKeyPress="" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off">
+									<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<% tcWebApi_Get("String_Entry", "select_client", "s") %>">	
+									<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:27px;width:235px;"></div>
+								</td>
+								<td width="40%">
+									<input type="checkbox" name="access_webui" class="input access_type" value="1">Web UI<!--untranslated-->
+									<input type="checkbox" name="access_ssh" class="input access_type" value="2">SSH<!--untranslated-->
+									<input type="checkbox" name="access_telnet" class="input access_type" value="4">Telnet (Lan only)<!--untranslated-->
+								</td>
+								<td width="10%">									
 									<input class="add_btn" type="button" onClick="addRow(document.form.http_client_ip_x_0, 4);" value="">
-								 </td>	
+								</td>	
 							</tr>
 						</table>
 						<div id="http_clientlist_Block"></div>

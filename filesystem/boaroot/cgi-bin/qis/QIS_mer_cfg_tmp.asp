@@ -11,6 +11,7 @@
 <script type="text/Javascript" src="/state.js"></script>
 <script type="text/Javascript" src="/general.js"></script>
 <script type="text/Javascript" src="/form.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
 <style>
 span{
 border:0px solid #FFFFFF;
@@ -310,10 +311,10 @@ function submitForm(){
 <table id="tblsetting_2" class="QISform" width="400" border="0" align="center" cellpadding="3" cellspacing="0"><tr><td>
 <fieldset>
 <legend>
-<%tcWebApi_get("String_Entry","L3F_x_UseStaticIP_in","s")%>
+<%tcWebApi_get("String_Entry","L3F_x_DHCPClient_in","s")%>
 <span id="dhcp_info_radio">
-<input type="radio" name="x_DHCPClient" tabindex="1" class="input" value="0" onclick="show_dhcpenable(this.value);"><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
-<input type="radio" name="x_DHCPClient" tabindex="2" class="input" value="1" onclick="show_dhcpenable(this.value);"><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+<input type="radio" name="x_DHCPClient" tabindex="1" class="input" value="0" onclick="show_dhcpenable(this.value);"><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+<input type="radio" name="x_DHCPClient" tabindex="2" class="input" value="1" onclick="show_dhcpenable(this.value);"><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
 </span>
 </legend>
 <table id="tblsetting_2" class="QISform" width="400" border="0" align="center" cellpadding="3" cellspacing="0">
@@ -322,7 +323,7 @@ function submitForm(){
 <%tcWebApi_get("String_Entry","IPC_ExternalIPAddress_in","s")%>
 </th>
 <td class="QISformtd">
-<input type="hidden" id="dsl_ipaddr" name="dsl_ipaddr" value="" maxlength="15" onkeypress="return is_ipaddr(this);" onkeyup="change_ipaddr(this);" title="WAN IP">
+<input type="hidden" id="dsl_ipaddr" name="dsl_ipaddr" value="" maxlength="15" onkeypress="return validator.isIPAddr(this,event);" title="WAN IP">
 <div class="IPaddr" id="dsl_ipaddr_div">
 <input maxlength="3" tabindex="3"
 name="dsl_ipaddr1";
@@ -398,7 +399,7 @@ autocomplete="off" />
 <%tcWebApi_get("String_Entry","IPC_x_ExternalGateway_in","s")%>
 </th>
 <td class="QISformtd">
-<input type="hidden" id="dsl_gateway" name="dsl_gateway" value="" maxlength="15" onkeypress="return is_ipaddr(this);" onkeyup="return change_ipaddr(this);" class="input">
+<input type="hidden" id="dsl_gateway" name="dsl_gateway" value="" maxlength="15" onkeypress="return validator.isIPAddr(this,event);" class="input">
 <div class="IPaddr" id="dsl_gateway_div">
 <input maxlength="3"
 onkeypress="return checkIP(this,event);"
@@ -437,10 +438,10 @@ autocomplete="off" />
 <div id="dns_sec">
 <fieldset>
 <legend>
-<span id="dns_info_title"><%tcWebApi_get("String_Entry","qis_dns","s")%>:</span>
+<span id="dns_info_title"><%tcWebApi_get("String_Entry","IPC_x_DNSServerEnable_in","s")%>:</span>
 <span id="dns_info_radio">
-<input type="radio" name="wan_dnsenable_x" value="1" tabindex="6" onclick="show_dnsenable(this.value);" class="input"><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
-<input type="radio" name="wan_dnsenable_x" value="0" tabindex="7" onclick="show_dnsenable(this.value);" class="input"><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+<input type="radio" name="wan_dnsenable_x" value="1" tabindex="6" onclick="show_dnsenable(this.value);" class="input"><%tcWebApi_get("String_Entry","checkbox_No","s")%>
+<input type="radio" name="wan_dnsenable_x" value="0" tabindex="7" onclick="show_dnsenable(this.value);" class="input"><%tcWebApi_get("String_Entry","checkbox_Yes","s")%>
 </span>
 </legend>
 <table id="tblsetting_4" class="QISform" width="400" border=0 align="center" cellpadding="5" cellspacing="0">
@@ -449,7 +450,7 @@ autocomplete="off" />
 <%tcWebApi_get("String_Entry","IPC_x_DNSServer1_in","s")%>:
 </th>
 <td class="QISformtd">
-<input type="hidden" id="dsl_dns1_x" name="dsl_dns1_x" value="" onkeypress="return is_ipaddr(this);" onkeyup="return change_ipaddr(this);" maxlength="15">
+<input type="hidden" id="dsl_dns1_x" name="dsl_dns1_x" value="" onkeypress="return validator.isIPAddr(this,event);" maxlength="15">
 <div class="IPaddr" id="dsl_dns1_x_div">
 <input maxlength="3" tabindex="8"
 name="dsl_dns1_x1"
@@ -488,7 +489,7 @@ autocomplete="off" />
 <%tcWebApi_get("String_Entry","IPC_x_DNSServer2_in","s")%>:
 </th>
 <td class="QISformtd">
-<input type="hidden" id="dsl_dns2_x" name="dsl_dns2_x" value="" maxlength="15" onkeypress="return is_ipaddr(this);" onkeyup="return change_ipaddr(this);">
+<input type="hidden" id="dsl_dns2_x" name="dsl_dns2_x" value="" maxlength="15" onkeypress="return validator.isIPAddr(this,event);">
 <div class="IPaddr" id="dsl_dns2_x_div">
 <input maxlength="3" tabindex="9"
 onkeypress="return checkIP(this,event);"

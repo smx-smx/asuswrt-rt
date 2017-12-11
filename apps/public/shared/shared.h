@@ -12,6 +12,8 @@
 #include <mntent.h>	// !!TB
 #endif
 
+#include "network_utility.h"
+
 #ifndef FALSE
 #define FALSE   0
 #endif
@@ -95,8 +97,10 @@ enum {
 #define GIF_LINKLOCAL  0x0001  /* return link-local addr */
 #define GIF_PREFIXLEN  0x0002  /* return addr & prefix */
 
-#define EXTEND_AIHOME_API_LEVEL		6
+#define EXTEND_AIHOME_API_LEVEL		8
 #define EXTEND_HTTPD_AIHOME_VER		0
+
+#define EXTEND_ASSIA_API_LEVEL		1
 
 enum {
 	ACT_IDLE,
@@ -230,6 +234,7 @@ enum {
 	MODEL_DSLAC52U,
 	MODEL_DSLAC55U,
 	MODEL_DSLN16,
+	MODEL_DSLAC51,
 	MODEL_EAN66,
 	MODEL_RTN11P,
 	MODEL_RTN13U,
@@ -595,6 +600,7 @@ extern int ascii_to_char_safe(const char *output, const char *input, int outsize
 extern void ascii_to_char(const char *output, const char *input);
 extern const char *find_word(const char *buffer, const char *word);
 extern int remove_word(char *buffer, const char *word);
+extern int replce_str(char* pchrsource,char* pchrfind,char* pchrrep);
 
 // file.c
 extern int check_if_file_exist(const char *file);
@@ -634,23 +640,6 @@ extern char* INET6_rresolve(struct sockaddr_in6 *sin6, int numeric);
 #endif
 extern const char *ipv6_gateway_address(void);
 #endif
-#ifdef RTCONFIG_OPENVPN
-#if defined(TCSUPPORT_ADD_JFFS)
-#define OVPN_FS_PATH	"/jffs/openvpn"
-#define MAX_OVPN_CLIENT	5
-#elif defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-#define OVPN_FS_PATH	"/yaffs/openvpn"
-#define MAX_OVPN_CLIENT	5
-#else
-#define MAX_OVPN_CLIENT	1
-#endif
-#define MAX_OVPN_SERVER	1
-#define CLIENT_IF_START 10
-#define SERVER_IF_START 20
-extern char *get_parsed_crt(const char *name, char *buf, size_t buf_len);
-extern int set_crt_parsed(const char *name, char *file_path);
-extern int ovpn_crt_is_empty(const char *name);
-#endif
 
 /* mt7620.c */
 extern void ATE_mt7620_esw_port_status(void);
@@ -665,6 +654,9 @@ extern int notify_rc_and_wait_2min(const char *event_name);
 extern int notify_rc_and_period_wait(const char *event_name, int wait);
 
 /* rtstate.c */
+#ifndef LAN_PORT_ITF_PREFIX
+#define	LAN_PORT_ITF_PREFIX	"elan."	//eth0.
+#endif
 extern char *get_wanx_ifname(int unit);
 #if 0
 extern int get_lanports_status(void);
@@ -696,31 +688,6 @@ extern void add_lan_phy(char *phy);
 extern void set_wan_phy(char *phy);
 extern void add_wan_phy(char *phy);
 
-#ifdef RTCONFIG_PROTECTION_SERVER
-#define PROTECTION_SERVER_SOCKET_PATH     "/etc/protection_server_socket"
-
-typedef enum {
-	PROTECTION_SERVICE_NONE=0,
-	PROTECTION_SERVICE_WEB,
-	PROTECTION_SERVICE_SSH,
-	PROTECTION_SERVICE_TELNET,
-	PROTECTION_SERVICE_SMB
-}PROTEC_TYPE_T;
-
-typedef struct _state_report__t_
-{
-	int        loginType;         /* login service type */
-	char       ip_addr[64];       /* record fail address */
-	char       note[256];         /* Info */
-
-/* Control by Protection Server */
-	int        frequency;         /* login retry fail time */
-	long int   now;               /* login fail timestamp */
-} STATE_REPORT_T;
-
-int send_protect_event(STATE_REPORT_T report);
-#endif
-
 /* semaphore.c */
 extern void init_spinlock(void);
 
@@ -738,5 +705,7 @@ extern int tcapi_match(char* node, char* attr, char* value);
 extern char *tcapi_get_string(char* node, char* attr, char* buffer);
 extern int tcapi_get_list(char* target_list, char* list_value, size_t len);
 extern int tcapi_set_list(char* target_list, char* list_value);
+extern int tcapi_get_multiattr(char* target_node, char* attr, char* value, size_t len);
+extern int tcapi_set_multiattr(char* target_node, char* attr, char* value, size_t len);
 #endif
 

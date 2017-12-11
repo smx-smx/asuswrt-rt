@@ -9,14 +9,17 @@ static int
 expires(char *wan_ifname, unsigned int in)
 {
 	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
-	int unit;
+	int unit, wan_unit, wan_subunit;
 	time_t now;
 	FILE *fp;
 
-	if ((unit = wan_prefix(wan_ifname, prefix)) < 0)
+	if(get_wan_unit_ex(wan_ifname, &wan_unit, &wan_subunit) < 0)
 		return -1;
-	if (wan_ifunit(wan_ifname) < 0)
-		snprintf(prefix, sizeof(prefix), "wan%d_x", unit);
+	if(wan_subunit > 0)
+		unit = wan_unit*10 + wan_subunit;
+	else
+		unit = wan_unit;
+	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
 	//called by udhcpc_expires(), need to set lease
 	nvram_set_int(strcat_r(prefix, "lease", tmp), in);

@@ -27,13 +27,28 @@ struct trx_header {
 	unsigned char Model[32];
 #if defined (TCSUPPORT_2_6_36_KERNEL)
 	unsigned int decompAddr;//kernel decompress address
-	unsigned int reserved[32];  /* Reserved field of header */
+	unsigned char modelname[24];
+	unsigned int nand_version;
+	unsigned int reserved[25];  /* Reserved field of header */
 #else
-	unsigned int reserved[33];  /* Reserved field of header */
+	unsigned char modelname[24];
+	unsigned int nand_version;
+	unsigned int reserved[26];  /* Reserved field of header */
 #endif
 	#endif
 #endif	
 };
+
+/*
+	nand_version : 1, add below nand support
+	MXIC - MX30LF1GE8AB (ECC free)
+	MXIC - MX30LF1G18AC (4bit ECC)
+	WINBOND - W29N01HV (1bit ECC)
+	ESMT - F59L1G81LA (1bit ECC)
+	TOSHIBA - TC58BVG0S3HTA (ECC free)
+*/
+
+
 #define TRX_MAGIC	0x30524448	/* "HDR0" */
 #define TRX_MAGIC1	0x31524448	/* "HDR1" */
 #define TRX_MAGIC2	0x32524448	/* "for tclinux" */

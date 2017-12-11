@@ -82,13 +82,6 @@ if [ "$Active" != "Yes" ] ; then
 	exit 0
 fi
 
-# ginp
-if [ "$1" = "8" ]; then
-if [ "$ISP" = "0" ] || [ "$ISP" = "2" ]; then
-	/userfs/bin/chkwan &
-fi
-fi
-
 # power up Ethernet Wan
 #this case means the model including Ethernet WAN.
 #if [ "$TCSUPPORT_MTK_INTERNAL_ETHER_SWITCH" = "" -a "$i" = "10" ]; then
@@ -225,7 +218,10 @@ if [ $ISP = "0" ] ; then
 		fi
 		if [ "$wan_hostname" != "" ] ; then
 			UDHCPC_PARAM="-H $wan_hostname"
-		fi
+		fi		
+		if [ "$DEFAULTROUTE" != "Yes" ] ; then
+			UDHCPC_PARAM="$UDHCPC_PARAM -o -O subnet -O dns -O hostname -O router -O domain -O broadcast -O staticroutes"
+		fi		
                if [ "$ASUS_BUSYBOX_NEW" != "" ]  ; then
 			if [ "$dhcp_vendorid" != "" ] ; then
 				UDHCPC_PARAM="$UDHCPC_PARAM -V $dhcp_vendorid"
@@ -818,10 +814,11 @@ setCloneMAC
 
 	/sbin/ifconfig nas$i 0.0.0.0
 	WAN_IF=nas$i
+	LAN_PORT_ITF_PREFIX="elan."
 
 	brctl addif $br_ifname $WAN_IF
-	brctl delif  br0 lan$bridge_lan_port
-	brctl addif $br_ifname lan$bridge_lan_port	
+	brctl delif br0 $LAN_PORT_ITF_PREFIX$bridge_lan_port
+	brctl addif $br_ifname $LAN_PORT_ITF_PREFIX$bridge_lan_port
 
 	#These setting should not be used anymore.
 	#if [ "$isIPTV" = "No" ]; then		
@@ -861,14 +858,7 @@ fi
 
 if [ "$isIPTV" = "Yes" ]; then
 	# restart IPTV
-	#this case means the model including Ethernet WAN.
-	if [ "$TCSUPPORT_MTK_INTERNAL_ETHER_SWITCH" = "" ]; then
-		/userfs/bin/tcapi commit "IPTV" &
-	fi
-else
-	if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" = "" ] && [ "$i" = "10" ] ;then
-		/userfs/bin/tcapi commit "IPTV" &
-	fi
+	/userfs/bin/tcapi commit "IPTV" &
 fi
 
 #/usr/bin/qoscmd dev add nas$i &

@@ -20,12 +20,10 @@
 void start_cc(void* unused);
 #ifndef PURE_BRIDGE
 #if (defined(TCSUPPORT_WAN_ETHER) || defined(TCSUPPORT_WAN_PTM)) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
-void restart_igmpproxy(char *interface, int pvc, int input_serv);
 void restart_mldproxy(char *interface,int input_pvc,int cur_wan_isp,  int input_serv);
 void reset_fork_or_not(int pvc, int serv);
 void restart_nat(int PVC, int serv);
 #else
-void restart_igmpproxy(char *interface, int pvc);  /*rodney_20090420*/
 void restart_mldproxy(char *interface,int input_pvc,int cur_wan_isp);
 void reset_fork_or_not(int pvc);  /*rodney_20090420 add*/
 void restart_nat(int PVC);

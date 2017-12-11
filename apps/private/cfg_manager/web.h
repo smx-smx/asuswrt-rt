@@ -305,7 +305,7 @@ typedef unsigned long ULONG;
 #endif
 #define UDHCPC_PID_PATH	"/var/run/udhcpc-nas%s.pid"
 #if defined(TCSUPPORT_ETH4_WAN_PORT)
-#define UDHCPC_ETH4_PID_PATH	"/var/run/udhcpc-lan4.pid"
+#define UDHCPC_ETH4_PID_PATH	"/var/run/udhcpc-elan.4.pid"
 #endif
 /*We should get wireless state by use  /userfs/bin/iwpriv ra0 stat. shnwind modify*/
 //#define GET_WLAN_INFO_CMD	"/userfs/bin/iwpriv ra0 stat"
@@ -643,12 +643,12 @@ getIpFromArp(char *macAttr, char *ip);
 #define MODE_OFDM		1
 #define MODE_HTMIX		2
 #define MODE_HTGREENFIELD	3
-#if defined(MT7592) || defined(MT7612E)
+#if defined(MT7592) || defined(MT7612E) || defined(MT7610E)
 #define MODE_VHT		4	//Andy Chiu, 2015/08/25
 #endif
 
 //Andy Chiu, 2015/08/25
-#if defined(MT7592) || defined(MT7612E)
+#if defined(MT7592) || defined(MT7612E) || defined(MT7610E)
 #define BAND_WIDTH_20		0
 #define BAND_WIDTH_40		1
 #define BAND_WIDTH_80		2
@@ -760,7 +760,7 @@ typedef struct _RT_802_11_MAC_TABLE {
 } RT_802_11_MAC_TABLE, *PRT_802_11_MAC_TABLE;
 
 //Andy Chiu, 2015/06/30. Add 5G mac table
-#if defined(MT7612E)
+#if defined(MT7612E) || defined(MT7610E)
 typedef union _MACHTTRANSMIT_SETTING_5G{
 	//Andy Chiu, 2015/08/25. update date structure.
 	struct {
@@ -882,7 +882,7 @@ typedef struct _SITE_SURVEY_5G
 	char bssid[20];
 	char authmode[15];	//security part1
 	char encryption[8];	//security part2 and need to shift data
-#if defined(MT7612E)
+#if defined(MT7612E) || defined(MT7610E)
 	char signal[10];
 	char wmode[9];
 	char extch[7];
@@ -953,6 +953,13 @@ typedef struct GNU_PACKED _RT_802_11_ACL {
 #endif
 #endif
 
+typedef struct _Nand_info
+{
+	unsigned int id;          //deviceid+menuid
+	unsigned int ext_id; 
+	unsigned int nand_version;
+	char devciename[14];
+}Nand_info_t;
 
 #ifdef TCSUPPORT_PRODUCTIONLINE
 int tcgetProLinePara(void*buf,int flag);

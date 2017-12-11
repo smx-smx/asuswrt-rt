@@ -1,12 +1,24 @@
 
-CFLAGS = -Wall -Os $(TC_CFLAGS)
+CFLAGS = -Wall -Os
+
+ifneq ($(strip $(TC_CFLAGS)),)
+CFLAGS += $(TC_CFLAGS)
+endif
+ifneq ($(strip $(TC_LDFLAGS)),)
+LDFLAGS += $(TC_LDFLAGS)
+endif
+
 CFLAGS += -I.
+
 CFLAGS += -I../shared -I$(LIB_UTILS_DIR)
-LDFLAGS = -L../shared -lshared -L$(LIB_UTILS_DIR) -lutils
+LDFLAGS += -L../shared -lshared
+LDFLAGS += -L$(LIB_UTILS_DIR) -lutils
+
 ifneq ($(RTCONFIG_USB),)
 CFLAGS += -I../libdisk
 LDFLAGS += -L../libdisk -ldisk
 endif
+
 CFLAGS += -I$(APP_TCAPILIB_DIR)
 LDFLAGS += -L$(APP_TCAPILIB_DIR) -ltcapi -lcrypt
 
@@ -33,7 +45,6 @@ endif
 
 ifeq ($(RTCONFIG_OPENVPN),y)
 CFLAGS += -DRTCONFIG_CROND
-OBJS += openvpn.o
 endif
 
 ifeq ($(RTCONFIG_VPNC),y)
@@ -66,7 +77,6 @@ ifeq ($(RTCONFIG_LETSENCRYPT),y)
 CFLAGS += -I$(APP_OPENSSL_DIR)/include
 LDFLAGS += -L$(APP_OPENSSL_DIR) -lcrypto -lssl
 endif
-
 
 all: rc
 

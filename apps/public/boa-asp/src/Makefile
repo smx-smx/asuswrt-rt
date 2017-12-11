@@ -27,6 +27,10 @@ CFLAGS += -I../../libdisk/
 LIBS += -L../../libdisk -ldisk 
 endif
 
+ifneq ($(strip $(TC_LDFLAGS)),)
+LDFLAGS += $(TC_LDFLAGS)
+endif
+
 ifneq ($(strip $(RTCONFIG_NOTIFICATION_CENTER)),)
 CFLAGS += -I$(APP_NOTIFICATION_CENTER_DIR) -I$(APP_NOTIFICATION_CENTER_DIR)/lib/
 CFLAGS += -I$(APP_SQLITE_DIR)/
@@ -34,6 +38,11 @@ LDFLAGS += -L$(APP_NOTIFICATION_CENTER_DIR)/lib -lnt -lm
 LDFLAGS += -L$(APP_SQLITE_DIR)/.libs -lsqlite3
 endif
 
+ifneq ($(strip $(TCSUPPORT_ACCESSLOG)),)
+CFLAGS += -I$(APP_ACCESSLOG_DIR)
+endif
+
+CFLAGS += -I$(APP_NETWORKMAP_DIR)
 
 #CFLAGS+= -mips1 -G0 -msoft-float -O2 -fshort-wchar 
 CFLAGS+= -G0 -fshort-wchar 
@@ -126,11 +135,11 @@ asp_file:
 	-(cd asp && $(MAKE) $(MFLAGS))
 	
 boa:	$(OBJS) $(ASPOBJS)
-	$(CC) -Wl -o $@ $^ $(LDFLAGS) $(LIBS) $(TCAPILIB)
+	$(CC) -Wl -o $@ $^ $(LDFLAGS) $(TCAPILIB) $(LIBS)
 	$(STRIP) boa
 	
 boa_indexer:	index_dir.o escape.o   
-	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS) $(TCAPILIB)
+	$(CC) -o $@ $^ $(LDFLAGS) $(TCAPILIB) $(LIBS)
 
 clean:
 	-(cd asp && $(MAKE) $(MFLAGS) clean)

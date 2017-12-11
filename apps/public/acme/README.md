@@ -13,6 +13,8 @@ It's probably the `easiest&smallest&smartest` shell script to automatically issu
 
 Wiki: https://github.com/Neilpang/acme.sh/wiki
 
+# [中文说明](https://github.com/Neilpang/acme.sh/wiki/%E8%AF%B4%E6%98%8E)
+
 #Tested OS
 | NO | Status| Platform|
 |----|-------|---------|
@@ -133,9 +135,9 @@ The issued cert will be renewed every 80 days automatically.
 More examples: https://github.com/Neilpang/acme.sh/wiki/How-to-issue-a-cert
 
 
-# 3. Install issued cert to apache/nginx etc.
+# 3. Install the issued cert to apache/nginx etc.
 
-After you issue a cert, you probably want to install the cert with your nginx/apache or other servers you may be using.
+After you issue a cert, you probably want to install/copy the cert to your nginx/apache or other servers you may be using.
 
 ```bash
 acme.sh --installcert -d aa.com \
@@ -148,7 +150,7 @@ acme.sh --installcert -d aa.com \
 
 Only the domain is required, all the other parameters are optional.
 
-Install the issued cert/key to the production apache or nginx path.
+Install/copy the issued cert/key to the production apache or nginx path.
 
 The cert will be `renewed every 80 days by default` (which is configurable). Once the cert is renewed, the apache/nginx will be automatically reloaded by the command: `service apache2 reload` or `service nginx reload`.
 
@@ -302,7 +304,18 @@ You can update acme.sh to the latest code:
 acme.sh --upgrade
 ```
 
-# 12. Issue a cert from existing CSR
+You can enable auto upgrade:
+```
+acme.sh  --upgrade  --auto-upgrade
+```
+Then **acme.sh** will keep up to date automatically.
+
+Disable auto upgrade:
+```
+acme.sh  --upgrade  --auto-upgrade 0
+```
+
+# 12. Issue a cert from an existing CSR
 
 https://github.com/Neilpang/acme.sh/wiki/Issue-a-cert-from-existing-CSR
 
@@ -318,7 +331,7 @@ TODO:
 2. ACME protocol: https://github.com/ietf-wg-acme/acme
 3. Certbot: https://github.com/certbot/certbot
 
-# License & Other
+# License & Others
 
 License is GPLv3
 

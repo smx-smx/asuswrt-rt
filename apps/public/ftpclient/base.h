@@ -45,14 +45,14 @@ extern "C"
 }
 #endif
 
-//#define __DEBUG__
+#define __DEBUG__
 #ifdef __DEBUG__
 #define DEBUG(info, ...) printf(info,##__VA_ARGS__)
 #else
 #define DEBUG(info, ...)
 #endif
 
-//#define __DEBUG1__
+#define __DEBUG1__
 #ifdef __DEBUG1__
 #define DEBUG1(info, ...) printf(info,##__VA_ARGS__)
 #else
@@ -109,7 +109,6 @@ typedef struct _Node
     //char *re_cmd;
     struct _Node *next;
 }Node;
-//Node *newNode;
 
 typedef struct Action_Item
 {
@@ -121,13 +120,8 @@ typedef struct Action_Item
 typedef struct node{
     int isfile;
     char * href;
-    //char auth[MIN_LENGTH];
     long long int size;
-    //char month[MIN_LENGTH];
-    //char day[MIN_LENGTH];
-    //char lastmodifytime[MINSIZE];
     char filename[MAX_CONTENT];
-    //char mtime[MIN_LENGTH];
     unsigned long int modtime;
     struct node *next;
     int ismodify;
@@ -149,7 +143,6 @@ typedef struct ServerTreeNode
     struct ServerTreeNode *Child;
     struct ServerTreeNode *NextBrother;
 }Server_TreeNode;
-//Server_TreeNode *ServerNode_del,*ServerNode_List;
 
 typedef struct SYNC_LIST
 {
@@ -184,7 +177,6 @@ typedef struct SYNC_LIST
     Server_TreeNode *OldServerRootNode;
     Server_TreeNode *OrigServerRootNode;
 }sync_list;
-//sync_list **g_pSyncList;
 
 typedef struct LOCALFOLDER{
     char *path;
@@ -195,11 +187,7 @@ typedef struct LOCALFOLDER{
 typedef struct LOCALFILE{
     char *path;
     char name[MAX_CONTENT];
-    //char creationtime[MINSIZE];
-    //char lastaccesstime[MINSIZE];
-    //char lastwritetime[MINSIZE];
     unsigned long modtime;
-    //long long int size;
     struct LOCALFILE *next;
 }LocalFile;
 
@@ -264,8 +252,8 @@ int wait_handle_socket(int index);
 mod_time *get_mtime_1(FILE *fp);
 mod_time *Getmodtime(char *href,int index);
 int ChangeFile_modtime(char *filepath,time_t servermodtime,int index);
-int parseCloudInfo_one(char *parentherf,int index);
-int getCloudInfo_one(char *URL,int (* cmd_data)(char *,int),int index);
+int parseCloudInfo_one(char *parentherf,CloudFile * FileTail_one,int index);
+int getCloudInfo_one(char *URL,int (* cmd_data)(char *,CloudFile *,int),CloudFile * FileTail_one,int index);
 int is_server_exist(char *parentpath,char *filepath,int index);
 void parseCloudInfo_forsize(char *parentherf);
 int getCloudInfo_forsize(char *URL,void (* cmd_data)(char *),int index);
@@ -393,6 +381,4 @@ void my_mkdir_r(char *path,int index);
 int create_xml(int status);
 int socket_check(char *dir,char *name,int index);
 int usr_auth(char *ip,char *user_pwd);
-//void create_start_file();
-//int detect_process_file();
 #endif  //BASE_H

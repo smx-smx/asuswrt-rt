@@ -25,23 +25,17 @@
 #include <ne_request.h>
 #include <ne_basic.h>
 #include "list.h"
-//#include <sys/time.h>
-
-//long long int memory_used;
 
 pthread_t newthid1,newthid2,newthid3;
 pthread_cond_t cond,cond_socket,cond_log;
 pthread_mutex_t mutex,mutex_socket,mutex_receve_socket,mutex_log,mutex_checkdisk,mutex_copyfilelist;
 
-//ne_session *sess;
-
 #define INOTIFY_PORT 3678
 
 #define NO_PARENT 427
 
-//#define DEBUG 1
 #define LIST_TEST 1
-//#define DEVICE "/RT-N16/ASD/0417"
+
 
 //#define __DEBUG__
 //#undef __DEBUG__
@@ -53,7 +47,6 @@ pthread_mutex_t mutex,mutex_socket,mutex_receve_socket,mutex_log,mutex_checkdisk
 #define DEBUG(format, ...)
 #endif
 
-//char mount_path[MAX_LENGTH];
 char log_base_path[MAX_LENGTH];
 char log_path[MAX_LENGTH];
 
@@ -66,17 +59,6 @@ long long int DiskAvailableShow;
 long long int DiskUsedShow;
 long long int PreDiskAvailableShow;
 long long int PreDiskUsedShow;
-
-//#define ABORT (-42) /* magic code for abort handlers */
-//#define NE_XML_DECLINE (0)
-//#define NE_XML_ABORT (-1)
-//#define EVAL_DEFAULT "eval-xmlns-default"
-//#define EVAL_SPECIFIC "eval-xmlns-specific-"
-/*struct context {
-    ne_buffer *buf;
-    ne_xml_parser *parser;
-};*/
-
 
 /* log struct */
 typedef struct LOG_STRUCT{
@@ -106,7 +88,6 @@ typedef struct LOG_STRUCT{
 #define COULD_NOT_READ_RESPONSE_BODY    908
 #define HAVE_LOCAL_SOCKET               909
 #define SERVER_ROOT_DELETED             910
-//#define NO_PARENT                       911
 
 int sync_up;
 int sync_down;
@@ -120,9 +101,6 @@ int first_sync;
 
 ne_off_t prog_total;
 time_t prog_time;
-
-//#define NVRAM_
-//#define MUTI_DIR
 
 #ifndef NVRAM_
 #ifndef PC
@@ -190,7 +168,6 @@ struct asus_rule
     char rooturl[MAX_CONTENT];
     char rootfolder[256];
     char host[128];
-    //char rooturl_no_port[MAX_CONTENT];
     int rootfolder_length;
     char mount_path[MAX_LENGTH];
     char desc[256];
@@ -290,8 +267,8 @@ int my_auth(void *userdata, const char *realm, int attempt,char *username, char 
 int ChangeFile_modtime(char *filepath,time_t servermodtime,int index);
 int compareTime(time_t servermodtime ,char *localpath);
 void wd_escape(char *unescapepath,char *escapepath);
-int getCloudInfo(char *URL,int (*cmd_data)(char *, int, int),int index);
-//void parseCloudInfo_one(xmlDocPtr doc, xmlNodePtr cur,int index);
+int getCloudInfo(char *URL,int (*cmd_data)(char *, int, CloudFile *, CloudFile *, int),CloudFile *TreeFolderTail,CloudFile *TreeFileTail,int index);
+int getCloudInfo_one(char *URL,int (*cmd_data)(char *, int, CloudFile *, int),CloudFile *FileTail_one,int index);
 void del_all_items(char *dir,int index);
 time_t GetFile_modtime(char *localpath);
 int is_file_copying(char *filename);
@@ -333,7 +310,6 @@ void my_mkdir(char *path);
 void my_mkdir_r(char *path,int index);
 int newer_file(char *localpath,int index);
 int init_newer_file(char *localpath,int index);
-//int sync_newer_file(char *localpath,int index,CloudFile *reloldfiletmp);
 int sync_newer_file(char *localpath,int index);
 char *my_nstrchr(const char chr,char *str,int n);
 void handle_quit_upload();
@@ -344,7 +320,6 @@ int is_server_exist_with_type(char *filepath);
 char *parse_name_from_path(const char *path);
 int get_create_threads_state();
 int ne_getrouterinfo(int (*cmd_data)(char *, int, int),int index);
-//void parseRouterInfo(xmlDocPtr doc, xmlNodePtr cur,int index);
 struct tokenfile_info_tag *initial_tokenfile_info_data(struct tokenfile_info_tag **token);
 int free_tokenfile_info(struct tokenfile_info_tag *head);
 int delete_tokenfile_info(char *url,char *folder);
@@ -362,7 +337,6 @@ int write_get_nvram_script(char *nvram_name,char *nvram_path,char *script_path);
 char *parse_parentfolder_from_path(const char *path);
 void create_start_file();
 int detect_process_file();
-int wd_parsexml(char *xmlBuf,int xmlBufLength,int index);
-int wd_parsexml_one(char *xmlBuf,int xmlBufLength,int index);
+int wd_parsexml(char *xmlBuf,int xmlBufLength,CloudFile *TreeFolderTail,CloudFile *TreeFileTail,int index);
+int wd_parsexml_one(char *xmlBuf,int xmlBufLength,CloudFile *FileTail_one,int index);
 int wd_parsexml_RouterInfo(char *xmlBuf,int xmlBufLength,int index);
-

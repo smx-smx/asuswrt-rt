@@ -104,7 +104,8 @@ static void doKlogd(const int console_log_level)
 			}
 			if (log_buffer[i] == '\n') {
 				log_buffer[i] = '\0';	/* zero terminate this message */
-				syslog(priority, "%s", start);
+				if(strncmp(start, "user max durtime", 16) && strncmp(start, "app durtime", 11))
+					syslog(priority, "%s", start);
 				start = &log_buffer[i + 1];
 				priority = LOG_INFO;
 			}

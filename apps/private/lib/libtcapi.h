@@ -30,6 +30,9 @@ tcapi_readAll(void);
 void
 tcdbg_printf(char *fmt,...);
 
+int
+tcapi_reset(char* node);	//restore node to default
+
 /*TR069 message mechanism----------add by brian*/
 #define PROJID 2
 #define MAX_READ_SIZE 256

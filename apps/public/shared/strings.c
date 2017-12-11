@@ -150,3 +150,47 @@ int remove_word(char *buffer, const char *word)
 
 	return 1;
 }
+
+int replce_str(char* pchrsource,char* pchrfind,char* pchrrep)
+{
+	char *pchrresult;
+	char* pchrformer;
+	char* pchrlocation;
+	int intrep;
+	int intfind;
+	int intlength;
+	int intgap=0;
+	
+	intfind=strlen(pchrfind);
+	intrep=strlen(pchrrep);
+	intlength=strlen(pchrsource)+1;
+	
+	pchrresult = (char*)malloc(sizeof(char) * intlength);
+	strcpy(pchrresult, pchrsource);
+	
+	pchrformer=pchrsource;
+	pchrlocation= strstr(pchrformer, pchrfind);
+	
+	while(pchrlocation!=NULL) {
+	
+		intgap+=(pchrlocation - pchrformer);
+		pchrresult[intgap]='\0';
+		
+		intlength+=(intrep-intfind);
+		pchrresult = (char*)realloc(pchrresult, intlength * sizeof(char));
+		strcat(pchrresult, pchrrep);
+		intgap+=intrep;
+		
+		pchrformer=pchrlocation+intfind;
+		strcat(pchrresult, pchrformer);
+		
+		
+		pchrlocation= strstr(pchrformer, pchrfind);
+	}
+	
+	pchrresult[strlen(pchrresult)]='\0';
+	
+	strcpy(pchrsource,pchrresult);
+	free(pchrresult);
+	return 0;
+}

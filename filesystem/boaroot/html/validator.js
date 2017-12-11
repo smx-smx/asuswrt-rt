@@ -499,6 +499,20 @@ var validator = {
 			}
 			
 			return true;
+		}
+		else if(keyPressed == 47){
+			j = 0;
+
+			for(i = 0; i < o.value.length; i++){
+				if(o.value.charAt(i) == '.'){
+					j++;
+				}
+			}
+
+			if( j < 3){
+				return false;
+			}
+			return true;
 		}	
 		return false;
 	},
@@ -1411,13 +1425,6 @@ var validator = {
 			return v.substring(i);
 		};
 
-		if(isNaN(o.value)){
-			alert('<%tcWebApi_Get("String_Entry","JS_validrange","s")%> ' + _min + ' <%tcWebApi_Get("String_Entry","JS_validrange_to","s")%> ' + _max);
-			o.focus();
-			o.select();
-			return false;
-		}
-
 		if(_min > _max){
 			var tmpNum = "";
 		
@@ -1426,7 +1433,7 @@ var validator = {
 			_max = tmpNum;
 		}
 
-		if(o.value < _min || o.value > _max) {
+		if(isNaN(o.value) || o.value < _min || o.value > _max) {
 			alert('<%tcWebApi_Get("String_Entry","JS_validrange","s")%> ' + _min + ' <%tcWebApi_Get("String_Entry","JS_validrange_to","s")%> ' + _max);
 			o.focus();
 			o.select();
@@ -1444,7 +1451,7 @@ var validator = {
 	rangeNull: function(o, min, max, def) {		//Viz add 2013.03 allow to set null
 		if (o.value=="") return true;
 		
-		if(o.value<min || o.value>max) {
+		if(isNaN(o.value) || o.value < min || o.value > max) {
 			alert('<%tcWebApi_Get("String_Entry","JS_validrange","s")%> ' + min + ' <%tcWebApi_Get("String_Entry","JS_validrange_to","s")%> ' + max + '.');
 			o.value = def;
 			o.focus();
@@ -1466,16 +1473,7 @@ var validator = {
 
 		if (o.value==0) return true;
 
-		for(var i=0; i<o.value.length; i++){		//is_number
-			if (o.value.charAt(i)<'0' || o.value.charAt(i)>'9'){			
-				alert('<%tcWebApi_Get("String_Entry","JS_validrange","s")%> ' + min + ' <%tcWebApi_Get("String_Entry","JS_validrange_to","s")%> ' + max);
-				o.focus();
-				o.select();
-				return false;
-			}
-		}
-
-		if(o.value<min || o.value>max) {
+		if(isNaN(o.value) || o.value < min || o.value > max) {
 			alert('<%tcWebApi_Get("String_Entry","JS_validrange","s")%> ' + min + ' <%tcWebApi_Get("String_Entry","JS_validrange_to","s")%> ' + max + '.');
 			o.value = def;
 			o.focus();
@@ -1488,6 +1486,19 @@ var validator = {
 				o.value="0";
 			return true;
 		}
+	},
+
+	rangeFloat: function(o, _min, _max, def){
+
+		if(isNaN(o.value) || o.value <= _min || o.value > _max) {
+			alert('<%tcWebApi_Get("String_Entry","JS_validrange","s")%> ' + min + ' <%tcWebApi_Get("String_Entry","JS_validrange_to","s")%> ' + max + '.');
+			o.value = def;
+			o.focus();
+			o.select();
+			return false;
+		}
+
+		return true;
 	},
 
 	ssidChar: function(ch){
@@ -1736,7 +1747,7 @@ var validator = {
 					obj.select();
 					return false;
 				}else{
-					if(obj.value.split("/")[1] == "" || obj.value.split("/")[1] == 0 || obj.value.split("/")[1] > 30){
+					if(obj.value.split("/")[1] == "" || obj.value.split("/")[1] == 0 || obj.value.split("/")[1] > 32){
 						alert(obj.value + " <%tcWebApi_Get("String_Entry","JS_validip","s")%>");
 						obj.value = "";
 						obj.focus();
@@ -1823,3 +1834,4 @@ var validator = {
 	}
 
 };
+

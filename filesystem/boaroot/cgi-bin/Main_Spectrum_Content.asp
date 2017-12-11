@@ -4,14 +4,12 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
-<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
-<meta name="svg.render.forceflash" content="false" />	
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
 <title>ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - Spectrum</title>
 <link rel="stylesheet" type="text/css" href="/index_style.css"> 
 <link rel="stylesheet" type="text/css" href="/form_style.css">
-<script src='/svg.js' data-path="/svghtc/" data-debug="false"></script>	
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>

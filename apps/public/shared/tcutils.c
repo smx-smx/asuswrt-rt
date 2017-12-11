@@ -260,6 +260,12 @@ int _tcapi_x_list(int type, char* target_list, char* list_value, size_t len)
 		list_type = TCAPI_LIST_TYPE_ATTR;
 		list_num = 49; /* (9*12*7*32+31+48)/500=24272/500=48.xxx */
 	}
+	else if(!strcmp(target_list, "vpn_server_ccd_val")) {
+		snprintf(base_node, sizeof(base_node), "OpenVPN_Entry");
+		snprintf(base_attr, sizeof(base_attr), "ccd_val");
+		list_type = TCAPI_LIST_TYPE_ATTR;
+		list_num = 16;
+	}
 	else {
 		_dprintf("\nadd %s handler!!!\n\n", target_list);
 		return -1;
@@ -346,6 +352,7 @@ int _tcapi_get_xattr(const char* target_node, char* attr, char* value, size_t le
 	strncpy(xnode, target_node, MAXLEN_NODE_NAME-1);
 	strncpy(xattr, attr, MAXLEN_ATTR_NAME-2);
 
+	memset(value, 0, len);
 	for(i = 0; i < MAX_MULTI_COUNT; i++)	{
 
 		if (i == 0) {

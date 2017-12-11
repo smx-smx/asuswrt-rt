@@ -28,8 +28,10 @@
 #define VPN_LOG_EXTRA 2
 #define vpnlog(level,x...) if(tcapi_get_int(OPENVPN_COMMON_NODE,"vpn_debug")>=level) syslog(LOG_INFO, #level ": " __LINE_T__ ": " x)
 
-#define BUF_SIZE 256
+#define BUF_SIZE 4096
 #define IF_SIZE 8
+
+#define PUSH_LAN_METRIC 500
 
 static int ovpn_waitfor(const char *name)
 {
@@ -587,10 +589,15 @@ void start_vpnserver(int serverNum)
 		return;
 	}
 
-	if(serverNum)
+	if(serverNum) {
 		sprintf(node, "OpenVPN_Entry%d", serverNum+SERVER_IF_START);
-	else
+		sprintf(buffer, "%d", serverNum+SERVER_IF_START);
+		tcapi_set("WebCurSet_Entry", "openvpn_id", buffer);
+	}
+	else {
 		sprintf(node, "OpenVPN_Entry21");
+		tcapi_set("WebCurSet_Entry", "openvpn_id", "21");
+	}
 
 	//initial status
 	tcapi_set(node, "state", "1");
@@ -833,8 +840,9 @@ void start_vpnserver(int serverNum)
 			sscanf(&buffer[0], "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]);
 			tcapi_get("Lan_Entry0", "netmask", &buffer[0]);
 			sscanf(&buffer[0], "%d.%d.%d.%d", &nm[0], &nm[1], &nm[2], &nm[3]);
-			fprintf(fp, "push \"route %d.%d.%d.%d %s\"\n", ip[0]&nm[0], ip[1]&nm[1], ip[2]&nm[2], ip[3]&nm[3],
-					&buffer[0]);
+			fprintf(fp, "push \"route %d.%d.%d.%d %s vpn_gateway %d\"\n",
+				ip[0]&nm[0], ip[1]&nm[1], ip[2]&nm[2], ip[3]&nm[3],
+				&buffer[0], PUSH_LAN_METRIC);
 		}
 
 		tcapi_get(node, "ccd", &buffer[0]);
@@ -856,7 +864,7 @@ void start_vpnserver(int serverNum)
 			mkdir(&buffer[0], 0700);
 			chdir(&buffer[0]);
 
-			tcapi_get(node, "ccd_val", &buffer[0]);
+			tcapi_get_list("vpn_server_ccd_val", &buffer[0], sizeof(buffer));
 			chp = strtok(&buffer[0],"<");
 			while ( chp != NULL )
 			{
@@ -999,7 +1007,8 @@ void start_vpnserver(int serverNum)
 	fprintf(fp, "status-version 2\n");
 	fprintf(fp, "status status 10\n");
 	fprintf(fp, "\n# Custom Configuration\n");
-	tcapi_get(node, "custom", &buffer[0]);
+	memset(buffer, 0, sizeof(buffer));
+	tcapi_get_multiattr(node, "custom", &buffer[0], sizeof(buffer));
 	fprintf(fp, "%s", &buffer[0]);
 	fclose(fp);
 

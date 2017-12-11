@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#ifdef RTCONFIG_ODMPID
+#include "shared.h"
+#endif
 #include "parsers.h"
 #include "../../../lib/libtcapi.h"
 /*********internal variables************/
@@ -226,12 +230,61 @@ int	getString(const char *pkey, char *value)
 	
 }
 
+#ifdef RTCONFIG_ODMPID
+char *replace_str(char *str, int size, char *orig, char *rep)
+{
+	static char buffer[2048];
+	char *p;
+
+	int rep_len = strlen(rep);
+	if(str == NULL || size <= 0 || orig == NULL || rep == NULL ||
+		rep_len == 0 || strcmp(orig, rep) == 0 ||
+		!(p = strstr(str, orig)))
+		return str;
+
+	do {
+		strncpy(buffer, str, p-str);
+		buffer[p-str] = '\0';
+
+		snprintf(buffer+(p-str), size-strlen(buffer), "%s%s", rep, p+strlen(orig));
+		strncpy(str, buffer, size);
+	} while ((p = strstr(str, orig)));
+
+	return buffer;
+}
+
+void file_2odmpid(const char *filepatch)
+{
+	FILE *fp = NULL, *fp_tmp = NULL;
+	char s[2048], ProductName[32], odm_productid[32];
+
+	if(filepatch == NULL)
+		return;
+
+	if((fp_tmp = fopen(ODMPID_PATH, "w")) != NULL)
+	{
+		if ((fp = fopen(filepatch, "r")) != NULL) 
+		{
+			tcapi_get("SysInfo_Entry", "ProductName", ProductName);
+			snprintf(odm_productid, sizeof(odm_productid), "%s", get_productid());
+			while(fgets(s, sizeof(s), fp)) {
+				fputs(replace_str(s, sizeof(s), ProductName, odm_productid), fp_tmp);
+			}
+			fclose(fp);
+		}
+		fclose(fp_tmp);
+	}
+
+	return;
+}
+#endif
+
 /* Paul modify 2013/2/7 */
 int	initandparserfile(void)
 {
 	//FILE *fp = NULL;
 	char *pk = NULL;
-	char	str_path[PATH_LENGTH] = {0};
+	char str_path[PATH_LENGTH] = {0};
 	char stream[MAX_STREAM] = {0};
 	char str_key[MAX_KEY] = {0};
 	char	str_type[4] = {0};
@@ -310,11 +363,20 @@ int	initandparserfile(void)
 		sprintf(str_path, STRING_PATH, "UK");
 	else
 		sprintf(str_path, STRING_PATH, "EN");
-		
+
+#ifdef RTCONFIG_ODMPID
+	file_2odmpid(str_path);
+	fpl=fopen(ODMPID_PATH,"r");
+#else
 	fpl=fopen(str_path,"r");
+#endif
 	if(fpl == NULL)
 	{
+#ifdef RTCONFIG_ODMPID
+		tcdbg_printf("\r\n%s:can't open %s\r\n",__FUNCTION__, ODMPID_PATH);
+#else
 		tcdbg_printf("\r\n%s:can't open %s\r\n",__FUNCTION__, str_path);
+#endif
 		return FAILURE;
 	}
 	

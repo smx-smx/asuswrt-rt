@@ -244,7 +244,8 @@ char *get_mime_type(char *filename)
 		return "config/ovpn";
     }
 #endif
-	/* download Web History log, e.g. /boaroot/html/web_history.txt */
+	/* download Web History log,	e.g. /boaroot/html/web_history.txt */
+	/* download Access log, 		e.g. /boaroot/html/access_log.txt */
 	if(strcmp(extension,"txt") == 0){
 		return CFG_TYPE;
 	}

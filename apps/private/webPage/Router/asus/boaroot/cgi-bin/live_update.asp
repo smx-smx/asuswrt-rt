@@ -4,6 +4,8 @@
 	elseif request_Form("live_upgrade_flag") = "1" then
 		tcWebApi_set("Misc_Entry","firmware_path","firmware_path")
 		update_variables()
+	elseif request_Form("sig_update_flag") = "1" then
+		update_variables()
 	end if	
 	
 	if request_Form("live_do_upgrade_flag") = "1" then

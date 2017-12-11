@@ -21,6 +21,7 @@ End If
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <style>
 #ClientList_Block_PC{
 	border:1px outset #999;
@@ -325,7 +326,7 @@ function validForm(){
 										<tr id="targetip_tr" style="display:none;">
 											<th width="20%"><%tcWebApi_get("String_Entry","NetworkTools_target","s")%> IP</th>
 											<td>
-													<input type="text" id="targetip" class="input_15_table" maxlength="15" name="targetip" onKeyPress="return is_ipaddr(this,event)" onClick="hideClients_Block();">
+													<input type="text" id="targetip" class="input_15_table" maxlength="15" name="targetip" onKeyPress="return validator.isIPAddr(this,event)" onClick="hideClients_Block();">
 												<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<%tcWebApi_get("String_Entry","select_device_name","s")%>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 												<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
 											</td>										

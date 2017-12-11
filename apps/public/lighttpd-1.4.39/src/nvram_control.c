@@ -21,6 +21,11 @@
 #endif
 
 #ifdef USE_TCAPI
+#if (defined APP_IPKG) && (defined I686)
+#define SECOND_SYSTEM	"Second_System"
+#define FIRST_SYSTEM	"First_System"
+#define LAN_IP_S	"lan_ipaddr"
+#endif
 #define WEBDAV	"AiCloud_Entry"
 #define APPS	"Apps_Entry"
 #define DDNS	"Ddns_Entry"
@@ -32,6 +37,8 @@
 #define TIMEZONE "Timezone_Entry"
 #define FIREWALL "Firewall_Entry"
 #define WANDUCK	"Wanduck_Common"
+#define DUALWAN "Dualwan_Entry"
+#define WAN_COMMON "Wan_Common"
 #define DDNS_ENANBLE_X	"Active"	// #define DDNS_ENANBLE_X	"ddns_enable_x"
 #define DDNS_SERVER_X	"SERVERNAME"	// #define DDNS_SERVER_X	"ddns_server_x"
 #define DDNS_HOST_NAME_X	"MYHOST"	// #define DDNS_HOST_NAME_X	"ddns_hostname_x"
@@ -80,6 +87,11 @@
 #define ODMPID "odmpid"
 #define APPS_SQ "apps_sq"
 #else
+#if (defined APP_IPKG) && (defined I686)
+#define SECOND_SYSTEM	"Second_System"
+#define FIRST_SYSTEM	"First_System"
+#define LAN_IP_S	"lan_ipaddr"
+#endif
 #define DDNS_ENANBLE_X	"ddns_enable_x"
 #define DDNS_SERVER_X	"ddns_server_x"
 #define DDNS_HOST_NAME_X	"ddns_hostname_x"
@@ -347,6 +359,10 @@ err:
         perror(PATH_DEV_NVRAM);
         return errno;
 }
+
+#if defined I686
+
+#else
 char *nvram_get_original(char *name);
 char *nvram_get(char *name)
 {
@@ -392,8 +408,13 @@ char *nvram_get(char *name)
          return out;
 }
 //end test}
+#endif
 
-char *nvram_get_original(char *name)
+#if defined I686
+	char *nvram_get(char *name)
+#else
+	char *nvram_get_original(char *name)
+#endif
 //char *nvram_get(char *name)
 {
     fprintf(stderr,"name = %s\n",name);
@@ -1034,6 +1055,11 @@ char* nvram_get_computer_name(void)
 #ifdef USE_TCAPI
 	static char computer_name[16] = {0};
 	tcapi_get(SAMBA, COMPUTER_NAME, computer_name);
+#ifdef RTCONFIG_ODMPID
+	if(strlen(computer_name) == 0) {
+		snprintf(computer_name, sizeof(computer_name), "%s", get_productid());
+	}
+#endif
 	return computer_name;
 #else
 	return nvram_get(COMPUTER_NAME);
@@ -1104,6 +1130,30 @@ char* nvram_get_webdav_https_port(void)
 	return nvram_get(WEBDAV_HTTPS_PORT);
 #endif
 }
+
+#if (defined APP_IPKG) && (defined I686)
+char* nvram_get_second_system(void)
+{
+    return nvram_get(SECOND_SYSTEM);
+}
+char* nvram_get_first_system(void)
+{
+    return nvram_get(FIRST_SYSTEM);
+}
+char* nvram_get_lan_ip(void)
+{
+    char lan_ip[20];
+    memset(lan_ip,0,sizeof(lan_ip));
+    char *first_system = nvram_get(FIRST_SYSTEM);
+    sprintf(lan_ip,"%slan_ipaddr",first_system);
+    free(first_system);
+    return nvram_get(lan_ip);
+}
+char* nvram_get_lan_ip_s(void)
+{
+    return nvram_get(LAN_IP_S);
+}
+#endif
 
 char* nvram_get_http_enable(void)
 {
@@ -1345,12 +1395,69 @@ int nvram_wan_primary_ifunit(void)
 char* nvram_get_wan_ip(void)
 {
 #ifdef USE_TCAPI
+	/*
 	static char wan_ip[16]= {0};
 	char prefix[32] = {0};
 	int unit = nvram_wan_primary_ifunit();
 	snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
 	tcapi_get(WANDUCK, prefix, wan_ip);
 	return wan_ip;
+	*/
+	
+	int unit = 0;
+	static char wan_ip[16]= {0};
+	char prefix[32] = {0};
+	static char wans_dualwan[16]= {0};
+	tcapi_get(DUALWAN, "wans_dualwan", wans_dualwan);
+
+	if(strstr(wans_dualwan, "none")){		
+		unit = nvram_wan_primary_ifunit();
+		snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
+		tcapi_get(WANDUCK, prefix, wan_ip);
+	}
+	else{		
+		char * pch;
+		pch = strtok(wans_dualwan, " ");		
+		while(pch!=NULL){
+			if(strncmp(pch, "lan", 3)==0){
+				unit = 12;
+				snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
+				tcapi_get(WANDUCK, prefix, wan_ip);
+			}
+			else if(strncmp(pch, "usb", 3)==0){				
+				unit = 11;
+				snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
+				tcapi_get(WANDUCK, prefix, wan_ip);
+			}
+			else if(strncmp(pch, "wan", 3)==0){
+				unit = 10;
+				snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
+				tcapi_get(WANDUCK, prefix, wan_ip);
+			}
+			else if(strncmp(pch, "dsl", 3)==0){
+				char dsl_mode[32] = {0};
+				tcapi_get(WAN_COMMON, "DSLMode", dsl_mode);
+
+				if(strncmp(dsl_mode, "VDSL", 4)==0){
+					unit = 8;
+				}
+				else
+					unit = 0;
+				 
+				snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
+				tcapi_get(WANDUCK, prefix, wan_ip);
+			}
+			
+			if((strcmp(wan_ip, "")!=0) && (strcmp(wan_ip, "0.0.0.0")!=0))
+				break;
+			
+			//- Next
+			pch = strtok(NULL," ");
+		}
+	}
+	
+	return wan_ip;
+
 #else
 	char *wan_ip;
 	char tmp[32], prefix[] = "wanXXXXXXXXXX_";
@@ -1539,4 +1646,18 @@ char* nvram_get_value(const char* key){
 #endif
 }
 
+
+/* for hostspot module */
+char* nvram_get_uamsecret(const char *str)
+{
+#ifdef USE_TCAPI
+        //Todo
+#else
+        if(!strncmp(str, nvram_get("chilli_net"), 11)){
+           return nvram_get("chilli_uamsecret");
+        }else{
+           return nvram_get("cp_uamsecret");
+        }
+#endif
+}
 #endif

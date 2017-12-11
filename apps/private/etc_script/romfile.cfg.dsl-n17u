@@ -320,7 +320,7 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 </Cwmp>
 <Upnpd>
 	<Entry autoconf="0" Active="Yes" HostName="DSL-N17U" Manufacturer="ASUSTeK Computer Inc." ModelName="DSL-N17U" ModelNumber="DSL-N17U" Description="DSL-N17U" ManufacturerURL="http://www.asus.com" ModelURL="http://www.asus.com" WANmanufacturerURL="http://www.asus.com" WANconnection_manufacturerURL="http://www.asus.com" LANmanufacturerURL="http://www.asus.com" WANmodelURL="http://www.asus.com" WANconnection_modelURL="http://www.asus.com" LANmodelURL="http://www.asus.com" />
-	<Miniupnpd secure_mode="yes" upnp_port="2869" natpmp="yes" sys_uptime="yes" notify_interval="30" clean="yes" clean_interval="600" clean_threshold="100" uuid="de92cf00-6979-11e4-9803-0800200c9a66"  lease_file="/tmp/upnp.lease" />
+	<Miniupnpd secure_mode="yes" upnp_port="2869" natpmp="yes" sys_uptime="yes" notify_interval="30" clean="yes" clean_interval="600" clean_threshold="100" uuid="de92cf00-6979-11e4-9803-0800200c9a66"  lease_file="/tmp/upnp.lease" upnp_min_port_int="1024" upnp_max_port_int="65535" upnp_min_port_ext="1" upnp_max_port_ext="65535" />
 </Upnpd>
 <Ddns>
 	<Entry Active="0" SERVERNAME="WWW.ASUS.COM" MYHOST="" USERNAME="" PASSWORD="" WILDCARD="0" />
@@ -379,8 +379,11 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	<Entry0 qos_enable="0" qos_obw="" qos_ibw="" qos_inuse="" qos_ack="on" qos_syn="on" qos_fin="off" qos_rst="off" qos_icmp="on" qos_reset="0" qos_sticky="1" qos_burst0="" qos_burst1="" qos_method="0" qos_default="3" qos_irates="100,100,100,100,100,0,0,0,0,0" qos_orates="80-100,10-100,5-100,3-100,2-95,0-0,0-0,0-0,0-0,0-0" qos_rulenum_x="0" qos_orules="" qos_rulelist="<Web Surf>>80>tcp>0~512>0<HTTPS>>443>tcp>0~512>0<File Transfer>>80>tcp>512~>3<File Transfer>>443>tcp>512~>3" />
 </QoS>
 <WebHistory>
-	<Entry wh_enable="0" wh_path="" wh_max="5000" wh_bkp="0" wh_bkp_path="/tmp" wh_bkp_period="12" wh_clear="1" wh_bkp_time="" wh_bkp_nonhide="0" />
+	<Entry wh_enable="0" wh_max="5000" wh_bkp_enable="0" wh_bkp_path="" wh_bkp_period="43200" wh_clear="1" wh_bkp_nonhide="0" />
 </WebHistory>
+<AccessLog>
+	<Entry al_enable="0" al_max="5000" al_bkp_enable="0" al_bkp_path="" al_bkp_period="43200" al_clear="1" al_bkp_nonhide="0" />
+</AccessLog>
 <IpMacFilter>
 	<Common ListType="Black" />
 	<Entry0 Active="0" LtoW_date="1111111" LtoW_time="00002359" LtoW_ICMP="" LtoW_List="" />

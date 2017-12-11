@@ -1,0 +1,1529 @@
+Archive member included because of file (symbol)
+
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+                              config.o (__fixunsdfsi)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o) (__subdf3)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+                              config.o (__muldf3)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o) (__gedf2)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+                              config.o (__floatsidf)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o) (__fixdfsi)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o) (__thenan_df)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+                              config.o (__floatunsidf)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o) (__lshrdi3)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o) (__ashldi3)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o) (__ucmpdi2)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o) (__clzsi2)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o) (__pack_d)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o) (__unpack_d)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o) (__fpcmp_parts_d)
+/opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+                              /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o) (__clz_tab)
+/opt/trendchip/mips-linux-uclibc/usr/lib/uclibc_nonshared.a(atexit.os)
+                              libite/pidfile.o (atexit)
+
+Allocating common symbols
+Common symbol       size              file
+
+segmented_grp_mask_list
+                    0x4               rp.o
+phys_vif            0x4               vif.o
+curr_bsr_hash_mask  0x4               rp.o
+igmp_send_buf       0x4               igmp.o
+my_cand_rp_priority
+                    0x1               rp.o
+kernel_cache_interval
+                    0x2               timer.o
+s3                  0x13              inet.o
+ucast_flag          0x1               timer.o
+pim_send_buf        0x4               pim.o
+my_bsr_hash_mask    0x4               rp.o
+build_jp_message_pool
+                    0x4               pim_proto.o
+unicast_routing_timer
+                    0x2               timer.o
+reg_vif_num         0x2               vif.o
+rpentry_save        0x28              timer.o
+rp_my_ipv4_hashmask
+                    0x4               rp.o
+my_cand_rp_holdtime
+                    0x2               rp.o
+my_bsr_address      0x4               rp.o
+curr_bsr_fragment_tag
+                    0x2               rp.o
+my_bsr_priority     0x1               rp.o
+numvifs             0x2               vif.o
+s4                  0x13              inet.o
+my_cand_rp_address  0x4               rp.o
+igmp_recv_buf       0x4               igmp.o
+uvifs               0x1080            vif.o
+vifs_down           0x4               vif.o
+pim_spt_threshold_timer
+                    0x2               timer.o
+my_cand_rp_adv_period
+                    0x2               rp.o
+build_jp_message_pool_counter
+                    0x4               pim_proto.o
+igmp_socket         0x4               igmp.o
+grplist             0x4               mrt.o
+versionstring       0x64              main.o
+allrouters_group    0x4               igmp.o
+curr_bsr_priority   0x1               rp.o
+cand_rp_adv_message
+                    0x10              rp.o
+udp_socket          0x4               vif.o
+s1                  0x13              inet.o
+allhosts_group      0x4               igmp.o
+curr_bsr_address    0x4               rp.o
+pim_recv_buf        0x4               pim.o
+pim_cand_rp_adv_timer
+                    0x2               rp.o
+allreports_group    0x4               igmp.o
+rate_flag           0x1               timer.o
+kernel_cache_timer  0x2               timer.o
+pim_socket          0x4               pim.o
+srclist             0x4               mrt.o
+allpimrouters_group
+                    0x4               pim.o
+grp_mask_list       0x4               rp.o
+total_interfaces    0x4               vif.o
+s2                  0x13              inet.o
+pim_bootstrap_timer
+                    0x2               rp.o
+srcentry_save       0x28              timer.o
+segmented_cand_rp_list
+                    0x4               rp.o
+cand_rp_list        0x4               rp.o
+
+Discarded input sections
+
+ .note.GNU-stack
+                0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crti.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crti.o
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .reginfo       0x0000000000000000        0x0 igmp.o
+ .reginfo       0x0000000000000000        0x0 igmp_proto.o
+ .reginfo       0x0000000000000000        0x0 trace.o
+ .reginfo       0x0000000000000000        0x0 inet.o
+ .reginfo       0x0000000000000000        0x0 kern.o
+ .reginfo       0x0000000000000000        0x0 main.o
+ .reginfo       0x0000000000000000        0x0 config.o
+ .reginfo       0x0000000000000000        0x0 debug.o
+ .reginfo       0x0000000000000000        0x0 vers.o
+ .reginfo       0x0000000000000000        0x0 callout.o
+ .reginfo       0x0000000000000000        0x0 netlink.o
+ .reginfo       0x0000000000000000        0x0 route.o
+ .reginfo       0x0000000000000000        0x0 vif.o
+ .reginfo       0x0000000000000000        0x0 timer.o
+ .reginfo       0x0000000000000000        0x0 mrt.o
+ .reginfo       0x0000000000000000        0x0 pim.o
+ .reginfo       0x0000000000000000        0x0 pim_proto.o
+ .reginfo       0x0000000000000000        0x0 rp.o
+ .reginfo       0x0000000000000000        0x0 dvmrp_proto.o
+ .reginfo       0x0000000000000000        0x0 libite/pidfile.o
+ .reginfo       0x0000000000000000        0x0 libite/strtonum.o
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/uclibc_nonshared.a(atexit.os)
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+ .reginfo       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crtn.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crtn.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+LOAD /opt/trendchip/mips-linux-uclibc/usr/lib/crti.o
+LOAD /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+LOAD igmp.o
+LOAD igmp_proto.o
+LOAD trace.o
+LOAD inet.o
+LOAD kern.o
+LOAD main.o
+LOAD config.o
+LOAD debug.o
+LOAD vers.o
+LOAD callout.o
+LOAD netlink.o
+LOAD route.o
+LOAD vif.o
+LOAD timer.o
+LOAD mrt.o
+LOAD pim.o
+LOAD pim_proto.o
+LOAD rp.o
+LOAD dvmrp_proto.o
+LOAD libite/pidfile.o
+LOAD libite/strtonum.o
+LOAD /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a
+LOAD /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/../../../../mips-linux-uclibc/lib/libgcc_s.so
+LOAD /opt/trendchip/mips-linux-uclibc/usr/lib/libc.so
+START GROUP
+LOAD /opt/trendchip/mips-linux-uclibc/lib/libc.so.0
+LOAD /opt/trendchip/mips-linux-uclibc/usr/lib/uclibc_nonshared.a
+LOAD /opt/trendchip/mips-linux-uclibc/lib/ld-uClibc.so.0
+END GROUP
+LOAD /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a
+LOAD /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/../../../../mips-linux-uclibc/lib/libgcc_s.so
+LOAD /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+LOAD /opt/trendchip/mips-linux-uclibc/usr/lib/crtn.o
+                0x0000000000400000                PROVIDE (__executable_start, 0x400000)
+                0x0000000000400134                . = (0x400000 + SIZEOF_HEADERS)
+
+.interp         0x0000000000400134       0x14
+ *(.interp)
+ .interp        0x0000000000400134       0x14 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+
+.reginfo        0x0000000000400148       0x18
+ *(.reginfo)
+ .reginfo       0x0000000000400148       0x18 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+
+.note.gnu.build-id
+ *(.note.gnu.build-id)
+
+.dynamic        0x0000000000400160       0xe0
+ *(.dynamic)
+ .dynamic       0x0000000000400160       0xe0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+                0x0000000000400160                _DYNAMIC
+
+.hash           0x0000000000400240      0x910
+ *(.hash)
+ .hash          0x0000000000400240      0x910 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+
+.gnu.hash
+ *(.gnu.hash)
+
+.dynsym         0x0000000000400b50     0x13b0
+ *(.dynsym)
+ .dynsym        0x0000000000400b50     0x13b0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+
+.dynstr         0x0000000000401f00      0xf6a
+ *(.dynstr)
+ .dynstr        0x0000000000401f00      0xf6a /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+
+.gnu.version    0x0000000000402e6a      0x276
+ *(.gnu.version)
+ .gnu.version   0x0000000000402e6a      0x276 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+
+.gnu.version_d  0x00000000004030e0        0x0
+ *(.gnu.version_d)
+ .gnu.version_d
+                0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+
+.gnu.version_r  0x00000000004030e0       0x20
+ *(.gnu.version_r)
+ .gnu.version_r
+                0x00000000004030e0       0x20 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+
+.rel.dyn        0x0000000000403100        0x0
+ *(.rel.init)
+ *(.rel.text .rel.text.* .rel.gnu.linkonce.t.*)
+ *(.rel.fini)
+ *(.rel.rodata .rel.rodata.* .rel.gnu.linkonce.r.*)
+ *(.rel.data.rel.ro* .rel.gnu.linkonce.d.rel.ro.*)
+ *(.rel.data .rel.data.* .rel.gnu.linkonce.d.*)
+ *(.rel.tdata .rel.tdata.* .rel.gnu.linkonce.td.*)
+ *(.rel.tbss .rel.tbss.* .rel.gnu.linkonce.tb.*)
+ *(.rel.ctors)
+ *(.rel.dtors)
+ *(.rel.got)
+ *(.rel.dyn)
+ .rel.dyn       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+ *(.rel.sdata .rel.sdata.* .rel.gnu.linkonce.s.*)
+ *(.rel.sbss .rel.sbss.* .rel.gnu.linkonce.sb.*)
+ *(.rel.sdata2 .rel.sdata2.* .rel.gnu.linkonce.s2.*)
+ *(.rel.sbss2 .rel.sbss2.* .rel.gnu.linkonce.sb2.*)
+ *(.rel.bss .rel.bss.* .rel.gnu.linkonce.b.*)
+ .rel.bss       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+
+.rela.dyn
+ *(.rela.init)
+ *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*)
+ *(.rela.fini)
+ *(.rela.rodata .rela.rodata.* .rela.gnu.linkonce.r.*)
+ *(.rela.data .rela.data.* .rela.gnu.linkonce.d.*)
+ *(.rela.tdata .rela.tdata.* .rela.gnu.linkonce.td.*)
+ *(.rela.tbss .rela.tbss.* .rela.gnu.linkonce.tb.*)
+ *(.rela.ctors)
+ *(.rela.dtors)
+ *(.rela.got)
+ *(.rela.sdata .rela.sdata.* .rela.gnu.linkonce.s.*)
+ *(.rela.sbss .rela.sbss.* .rela.gnu.linkonce.sb.*)
+ *(.rela.sdata2 .rela.sdata2.* .rela.gnu.linkonce.s2.*)
+ *(.rela.sbss2 .rela.sbss2.* .rela.gnu.linkonce.sb2.*)
+ *(.rela.bss .rela.bss.* .rela.gnu.linkonce.b.*)
+
+.rel.plt        0x0000000000403100        0x0
+ *(.rel.plt)
+ .rel.plt       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+
+.rela.plt
+ *(.rela.plt)
+
+.init           0x0000000000403100       0x80
+ *(.init)
+ .init          0x0000000000403100       0x1c /opt/trendchip/mips-linux-uclibc/usr/lib/crti.o
+                0x0000000000403100                _init
+ .init          0x000000000040311c       0x2c /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .init          0x0000000000403148       0x2c /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+ .init          0x0000000000403174        0xc /opt/trendchip/mips-linux-uclibc/usr/lib/crtn.o
+
+.plt            0x0000000000403180        0x0
+ *(.plt)
+ .plt           0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+
+.text           0x0000000000403180    0x1dc80
+                0x0000000000403180                _ftext = .
+ *(.text .stub .text.* .gnu.linkonce.t.*)
+ .text          0x0000000000403180       0x60 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+                0x0000000000403180                __start
+ .text          0x00000000004031e0        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crti.o
+ .text          0x00000000004031e0      0x150 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .text          0x0000000000403330      0xd50 igmp.o
+                0x0000000000403330                send_igmp
+                0x000000000040392c                init_igmp
+ .text          0x0000000000404080     0x2070 igmp_proto.o
+                0x0000000000405780                accept_membership_report
+                0x0000000000405bc0                accept_membership_query
+                0x0000000000404cc8                accept_group_report
+                0x000000000040553c                accept_sources
+                0x0000000000404104                query_groups
+                0x0000000000404388                accept_leave_message
+ .text          0x00000000004060f0     0x1110 trace.o
+                0x0000000000406608                accept_mtrace
+                0x00000000004060f0                accept_neighbor_request2
+                0x00000000004063e4                accept_neighbor_request
+ .text          0x0000000000407200      0x640 inet.o
+                0x00000000004073ec                netname
+                0x0000000000407200                inet_valid_host
+                0x0000000000407634                trimdomain
+                0x0000000000407760                inet_parse
+                0x0000000000407234                inet_valid_mask
+                0x0000000000407250                inet_valid_subnet
+                0x0000000000407380                inet_fmt
+                0x00000000004072e8                inet_cksum
+ .text          0x0000000000407840     0x1370 kern.o
+                0x0000000000407a74                k_chg_mfc
+                0x00000000004084bc                k_hdr_include
+                0x0000000000407840                k_set_ttl
+                0x00000000004088fc                k_stop_pim
+                0x0000000000407fc8                k_add_vif
+                0x000000000040856c                k_set_rcvbuf
+                0x00000000004089e0                k_init_pim
+                0x0000000000407d70                k_del_mfc
+                0x0000000000407984                k_get_vif_count
+                0x000000000040784c                k_get_sg_cnt
+                0x0000000000407ef0                k_del_vif
+                0x00000000004082bc                k_set_router_alert
+                0x0000000000408734                k_set_sndbuf
+                0x0000000000408400                k_set_loop
+                0x0000000000408350                k_set_if
+                0x00000000004081b8                k_join
+                0x00000000004080b4                k_leave
+ .text          0x0000000000408bb0     0x1820 main.o
+                0x0000000000408bb0                register_input_handler
+                0x00000000004092d0                main
+ .text          0x000000000040a3d0     0x3dd0 config.o
+                0x000000000040c034                parse_bsr_candidate
+                0x000000000040d92c                config_vifs_from_kernel
+                0x000000000040b8b0                parse_rp_address
+                0x000000000040c3b0                parse_rp_candidate
+                0x000000000040a738                parse_default_route_metric
+                0x000000000040a618                parse_default_route_distance
+                0x000000000040bd34                parse_group_prefix
+                0x000000000040c840                config_vifs_from_file
+                0x000000000040a858                parse_hello_interval
+ .text          0x000000000040e1a0     0x1d30 debug.o
+                0x000000000040fb40                dump_frame
+                0x000000000040f8ec                logit
+                0x000000000040e384                dump_rp_set
+                0x000000000040fd04                loglvl
+                0x000000000040eb54                dump_pim_mrt
+                0x000000000040f5cc                packet_kind
+                0x000000000040e1a0                debug_kind
+                0x000000000040e280                log_level
+                0x000000000040fe04                cdump
+                0x000000000040fe58                fdump
+                0x000000000040f04c                dump_vifs
+ .text          0x000000000040fed0        0x0 vers.o
+ .text          0x000000000040fed0      0x400 callout.o
+                0x000000000040fed0                callout_init
+                0x00000000004100d0                free_all_callouts
+                0x0000000000410124                timer_setTimer
+                0x000000000040fedc                timer_leftTimer
+                0x000000000040ff34                timer_clearTimer
+                0x000000000041025c                timer_nextTimer
+                0x0000000000410008                age_callout_queue
+ .text          0x00000000004102d0      0x760 netlink.o
+                0x00000000004102d0                k_req_incoming
+                0x000000000041087c                init_routesock
+ .text          0x0000000000410a30     0x1580 route.o
+                0x000000000041100c                switch_shortest_path
+                0x0000000000410a30                calc_oifs
+                0x00000000004115f4                process_kernel_call
+                0x0000000000410b10                delete_vif_from_mrt
+                0x0000000000411bd4                set_incoming
+                0x0000000000411f68                get_iif
+                0x0000000000411368                add_leaf
+                0x0000000000411ea8                find_pim_nbr
+                0x0000000000411180                delete_leaf
+                0x0000000000410b18                change_interfaces
+ .text          0x0000000000411fb0     0x1060 vif.o
+                0x0000000000411fb0                find_vif_direct
+                0x00000000004121f8                max_local_address
+                0x0000000000412c10                init_vifs
+                0x00000000004120ac                local_address
+                0x0000000000412808                check_vif_state
+                0x0000000000412b6c                stop_all_vifs
+                0x0000000000412258                zero_vif
+                0x0000000000412100                find_vif_direct_local
+ .text          0x0000000000413010     0x1560 timer.o
+                0x000000000041352c                age_routes
+                0x0000000000414264                age_vifs
+                0x000000000041309c                age_misc
+                0x0000000000413010                init_timers
+ .text          0x0000000000414570     0x1f50 mrt.o
+                0x00000000004145c8                init_pim_mrt
+                0x0000000000415450                delete_grpentry
+                0x0000000000415a1c                find_source
+                0x00000000004150ac                delete_single_kernel_cache_addr
+                0x00000000004156a0                delete_srcentry
+                0x0000000000415388                delete_mrtentry_all_kernel_cache
+                0x000000000041523c                delete_single_kernel_cache
+                0x0000000000415aa0                find_route
+                0x0000000000414a2c                add_kernel_cache
+                0x0000000000414570                find_group
+                0x0000000000415824                delete_mrtentry
+ .text          0x00000000004164c0     0x1040 pim.o
+                0x0000000000416ac4                send_pim
+                0x0000000000416794                send_pim_unicast
+                0x0000000000416ec0                init_pim
+ .text          0x0000000000417500     0x69f0 pim_proto.o
+                0x000000000041c3c8                receive_pim_register_stop
+                0x00000000004181ec                send_pim_assert
+                0x0000000000417720                receive_pim_cand_rp_adv
+                0x0000000000417978                log_pim_join_prune
+                0x00000000004183d0                send_pim_hello
+                0x000000000041d7d0                receive_pim_hello
+                0x000000000041c9c8                receive_pim_register
+                0x000000000041a448                join_or_prune
+                0x0000000000417500                send_pim_cand_rp_adv
+                0x00000000004180fc                send_pim_bootstrap
+                0x0000000000419fa0                send_periodic_pim_join_prune
+                0x00000000004184d0                receive_pim_bootstrap
+                0x000000000041a624                receive_pim_join_prune
+                0x000000000041d364                delete_pim_nbr
+                0x0000000000418ea4                receive_pim_assert
+                0x000000000041c764                send_pim_register
+                0x0000000000419a5c                add_jp_entry
+                0x000000000041c62c                send_pim_null_register
+                0x00000000004198f0                pack_and_send_jp_message
+ .text          0x000000000041def0     0x1410 rp.o
+                0x000000000041e34c                check_mrtentry_rp
+                0x000000000041e980                delete_rp_list
+                0x000000000041e164                create_pim_bootstrap_message
+                0x000000000041eb2c                delete_rp_grp_entry
+                0x000000000041f1d0                init_rp_and_bsr
+                0x000000000041e110                rp_find
+                0x000000000041e8c4                delete_grp_mask
+                0x000000000041e384                remap_grpentry
+                0x000000000041e0d8                rp_match
+                0x000000000041dfb8                rp_grp_match
+                0x000000000041e92c                delete_rp
+                0x000000000041ec6c                add_rp_grp_entry
+                0x000000000041def0                bootstrap_initial_delay
+ .text          0x000000000041f300      0x1f0 dvmrp_proto.o
+                0x000000000041f330                dvmrp_accept_neighbors2
+                0x000000000041f320                dvmrp_accept_graft
+                0x000000000041f308                dvmrp_accept_report
+                0x000000000041f3cc                dvmrp_accept_neighbors
+                0x000000000041f444                dvmrp_accept_info_reply
+                0x000000000041f310                dvmrp_accept_info_request
+                0x000000000041f318                dvmrp_accept_prune
+                0x000000000041f328                dvmrp_accept_g_ack
+                0x000000000041f300                dvmrp_accept_probe
+ .text          0x000000000041f4f0      0x2b0 libite/pidfile.o
+                0x000000000041f558                pidfile
+ .text          0x000000000041f7a0      0x220 libite/strtonum.o
+                0x000000000041f7a0                strtonum
+ .text          0x000000000041f9c0       0xc0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+                0x000000000041f9c0                __fixunsdfsi
+ .text          0x000000000041fa80      0x5a0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+                0x000000000041fea8                __subdf3
+                0x000000000041ff68                __adddf3
+ .text          0x0000000000420020      0x310 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+                0x0000000000420020                __muldf3
+ .text          0x0000000000420330       0xc0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+                0x0000000000420330                __gedf2
+ .text          0x00000000004203f0      0x110 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+                0x00000000004203f0                __floatsidf
+ .text          0x0000000000420500       0xf0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+                0x0000000000420500                __fixdfsi
+ .text          0x00000000004205f0        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .text          0x00000000004205f0      0x170 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+                0x00000000004205f0                __floatunsidf
+ .text          0x0000000000420760       0x50 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+                0x0000000000420760                __lshrdi3
+ .text          0x00000000004207b0       0x50 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+                0x00000000004207b0                __ashldi3
+ .text          0x0000000000420800       0x40 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+                0x0000000000420800                __ucmpdi2
+ .text          0x0000000000420840       0x60 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+                0x0000000000420840                __clzsi2
+ .text          0x00000000004208a0      0x280 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+                0x00000000004208a0                __pack_d
+ .text          0x0000000000420b20      0x110 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+                0x0000000000420b20                __unpack_d
+ .text          0x0000000000420c30      0x140 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+                0x0000000000420c30                __fpcmp_parts_d
+ .text          0x0000000000420d70        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+ .text          0x0000000000420d70       0x30 /opt/trendchip/mips-linux-uclibc/usr/lib/uclibc_nonshared.a(atexit.os)
+                0x0000000000420d70                atexit
+ .text          0x0000000000420da0       0x60 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+ .text          0x0000000000420e00        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crtn.o
+ *(.gnu.warning)
+ *(.mips16.fn.*)
+ *(.mips16.call.*)
+
+.MIPS.stubs     0x0000000000420e00      0x510
+ .MIPS.stubs    0x0000000000420e00      0x510 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+                0x0000000000420e00                tolower
+                0x0000000000420e10                bind
+                0x0000000000420e20                errx
+                0x0000000000420e30                calloc
+                0x0000000000420e40                __errno_location
+                0x0000000000420e50                open
+                0x0000000000420e60                strlcpy
+                0x0000000000420e70                fwrite
+                0x0000000000420e80                system
+                0x0000000000420e90                usleep
+                0x0000000000420ea0                memcpy
+                0x0000000000420eb0                realloc
+                0x0000000000420ec0                bcopy
+                0x0000000000420ed0                putchar
+                0x0000000000420ee0                getsockname
+                0x0000000000420ef0                gettimeofday
+                0x0000000000420f00                remove
+                0x0000000000420f10                openlog
+                0x0000000000420f20                strcasecmp
+                0x0000000000420f30                mkdir
+                0x0000000000420f40                strncmp
+                0x0000000000420f50                __uClibc_main
+                0x0000000000420f60                setlinebuf
+                0x0000000000420f70                ioctl
+                0x0000000000420f80                strlen
+                0x0000000000420f90                __cxa_atexit
+                0x0000000000420fa0                sendto
+                0x0000000000420fb0                snprintf
+                0x0000000000420fc0                dup2
+                0x0000000000420fd0                read
+                0x0000000000420fe0                select
+                0x0000000000420ff0                strncasecmp
+                0x0000000000421000                getpid
+                0x0000000000421010                sigprocmask
+                0x0000000000421020                gethostid
+                0x0000000000421030                fclose
+                0x0000000000421040                setsockopt
+                0x0000000000421050                warnx
+                0x0000000000421060                fopen
+                0x0000000000421070                gethostname
+                0x0000000000421080                time
+                0x0000000000421090                asprintf
+                0x00000000004210a0                localtime
+                0x00000000004210b0                close
+                0x00000000004210c0                fputc
+                0x00000000004210d0                err
+                0x00000000004210e0                random
+                0x00000000004210f0                fgets
+                0x0000000000421100                sigaction
+                0x0000000000421110                sscanf
+                0x0000000000421120                strncpy
+                0x0000000000421130                sigaddset
+                0x0000000000421140                unlink
+                0x0000000000421150                fflush
+                0x0000000000421160                memset
+                0x0000000000421170                inet_ntoa
+                0x0000000000421180                srandom
+                0x0000000000421190                fprintf
+                0x00000000004211a0                vsnprintf
+                0x00000000004211b0                recvfrom
+                0x00000000004211c0                syslog
+                0x00000000004211d0                sigemptyset
+                0x00000000004211e0                socket
+                0x00000000004211f0                strlcat
+                0x0000000000421200                exit
+                0x0000000000421210                fork
+                0x0000000000421220                strcmp
+                0x0000000000421230                free
+                0x0000000000421240                atoi
+                0x0000000000421250                strchr
+                0x0000000000421260                strtoll
+                0x0000000000421270                printf
+                0x0000000000421280                getopt_long
+                0x0000000000421290                puts
+                0x00000000004212a0                fscanf
+                0x00000000004212b0                warn
+                0x00000000004212c0                inet_ntop
+                0x00000000004212d0                kill
+                0x00000000004212e0                geteuid
+                0x00000000004212f0                setlogmask
+
+.fini           0x0000000000421310       0x54
+ *(.fini)
+ .fini          0x0000000000421310       0x1c /opt/trendchip/mips-linux-uclibc/usr/lib/crti.o
+                0x0000000000421310                _fini
+ .fini          0x000000000042132c       0x2c /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .fini          0x0000000000421358        0xc /opt/trendchip/mips-linux-uclibc/usr/lib/crtn.o
+                0x0000000000421364                PROVIDE (__etext, .)
+                0x0000000000421364                PROVIDE (_etext, .)
+                0x0000000000421364                PROVIDE (etext, .)
+
+.rodata         0x0000000000421370     0x6070
+ *(.rodata .rodata.* .gnu.linkonce.r.*)
+ .rodata.str1.4
+                0x0000000000421370      0x358 igmp.o
+ *fill*         0x00000000004216c8        0x8 00
+ .rodata        0x00000000004216d0       0x80 igmp.o
+ .rodata.str1.4
+                0x0000000000421750      0x786 igmp_proto.o
+                                        0x78c (size before relaxing)
+ *fill*         0x0000000000421ed6        0xa 00
+ .rodata        0x0000000000421ee0       0x80 igmp_proto.o
+ .rodata.str1.4
+                0x0000000000421f60      0x2b1 trace.o
+                                        0x2b4 (size before relaxing)
+ *fill*         0x0000000000422211        0x3 00
+ .rodata.str1.4
+                0x0000000000422214       0x3a inet.o
+                                         0x40 (size before relaxing)
+ *fill*         0x000000000042224e        0x2 00
+ .rodata.str1.4
+                0x0000000000422250      0x4d2 kern.o
+                                        0x4d4 (size before relaxing)
+ *fill*         0x0000000000422722        0xe 00
+ .rodata        0x0000000000422730      0x240 kern.o
+ .rodata        0x0000000000422970      0x140 main.o
+ .rodata.str1.4
+                0x0000000000422ab0      0x921 main.o
+                                        0x9a8 (size before relaxing)
+ *fill*         0x00000000004233d1        0x3 00
+ .rodata.str1.4
+                0x00000000004233d4     0x17f8 config.o
+                                       0x1824 (size before relaxing)
+ *fill*         0x0000000000424bcc        0x4 00
+ .rodata.cst8   0x0000000000424bd0       0x10 config.o
+ .rodata.str1.4
+                0x0000000000424be0      0xcc3 debug.o
+                                        0xcf8 (size before relaxing)
+ *fill*         0x00000000004258a3        0xd 00
+ .rodata        0x00000000004258b0      0x110 debug.o
+ .rodata.str1.4
+                0x00000000004259c0       0x49 callout.o
+                                         0x4c (size before relaxing)
+ *fill*         0x0000000000425a09        0x3 00
+ .rodata.str1.4
+                0x0000000000425a0c      0x1cd netlink.o
+                                        0x1d0 (size before relaxing)
+ *fill*         0x0000000000425bd9        0x3 00
+ .rodata.str1.4
+                0x0000000000425bdc      0x19b route.o
+                                        0x19c (size before relaxing)
+ *fill*         0x0000000000425d77        0x1 00
+ .rodata.str1.4
+                0x0000000000425d78      0x2da vif.o
+                                        0x2e0 (size before relaxing)
+ *fill*         0x0000000000426052        0x2 00
+ .rodata.str1.4
+                0x0000000000426054       0x83 timer.o
+                                         0x84 (size before relaxing)
+ *fill*         0x00000000004260d7        0x1 00
+ .rodata.str1.4
+                0x00000000004260d8      0x331 mrt.o
+                                        0x334 (size before relaxing)
+ *fill*         0x0000000000426409        0x3 00
+ .rodata.str1.4
+                0x000000000042640c      0x269 pim.o
+                                        0x29c (size before relaxing)
+ *fill*         0x0000000000426675        0xb 00
+ .rodata        0x0000000000426680       0x30 pim.o
+ .rodata.str1.4
+                0x00000000004266b0      0xa31 pim_proto.o
+                                        0xa34 (size before relaxing)
+ *fill*         0x00000000004270e1        0xf 00
+ .rodata        0x00000000004270f0       0x30 pim_proto.o
+ .rodata.cst8   0x0000000000427120       0x18 pim_proto.o
+ .rodata.str1.4
+                0x0000000000427138       0xa1 rp.o
+                                         0xa4 (size before relaxing)
+ *fill*         0x00000000004271d9        0x3 00
+ .rodata.str1.4
+                0x00000000004271dc       0x9d dvmrp_proto.o
+                                         0xa0 (size before relaxing)
+ *fill*         0x0000000000427279        0x3 00
+ .rodata.str1.4
+                0x000000000042727c        0x5 libite/pidfile.o
+                                         0x2c (size before relaxing)
+ *fill*         0x0000000000427281        0x3 00
+ .rodata.str1.4
+                0x0000000000427284       0x20 libite/strtonum.o
+ *fill*         0x00000000004272a4        0x4 00
+ .rodata.cst8   0x00000000004272a8        0x8 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .rodata.cst8   0x00000000004272b0        0x8 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ *fill*         0x00000000004272b8        0x8 00
+ .rodata        0x00000000004272c0       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+                0x00000000004272c0                __thenan_df
+ .rodata        0x00000000004272e0      0x100 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+                0x00000000004272e0                __clz_tab
+
+.rodata1
+ *(.rodata1)
+
+.sdata2
+ *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
+
+.sbss2
+ *(.sbss2 .sbss2.* .gnu.linkonce.sb2.*)
+
+.eh_frame_hdr
+ *(.eh_frame_hdr)
+
+.eh_frame       0x00000000004273e0        0x4
+ *(.eh_frame)
+ .eh_frame      0x00000000004273e0        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .eh_frame      0x00000000004273e0        0x4 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+
+.gcc_except_table
+ *(.gcc_except_table .gcc_except_table.*)
+                0x00000000004273e4                . = (ALIGN (0x10000) - ((0x10000 - .) & 0xffff))
+                0x0000000000438000                . = (0x10000 DATA_SEGMENT_ALIGN 0x1000)
+
+.eh_frame
+ *(.eh_frame)
+
+.gcc_except_table
+ *(.gcc_except_table .gcc_except_table.*)
+
+.tdata
+ *(.tdata .tdata.* .gnu.linkonce.td.*)
+
+.tbss
+ *(.tbss .tbss.* .gnu.linkonce.tb.*)
+ *(.tcommon)
+
+.preinit_array  0x0000000000438000        0x0
+                0x0000000000438000                PROVIDE (__preinit_array_start, .)
+ *(.preinit_array)
+                0x0000000000438000                PROVIDE (__preinit_array_end, .)
+
+.init_array     0x0000000000438000        0x0
+                0x0000000000438000                PROVIDE (__init_array_start, .)
+ *(SORT(.init_array.*))
+ *(.init_array)
+                0x0000000000438000                PROVIDE (__init_array_end, .)
+
+.fini_array     0x0000000000438000        0x0
+                0x0000000000438000                PROVIDE (__fini_array_start, .)
+ *(.fini_array)
+ *(SORT(.fini_array.*))
+                0x0000000000438000                PROVIDE (__fini_array_end, .)
+
+.ctors          0x0000000000438000        0x8
+ *crtbegin.o(.ctors)
+ .ctors         0x0000000000438000        0x4 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ *crtbegin?.o(.ctors)
+ *(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+ *(SORT(.ctors.*))
+ *(.ctors)
+ .ctors         0x0000000000438004        0x4 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+
+.dtors          0x0000000000438008        0x8
+ *crtbegin.o(.dtors)
+ .dtors         0x0000000000438008        0x4 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ *crtbegin?.o(.dtors)
+ *(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+ *(SORT(.dtors.*))
+ *(.dtors)
+ .dtors         0x000000000043800c        0x4 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+                0x000000000043800c                __DTOR_END__
+
+.jcr            0x0000000000438010        0x4
+ *(.jcr)
+ .jcr           0x0000000000438010        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .jcr           0x0000000000438010        0x4 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+
+.data.rel.ro    0x0000000000438014       0xd0
+ *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*)
+ .data.rel.ro.local
+                0x0000000000438014       0xd0 main.o
+ *(.data.rel.ro* .gnu.linkonce.d.rel.ro.*)
+                0x00000000004380e4                . = (. DATA_SEGMENT_RELRO_END 0x0)
+
+.data           0x00000000004380f0      0x540
+                0x00000000004380f0                _fdata = .
+ *(.data .data.* .gnu.linkonce.d.*)
+ .data          0x00000000004380f0       0x10 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+                0x00000000004380f0                data_start
+                0x00000000004380f0                __data_start
+ .data          0x0000000000438100        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crti.o
+ .data          0x0000000000438100        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .data          0x0000000000438100        0x0 igmp.o
+ .data          0x0000000000438100       0x10 igmp_proto.o
+                0x0000000000438100                igmp_query_interval
+                0x0000000000438104                igmp_querier_timeout
+ .data          0x0000000000438110        0x0 trace.o
+ .data          0x0000000000438110       0x10 inet.o
+ .data          0x0000000000438120        0x0 kern.o
+ .data          0x0000000000438120       0x10 main.o
+                0x0000000000438120                haveterminal
+ .data.rel.local
+                0x0000000000438130      0x334 main.o
+                0x0000000000438130                config_file
+ *fill*         0x0000000000438464        0xc 00
+ .data          0x0000000000438470       0x10 config.o
+                0x0000000000438472                pim_timer_hello_holdtime
+                0x0000000000438470                pim_timer_hello_interval
+ .data          0x0000000000438480       0x40 debug.o
+                0x0000000000438480                loglevel
+ .data.rel.local
+                0x00000000004384c0      0x120 debug.o
+                0x00000000004384c0                prioritynames
+                0x0000000000438528                facilitynames
+ .data          0x00000000004385e0       0x10 vers.o
+                0x00000000004385e0                todaysversion
+ .data          0x00000000004385f0        0x0 callout.o
+ .data          0x00000000004385f0       0x10 netlink.o
+                0x00000000004385f0                routing_socket
+ .data          0x0000000000438600        0x0 route.o
+ .data          0x0000000000438600       0x10 vif.o
+                0x0000000000438604                default_route_distance
+                0x0000000000438600                default_route_metric
+ .data          0x0000000000438610       0x20 timer.o
+                0x0000000000438610                spt_threshold
+                0x0000000000438620                unicast_routing_interval
+ .data          0x0000000000438630        0x0 mrt.o
+ .data          0x0000000000438630        0x0 pim.o
+ .data          0x0000000000438630        0x0 pim_proto.o
+ .data          0x0000000000438630        0x0 rp.o
+ .data          0x0000000000438630        0x0 dvmrp_proto.o
+ .data          0x0000000000438630        0x0 libite/pidfile.o
+ .data          0x0000000000438630        0x0 libite/strtonum.o
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/uclibc_nonshared.a(atexit.os)
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+ .data          0x0000000000438630        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crtn.o
+
+.rld_map        0x0000000000438630        0x4
+ .rld_map       0x0000000000438630        0x4 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+                0x0000000000438630                __RLD_MAP
+
+.data1
+ *(.data1)
+
+.got.plt        0x0000000000438634        0x0
+ *(.got.plt)
+ .got.plt       0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+                0x0000000000438634                . = .
+                0x0000000000440630                _gp = (ALIGN (0x10) + 0x7ff0)
+
+.got            0x0000000000438640      0x4e4
+ *(.got)
+ .got           0x0000000000438640      0x4e4 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+                0x0000000000438640                _GLOBAL_OFFSET_TABLE_
+
+.sdata          0x0000000000438b24        0x4
+ *(.sdata .sdata.* .gnu.linkonce.s.*)
+ .sdata         0x0000000000438b24        0x4 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+                0x0000000000438b24                __dso_handle
+
+.lit8
+ *(.lit8)
+
+.lit4
+ *(.lit4)
+                0x0000000000438b28                _edata = .
+                0x0000000000438b28                PROVIDE (edata, .)
+                0x0000000000438b28                __bss_start = .
+                0x0000000000438b28                _fbss = .
+
+.sbss           0x0000000000438b28       0x98
+ *(.dynsbss)
+ *(.sbss .sbss.* .gnu.linkonce.sb.*)
+ *(.scommon)
+ .scommon       0x0000000000438b28       0x18 igmp.o
+                0x0000000000438b28                igmp_send_buf
+                0x0000000000438b2c                igmp_recv_buf
+                0x0000000000438b30                igmp_socket
+                0x0000000000438b34                allrouters_group
+                0x0000000000438b38                allhosts_group
+                0x0000000000438b3c                allreports_group
+ .scommon       0x0000000000438b40       0x14 vif.o
+                0x0000000000438b40                phys_vif
+                0x0000000000438b44                reg_vif_num
+                0x0000000000438b46                numvifs
+                0x0000000000438b48                vifs_down
+                0x0000000000438b4c                udp_socket
+                0x0000000000438b50                total_interfaces
+ .scommon       0x0000000000438b54        0xc timer.o
+                0x0000000000438b54                kernel_cache_interval
+                0x0000000000438b56                ucast_flag
+                0x0000000000438b58                unicast_routing_timer
+                0x0000000000438b5a                pim_spt_threshold_timer
+                0x0000000000438b5c                rate_flag
+                0x0000000000438b5e                kernel_cache_timer
+ .scommon       0x0000000000438b60        0x8 mrt.o
+                0x0000000000438b60                grplist
+                0x0000000000438b64                srclist
+ .scommon       0x0000000000438b68       0x10 pim.o
+                0x0000000000438b68                pim_send_buf
+                0x0000000000438b6c                pim_recv_buf
+                0x0000000000438b70                pim_socket
+                0x0000000000438b74                allpimrouters_group
+ .scommon       0x0000000000438b78        0x8 pim_proto.o
+                0x0000000000438b78                build_jp_message_pool
+                0x0000000000438b7c                build_jp_message_pool_counter
+ .scommon       0x0000000000438b80       0x40 rp.o
+                0x0000000000438b80                segmented_grp_mask_list
+                0x0000000000438b84                curr_bsr_hash_mask
+                0x0000000000438b88                my_cand_rp_priority
+                0x0000000000438b8c                my_bsr_hash_mask
+                0x0000000000438b90                rp_my_ipv4_hashmask
+                0x0000000000438b94                my_cand_rp_holdtime
+                0x0000000000438b98                my_bsr_address
+                0x0000000000438b9c                curr_bsr_fragment_tag
+                0x0000000000438b9e                my_bsr_priority
+                0x0000000000438ba0                my_cand_rp_address
+                0x0000000000438ba4                my_cand_rp_adv_period
+                0x0000000000438ba6                curr_bsr_priority
+                0x0000000000438ba8                curr_bsr_address
+                0x0000000000438bac                pim_cand_rp_adv_timer
+                0x0000000000438bb0                grp_mask_list
+                0x0000000000438bb4                pim_bootstrap_timer
+                0x0000000000438bb8                segmented_cand_rp_list
+                0x0000000000438bbc                cand_rp_list
+
+.bss            0x0000000000438bc0     0x1354
+ *(.dynbss)
+ .dynbss        0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+ *(.bss .bss.* .gnu.linkonce.b.*)
+ .bss           0x0000000000438bc0        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+ .bss           0x0000000000438bc0        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crti.o
+ .bss           0x0000000000438bc0       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .bss           0x0000000000438be0        0x0 igmp.o
+ .bss           0x0000000000438be0        0x0 igmp_proto.o
+ .bss           0x0000000000438be0       0x10 trace.o
+ .bss           0x0000000000438bf0       0x90 inet.o
+ .bss           0x0000000000438c80       0x10 kern.o
+                0x0000000000438c80                curttl
+ .bss           0x0000000000438c90       0x30 main.o
+                0x0000000000438c9c                virtual_time
+                0x0000000000438c94                g_rp_hold
+                0x0000000000438c98                mrt_table_id
+                0x0000000000438c90                disable_all_by_default
+ .bss           0x0000000000438cc0       0x10 config.o
+ .bss           0x0000000000438cd0       0x50 debug.o
+                0x0000000000438cd4                debug
+                0x0000000000438cd0                log_nmsgs
+ .bss           0x0000000000438d20        0x0 vers.o
+ .bss           0x0000000000438d20       0x10 callout.o
+ .bss           0x0000000000438d30       0x10 netlink.o
+ .bss           0x0000000000438d40        0x0 route.o
+ .bss           0x0000000000438d40       0x10 vif.o
+ .bss           0x0000000000438d50        0x0 timer.o
+ .bss           0x0000000000438d50        0x0 mrt.o
+ .bss           0x0000000000438d50       0x10 pim.o
+ .bss           0x0000000000438d60        0x0 pim_proto.o
+ .bss           0x0000000000438d60       0x10 rp.o
+                0x0000000000438d61                cand_rp_flag
+                0x0000000000438d60                cand_bsr_flag
+ .bss           0x0000000000438d70        0x0 dvmrp_proto.o
+ .bss           0x0000000000438d70       0x10 libite/pidfile.o
+                0x0000000000438d70                __pidfile_name
+ .bss           0x0000000000438d80        0x0 libite/strtonum.o
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/uclibc_nonshared.a(atexit.os)
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+ .bss           0x0000000000438d80        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crtn.o
+ *(COMMON)
+ COMMON         0x0000000000438d80       0x4f inet.o
+                0x0000000000438d80                s3
+                0x0000000000438d94                s4
+                0x0000000000438da8                s1
+                0x0000000000438dbc                s2
+ *fill*         0x0000000000438dcf        0x1 00
+ COMMON         0x0000000000438dd0       0x64 main.o
+                0x0000000000438dd0                versionstring
+ COMMON         0x0000000000438e34     0x1080 vif.o
+                0x0000000000438e34                uvifs
+ COMMON         0x0000000000439eb4       0x50 timer.o
+                0x0000000000439eb4                rpentry_save
+                0x0000000000439edc                srcentry_save
+ COMMON         0x0000000000439f04       0x10 rp.o
+                0x0000000000439f04                cand_rp_adv_message
+                0x0000000000439f14                . = ALIGN ((. != 0x0)?0x4:0x1)
+                0x0000000000439f14                . = ALIGN (0x4)
+                0x0000000000439f14                . = ALIGN (0x4)
+                0x0000000000439f14                _end = .
+                0x0000000000439f14                PROVIDE (end, .)
+                0x0000000000439f14                . = DATA_SEGMENT_END (.)
+
+.stab
+ *(.stab)
+
+.stabstr
+ *(.stabstr)
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment        0x0000000000000000      0x2e2
+ *(.comment)
+ .comment       0x0000000000000000       0x12 /opt/trendchip/mips-linux-uclibc/usr/lib/crti.o
+ .comment       0x0000000000000012       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .comment       0x0000000000000024       0x12 igmp.o
+ .comment       0x0000000000000036       0x12 igmp_proto.o
+ .comment       0x0000000000000048       0x12 trace.o
+ .comment       0x000000000000005a       0x12 inet.o
+ .comment       0x000000000000006c       0x12 kern.o
+ .comment       0x000000000000007e       0x12 main.o
+ .comment       0x0000000000000090       0x12 config.o
+ .comment       0x00000000000000a2       0x12 debug.o
+ .comment       0x00000000000000b4       0x12 vers.o
+ .comment       0x00000000000000c6       0x12 callout.o
+ .comment       0x00000000000000d8       0x12 netlink.o
+ .comment       0x00000000000000ea       0x12 route.o
+ .comment       0x00000000000000fc       0x12 vif.o
+ .comment       0x000000000000010e       0x12 timer.o
+ .comment       0x0000000000000120       0x12 mrt.o
+ .comment       0x0000000000000132       0x12 pim.o
+ .comment       0x0000000000000144       0x12 pim_proto.o
+ .comment       0x0000000000000156       0x12 rp.o
+ .comment       0x0000000000000168       0x12 dvmrp_proto.o
+ .comment       0x000000000000017a       0x12 libite/pidfile.o
+ .comment       0x000000000000018c       0x12 libite/strtonum.o
+ .comment       0x000000000000019e       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .comment       0x00000000000001b0       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .comment       0x00000000000001c2       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .comment       0x00000000000001d4       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .comment       0x00000000000001e6       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .comment       0x00000000000001f8       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .comment       0x000000000000020a       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .comment       0x000000000000021c       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .comment       0x000000000000022e       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .comment       0x0000000000000240       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .comment       0x0000000000000252       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .comment       0x0000000000000264       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .comment       0x0000000000000276       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .comment       0x0000000000000288       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .comment       0x000000000000029a       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+ .comment       0x00000000000002ac       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+ .comment       0x00000000000002be       0x12 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+ .comment       0x00000000000002d0       0x12 /opt/trendchip/mips-linux-uclibc/usr/lib/crtn.o
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges  0x0000000000000000      0x1c0
+ *(.debug_aranges)
+ .debug_aranges
+                0x0000000000000000       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .debug_aranges
+                0x0000000000000020       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .debug_aranges
+                0x0000000000000040       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .debug_aranges
+                0x0000000000000060       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .debug_aranges
+                0x0000000000000080       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .debug_aranges
+                0x00000000000000a0       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .debug_aranges
+                0x00000000000000c0       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .debug_aranges
+                0x00000000000000e0       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .debug_aranges
+                0x0000000000000100       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .debug_aranges
+                0x0000000000000120       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .debug_aranges
+                0x0000000000000140       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .debug_aranges
+                0x0000000000000160       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .debug_aranges
+                0x0000000000000180       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .debug_aranges
+                0x00000000000001a0       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+
+.debug_pubnames
+                0x0000000000000000      0x219
+ *(.debug_pubnames)
+ .debug_pubnames
+                0x0000000000000000       0x23 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .debug_pubnames
+                0x0000000000000023       0x2c /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .debug_pubnames
+                0x000000000000004f       0x1f /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .debug_pubnames
+                0x000000000000006e       0x1e /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .debug_pubnames
+                0x000000000000008c       0x22 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .debug_pubnames
+                0x00000000000000ae       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .debug_pubnames
+                0x00000000000000ce       0x22 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .debug_pubnames
+                0x00000000000000f0       0x24 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .debug_pubnames
+                0x0000000000000114       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .debug_pubnames
+                0x0000000000000134       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .debug_pubnames
+                0x0000000000000154       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .debug_pubnames
+                0x0000000000000174       0x1f /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .debug_pubnames
+                0x0000000000000193       0x1f /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .debug_pubnames
+                0x00000000000001b2       0x21 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .debug_pubnames
+                0x00000000000001d3       0x26 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+ .debug_pubnames
+                0x00000000000001f9       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+
+.debug_info     0x0000000000000000     0x21b9
+ *(.debug_info .gnu.linkonce.wi.*)
+ .debug_info    0x0000000000000000       0xd5 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .debug_info    0x00000000000000d5      0x45b /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .debug_info    0x0000000000000530      0x4a2 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .debug_info    0x00000000000009d2      0x252 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .debug_info    0x0000000000000c24      0x214 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .debug_info    0x0000000000000e38      0x281 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .debug_info    0x00000000000010b9      0x160 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .debug_info    0x0000000000001219      0x213 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .debug_info    0x000000000000142c      0x1a1 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .debug_info    0x00000000000015cd      0x1a4 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .debug_info    0x0000000000001771      0x162 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .debug_info    0x00000000000018d3      0x134 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .debug_info    0x0000000000001a07      0x2b0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .debug_info    0x0000000000001cb7      0x220 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .debug_info    0x0000000000001ed7      0x21d /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+ .debug_info    0x00000000000020f4       0xc5 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+
+.debug_abbrev   0x0000000000000000     0x1203
+ *(.debug_abbrev)
+ .debug_abbrev  0x0000000000000000       0x69 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .debug_abbrev  0x0000000000000069      0x1c6 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .debug_abbrev  0x000000000000022f      0x1e9 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .debug_abbrev  0x0000000000000418      0x133 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .debug_abbrev  0x000000000000054b      0x149 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .debug_abbrev  0x0000000000000694      0x158 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .debug_abbrev  0x00000000000007ec       0xc3 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .debug_abbrev  0x00000000000008af      0x158 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .debug_abbrev  0x0000000000000a07       0xfa /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .debug_abbrev  0x0000000000000b01       0xeb /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .debug_abbrev  0x0000000000000bec       0xd3 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .debug_abbrev  0x0000000000000cbf       0xc7 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .debug_abbrev  0x0000000000000d86      0x199 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .debug_abbrev  0x0000000000000f1f      0x12d /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .debug_abbrev  0x000000000000104c      0x14d /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+ .debug_abbrev  0x0000000000001199       0x6a /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+
+.debug_line     0x0000000000000000      0xdba
+ *(.debug_line)
+ .debug_line    0x0000000000000000       0xb6 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .debug_line    0x00000000000000b6      0x15c /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .debug_line    0x0000000000000212      0x13c /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .debug_line    0x000000000000034e       0xc9 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .debug_line    0x0000000000000417       0xee /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .debug_line    0x0000000000000505       0xd7 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .debug_line    0x00000000000005dc       0xab /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .debug_line    0x0000000000000687       0xf3 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .debug_line    0x000000000000077a       0xb3 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .debug_line    0x000000000000082d       0xb3 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .debug_line    0x00000000000008e0       0xaf /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .debug_line    0x000000000000098f       0xbc /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .debug_line    0x0000000000000a4b       0xff /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .debug_line    0x0000000000000b4a       0xee /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .debug_line    0x0000000000000c38       0xe8 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+ .debug_line    0x0000000000000d20       0x9a /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+
+.debug_frame    0x0000000000000000      0x270
+ *(.debug_frame)
+ .debug_frame   0x0000000000000000       0x2c /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .debug_frame   0x000000000000002c       0x70 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .debug_frame   0x000000000000009c       0x2c /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .debug_frame   0x00000000000000c8       0x2c /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .debug_frame   0x00000000000000f4       0x30 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .debug_frame   0x0000000000000124       0x28 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .debug_frame   0x000000000000014c       0x30 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .debug_frame   0x000000000000017c       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .debug_frame   0x000000000000019c       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .debug_frame   0x00000000000001bc       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .debug_frame   0x00000000000001dc       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .debug_frame   0x00000000000001fc       0x34 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .debug_frame   0x0000000000000230       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .debug_frame   0x0000000000000250       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+
+.debug_str      0x0000000000000000      0x3fc
+ *(.debug_str)
+ .debug_str     0x0000000000000000      0x179 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+                                        0x1bf (size before relaxing)
+ .debug_str     0x0000000000000179      0x14f /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+                                        0x26b (size before relaxing)
+ .debug_str     0x00000000000002c8       0x45 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+                                        0x23d (size before relaxing)
+ .debug_str     0x000000000000030d       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+                                        0x1fb (size before relaxing)
+ .debug_str     0x000000000000031d       0x1e /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+                                        0x1df (size before relaxing)
+ .debug_str     0x000000000000033b        0xa /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+                                        0x203 (size before relaxing)
+ .debug_str     0x0000000000000000      0x1a4 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .debug_str     0x0000000000000345       0x14 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+                                        0x1db (size before relaxing)
+ .debug_str     0x0000000000000359       0x34 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+                                        0x1f2 (size before relaxing)
+ .debug_str     0x000000000000038d        0xa /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+                                        0x1f2 (size before relaxing)
+ .debug_str     0x0000000000000397       0x1a /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+                                        0x1e1 (size before relaxing)
+ .debug_str     0x00000000000003b1       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+                                        0x1d2 (size before relaxing)
+ .debug_str     0x00000000000003d1       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+                                        0x202 (size before relaxing)
+ .debug_str     0x00000000000003e1        0xb /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+                                        0x1e4 (size before relaxing)
+ .debug_str     0x00000000000003ec       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+                                        0x1c7 (size before relaxing)
+ .debug_str     0x0000000000000000      0x1b5 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+
+.debug_loc      0x0000000000000000      0xa78
+ *(.debug_loc)
+ .debug_loc     0x0000000000000000       0x47 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .debug_loc     0x0000000000000047      0x2e8 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .debug_loc     0x000000000000032f      0x1e7 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .debug_loc     0x0000000000000516       0x50 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .debug_loc     0x0000000000000566       0x9b /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .debug_loc     0x0000000000000601       0x6c /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .debug_loc     0x000000000000066d       0x5c /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .debug_loc     0x00000000000006c9       0x86 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .debug_loc     0x000000000000074f       0x5e /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .debug_loc     0x00000000000007ad       0x30 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .debug_loc     0x00000000000007dd       0x1e /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .debug_loc     0x00000000000007fb      0x1d7 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .debug_loc     0x00000000000009d2       0x7d /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .debug_loc     0x0000000000000a4f       0x29 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+
+.debug_macinfo
+ *(.debug_macinfo)
+
+.debug_weaknames
+ *(.debug_weaknames)
+
+.debug_funcnames
+ *(.debug_funcnames)
+
+.debug_typenames
+ *(.debug_typenames)
+
+.debug_varnames
+ *(.debug_varnames)
+
+.debug_pubtypes
+ *(.debug_pubtypes)
+
+.debug_ranges   0x0000000000000000       0x98
+ *(.debug_ranges)
+ .debug_ranges  0x0000000000000000       0x58 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .debug_ranges  0x0000000000000058       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .debug_ranges  0x0000000000000078       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+
+.gnu.attributes
+                0x0000000000000000       0x10
+ *(.gnu.attributes)
+ .gnu.attributes
+                0x0000000000000000       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .gnu.attributes
+                0x0000000000000010       0x10 igmp.o
+ .gnu.attributes
+                0x0000000000000020       0x10 igmp_proto.o
+ .gnu.attributes
+                0x0000000000000030       0x10 trace.o
+ .gnu.attributes
+                0x0000000000000040       0x10 inet.o
+ .gnu.attributes
+                0x0000000000000050       0x10 kern.o
+ .gnu.attributes
+                0x0000000000000060       0x10 main.o
+ .gnu.attributes
+                0x0000000000000070       0x10 config.o
+ .gnu.attributes
+                0x0000000000000080       0x10 debug.o
+ .gnu.attributes
+                0x0000000000000090       0x10 vers.o
+ .gnu.attributes
+                0x00000000000000a0       0x10 callout.o
+ .gnu.attributes
+                0x00000000000000b0       0x10 netlink.o
+ .gnu.attributes
+                0x00000000000000c0       0x10 route.o
+ .gnu.attributes
+                0x00000000000000d0       0x10 vif.o
+ .gnu.attributes
+                0x00000000000000e0       0x10 timer.o
+ .gnu.attributes
+                0x00000000000000f0       0x10 mrt.o
+ .gnu.attributes
+                0x0000000000000100       0x10 pim.o
+ .gnu.attributes
+                0x0000000000000110       0x10 pim_proto.o
+ .gnu.attributes
+                0x0000000000000120       0x10 rp.o
+ .gnu.attributes
+                0x0000000000000130       0x10 dvmrp_proto.o
+ .gnu.attributes
+                0x0000000000000140       0x10 libite/pidfile.o
+ .gnu.attributes
+                0x0000000000000150       0x10 libite/strtonum.o
+ .gnu.attributes
+                0x0000000000000160       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .gnu.attributes
+                0x0000000000000170       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .gnu.attributes
+                0x0000000000000180       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .gnu.attributes
+                0x0000000000000190       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .gnu.attributes
+                0x00000000000001a0       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .gnu.attributes
+                0x00000000000001b0       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .gnu.attributes
+                0x00000000000001c0       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .gnu.attributes
+                0x00000000000001d0       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .gnu.attributes
+                0x00000000000001e0       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .gnu.attributes
+                0x00000000000001f0       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .gnu.attributes
+                0x0000000000000200       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .gnu.attributes
+                0x0000000000000210       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .gnu.attributes
+                0x0000000000000220       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .gnu.attributes
+                0x0000000000000230       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .gnu.attributes
+                0x0000000000000240       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+ .gnu.attributes
+                0x0000000000000250       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+ .gnu.attributes
+                0x0000000000000260       0x10 /opt/trendchip/mips-linux-uclibc/usr/lib/uclibc_nonshared.a(atexit.os)
+ .gnu.attributes
+                0x0000000000000270       0x10 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+
+.gptab.sdata
+ *(.gptab.data)
+ *(.gptab.sdata)
+
+.gptab.sbss
+ *(.gptab.bss)
+ *(.gptab.sbss)
+
+.mdebug.abi32   0x0000000000000280        0x0
+ *(.mdebug.abi32)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crti.o
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .mdebug.abi32  0x0000000000000280        0x0 igmp.o
+ .mdebug.abi32  0x0000000000000280        0x0 igmp_proto.o
+ .mdebug.abi32  0x0000000000000280        0x0 trace.o
+ .mdebug.abi32  0x0000000000000280        0x0 inet.o
+ .mdebug.abi32  0x0000000000000280        0x0 kern.o
+ .mdebug.abi32  0x0000000000000280        0x0 main.o
+ .mdebug.abi32  0x0000000000000280        0x0 config.o
+ .mdebug.abi32  0x0000000000000280        0x0 debug.o
+ .mdebug.abi32  0x0000000000000280        0x0 vers.o
+ .mdebug.abi32  0x0000000000000280        0x0 callout.o
+ .mdebug.abi32  0x0000000000000280        0x0 netlink.o
+ .mdebug.abi32  0x0000000000000280        0x0 route.o
+ .mdebug.abi32  0x0000000000000280        0x0 vif.o
+ .mdebug.abi32  0x0000000000000280        0x0 timer.o
+ .mdebug.abi32  0x0000000000000280        0x0 mrt.o
+ .mdebug.abi32  0x0000000000000280        0x0 pim.o
+ .mdebug.abi32  0x0000000000000280        0x0 pim_proto.o
+ .mdebug.abi32  0x0000000000000280        0x0 rp.o
+ .mdebug.abi32  0x0000000000000280        0x0 dvmrp_proto.o
+ .mdebug.abi32  0x0000000000000280        0x0 libite/pidfile.o
+ .mdebug.abi32  0x0000000000000280        0x0 libite/strtonum.o
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/uclibc_nonshared.a(atexit.os)
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+ .mdebug.abi32  0x0000000000000280        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crtn.o
+
+.mdebug.abiN32
+ *(.mdebug.abiN32)
+
+.mdebug.abi64
+ *(.mdebug.abi64)
+
+.mdebug.abiO64
+ *(.mdebug.abiO64)
+
+.mdebug.eabi32
+ *(.mdebug.eabi32)
+
+.mdebug.eabi64
+ *(.mdebug.eabi64)
+
+.gcc_compiled_long32
+ *(.gcc_compiled_long32)
+
+.gcc_compiled_long64
+ *(.gcc_compiled_long64)
+
+/DISCARD/
+ *(.note.GNU-stack)
+ *(.gnu_debuglink)
+OUTPUT(pimd elf32-tradbigmips)
+
+.pdr            0x0000000000000000     0x1920
+ .pdr           0x0000000000000000        0x0 /opt/trendchip/mips-linux-uclibc/usr/lib/crt1.o
+ .pdr           0x0000000000000000       0x40 /opt/trendchip/mips-linux-uclibc/usr/lib/crti.o
+ .pdr           0x0000000000000040        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtbegin.o
+ .pdr           0x0000000000000040       0x60 igmp.o
+ .pdr           0x00000000000000a0      0x160 igmp_proto.o
+ .pdr           0x0000000000000200       0x60 trace.o
+ .pdr           0x0000000000000260      0x100 inet.o
+ .pdr           0x0000000000000360      0x220 kern.o
+ .pdr           0x0000000000000580       0xe0 main.o
+ .pdr           0x0000000000000660      0x1a0 config.o
+ .pdr           0x0000000000000800      0x1a0 debug.o
+ .pdr           0x00000000000009a0        0x0 vers.o
+ .pdr           0x00000000000009a0       0xe0 callout.o
+ .pdr           0x0000000000000a80       0x40 netlink.o
+ .pdr           0x0000000000000ac0      0x140 route.o
+ .pdr           0x0000000000000c00      0x140 vif.o
+ .pdr           0x0000000000000d40       0xa0 timer.o
+ .pdr           0x0000000000000de0      0x1c0 mrt.o
+ .pdr           0x0000000000000fa0       0xa0 pim.o
+ .pdr           0x0000000000001040      0x320 pim_proto.o
+ .pdr           0x0000000000001360      0x1e0 rp.o
+ .pdr           0x0000000000001540      0x120 dvmrp_proto.o
+ .pdr           0x0000000000001660       0x40 libite/pidfile.o
+ .pdr           0x00000000000016a0       0x20 libite/strtonum.o
+ .pdr           0x00000000000016c0       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fixunsdfsi.o)
+ .pdr           0x00000000000016e0       0x60 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_addsub_df.o)
+ .pdr           0x0000000000001740       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_mul_df.o)
+ .pdr           0x0000000000001760       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ge_df.o)
+ .pdr           0x0000000000001780       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_si_to_df.o)
+ .pdr           0x00000000000017a0       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_df_to_si.o)
+ .pdr           0x00000000000017c0        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_thenan_df.o)
+ .pdr           0x00000000000017c0       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_usi_to_df.o)
+ .pdr           0x00000000000017e0       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_lshrdi3.o)
+ .pdr           0x0000000000001800       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ashldi3.o)
+ .pdr           0x0000000000001820       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_ucmpdi2.o)
+ .pdr           0x0000000000001840       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clzsi2.o)
+ .pdr           0x0000000000001860       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_pack_df.o)
+ .pdr           0x0000000000001880       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_unpack_df.o)
+ .pdr           0x00000000000018a0       0x20 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_fpcmp_parts_df.o)
+ .pdr           0x00000000000018c0        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/libgcc.a(_clz.o)
+ .pdr           0x00000000000018c0       0x20 /opt/trendchip/mips-linux-uclibc/usr/lib/uclibc_nonshared.a(atexit.os)
+ .pdr           0x00000000000018e0        0x0 /opt/trendchip/mips-linux-uclibc/usr/bin/../lib/gcc/mips-linux-uclibc/4.3.4/crtend.o
+ .pdr           0x00000000000018e0       0x40 /opt/trendchip/mips-linux-uclibc/usr/lib/crtn.o

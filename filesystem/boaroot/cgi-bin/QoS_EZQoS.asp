@@ -20,7 +20,7 @@ End If
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="/images/favicon.png">
 <link rel="icon" href="/images/favicon.png">
-<title>ASUS <% tcWebApi_get("SysInfo_Entry","ProductName","s") %> <% tcWebApi_get("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","EZQoS","s")%></title>
+<title>ASUS <% tcWebApi_get("String_Entry","Web_Title2","s") %> <% tcWebApi_get("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","EZQoS","s")%></title>
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <link rel="stylesheet" type="text/css" href="/usp_style.css">
@@ -30,6 +30,7 @@ End If
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/jquery.js"></script>
 <script type="text/javascript" src="/general.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script>
 var $j = jQuery.noConflict();
@@ -141,7 +142,7 @@ function initial(){
 	else{	*/
 		document.getElementById('content_title').innerHTML = "<% tcWebApi_Get("String_Entry", "Menu_TrafficManager", "s") %> - QoS";		
 		if(document.form.qos_type.value == 2){		//Bandwidth Limiter
-			add_option(document.getElementById("settingSelection"), "Bandwidth Limiter", 5, 0);
+			add_option(document.getElementById("settingSelection"), "<%tcWebApi_get("String_Entry","Bandwidth_Limiter","s")%>", 5, 0);
 		}
 		else{		//Traditional Type						
 			add_option(document.getElementById("settingSelection"), '<% tcWebApi_Get("String_Entry", "qos_user_prio", "s") %>', 4, 0);
@@ -157,8 +158,8 @@ function init_changeScale(){
 	var upload = "<% tcWebApi_get("QoS_Entry0","qos_obw","s") %>";
 	var download = "<% tcWebApi_get("QoS_Entry0","qos_ibw","s") %>";
 	if((WebCurSet_dev_pvc == "0" || WebCurSet_dev_pvc == "8") && ((!upload || upload == "0") && (!download || download == "0"))){
-		document.form.obw.value = dsl_DataRateUp/1024;
-		document.form.ibw.value = dsl_DataRateDown/1024;
+		document.form.obw.value = isNaN(dsl_DataRateUp)? 0:parseInt(dsl_DataRateUp/1024);
+		document.form.ibw.value = isNaN(dsl_DataRateDown)? 0:parseInt(dsl_DataRateDown/1024);
 	}	
 	else{
 		if(!upload)	upload = 0;
@@ -218,6 +219,9 @@ function submitQoS(){
 				document.form.obw.select();
 				return;	
 			}
+			else if(!validator.rangeFloat(document.form.obw, 0, 9999999999, "")){
+				return;
+			}
 		
 			if(document.form.ibw.value.length == 0){
 				alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
@@ -236,7 +240,10 @@ function submitQoS(){
 				document.form.ibw.focus();
 				document.form.ibw.select();
 				return;	
-			}		
+			}
+			else if(!validator.rangeFloat(document.form.obw, 0, 9999999999, "")){
+				return;
+			}	
   		
 			document.form.qos_obw.disabled = false;
 			document.form.qos_ibw.disabled = false;

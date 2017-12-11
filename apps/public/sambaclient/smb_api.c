@@ -32,7 +32,7 @@ void search_smb(char *url)
                         continue;
 
                 char buf[MAX_BUFF_SIZE] = {0};
-                sprintf(buf, "%s%s", url, dirptr->name);
+                snprintf(buf, MAX_BUFF_SIZE, "%s%s", url, dirptr->name);
                 struct stat info;
                 smbc_stat(buf, &info);
 
@@ -46,7 +46,7 @@ void search_smb(char *url)
                         printf("FOLDER-----%s%s\n", url, dirptr->name);
                         printf("-----------mode :%d S_IDDIR :%d\n", info.st_mode, S_ISDIR(info.st_mode));
                         char new_url[255] = {0};
-                        sprintf(new_url, "%s%s/", url, dirptr->name);
+                        snprintf(new_url, 255, "%s%s/", url, dirptr->name);
                         search_smb(new_url);
                 }
         }
@@ -60,32 +60,23 @@ int SMB_download(char *serverpath, int index)
         int buflen;
 
         char *localpath = serverpath_to_localpath(serverpath, index);
-        //char *localpath_td = my_malloc(strlen(localpath) + strlen(".asus.td") + 1);
         char *localpath_td = my_malloc(strlen(localpath) + 9);
-        //2014.10.20 by sherry malloc申请内存是否成功
-        //if(localpath_td==NULL)
-          //  return NULL;
-        sprintf(localpath_td, "%s%s", localpath, ".asus.td");
+        snprintf(localpath_td, sizeof(char)*(strlen(localpath) + 9), "%s%s", localpath, ".asus.td");
 
         write_log(S_DOWNLOAD, "", serverpath, index);
 
         unsigned long long halfsize = 0;
         int dst_fd;
-        if(access(localpath_td, F_OK) != 0)
-        {
-                dst_fd = open(localpath_td, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-                if(dst_fd < 0){
-                        printf("open() - %s failed\n", localpath_td);
-                        return -1;
-                }
+
+        dst_fd = open(localpath_td, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+        if(dst_fd < 0){
+                printf("open() - %s failed\n", localpath_td);
+                return -1;
         }
-        else
+
+        if(access(localpath_td, F_OK) == 0)
         {
-                dst_fd = open(localpath_td, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-                if(dst_fd < 0){
-                        printf("open() - %s failed\n", localpath_td);
-                        return -1;
-                }
+
                 halfsize = lseek(dst_fd, 0L, SEEK_END);
                 lseek(dst_fd, halfsize, SEEK_SET);
         }
@@ -100,8 +91,6 @@ int SMB_download(char *serverpath, int index)
                 smbc_lseek(fd, halfsize, SEEK_SET);
                 while((buflen = smbc_read(fd, buffer, sizeof(buffer))) > 0 && exit_loop == 0)
                 {
-                    //2014.11.20 by sherry 判断是否write成功
-                        //write(dst_fd, buffer, buflen);
                         int res=0;
                         res=write(dst_fd, buffer, buflen);
                         if(res==-1)
@@ -160,43 +149,29 @@ int SMB_upload(char *localpath, int index)
         if((cli_fd = open(localpath, O_RDONLY, FILE_MODE)) > 0)
         {//以只读的方式打开，文件
             DEBUG("open localpath sucess\n");
-                unsigned long long cli_filesize = 0;//本地文件大小
-                unsigned long long smb_filesize = 0;//server文件大小
+                unsigned long long cli_filesize = 0;
+                unsigned long long smb_filesize = 0;
                 cli_filesize = lseek(cli_fd, 0L, SEEK_END);
                 lseek(cli_fd, 0L, SEEK_SET);//read or write 文件的偏移量
-                //2014.11.19 by sherry 判断上传是否成功
-
-                //buflen = read(cli_fd, buffer, sizeof(buffer));
-                //DEBUG("buflen=%d\n",buflen);
-                //while(buflen > 0 && exit_loop == 0)
                 while((buflen = read(cli_fd, buffer, sizeof(buffer))) > 0 && exit_loop == 0)
                 {
                         smb_filesize += buflen;
-                        //2014.11.19 by sherry 判断上传是否成功
-                        //smbc_write(smb_fd, buffer, buflen);//smb_fd为server端的文件
                         int res=0;
-                        res=smbc_write(smb_fd, buffer, buflen);//返回的值为文件大小
-                        printf("Upload-res=%d\n",res);
-
+                        res=smbc_write(smb_fd, buffer, buflen);
                         if(res==-1)
                             return -1;
 
-                        //2014.11.26 by sherry
                         printf("\rUpload [%s] percent - %f ", localpath, (float)smb_filesize/(float)cli_filesize);
-                        //float percent;
-                        //printf("smb_filesize=%f\n",(float)smb_filesize);
-                        //printf("cli_filesize=%f\n",(float)cli_filesize);
-                        //percent=(float)smb_filesize/(float)cli_filesize;
-                        //printf("\rUpload [%s] percent - %f\n", localpath, percent);
-                        //if((int)percent==1)
-                            //break;
                 }
                 if(smb_filesize != cli_filesize && exit_loop != 0)
                 {
                         DEBUG("smb_filesize != cli_filesize && exit_loop != 0");
                         FILE *f_stream = fopen(g_pSyncList[index]->up_item_file, "w");
-                        fprintf(f_stream, "%s", localpath);
-                        fclose(f_stream);
+                        if(f_stream != NULL)
+                        {
+                            fprintf(f_stream, "%s", localpath);
+                            fclose(f_stream);
+                        }
                 }
                 smbc_close(smb_fd);
                 close(cli_fd);
@@ -254,13 +229,13 @@ int SMB_del(char *url, int index)
                                 continue;
 
                         char new_url[255] = {0};
-                        sprintf(new_url, "%s%s", url, dirptr->name);
+                        snprintf(new_url, 255, "%s%s", url, dirptr->name);
 
                         printf("-------%s\n", new_url);
 
                         if(dirptr->smbc_type == SMBC_DIR) {
                                 if(new_url[strlen(new_url) - 1] != '/')
-                                        strcat(new_url, "/");
+                                    snprintf(new_url+strlen(new_url), sizeof(new_url)-strlen(new_url), "%s", "/");
                                 SMB_del(new_url, index);
                         }
                         else if(dirptr->smbc_type == SMBC_FILE) {
@@ -314,15 +289,15 @@ static void auth_fn(const char *server, const char *share, char *workgroup, int 
         strncpy(workgroup, g_workgroup, wgmaxlen - 1);
         strncpy(username, g_username, unmaxlen - 1);
         strncpy(password, g_password, pwmaxlen - 1);
-        strcpy(g_server, server);
-        strcpy(g_share, share);
+        snprintf(g_server, MAX_BUFF_SIZE, "%s", server);
+        snprintf(g_share, MAX_BUFF_SIZE, "%s", share);
 }
 
 int SMB_init(int index)
 {
-        strcpy(g_workgroup, smb_config.multrule[index]->workgroup);
-        strcpy(g_username, smb_config.multrule[index]->acount);
-        strcpy(g_password, smb_config.multrule[index]->password);
+        snprintf(g_workgroup, MAX_BUFF_SIZE, "%s", smb_config.multrule[index]->workgroup);
+        snprintf(g_username, MAX_BUFF_SIZE, "%s", smb_config.multrule[index]->acount);
+        snprintf(g_password, MAX_BUFF_SIZE, "%s", smb_config.multrule[index]->password);
         smbc_init(auth_fn, 0);
         return 0;
 }

@@ -9,12 +9,7 @@
 #include <rtstate.h>
 #include "tcutils.h"
 #include <sys/ioctl.h>
-#ifdef RTCONFIG_PROTECTION_SERVER
-#include <fcntl.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <sys/un.h>
-#endif
+
 /* keyword for rc_support 	*/
 /* ipv6 mssid update parental 	*/
 
@@ -160,6 +155,44 @@ int get_wan_unit(char *ifname)
 	return -1;
 }
 #endif
+
+int get_wan_unit_ex(const char *ifname, int *unit, int *subunit)
+{
+	int ret = -1;
+
+	if(!ifname || !unit || !subunit)
+		return -1;
+
+	if(!strncmp(ifname, "ppp", 3))
+	{
+		*unit = atoi(ifname + 3);
+		if( *unit >= 80 )
+		{
+			*subunit = *unit % 10;
+			*unit /= 10;
+		}
+		else
+		{
+			*subunit = -1;
+		}
+		ret = 0;
+	}
+	else if(!strncmp(ifname, "nas", 3))
+	{
+		if(strchr(ifname, '_'))
+		{
+			sscanf(ifname+3, "%d_%d", unit, subunit);
+		}
+		else
+		{
+			*unit = atoi(ifname + 3);
+			*subunit = -1;
+		}
+		ret = 0;
+	}
+
+	return ret;
+}
 
 // Get physical wan ifname of working connection
 char *get_wanx_ifname(int unit)
@@ -923,7 +956,7 @@ int set_lanwan_if(int from, int to)
 		}
 
 		//rename to eth0.x
-		snprintf(ifname, sizeof(ifname), "lan%d", from);
+		snprintf(ifname, sizeof(ifname), "%s%d", LAN_PORT_ITF_PREFIX, from);
 		strncpy(ifr.ifr_newname, ifname, IFNAMSIZ);
 		if (ioctl(fd, SIOCSIFNAME, &ifr) < 0) {
 			_dprintf("%s: %d SIOCSIFNAME: %s", __FUNCTION__, __LINE__, strerror(errno));
@@ -940,7 +973,7 @@ int set_lanwan_if(int from, int to)
 	//to: eth0.x => WAN_ETHER_LAN_IF
 	if(to >= 1 && to <= 4) {
 		//set interface name eth0.x
-		snprintf(ifname, sizeof(ifname), "lan%d", to);
+		snprintf(ifname, sizeof(ifname), "%s%d", LAN_PORT_ITF_PREFIX, to);
 		strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
 
 		//down
@@ -974,47 +1007,11 @@ int set_lanwan_if(int from, int to)
 	return 0;
 }
 
-/*
-* Function     : send_protect_event
-* Purpose      : create socket send login fail info to protection_server record
-* Input        : struct state_report
-* Ouput        : none
-* Describe     : none
-* Provider     : Carlos
-*/
-#ifdef RTCONFIG_PROTECTION_SERVER
-int send_protect_event(STATE_REPORT_T report)
-{
-	struct    sockaddr_un addr;
-	int       sockfd, n;
-	
-	if ( (sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-		_dprintf("[%s:(%d)] ERROR socket.\n", __FUNCTION__, __LINE__);
-		perror("socket error");
-		return 0;
+int isMultiSerPVC(int pvc){
+#if (defined(TCSUPPORT_WAN_ETHER) || defined(TCSUPPORT_WAN_PTM)) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+	if((pvc >= WAN_UNIT_PTM0) && (pvc <= WAN_UNIT_ETH)){
+		return 1;
 	}
-	
-	memset(&addr, 0, sizeof(addr));
-	addr.sun_family = AF_UNIX;
-	strncpy(addr.sun_path, PROTECTION_SERVER_SOCKET_PATH, sizeof(addr.sun_path)-1);
-	
-	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-		_dprintf("[%s:(%d)] ERROR connecting:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
-		perror("connect error");
-		close(sockfd);
-		return 0;
-	}
-
-	n = write(sockfd, &report, sizeof(STATE_REPORT_T));
-	
-	close(sockfd);
-	
-	if(n < 0) {
-		_dprintf("[%s:(%d)] ERROR writing:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
-		perror("writing error");
-		return 0;
-	}
-	
-	return 1;
-}
 #endif
+	return 0;
+}

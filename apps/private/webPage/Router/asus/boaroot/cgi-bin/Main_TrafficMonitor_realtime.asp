@@ -4,8 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
-<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
-<meta name="svg.render.forceflash" content="false" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
 <title>ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","traffic_monitor","s")%> : <%tcWebApi_get("String_Entry","menu4_2_1","s")%></title>	
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
@@ -14,7 +13,6 @@
 <link rel="shortcut icon" href="/images/favicon.png">
 <link rel="icon" href="/images/favicon.png">
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
-<script src='/svg.js' data-path="/svghtc/" data-debug="false"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/tmmenu.js"></script>
@@ -215,11 +213,13 @@ function switchPage(page){
         			</tr>
         			<tr>
           				<td align="left" valign="middle">
-							<table width="95%" border="1" align="left" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="DescTable">
-								<tr><th width="16%"></th><th width="26%"><% tcWebApi_Get("String_Entry", "Internet", "s") %></th><th width="29%"><% tcWebApi_Get("String_Entry", "tm_wired", "s") %></th><th width="29%"><% tcWebApi_Get("String_Entry", "tm_wireless", "s") %></th></tr>
-								<tr><th><% tcWebApi_Get("String_Entry", "tm_reception", "s") %></th><td style="color:#FF9000;"><% tcWebApi_Get("String_Entry", "tm_recp_int", "s") %></td><td style="color:#3CF;"><% tcWebApi_Get("String_Entry", "tm_recp_wired", "s") %></td><td style="color:#3CF;"><% tcWebApi_Get("String_Entry", "tm_recp_wireless", "s") %></td></tr>
-								<tr><th><% tcWebApi_Get("String_Entry", "tm_transmission", "s") %></th><td style="color:#3CF;"><% tcWebApi_Get("String_Entry", "tm_trans_int", "s") %></td><td style="color:#FF9000;"><% tcWebApi_Get("String_Entry", "tm_trans_wired", "s") %></td><td style="color:#FF9000;"><% tcWebApi_Get("String_Entry", "tm_trans_wireless", "s") %></td></tr>
-							</table>
+						<!-- add some hard code of style attributes to wordkaround for IE 11-->
+						<table width="95%" border="1" align="left" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="DescTable" style="font-size:12px; font-family:Arial, Helvetica, sans-serif;border: 1px solid #000000; border-collapse: collapse;">
+							<tr><th style=" font-family:Arial, Helvetica, sans-serif; background-color:#1F2D35; color:#FFFFFF; font-weight:normal;line-height:15px; height: 30px; text-align:left; font-size:12px; padding-left: 10px; border: 1px solid #222; border-collapse: collapse; background:#2F3A3E;" width="16%"></th><th style="font-family:Arial, Helvetica, sans-serif; background-color:#1F2D35; color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px; padding-left: 10px;er: 1px solid #222; border-collapse: collapse; background:#2F3A3E;" width="26%"><% tcWebApi_Get("String_Entry", "Internet", "s") %></th><th style="font-family:Arial, Helvetica, sans-serif; background-color:#1F2D35; color:#FFFFFF; font-weight:normal; line-height:15px;height: 30px; text-align:left; font-size:12px; padding-left: 10px; border: 1px solid #222; border-collapse: collapse; background:#2F3A3E;" width="29%"><% tcWebApi_Get("String_Entry", "tm_wired", "s") %></th><th style="font-family:Arial, Helvetica, sans-serif; background-color:#1F2D35; color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;padding-left: 10px; border: 1px solid #222; border-collapse: collapse; background:#2F3A3E;" width="29%"><% tcWebApi_Get("String_Entry", "tm_wireless", "s") %></th></tr>
+							<tr><th style=" font-family:Arial, Helvetica, sans-serif; background-color:#1F2D35; color:#FFFFFF; font-weight:normal;line-height:15px; height: 30px; text-align:left; font-size:12px; padding-left: 10px; border: 1px solid #222; border-collapse: collapse; background:#2F3A3E;"><% tcWebApi_Get("String_Entry", "tm_reception", "s") %></th><td style="color:#FF9000;padding-left: 10px; background-color:#475a5f; border: 1px solid #222;border-collapse: collapse;"><% tcWebApi_Get("String_Entry", "tm_recp_int", "s") %></td><td style="color:#3CF;padding-left: 10px; background-color:#475a5f; border: 1px solid #222;border-collapse: collapse;"><% tcWebApi_Get("String_Entry", "tm_recp_wired", "s") %></td><td style="color:#3CF;padding-left: 10px; background-color:#475a5f; border: 1px solid #222;border-collapse: collapse;"><% tcWebApi_Get("String_Entry", "tm_recp_wireless", "s") %></td></tr>
+							<tr><th style=" font-family:Arial, Helvetica, sans-serif; background-color:#1F2D35; color:#FFFFFF; font-weight:normal;line-height:15px; height: 30px; text-align:left; font-size:12px; padding-left: 10px; border: 1px solid #222; border-collapse: collapse; background:#2F3A3E;"><% tcWebApi_Get("String_Entry", "tm_transmission", "s") %></th><td style="color:#3CF;padding-left: 10px; background-color:#475a5f; border: 1px solid #222;border-collapse: collapse;"><% tcWebApi_Get("String_Entry", "tm_trans_int", "s") %></td><td style="color:#FF9000;padding-left: 10px; background-color:#475a5f; border: 1px solid #222;border-collapse: collapse;"><% tcWebApi_Get("String_Entry", "tm_trans_wired", "s") %></td><td style="color:#FF9000;padding-left: 10px; background-color:#475a5f; border: 1px solid #222;border-collapse: collapse;"><% tcWebApi_Get("String_Entry", "tm_trans_wireless", "s") %></td></tr>
+						</table>
+						<!--End-->
           				</td>
         			</tr>
         			<tr>

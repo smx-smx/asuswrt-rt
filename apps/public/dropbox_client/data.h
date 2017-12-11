@@ -21,16 +21,13 @@
 
 #include "mem_pool.h"
 
-//#define NVRAM_ 1
 
 #define CMD_SPLIT "\n"
 
 #define __DEBUG__
 #ifdef __DEBUG__
-//#define wd_DEBUG(format,...) printf("File: "__FILE__", Line: %05d: "format"/n", __LINE__, ##__VA_ARGS__)
 #define wd_DEBUG(format,...) printf(format, ##__VA_ARGS__)
 #define CURL_DEBUG
-//#define CURL_DEBUG curl_easy_setopt(curl,CURLOPT_VERBOSE,1)
 #else
 #define wd_DEBUG(format,...)
 #define CURL_DEBUG
@@ -59,7 +56,6 @@ typedef cJSON *(*proc_pt)(char *filename);
 #define HAVE_LOCAL_SOCKET               909
 #define NOTIFY_PATH "/tmp/notify/usb"
 
-//#define TEST 1
 #define RENAME_F
 #define TOKENFILE 1
 #define MEM_POOL_ENABLE 1
@@ -146,7 +142,6 @@ typedef struct Upload_chunk
     unsigned long chunk;
     unsigned long offset;
     time_t expires;
-//    struct Upload_chunk *next;
 } Upload_chunked;
 
 Upload_chunked *upload_chunk;
@@ -155,14 +150,9 @@ Upload_chunked *upload_chunk;
 struct queue_entry
 {
     struct queue_entry * next_ptr;   /* Pointer to next entry */
-    //int type;
-    //char filename[256];
-    //char cmd_name[1024];
     char *cmd_name;
     char *re_cmd;
     int is_first;
-    //int id;
-    //long long int size;
 };
 typedef struct queue_entry * queue_entry_t;
 
@@ -371,3 +361,5 @@ int check_disk_change();
 int check_sync_disk_removed();
 int free_tokenfile_info(struct tokenfile_info_tag *head);
 #endif
+
+#define CA_INFO_FILE "/tmp/smartsync/dropbox/cert/DigiCertHighAssuranceEVRootCA.crt"

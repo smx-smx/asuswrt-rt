@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title>ASUS <% tcWebApi_Get("SysInfo_Entry","ProductName","s") %> <% tcWebApi_Get("SysInfo_Entry","ProductTitle","s") %> - <% tcWebApi_Get("String_Entry","smart_sync","s") %></title>
+<title>ASUS <% tcWebApi_Get("String_Entry","Web_Title2","s") %> <% tcWebApi_Get("SysInfo_Entry","ProductTitle","s") %> - <% tcWebApi_Get("String_Entry","smart_sync","s") %></title>
 <link rel="stylesheet" type="text/css" href="/index_style.css"> 
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script type="text/javascript" src="/state.js"></script>

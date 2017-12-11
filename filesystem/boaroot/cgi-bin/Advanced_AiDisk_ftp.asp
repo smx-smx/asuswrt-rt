@@ -23,13 +23,14 @@ End If
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <link rel="stylesheet" type="text/css" href="/aidisk/AiDisk_style.css">
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/disk_functions.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/jquery.js"></script>
-<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script language="JavaScript" type="text/javascript" src="/general.js"></script>
+<script language="JavaScript" type="text/javascript" src="/popup.js"></script>
+<script language="JavaScript" type="text/javascript" src="/disk_functions.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript">
 var $j = jQuery.noConflict();
 
@@ -698,7 +699,7 @@ function validForm(){
 						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,1);"><%tcWebApi_get("String_Entry","ShareNode_MaximumLoginUser_in","s")%></a>
 					</th>
 					<td>
-						<input type="text" name="st_max_user" class="input_3_table" maxlength="1" value="<% tcWebApi_Get("Samba_Entry", "st_max_user", "s") %>" onKeyPress="return is_number(this, event);">
+						<input type="text" name="st_max_user" class="input_3_table" maxlength="1" value="<% tcWebApi_Get("Samba_Entry", "st_max_user", "s") %>" onKeyPress="return validator.isNumber(this, event);">
 					</td>
 				</tr>
 				<tr>

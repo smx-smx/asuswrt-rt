@@ -16,18 +16,6 @@
 #include <fcntl.h>
 #include <setjmp.h>
 #include <curl/curl.h>
-
-
-//#define IPKG 0
-
-//#ifdef DEBUG
-//#include <mcheck.h>
-//#endif
-
-//#ifndef IPKG
-//#include <bcmnvram.h>
-//#include <shutils.h>
-//#endif
 #include <sys/time.h>
 #include "api.h"
 #include "function.h"
@@ -39,7 +27,6 @@
 #define MYPORT 3567
 #define INOTIFY_PORT 3678
 #define BACKLOG 100 /* max listen num*/
-//#define CONFIG_PATH "/home/gauss/Cloud/Cloud.conf"
 
 #define SEM 0
 
@@ -54,19 +41,15 @@ int stop_sync_server;
 int pre_seq = -10;
 Servicegateway sergate;
 Aaa aaa;
-//int sync_up;
-//int sync_down;
 int stop_up = 0;
 int stop_down = 0 ;
 int local_sync;
 int server_sync;
 int server_modify;
-int MySyncFolder;
-int MyRecycleID;
+long long int MySyncFolder;
+long long int MyRecycleID;
 char username[256];
 char password[256];
-//char otp_key[8];
-//char captcha[8];
 char base_path[256];
 sync_item_t from_server_sync_head = NULL;
 sync_item_t down_head = NULL;
@@ -76,17 +59,13 @@ sync_item_t download_only_socket_head = NULL;
 sync_item_t download_only_modify_head = NULL;
 sync_item_t copy_file_list_head = NULL;
 int exit_proc = 0;
-//pthread_t newthid1,newthid2,newthid3;
 pthread_t server_thread,local_thread,socket_thread,download_socket_thread;
 int no_config;
 int restart_run;
 int stop_progress = 0;
 int exit_loop = 0;
-//int uploading = 0;
-//int downloading = 0;
 int retry_fail_time = 0;
 my_mutex_t my_mutex = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,0};
-//my_mutex_t wait_sleep_mutex = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,0};
 my_mutex_t wait_server_mutex = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,0};
 my_mutex_t wait_socket_mutex = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,0};
 pthread_mutex_t mutex_socket = PTHREAD_MUTEX_INITIALIZER;
@@ -97,11 +76,8 @@ s_tree *s_link = NULL;
 Hb_TreeNode *DirRootNode = NULL;
 Server_TreeNode  *SRootNode = NULL;
 Hb_SubNode *SyncNode;
-//char uploadfile_path[NORMALSIZE];
-//char downloadfile_path[NORMALSIZE];
 int server_space_full = 0;
 int local_space_full = 0 ;
-//int file_iscopying = 0 ;
 int has_del_fiel = 0;
 int has_socket = 0;
 int max_upload_filesize;
@@ -114,7 +90,6 @@ int is_server_running = 0;
 int IsAccountFrozen = 0;
 int IsSyncError = 0;
 api_count_s api_count;
-//int IsSleep;
 int loop_max;
 int usleep_time;
 int IsNetworkUnlink = 0;
@@ -157,13 +132,10 @@ char resume_upload_xml[NAMESIZE];
 char finish_upload_xml[NAMESIZE];
 char trans_excep_file[128];
 char system_token[256];
+
 int receve_socket;
 int is_check_token;
 int no_completed;
-
-//int SocketNumber =1;
-//int IsNetworkLinkDown;
-// token file var
 #ifdef IPKG
 int disk_change;
 int sync_disk_removed;
@@ -176,27 +148,84 @@ void *SyncServer();
 void *SyncLocal();
 void sig_handler (int signum);
 int cmd_parser(char *command);
-//int download_only_cmd_parser(char *command,Socket_cmd *socket_cmd);
 int send_action(int type,char *content);
 void init_global_var();
 void clean_global_var();
-//void init_sync_folder();
 void clean_up();
 void run();
 int read_config();
 void handle_fail_item();
 void* sigmgr_thread();
 
-//int update_mount_path_to_nvram();
 char *get_mount_path(char *path, int n);
 void create_parent_folder_r(char *path);
-//int update_mount_path_to_nvram(char *new_sync_path);
 
 #ifdef IPKG
 int write_notify_file(char *path, int signal_num);
 #endif
 
-//static int trim_sync_path(char *in,char *out);
+
+int set_iptables(int flag)
+{
+    int rc = -1;
+    char cmd[1024]={0};
+#ifdef I686
+#else
+    sprintf(cmd, "iptables -D INPUT -p tcp -m tcp --dport %d -j DROP", MYPORT);
+    rc = system(cmd);
+    sprintf(cmd, "iptables -D INPUT -p tcp -m tcp -s 127.0.0.1 --dport %d -j ACCEPT", MYPORT);
+    rc = system(cmd);
+#endif
+
+    if(flag)
+    {
+#ifdef I686
+        rc = 0;
+#else
+        sprintf(cmd, "iptables -I INPUT -p tcp -m tcp --dport %d -j DROP", MYPORT);
+        rc = system(cmd);
+        sprintf(cmd, "iptables -I INPUT -p tcp -m tcp -s 127.0.0.1 --dport %d -j ACCEPT", MYPORT);
+        rc = system(cmd);
+#endif
+    }
+    if(rc == 0)
+        return 0;
+    else
+        return 1;
+}
+
+int write_rootca()
+{
+    FILE *fp;
+    fp = fopen(CA_INFO_FILE,"w");
+    if(NULL == fp)
+    {
+        printf("open rootca  file %s fail\n",CA_INFO_FILE);
+        return -1;
+    }
+    fprintf(fp,"%s","-----BEGIN CERTIFICATE-----\n"
+            "MIIDVDCCAjygAwIBAgIDAjRWMA0GCSqGSIb3DQEBBQUAMEIxCzAJBgNVBAYTAlVT\n"
+            "MRYwFAYDVQQKEw1HZW9UcnVzdCBJbmMuMRswGQYDVQQDExJHZW9UcnVzdCBHbG9i\n"
+            "YWwgQ0EwHhcNMDIwNTIxMDQwMDAwWhcNMjIwNTIxMDQwMDAwWjBCMQswCQYDVQQG\n"
+            "EwJVUzEWMBQGA1UEChMNR2VvVHJ1c3QgSW5jLjEbMBkGA1UEAxMSR2VvVHJ1c3Qg\n"
+            "R2xvYmFsIENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2swYYzD9\n"
+            "9BcjGlZ+W988bDjkcbd4kdS8odhM+KhDtgPpTSEHCIjaWC9mOSm9BXiLnTjoBbdq\n"
+            "fnGk5sRgprDvgOSJKA+eJdbtg/OtppHHmMlCGDUUna2YRpIuT8rxh0PBFpVXLVDv\n"
+            "iS2Aelet8u5fa9IAjbkU+BQVNdnARqN7csiRv8lVK83Qlz6cJmTM386DGXHKTubU\n"
+            "1XupGc1V3sjs0l44U+VcT4wt/lAjNvxm5suOpDkZALeVAjmRCw7+OC7RHQWa9k0+\n"
+            "bw8HHa8sHo9gOeL6NlMTOdReJivbPagUvTLrGAMoUgRx5aszPeE4uwc2hGKceeoW\n"
+            "MPRfwCvocWvk+QIDAQABo1MwUTAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBTA\n"
+            "ephojYn7qwVkDBF9qn1luMrMTjAfBgNVHSMEGDAWgBTAephojYn7qwVkDBF9qn1l\n"
+            "uMrMTjANBgkqhkiG9w0BAQUFAAOCAQEANeMpauUvXVSOKVCUn5kaFOSPeCpilKIn\n"
+            "Z57QzxpeR+nBsqTP3UEaBU6bS+5Kb1VSsyShNwrrZHYqLizz/Tt1kL/6cdjHPTfS\n"
+            "tQWVYrmm3ok9Nns4d0iXrKYgjy6myQzCsplFAMfOEVEiIuCl6rYVSAlk6l5PdPcF\n"
+            "PseKUgzbFbS9bZvlxrFUaKnjaZC2mqUPuLk/IH2uSrW4nOQdtqvmlKXBx4Ot2/Un\n"
+            "hw4EbNX/3aBd7YdStysVAq45pmp06drE57xNNB6pXE0zX5IJL4hmXXeXxx12E6nV\n"
+            "5fEWCRE11azbJHFwLJhWC9kXtNHjUStedejV0NxPNO3CBWaAocvmMw==\n"
+            "-----END CERTIFICATE-----\n");
+    fclose(fp);
+    return 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -241,11 +270,8 @@ int main(int argc, char *argv[])
     }
 
     closedir(dp);
-
     init_global_var();
-
     write_log(S_INITIAL,"","");
-    //write_system_log("######asuswebstorage#####","start");
 
 #ifdef IPKG
     write_get_nvram_script("cloud_sync",NVRAM_PATH_1,GET_NVRAM_SCRIPT_1);
@@ -259,6 +285,8 @@ int main(int argc, char *argv[])
 #endif
 
     read_config();
+    if(write_rootca() != 0)
+        exit(-1);
 
     if(no_config == 0 && !stop_progress)
         run();
@@ -287,7 +315,6 @@ void *SyncServer()
         while(local_sync && !exit_loop)
             enter_sleep_time(1000*10,NULL);
         server_sync = 1;
-        //write_system_log("SyncServer","start");
 
         if(local_sync == 0 && SocketActionList->head == NULL)
         {
@@ -337,9 +364,7 @@ void *SyncServer()
                 if( cur_seq != pre_seq || sync_fail == 1 || pre_seq == -10)
                 {
                     printf("pre seq_number is %d,cur seq number is %d\n",pre_seq,cur_seq);
-//#ifdef DEBUG
                     printf("#### sync server start#####\n");
-//#endif
 
 #if SYSTEM_LOG
                     write_system_log("sync server","start");
@@ -350,11 +375,8 @@ void *SyncServer()
                     status = syncServerAllItem(username,MySyncFolder,sync_path);
                     is_server_running = 0 ;                  
                     write_finish_log();
-
-//#ifdef DEBUG
                     print_all_nodes(SyncNode);
                     printf("#### sync server end#####\n");
-//#endif
 
 #if SYSTEM_LOG
                     write_system_log("sync server","end");
@@ -378,9 +400,6 @@ void *SyncServer()
                 {
                     pre_seq = cur_seq;
                 }
-
-                //printf("#### sync server end final#####\n");
-
             }
             else
             {
@@ -390,12 +409,9 @@ void *SyncServer()
 
         }
         server_sync = 0;
-        //write_system_log("SyncServer","end");
         enter_sleep_time(30,&wait_server_mutex);
     }
-
     printf("stop asuswebstorage server sync\n");
-
     stop_up = 1;
 
     return NULL;
@@ -542,8 +558,6 @@ int trim_sync_path(char *in,char *out)
             sprintf(new_buf,"%s%s",prefix,tail);
 
         strcpy(out,new_buf);
-
-        //printf("new_buf=%s\n",out);
     }
     else
         strcpy(out,in);
@@ -553,7 +567,6 @@ int trim_sync_path(char *in,char *out)
 
 int add_socket_item(char *in)
 {
-    //printf("@@@@@@@@@@@ add socket=%s\n",in);
     int len;
     char buf[1024] = {0};
     char move_buf[1024] = {0};
@@ -723,8 +736,6 @@ void *Socket_Parser(){
         while(server_sync && !exit_loop)
             enter_sleep_time(1000*100,NULL);
         local_sync = 1;
-
-        //write_system_log("Socket_Parser","start");
         if(no_local_root == 1)
         {
             my_mkdir(sync_path);
@@ -798,9 +809,6 @@ void *Socket_Parser(){
 
             if(copy_file_list_head->next == NULL || exit_loop)
             {
-#ifdef DEBUG
-                //printf("copy_file_list is blank\n");
-#endif
                 break;
             }
             enter_sleep_time(1000*100,NULL);
@@ -821,7 +829,6 @@ void *Socket_Parser(){
         pthread_mutex_unlock(&mutex_receve_socket);
 
         local_sync = 0;
-        //write_system_log("Socket_Parser","end");
         enter_sleep_time(5,&wait_socket_mutex);       
     }
 
@@ -839,7 +846,7 @@ void sig_handler (int signum)
         printf("signal is SIGTERM\n");
         stop_progress = 1;
         exit_loop = 1;
-
+        set_iptables(0);
         pthread_cond_signal(&(wait_server_mutex.cond));
         pthread_cond_signal(&(wait_socket_mutex.cond));
         pthread_cond_signal(&(my_mutex.cond));
@@ -997,8 +1004,8 @@ int perform_socket_cmd(Socket_cmd *scmd)
     char oldname[NORMALSIZE],newname[NORMALSIZE],oldpath[NORMALSIZE];
     char action[64];
     char cmp_name[512];
-    int parent_ID = -10;
-    int entry_ID;
+    long long int parent_ID = -10;
+    long long int entry_ID;
     Propfind *find = NULL;
     Createfolder *createfolder = NULL;
     Operateentry *oe = NULL;
@@ -1058,8 +1065,6 @@ int perform_socket_cmd(Socket_cmd *scmd)
     if( strcmp(cmd_name, "createfile") == 0 )
     {
         strcpy(action,"createfile");
-        //file_iscopying = 0;
-        //copying_file_number--;
         struct sync_item* item;
 
         item = get_sync_item("copyfile",cmp_name,copy_file_list_head);
@@ -1114,7 +1119,6 @@ int perform_socket_cmd(Socket_cmd *scmd)
     {
         Getmysyncfolder *gf;
         gf = getMySyncFolder(username);
-        //printf("551\n");
         if(NULL == gf)
         {
             check_network_state();
@@ -1154,7 +1158,6 @@ int perform_socket_cmd(Socket_cmd *scmd)
 
 #ifdef DEBUG
     printf("###### %s is start ######\n",cmd_name);
-    //write_system_log(cmd_name,"start");
 #endif
 
     if( strcmp(cmd_name, "createfile") == 0 || strcmp(cmd_name, "dragfile") == 0 )
@@ -1174,7 +1177,6 @@ int perform_socket_cmd(Socket_cmd *scmd)
         {
 #ifdef DEBUG
             printf("upload %s failed\n",fullname);
-            //write_system_log("error","uploadfile fail");
 #endif
             res_value = handle_upload_fail_code(status,parent_ID,fullname,path);
 
@@ -1209,8 +1211,6 @@ int perform_socket_cmd(Socket_cmd *scmd)
         strcpy(type,find->type);
         my_free(find);
 
-        //printf("entry id is %d\n",entry_ID);
-
         if(strcmp(type,"system.folder") == 0)
         {
             isfolder = 1;
@@ -1239,8 +1239,6 @@ int perform_socket_cmd(Socket_cmd *scmd)
                 printf("rename start\n");
 #endif
                 oe = renameEntry(username,entry_ID,0,newname,isfolder) ;
-                //printf("renameEntry() end\n");
-
 #if TREE_NODE_ENABLE
                 rename_update_tree(oldname,newname);
 #endif
@@ -1313,9 +1311,6 @@ int perform_socket_cmd(Socket_cmd *scmd)
                 printf("operate rename failed\n");
                 return -1;
             }
-
-            //printf("remove status is %d \n",oe->status);
-
             if( oe->status != 0 )
             {
                 handle_error(oe->status,cmd_name);
@@ -1383,14 +1378,12 @@ int perform_socket_cmd(Socket_cmd *scmd)
         modify_tree_node(insert_name,DirRootNode,ADD_TREE_NODE);
 
 #endif
-        int pre_parent_ID;
+        long long int pre_parent_ID;
         int isfolder;
 
         pre_parent_ID = getParentID(oldpath);
         if(pre_parent_ID == -1)
             return -1;
-        //printf("pre parent id is %d\n",pre_parent_ID);
-
         find = checkEntryExisted(username,pre_parent_ID,oldname,"system.unknown");
 
         if(NULL == find)
@@ -1414,7 +1407,6 @@ int perform_socket_cmd(Socket_cmd *scmd)
             else
             {
                 entry_ID = find->id;
-                //printf("entry id is %d\n",entry_ID);
                 if(strcmp(find->type,"system.folder") == 0)
                 {
                     isfolder = 1;
@@ -1543,15 +1535,12 @@ void clean_global_var()
     memset(mount_path,0,sizeof(mount_path));
     memset(base_path, 0, sizeof(base_path));
     memset(cloud_path, 0, sizeof(cloud_path));
-    //memset(temp_path, 0, sizeof(temp_path));
     memset(asus_path, 0, sizeof(asus_path));
     memset(log_path, 0, sizeof(log_path));
     memset(xml_path, 0, sizeof(xml_path));
     memset(system_log, 0, sizeof(system_log));
     memset(general_log,0,sizeof(general_log));
     memset(confilicted_log,0,sizeof(confilicted_log));
-//    memset(temp_file, 0, sizeof(temp_file));
-
     memset(gateway_xml, 0, sizeof(gateway_xml));
     memset(token_xml, 0, sizeof(token_xml));
     memset(get_info_xml, 0, sizeof(get_info_xml));
@@ -1565,21 +1554,10 @@ void clean_global_var()
     memset(remove_xml, 0, sizeof(remove_xml));
     memset(update_xml, 0, sizeof(update_xml));
     memset(get_entry_info_xml, 0, sizeof(get_entry_info_xml));
-//    memset(set_mark_xml, 0, sizeof(set_mark_xml));
-//    memset(get_change_files_xml, 0, sizeof(get_change_files_xml));
-//    memset(get_uploads_xml, 0, sizeof(get_uploads_xml));
-//    memset(get_share_code_xml, 0, sizeof(get_share_code_xml));
-//    memset(del_share_code_xml, 0, sizeof(del_share_code_xml));
-//    memset(get_share_entry_xml, 0, sizeof(get_share_entry_xml));
-//    memset(check_pwd_xml, 0, sizeof(check_pwd_xml));
-//    memset(cmp_pwd_xml, 0, sizeof(cmp_pwd_xml));
     memset(get_change_seq_xml, 0, sizeof(get_change_seq_xml));
     memset(init_upload_xml, 0, sizeof(init_upload_xml));
     memset(resume_upload_xml, 0, sizeof(resume_upload_xml));
     memset(finish_upload_xml, 0, sizeof(finish_upload_xml));
-//    memset(get_resize_photo_xml, 0, sizeof(get_resize_photo_xml));
-//    memset(get_full_txt_xml, 0, sizeof(get_full_txt_xml));
-//    memset(get_video_snapshot_xml, 0, sizeof(get_video_snapshot_xml));
     memset(trans_excep_file,0,sizeof(trans_excep_file));
     memset(system_token,0,sizeof(system_token));
 }
@@ -1590,19 +1568,19 @@ void init_global_var()
     char config_path[256] = {0};
     char script_path[256] = {0};
     char temp_path[256] = {0};
+    char cert_path[256] = {0};
     snprintf(cloud_path,NAMESIZE,"%s/%s",base_path,"smartsync");
     snprintf(log_path,NAMESIZE,"%s/%s",cloud_path,".logs");
-    //snprintf(temp_path,NAMESIZE,"%s/%s",cloud_path,"temp");
     snprintf(asus_path,NAMESIZE,"%s/%s",cloud_path,"asuswebstorage");
     snprintf(config_path,256,"%s/config",asus_path);
     snprintf(script_path,256,"%s/script",asus_path);
     snprintf(temp_path,256,"%s/temp",asus_path);
+    snprintf(cert_path,256,"%s/cert",asus_path);
     snprintf(xml_path,NAMESIZE,"%s/xml",temp_path);
 
 
     snprintf(general_log,NAMESIZE,"%s/asuswebstorage",log_path);
     snprintf(system_log,NAMESIZE,"%s/system.log",log_path);
-//    snprintf(temp_file,NAMESIZE,"%s/temp",log_path);
     snprintf(gateway_xml,NAMESIZE,"%s/%s",xml_path,"gateway.xml");
     snprintf(get_user_state_xml,NAMESIZE,"%s/%s",xml_path,"get_user_state.xml");
     snprintf(token_xml,NAMESIZE,"%s/%s",xml_path,"token.xml");
@@ -1617,44 +1595,27 @@ void init_global_var()
     snprintf(remove_xml,NAMESIZE,"%s/%s",xml_path,"remove.xml");
     snprintf(update_xml,NAMESIZE,"%s/%s",xml_path,"update.xml");
     snprintf(get_entry_info_xml,NAMESIZE,"%s/%s",xml_path,"get_entry_info.xml");
-//    snprintf(set_mark_xml,NAMESIZE,"%s/%s",xml_path,"set_mark.xml");
-//    snprintf(get_change_files_xml,NAMESIZE,"%s/%s",xml_path,"get_change_files.xml");
-//    snprintf(get_uploads_xml,NAMESIZE,"%s/%s",xml_path,"get_uploads.xml");
-//    snprintf(get_share_code_xml,NAMESIZE,"%s/%s",xml_path,"get_share_code.xml");
-//    snprintf(del_share_code_xml,NAMESIZE,"%s/%s",xml_path,"del_share_code.xml");
-//    snprintf(get_share_entry_xml,NAMESIZE,"%s/%s",xml_path,"get_share_entry.xml");
-//    snprintf(check_pwd_xml,NAMESIZE,"%s/%s",xml_path,"check_pwd.xml");
-//    snprintf(cmp_pwd_xml,NAMESIZE,"%s/%s",xml_path,"cmp_pwd.xml");
     snprintf(get_change_seq_xml,NAMESIZE,"%s/%s",xml_path,"get_change_seq.xml");
     snprintf(init_upload_xml,NAMESIZE,"%s/%s",xml_path,"init_upload.xml");
     snprintf(resume_upload_xml,NAMESIZE,"%s/%s",xml_path,"resume_upload.xml");
     snprintf(finish_upload_xml,NAMESIZE,"%s/%s",xml_path,"finish_upload.xml");
-//    snprintf(get_resize_photo_xml,NAMESIZE,"%s/%s",xml_path,"get_resize_photo.xml");
-//    snprintf(get_full_txt_xml,NAMESIZE,"%s/%s",xml_path,"get_full_txt.xml");
-//    snprintf(get_video_snapshot_xml,NAMESIZE,"%s/%s",xml_path,"get_video_snapshot.xml");
     snprintf(trans_excep_file,128,"%s/%s",log_path,"asuswebstorage_errlog");
 
     my_mkdir(cloud_path);
-    //my_mkdir(temp_path);
     my_mkdir(log_path);
     my_mkdir(asus_path);
     my_mkdir(config_path);
     my_mkdir(script_path);
     my_mkdir(temp_path);
+    my_mkdir(cert_path);
     my_mkdir(xml_path);
-    //my_mkdir_r(xml_path);
-    //my_mkdir("/tmp/Cloud");
-
-    //remove(general_log);
     remove(trans_excep_file);
 }
 
 void clean_up()
 {
     printf("enter clean up\n");
-
     remove("/tmp/smartsync/.logs/asuswebstorage");
-
     check_accout_status();
 #if 0
     if( !item_empty(up_head))
@@ -1791,7 +1752,6 @@ void run()
         //create mem pool
 #if MEM_POOL_ENABLE
         mem_pool_init();
-        //printf("######enable mem  pool######\n");
 #endif
 
         from_server_sync_head = create_head();
@@ -1872,6 +1832,9 @@ void run()
 
         write_log(S_SYNC,"","");
 
+        if(set_iptables(1))
+            exit(-1);
+
         if( pthread_create(&local_thread,NULL,(void *)SyncLocal,NULL) != 0)
         {
             printf("thread creation failder\n");
@@ -1895,8 +1858,6 @@ void run()
                 printf("thread creation failder\n");
                 return;
             }
-
-            //usleep(1000*500);
             enter_sleep_time(1000*500,NULL);
         }
 
@@ -1946,9 +1907,7 @@ void run()
             if(read_config() != -1)
                 run();
         }
-
     }
-
 }
 
 char  *get_mount_path(char *path , int n)
@@ -2093,7 +2052,6 @@ int read_config()
         no_config = 0 ;
         exit_loop = 0;
     }
-
     return 0;
 }
 
@@ -2146,7 +2104,7 @@ int retry_all_fail_item(int type)
                     return -1;
                 }
 #ifdef DEBUG
-                printf("##### handle upload fail file is %s,parentid id %d,transid is %s#####\n",item->name,item->id,item->transid);
+                printf("##### handle upload fail file is %s,parentid id %lld,transid is %s#####\n",item->name,item->id,item->transid);
 #endif
                 while(retry_time)
                 {
@@ -2164,7 +2122,6 @@ int retry_all_fail_item(int type)
                     if(status == 0)
                     {
                         ok = 1;
-                        //del_sync_item(p2->action,p2->name,up_head);
                         break;
                     }
                     else
@@ -2186,11 +2143,6 @@ int retry_all_fail_item(int type)
 
             if(item->id > 0)
             {
-#ifdef DEBUG
-                //printf("##### download fail file is %s#####\n",item->name);
-                //printf("##### download arg id=%d,name=%s,size=%lld #####\n",item->id,item->name,item->size);
-#endif
-
                 filename = parse_name_from_path(item->name);
 
                 if(NULL == filename)
@@ -2199,12 +2151,7 @@ int retry_all_fail_item(int type)
                     my_free(item);
                     return -1;
                 }
-
-                //printf("download filenam is %s\n",filename);
-
                 strncpy(path,item->name,strlen(item->name)-strlen(filename)-1);
-
-
                 parentID = getParentID(path);
 
                 if(parentID <= 0)
@@ -2249,9 +2196,6 @@ int retry_all_fail_item(int type)
                         my_free(item);
                         return -1;
                     }
-
-                    //printf("prppfind status=%d,type=%s\n",find->status,find->type);
-
                     if(!strncmp(find->type,"system.file",sizeof("system.file")))
                     {
                         while(retry_time)
@@ -2340,7 +2284,6 @@ int write_notify_file(char *path,int signal_num)
     char fullname[64];
     memset(fullname,0,sizeof(fullname));
 
-    //my_mkdir_r(path);
     my_mkdir("/tmp/notify");
     my_mkdir("/tmp/notify/usb");
     sprintf(fullname,"%s/asuswebstorage",path);

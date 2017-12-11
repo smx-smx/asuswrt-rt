@@ -164,7 +164,7 @@ var ipmonitor = []; // [[IP, MAC, DeviceName, Type, http, printer, iTune], ...]
 var client_list_array = '';
 
 function initial(){
-	//setTimeout('update_wan_status2();', 1000);
+	
 	show_menu();
 	var isIE6 = navigator.userAgent.search("MSIE 6") > -1;
 	if(isIE6)
@@ -175,26 +175,27 @@ function initial(){
 	}
 
 	show_middle_status(document.form.wl_auth_mode_x.value, document.form.wl_wep_x.value);
+	setTimeout('update_wan_status2();', 1000);
 
 	set_default_choice();
 
 	show_client_status(originData.size);
 
 	if(parent.usb_support == -1){
-		$("line3_td").height = '20px';
-		$("line3_img").src = '/images/New_ui/networkmap/line_one.png';
-		$("clients_tr").colSpan = "3";
-		$("clients_tr").className = 'NM_radius';
-		$("clients_tr").width = '350';
-		$("clientspace_td").style.display = "none";
-		$("usb1_tr").style.display = "none";
-		$("usb2_tr").style.display = "none";
-		$("bottomspace_tr").style.display = "";
+		document.getElementById("line3_td").height = '20px';
+		document.getElementById("line3_img").src = '/images/New_ui/networkmap/line_one.png';
+		document.getElementById("clients_tr").colSpan = "3";
+		document.getElementById("clients_tr").className = 'NM_radius';
+		document.getElementById("clients_tr").width = '350';
+		document.getElementById("clientspace_td").style.display = "none";
+		document.getElementById("usb1_tr").style.display = "none";
+		document.getElementById("usb2_tr").style.display = "none";
+		document.getElementById("bottomspace_tr").style.display = "";
 	}
 	if(rc_support.search("usbX") == -1 || rc_support.search("usbX1") > -1){
-		$("deviceIcon_1").style.display = "none";
-		$("deviceDec_1").style.display = "none";
-		$("usb1_image").style.display = "none";
+		document.getElementById("deviceIcon_1").style.display = "none";
+		document.getElementById("deviceDec_1").style.display = "none";
+		document.getElementById("usb1_image").style.display = "none";
 	}
 	show_USBDevice();
 	//showMapWANStatus();
@@ -212,7 +213,7 @@ function initial(){
 	var NM_table_img = getCookie("NM_table_img");
 	if(NM_table_img != "" && NM_table_img != null){
 		customize_NM_table(NM_table_img);
-		$("bgimg").options[NM_table_img[4]].selected = 1;
+		document.getElementById("bgimg").options[NM_table_img[4]].selected = 1;
 	}
 	update_wan_status();
 
@@ -236,11 +237,11 @@ function update_wan_status2(){
 }
 
 function customize_NM_table(img){
-$("NM_table").style.background = "url('/images/" + img +"')";
-setCookie(img);
+	document.getElementById("NM_table").style.background = "url('/images/" + img +"')";
+	setCookie(img);
 }
 function setCookie(color){
-document.cookie = "NM_table_img=" + color;
+	document.cookie = "NM_table_img=" + color;
 }
 function getCookie(c_name)
 {
@@ -260,13 +261,13 @@ function set_default_choice(){
 	var icon_name;
 	if(flag && flag.length > 0 && wan_route_x != "IP_Bridged"){
 		if(flag == "Internet")
-			$("statusframe").src = "/cgi-bin/device-map/internet.asp";
+			document.getElementById("statusframe").src = "/cgi-bin/device-map/internet.asp";
 		else if(flag == "Client")
-			$("statusframe").src = "/cgi-bin/device-map/clients.asp";
+			document.getElementById("statusframe").src = "/cgi-bin/device-map/clients.asp";
 		else if(flag == "Router2g")
-			$("statusframe").src = "/cgi-bin/device-map/router.asp";
+			document.getElementById("statusframe").src = "/cgi-bin/device-map/router.asp";
 		else{
-			clickEvent($("iconRouter"));
+			clickEvent(document.getElementById("iconRouter"));
 			return;
 		}
 
@@ -275,14 +276,14 @@ function set_default_choice(){
 		else
 			icon_name = "icon"+flag;
 
-		clickEvent($(icon_name));
+		clickEvent(document.getElementById(icon_name));
 	}
 	else
-		clickEvent($("iconRouter"));
+		clickEvent(document.getElementById("iconRouter"));
 }
 
 function showMapWANStatus(){
-showtext($("NM_connect_status"), "AP Mode");
+showtext(document.getElementById("NM_connect_status"), "AP Mode");
 }
 
 function show_middle_status(auth_mode, wep){
@@ -302,7 +303,7 @@ function show_middle_status(auth_mode, wep){
 		break;
 		case "WPAPSKWPA2PSK":
 		security_mode = "WPA-Auto-Personal";
-		$("wl_securitylevel_span").style.fontSize = "16px";
+		document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
 		break;
 		case "WPA":
 		security_mode = "WPA-Enterprise";
@@ -312,26 +313,26 @@ function show_middle_status(auth_mode, wep){
 		break;
 		case "WPA1WPA2":
 		security_mode = "WPA-Auto-Enterprise";
-		$("wl_securitylevel_span").style.fontSize = "16px";
+		document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
 		break;
 		case "Radius":
 		security_mode = "Radius WEP-64";
-		$("wl_securitylevel_span").style.fontSize = "16px";
+		document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
 		break;
 		default:
 		//alert("case default");
 		security_mode = "Unknown Auth";
 	}
-	$("wl_securitylevel_span").innerHTML = security_mode;
+	document.getElementById("wl_securitylevel_span").innerHTML = security_mode;
 	if(auth_mode == "OPEN")
 	{
 		if(wep == "1" || wep == "2")
-			$("iflock").src = "/images/New_ui/networkmap/lock.png"
+			document.getElementById("iflock").src = "/images/New_ui/networkmap/lock.png"
 		else
-			$("iflock").src = "/images/New_ui/networkmap/unlock.png";
+			document.getElementById("iflock").src = "/images/New_ui/networkmap/unlock.png";
 	}
 	else
-		$("iflock").src = "/images/New_ui/networkmap/lock.png"
+		document.getElementById("iflock").src = "/images/New_ui/networkmap/lock.png"
 }
 
 function show_client_status(num){
@@ -392,8 +393,8 @@ function show_USBDevice(){
 }
 
 function disk_html(device_order, all_disk_order){
-	var device_icon = $("deviceIcon_"+device_order);
-	var device_dec = $("deviceDec_"+device_order);
+	var device_icon = document.getElementById("deviceIcon_"+device_order);
+	var device_dec = document.getElementById("deviceDec_"+device_order);
 	var icon_html_code = '';
 	var dec_html_code = '';
 	var disk_model_name = "";
@@ -435,8 +436,8 @@ function disk_html(device_order, all_disk_order){
 function printer_html(device_seat, printer_order){
 	var printer_name = printer_manufacturers()[printer_order]+" "+printer_models()[printer_order];
 	var printer_status = "";
-	var device_icon = $("deviceIcon_"+device_seat);
-	var device_dec = $("deviceDec_"+device_seat);
+	var device_icon = document.getElementById("deviceIcon_"+device_seat);
+	var device_dec = document.getElementById("deviceDec_"+device_seat);
 	var icon_html_code = '';
 	var dec_html_code = '';
 	if(printer_pool()[printer_order] != "")
@@ -461,8 +462,8 @@ else
 	
 var modem_name = dongle_name;
 var modem_status = "<% tcWebApi_Get("String_Entry", "Connected", "s") %>";
-var device_icon = $("deviceIcon_"+device_seat);
-var device_dec = $("deviceDec_"+device_seat);
+var device_icon = document.getElementById("deviceIcon_"+device_seat);
+var device_dec = document.getElementById("deviceDec_"+device_seat);
 var icon_html_code = '';
 var dec_html_code = '';
 icon_html_code += '<a href="/cgi-bin/device-map/modem.asp" target="statusframe">\n';
@@ -474,8 +475,8 @@ device_icon.innerHTML = icon_html_code;
 device_dec.innerHTML = dec_html_code;
 }
 function no_device_html(device_seat){
-var device_icon = $("deviceIcon_"+device_seat);
-var device_dec = $("deviceDec_"+device_seat);
+var device_icon = document.getElementById("deviceIcon_"+device_seat);
+var device_dec = document.getElementById("deviceDec_"+device_seat);
 var icon_html_code = '';
 var dec_html_code = '';
 icon_html_code += '<div class="iconNo"></div>';
@@ -508,7 +509,7 @@ function clickEvent(obj){
 		icon = "iconInternet";
 		stitle = "<% tcWebApi_Get("String_Entry", "statusTitle_Internet", "s") %>";
 
-		$("statusframe").src = "/cgi-bin/device-map/internet.asp";
+		document.getElementById("statusframe").src = "/cgi-bin/device-map/internet.asp";
 
 		if(parent.wans_flag){
 			if(obj.id.indexOf("primary") != -1) {
@@ -532,14 +533,14 @@ function clickEvent(obj){
 	else if(obj.id.indexOf("USBdisk") > 0){
 		icon = "iconUSBdisk";
 		stitle = "<% tcWebApi_Get("String_Entry", "statusTitle_USB_Disk", "s") %>";
-		$("statusframe").src = "/device-map/disk.asp";
+		document.getElementById("statusframe").src = "/device-map/disk.asp";
 	}
 	else if(obj.id.indexOf("Modem") > 0){
 		seat = obj.id.indexOf("Modem")+5;
 		clicked_device_order = parseInt(obj.id.substring(seat, seat+1));
 		icon = "iconmodem";
 		stitle = "USB Modem";
-		$("statusframe").src = "/device-map/modem.asp";
+		document.getElementById("statusframe").src = "/device-map/modem.asp";
 	}
 	else if(obj.id.indexOf("Printer") > 0){
 		seat = obj.id.indexOf("Printer")+7;
@@ -550,7 +551,7 @@ function clickEvent(obj){
 	else if(obj.id.indexOf("Remote") > 0){
 		icon = "iconRemote";
 		stitle = "Access Point status";
-		$("statusframe").src = "/device-map/remote.asp";
+		document.getElementById("statusframe").src = "/device-map/remote.asp";
 	}
 	else if(obj.id.indexOf("No") > 0){
 		icon = "iconNo";
@@ -563,7 +564,7 @@ function clickEvent(obj){
 	}
 	obj.style.background = 'url(/images/New_ui/networkmap/map-'+icon+'.png) no-repeat 0% 101%';
 
-	$('helpname').innerHTML = stitle;
+	document.getElementById("helpname").innerHTML = stitle;
 	avoidkey = icon;
 	lastClicked = obj;
 	lastName = icon;
@@ -601,25 +602,25 @@ function mouseEvent(obj, key){
 }//end of mouseEvent
 
 function MapUnderAPmode(){// if under AP mode, disable the Internet icon and show hint when mouseover.
-$("iconInternet").style.background = "url(/images/New_ui/networkmap/map-iconInternet-d.png) no-repeat";
-$("iconInternet").style.cursor = "default";
-$("iconInternet").onmouseover = function(){
+document.getElementById("iconInternet").style.background = "url(/images/New_ui/networkmap/map-iconInternet-d.png) no-repeat";
+document.getElementById("iconInternet").style.cursor = "default";
+document.getElementById("iconInternet").onmouseover = function(){
 writetxt("<%tcWebApi_get("String_Entry","underAPmode","s")%>");
 }
-$("iconInternet").onmouseout = function(){
+document.getElementById("iconInternet").onmouseout = function(){
 writetxt(0);
 }
-$("iconInternet").onclick = function(){
+document.getElementById("iconInternet").onclick = function(){
 return false;
 }
-$("clientStatusLink").href = "javascript:void(0)";
-$("clientStatusLink").style.cursor = "default";
-$("iconClient").style.background = "url(/images/New_ui/networkmap/map-iconClient-d.png) no-repeat";
-$("iconClient").style.cursor = "default";
+document.getElementById("clientStatusLink").href = "javascript:void(0)";
+document.getElementById("clientStatusLink").style.cursor = "default";
+document.getElementById("iconClient").style.background = "url(/images/New_ui/networkmap/map-iconClient-d.png) no-repeat";
+document.getElementById("iconClient").style.cursor = "default";
 }
 
 function showstausframe(page){
-	clickEvent($("icon"+page));
+	clickEvent(document.getElementById("icon"+page));
 	if(page == "Client")
 		page = "clients";
 	else if(page.indexOf('Internet') == 0){
@@ -739,24 +740,24 @@ var isMD5DDNSName = function(){
 
 function check_dualwan(flag){
 	if(flag == 0){		//single wan
-		$('single_wan_icon').style.display = "";
-		$('single_wan_status').style.display = "";
-		$('single_wan_line').style.display = "";
-		$('primary_wan_icon').style.display = "none";
-		$('secondary_wan_icon').style.display = "none";
-		$('primary_wan_line').style.display = "none";
-		$('secondary_wan_line').style.display = "none";
-		$('dual_wan_gap').style.display = "none";
+		document.getElementById('single_wan_icon').style.display = "";
+		document.getElementById('single_wan_status').style.display = "";
+		document.getElementById('single_wan_line').style.display = "";
+		document.getElementById('primary_wan_icon').style.display = "none";
+		document.getElementById('secondary_wan_icon').style.display = "none";
+		document.getElementById('primary_wan_line').style.display = "none";
+		document.getElementById('secondary_wan_line').style.display = "none";
+		document.getElementById('dual_wan_gap').style.display = "none";
 	}
 	else{
-		$('single_wan_icon').style.display = "none";
-		$('single_wan_status').style.display = "none";
-		$('single_wan_line').style.display = "none";
-		$('primary_wan_icon').style.display = "";
-		$('secondary_wan_icon').style.display = "";
-		$('primary_wan_line').style.display = "";
-		$('secondary_wan_line').style.display = "";
-		$('dual_wan_gap').style.display = "";
+		document.getElementById('single_wan_icon').style.display = "none";
+		document.getElementById('single_wan_status').style.display = "none";
+		document.getElementById('single_wan_line').style.display = "none";
+		document.getElementById('primary_wan_icon').style.display = "";
+		document.getElementById('secondary_wan_icon').style.display = "";
+		document.getElementById('primary_wan_line').style.display = "";
+		document.getElementById('secondary_wan_line').style.display = "";
+		document.getElementById('dual_wan_gap').style.display = "";
 	}
 }
 
@@ -801,44 +802,44 @@ function change_wan_state(primary_status, secondary_status){
 			secondary_status = "Standby";
 
 		if(primary_status == 'Disconnected'){
-			$('primary_line').className = "primary_wan_disconnected";
+			document.getElementById('primary_line').className = "primary_wan_disconnected";
 		}
 		else if(primary_status == 'Standby'){
-			$('primary_line').className = "primary_wan_standby";
+			document.getElementById('primary_line').className = "primary_wan_standby";
 		}
 		else{
-			$('primary_line').className = "primary_wan_connected";
+			document.getElementById('primary_line').className = "primary_wan_connected";
 		}
 
 		if(secondary_status == 'Disconnected'){
-			$('secondary_line').className = "secondary_wan_disconnected";
+			document.getElementById('secondary_line').className = "secondary_wan_disconnected";
 		}
 		else if(secondary_status == 'Standby'){
-			$('secondary_line').className = "secondary_wan_standby";
+			document.getElementById('secondary_line').className = "secondary_wan_standby";
 		}
 		else{
-			$('secondary_line').className = "secondary_wan_connected";
+			document.getElementById('secondary_line').className = "secondary_wan_connected";
 		}
 
-		$('primary_status').innerHTML = primary_status;
-		$('seconday_status').innerHTML = secondary_status;
+		document.getElementById('primary_status').innerHTML = primary_status;
+		document.getElementById('seconday_status').innerHTML = secondary_status;
 
 	}
 	else{	//lb
-		$('primary_status').innerHTML = primary_status;
-		$('seconday_status').innerHTML = secondary_status;
+		document.getElementById('primary_status').innerHTML = primary_status;
+		document.getElementById('seconday_status').innerHTML = secondary_status;
 		if(primary_status == "Disconnected"){
-			$('primary_line').className = "primary_wan_disconnected";
+			document.getElementById('primary_line').className = "primary_wan_disconnected";
 		}
 		else{
-			$('primary_line').className = "primary_wan_connected";
+			document.getElementById('primary_line').className = "primary_wan_connected";
 		}
 
 		if(secondary_status == "Disconnected"){
-			$('secondary_line').className = "secondary_wan_disconnected";
+			document.getElementById('secondary_line').className = "secondary_wan_disconnected";
 		}
 		else{
-			$('secondary_line').className = "secondary_wan_connected";
+			document.getElementById('secondary_line').className = "secondary_wan_connected";
 		}
 	}
 }

@@ -92,8 +92,6 @@ var restart_vpncall_flag = 0; //Viz add 2014.04 for Edit Connecting rule then re
 
 function initial(){
 	show_menu();
-	if(vpnc_clientlist_array.charAt(0) == "<")	//remove the 1st "<"
-		vpnc_clientlist_array = vpnc_clientlist_array.substr(1,vpnc_clientlist_array.length);
 	show_vpnc_rulelist();
 
 	if(vpnc_support == -1 && openvpnd_support != -1)
@@ -197,7 +195,7 @@ function addRow_Group(upper, flag, idx){
 				return false;
 			}
 
-			vpnc_clientlist_row[idx] = description_obj.value+">"+type_obj.value+">"+server_obj.value+">"+username_obj.value+">"+password_obj.value;
+			vpnc_clientlist_row[idx+1] = description_obj.value+">"+type_obj.value+">"+server_obj.value+">"+username_obj.value+">"+password_obj.value;
 			vpnc_clientlist_array = vpnc_clientlist_row.join("<");
 
 			//edit vpnc_pptp_options_x_list
@@ -211,11 +209,11 @@ function addRow_Group(upper, flag, idx){
 
 			document.vpnclientForm.vpnc_pptp_options_x_list.value = vpnc_pptp_options_x_list_array;
 			document.form.vpnc_pptp_options_x_list.value = vpnc_pptp_options_x_list_array;
-			disableCheckChangedStatus();	//stop to trigger show_vpnc_rulelist()
+			show_vpnc_rulelist();
 
 			if(restart_vpncall_flag == 1){	//restart_vpncall
 				var vpnc_clientlist_row = vpnc_clientlist_array.split('<');
-				var vpnc_clientlist_col = vpnc_clientlist_row[idx].split('>');
+				var vpnc_clientlist_col = vpnc_clientlist_row[idx+1].split('>');
 				for(var j=0; j<vpnc_clientlist_col.length; j++){
 					if(j == 0){
 						document.form.vpnc_des_edit.value = vpnc_clientlist_col[0];
@@ -256,9 +254,10 @@ function addRow_Group(upper, flag, idx){
 					document.form.vpnc_pptp_options_x.value = document.form.selPPTPOption.value;
 				}
 				document.form.listFlag.value = "1";
-				document.form.connFlag.value = "1";
-				if(vpnc_clientlist_array.charAt(0) != "<")	//add the 1st "<"
-					vpnc_clientlist_array = "<" + vpnc_clientlist_array;
+				if(vpnc_clientlist_col[1] == "OpenVPN")
+					document.form.connFlag.value = "2";
+				else
+					document.form.connFlag.value = "1";
 				document.form.vpn_clientx_eas.disabled = true;
 				document.form.vpnc_clientlist.value = vpnc_clientlist_array;
 				document.getElementById("vpnc_clientlist_table").rows[idx].cells[0].innerHTML = "-";
@@ -268,8 +267,6 @@ function addRow_Group(upper, flag, idx){
 			else{
 				document.vpnclientForm.listFlag.value = "1";
 				document.vpnclientForm.vpnc_clientlist.value = vpnc_clientlist_row.join("<");
-				if(document.vpnclientForm.vpnc_clientlist.value.charAt(0) != "<")	//add the 1st "<"
-					document.vpnclientForm.vpnc_clientlist.value = "<" + document.vpnclientForm.vpnc_clientlist.value;
 				document.vpnclientForm.submit();
 			}
 			cancel_add_rule();
@@ -317,9 +314,6 @@ function addRow_Group(upper, flag, idx){
 			addRow(username_obj, 0);
 			addRow(password_obj, 0);
 
-			if(vpnc_clientlist_array.charAt(0) == "<")	//rempve the 1st "<"
-				vpnc_clientlist_array = vpnc_clientlist_array.substr(1,vpnc_clientlist_array.length);
-
 			//add vpnc_pptp_options_x_list
 			if(vpnc_pptp_options_x_list_array == "") {		//idx: NaN=Add i=edit row
 				vpnc_pptp_options_x_list_array = reFillEmptyPPTPOPtion(idx, document.form.selPPTPOption.value, vpnc_clientlist_array);
@@ -328,11 +322,10 @@ function addRow_Group(upper, flag, idx){
 				vpnc_pptp_options_x_list_array = handlePPTPOPtion(idx, document.form.selPPTPOption.value, vpnc_clientlist_array);
 			}
 
-			disableCheckChangedStatus();	//stop to trigger show_vpnc_rulelist()
+			show_vpnc_rulelist();
 			cancel_add_rule();
 			document.vpnclientForm.listFlag.value = "1";
-			if(vpnc_clientlist_array.charAt(0) != "<")	//add the 1st "<"
-				vpnc_clientlist_array = "<" + vpnc_clientlist_array;
+			document.vpnclientForm.connFlag.value = "0";
 			document.vpnclientForm.vpn_clientx_eas.disabled = true;
 			document.vpnclientForm.vpnc_pptp_options_x_list.value = vpnc_pptp_options_x_list_array;
 			document.vpnclientForm.vpnc_clientlist.value = vpnc_clientlist_array;
@@ -346,8 +339,8 @@ function reFillEmptyPPTPOPtion(idx, objValue, vpncClientList) {
 	var currentVPNCList = vpncClientList;
 	var currentVPNCListNum = currentVPNCList.split("<").length;
 	if(idx >= 0){
-		for(var i = 0; i < currentVPNCListNum; i += 1){
-			if(i == idx){
+		for(var i = 1; i < currentVPNCListNum; i += 1){
+			if(i == idx + 1){
 				finalPPTPOptionsList += "<" + objValue;
 			}
 			else{
@@ -356,7 +349,7 @@ function reFillEmptyPPTPOPtion(idx, objValue, vpncClientList) {
 		}
 	}
 	else{ //add
-		for(var i = 1; i < currentVPNCListNum; i += 1) {
+		for(var i = 1; i < currentVPNCListNum - 1; i += 1) {
 			finalPPTPOptionsList += "<auto";
 		}
 
@@ -374,8 +367,8 @@ function handlePPTPOPtion(idx, objValue, vpncClientList) {
 	var origPPTPOptionsListArray = origPPTPOptionsList.split("<");
 	var origPPTPOptionsListArrayNum = origPPTPOptionsListArray.length;
 	if(idx >= 0){ //edit
-		for(var i = 0; i < currentVPNCListNum; i += 1) {
-			if(i == idx) {
+		for(var i = 1; i < currentVPNCListNum; i += 1) {
+			if(i == idx + 1) {
 				if(objValue == "") {
 					finalPPTPOptionsList += "<auto";
 				}
@@ -384,17 +377,17 @@ function handlePPTPOPtion(idx, objValue, vpncClientList) {
 				}
 			}
 			else {
-				if(origPPTPOptionsListArray[i + 1] == "undefined") {
+				if(origPPTPOptionsListArray[i] == "undefined") {
 					finalPPTPOptionsList += "<auto";
 				}
 				else {
-					finalPPTPOptionsList += "<" +  origPPTPOptionsListArray[i + 1];
+					finalPPTPOptionsList += "<" +  origPPTPOptionsListArray[i];
 				}
 			}
 		}
 	}
 	else{ //add
-		for(var i = 1; i < currentVPNCListNum; i += 1){
+		for(var i = 1; i < currentVPNCListNum - 1; i += 1){
 			if(origPPTPOptionsListArray[i] == "undefined"){
 				finalPPTPOptionsList += "<auto";
 			}
@@ -427,13 +420,13 @@ var duplicateCheck = {
 	isDuplicate: function(){
 		var vpnc_clientlist_row = vpnc_clientlist_array.split('<');
 		var index_del = parseInt(this.tmpIdx);
-		for(var i=0; i<vpnc_clientlist_row.length; i++){
+		for(var i=1; i<vpnc_clientlist_row.length; i++){
 			if(index_del == "" && index_del != 0){
 				if(vpnc_clientlist_row[i].search(this.tmpStr) >= 0){
 					return true;
-		}
+				}
 			}
-			else if(i != index_del){
+			else if(i != index_del + 1){
 				if(vpnc_clientlist_row[i].search(this.tmpStr) >= 0){
 					return true;
 				}
@@ -589,7 +582,7 @@ function show_vpnc_rulelist(){
 		code +='<tr><td style="color:#FFCC00;" colspan="6"><%tcWebApi_get("String_Entry","IPC_VSList_Norule","s")%></td></tr>';
 	else{
 
-		for(var i=0; i<vpnc_clientlist_row.length; i++){
+		for(var i=1; i<vpnc_clientlist_row.length; i++){
 			overlib_str0[i] = "";
 			overlib_str1[i] = "";
 			code +='<tr id="row'+i+'">';
@@ -709,7 +702,7 @@ function show_vpnc_rulelist(){
 function connect_Row(rowdata, flag){
 	var idx = rowdata.parentNode.parentNode.rowIndex;
 	var vpnc_clientlist_row = vpnc_clientlist_array.split('<');
-	var vpnc_clientlist_col = vpnc_clientlist_row[idx].split('>');
+	var vpnc_clientlist_col = vpnc_clientlist_row[idx+1].split('>');
 
 	if(flag == "disconnect"){
 		if(vpnc_clientlist_col[1] == "OpenVPN"){
@@ -797,8 +790,6 @@ function connect_Row(rowdata, flag){
 			}
 		}
 	}
-	if(vpnc_clientlist_array.charAt(0) != "<")	//add the 1st "<"
-		vpnc_clientlist_array = "<" + vpnc_clientlist_array;
 	document.form.vpnc_pptp_options_x_list.value = vpnc_pptp_options_x_list_array;
 	document.form.vpnc_clientlist.value = vpnc_clientlist_array;
 	rowdata.parentNode.innerHTML = "<img src='/images/InternetScan.gif'>";
@@ -866,7 +857,7 @@ function Edit_Row(rowdata, flag){
 	if(document.getElementById("vpnc_clientlist_table").rows[idx].cells[0].innerHTML != "-")
 		restart_vpncall_flag = 1;
 	var vpnc_clientlist_row = vpnc_clientlist_array.split('<');
-	var vpnc_clientlist_col = vpnc_clientlist_row[idx].split('>');
+	var vpnc_clientlist_col = vpnc_clientlist_row[idx+1].split('>');
 	//get idx of PPTP option value
 	var pptpOptionValue = "";
 	var origPPTPOptionsList = vpnc_pptp_options_x_list_array;
@@ -962,15 +953,12 @@ function del_Row(rowdata, flag){
 
 	var vpnc_clientlist_value = "";
 	var vpnc_clientlist_row = vpnc_clientlist_array.split('<');
-	var vpnc_clientlist_col_delete = vpnc_clientlist_row[idx].split('>');
-	for(k=0; k<vpnc_clientlist_row.length; k++){
-		if(k != idx){
+	var vpnc_clientlist_col_delete = vpnc_clientlist_row[idx+1].split('>');
+	for(k=1; k<vpnc_clientlist_row.length; k++){
+		if(k != idx+1){
 			vpnc_clientlist_value += "<"+vpnc_clientlist_row[k];
 		}
 	}
-	if(vpnc_clientlist_value.charAt(0) == "<")	//remove the 1st "<"
-		vpnc_clientlist_value = vpnc_clientlist_value.substr(1,vpnc_clientlist_value.length);
-
 	vpnc_clientlist_array = vpnc_clientlist_value;
 	if(vpnc_clientlist_array == "")
 		show_vpnc_rulelist();
@@ -980,14 +968,10 @@ function del_Row(rowdata, flag){
 	var origPPTPOptionsList = vpnc_pptp_options_x_list_array;
 	var origPPTPOptionsListArray = origPPTPOptionsList.split("<");
 	var origPPTPOptionsListArrayNum = origPPTPOptionsListArray.length;
-	for(var index = 0; index < origPPTPOptionsListArrayNum; index += 1) {
+	for(var index = 1; index < origPPTPOptionsListArrayNum; index += 1) {
 		if(index != (idx + 1)) {	//save exist items
 			tempPPTPOptionsValue += "<"+ origPPTPOptionsListArray[index];
 		}
-	}
-
-	if(tempPPTPOptionsValue.charAt(0) == "<") {	//remove the 1st "<"
-		tempPPTPOptionsValue = tempPPTPOptionsValue.substr(1,tempPPTPOptionsValue.length);
 	}
 
 	vpnc_pptp_options_x_list_array = tempPPTPOptionsValue;
@@ -1002,38 +986,40 @@ function del_Row(rowdata, flag){
 		document.vpnclientForm.action_script.value = "restart_vpncall";
 		if(vpnc_clientlist_col_delete[1] == "OpenVPN"){
 			document.vpnclientForm.vpn_clientx_eas.disabled = false;
-			if(vpnc_clientlist_row[idx].split("OpenVPN>1").length == 2) {
+			if(vpnc_clientlist_row[idx+1].split("OpenVPN>1").length == 2) {
 					document.vpnclientForm.vpn_client_unit.value = 1;
 					document.vpnclientForm.vpn_clientx_eas.value = document.vpnclientForm.vpn_clientx_eas.value.replace("1,", "");
 					document.form.vpn_clientx_eas.value = document.form.vpn_clientx_eas.value.replace("1,", "");
 			}
-			else if(vpnc_clientlist_row[idx].split("OpenVPN>2").length == 2) {
+			else if(vpnc_clientlist_row[idx+1].split("OpenVPN>2").length == 2) {
 					document.vpnclientForm.vpn_client_unit.value = 2;
 					document.vpnclientForm.vpn_clientx_eas.value = document.vpnclientForm.vpn_clientx_eas.value.replace("2,", "");
 					document.form.vpn_clientx_eas.value = document.form.vpn_clientx_eas.value.replace("2,", "");
 			}
-			else if(vpnc_clientlist_row[idx].split("OpenVPN>3").length == 2) {
+			else if(vpnc_clientlist_row[idx+1].split("OpenVPN>3").length == 2) {
 					document.vpnclientForm.vpn_client_unit.value = 3;
 					document.vpnclientForm.vpn_clientx_eas.value = document.vpnclientForm.vpn_clientx_eas.value.replace("3,", "");
 					document.form.vpn_clientx_eas.value = document.form.vpn_clientx_eas.value.replace("3,", "");
 			}
-			else if(vpnc_clientlist_row[idx].split("OpenVPN>4").length == 2) {
+			else if(vpnc_clientlist_row[idx+1].split("OpenVPN>4").length == 2) {
 					document.vpnclientForm.vpn_client_unit.value = 4;
 					document.vpnclientForm.vpn_clientx_eas.value = document.vpnclientForm.vpn_clientx_eas.value.replace("4,", "");
 					document.form.vpn_clientx_eas.value = document.form.vpn_clientx_eas.value.replace("4,", "");
 			}
-			else if(vpnc_clientlist_row[idx].split("OpenVPN>5").length == 2) {
+			else if(vpnc_clientlist_row[idx+1].split("OpenVPN>5").length == 2) {
 					document.vpnclientForm.vpn_client_unit.value = 5;
 					document.vpnclientForm.vpn_clientx_eas.value = document.vpnclientForm.vpn_clientx_eas.value.replace("5,", "");
 					document.form.vpn_clientx_eas.value = document.form.vpn_clientx_eas.value.replace("5,", "");
 			}
+
+			document.vpnclientForm.connFlag.value = "2";
+		}
+		else {
+			document.vpnclientForm.connFlag.value = "1";
 		}
 	}
 
 	document.vpnclientForm.listFlag.value = "1";
-	document.vpnclientForm.connFlag.value = "1";
-	if(vpnc_clientlist_array.charAt(0) != "<")	//add the 1st "<"
-		vpnc_clientlist_array = "<" + vpnc_clientlist_array;
 	document.vpnclientForm.vpnc_clientlist.value = vpnc_clientlist_array;
 	document.vpnclientForm.submit();
 }
@@ -1380,6 +1366,7 @@ function pptpOptionChange() {
 						<input type="hidden" name="vpnc_clientlist" value=''>
 						<input type="hidden" name="vpn_upload_type" value="ovpn">
 						<input type="hidden" name="vpn_upload_unit" value="1">
+						<input type="hidden" name="vpn_client_unit" value="1">
 						<input type="hidden" name="vpnc_openvpn_unit_edit" value="1">
 						<input type="hidden" name="vpnc_type" value="PPTP">
 						<input type="hidden" name="vpnc_proto" value="<% tcWebApi_get("VPNC_Entry","proto","s") %>" disabled>

@@ -33,28 +33,6 @@ if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" != "" ] && [ "$TCSUPPORT_WAN_PTM" != "" -o
 	fi	
 fi
 
-if [ "$TCSUPPORT_MULTISERVICE_ON_WAN" != "" ] && [ "$TCSUPPORT_WAN_PTM" != "" -o "$TCSUPPORT_WAN_ETHER" != "" ] ;then
-	if [ "$isPTMETHER" = "1" ] ; then
-		if [ "$serv_num" != "0" ]; then
-			isIPTV=1
-		else
-			isIPTV=0
-		fi
-	else
-		if [ "$i" != "0" ]; then
-			isIPTV=1
-		else
-			isIPTV=0
-		fi
-	fi
-else
-	if [ "$i" != "0"  -a "$isPTMETHER" = "0" ]; then
-		isIPTV=1
-	else
-		isIPTV=0
-	fi
-fi
-
 CONFFILE=/etc/isp$i.conf
 if [ -f $CONFFILE ]; then
 	chmod 777 $CONFFILE
@@ -62,13 +40,6 @@ if [ -f $CONFFILE ]; then
 fi
 if [ "$Active" = "Yes" ]; then
 	tcapi set Wanduck_Common link_internet 0 &
-fi
-
-# ginp
-if [ "$1" = "8" ]; then
-if [ "$ISP" = "0" -o "$ISP" = "2" ]; then
-	killall chkwan
-fi
 fi
 
 ebtables -t filter -D INPUT -i nas$i -p IPv4 --ip-proto 17 --ip-dport 67 -j DROP 2>/dev/null
@@ -251,11 +222,6 @@ fi
 #if [ "$i" = "10" -a "$TCSUPPORT_MTK_INTERNAL_ETHER_SWITCH" = "" -a "$switch_stb_x" != "7" ]; then
 	#rtkethcmd down wan
 #fi
-if [ "$isIPTV" = "1" ]; then
-brctl delif br1 nas$i
-else
-brctl delif br0 nas$i
-fi
 
 if [ -f /var/run/nas$i.pid ] ; then
 	kill -9 `cat /var/run/nas$i.pid`

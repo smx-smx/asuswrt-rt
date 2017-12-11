@@ -55,7 +55,7 @@ Hb_TreeNode *pop_stree();
 struct ServerTreeNode
 {
     int level;
-    int id;
+    long long id;
     Browse *browse;
     struct ServerTreeNode *Child;
     struct ServerTreeNode *NextBrother;
@@ -63,8 +63,8 @@ struct ServerTreeNode
 
 typedef struct ServerTreeNode Server_TreeNode;
 
-Server_TreeNode *create_server_treeroot(int id);
-int browse_to_tree(char *username,int parentid, char *xmlfilename,Server_TreeNode *node);
+Server_TreeNode *create_server_treeroot(long long int id);
+int browse_to_tree(char *username,long long int parentid, char *xmlfilename,Server_TreeNode *node);
 void SearchServerTree(Server_TreeNode* treeRoot);
 
 #endif

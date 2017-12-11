@@ -22,14 +22,15 @@ End If
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title>ASUS <% tcWebApi_get("SysInfo_Entry","ProductName","s") %> <% tcWebApi_get("SysInfo_Entry","ProductTitle","s") %> - EZQoS Bandwidth Management</title>
+<title>ASUS <% tcWebApi_get("String_Entry","Web_Title2","s") %> <% tcWebApi_get("SysInfo_Entry","ProductTitle","s") %> - EZQoS Bandwidth Management</title>
 <link rel="stylesheet" type="text/css" href="/index_style.css"> 
 <link rel="stylesheet" type="text/css" href="/form_style.css">
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/general.js"></script>
+<script language="JavaScript" type="text/javascript" src="/popup.js"></script>
+<script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
@@ -538,7 +539,7 @@ function switchPage(page){
 							<tr>
 								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 2);">Upload Bandwidth</a></th>
 								<td>
-									<input type="text" maxlength="10" id="qos_obw" name="qos_obw" onKeyPress="return is_number(this,event);" class="input_15_table" value="<% tcWebApi_get("QoS_Entry0", "qos_obw", "s") %>" onblur="gen_options();">
+									<input type="text" maxlength="10" id="qos_obw" name="qos_obw" onKeyPress="return validator.isNumber(this,event);" class="input_15_table" value="<% tcWebApi_get("QoS_Entry0", "qos_obw", "s") %>" onblur="gen_options();">
 									<select id="qos_obw_scale" class="input_option" style="width:87px;" onChange="changeScale('qos_obw');">
 										<option value="Kb/s">Kb/s</option>
 										<option value="Mb/s">Mb/s</option>
@@ -549,7 +550,7 @@ function switchPage(page){
 							<tr>
 								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 2);">Download Bandwidth</a></th>
 								<td>
-									<input type="text" maxlength="10" id="qos_ibw" name="qos_ibw" onKeyPress="return is_number(this,event);" class="input_15_table" value="<% tcWebApi_get("QoS_Entry0", "qos_ibw", "s") %>" onblur="gen_options();">
+									<input type="text" maxlength="10" id="qos_ibw" name="qos_ibw" onKeyPress="return validator.isNumber(this,event);" class="input_15_table" value="<% tcWebApi_get("QoS_Entry0", "qos_ibw", "s") %>" onblur="gen_options();">
 									<select id="qos_ibw_scale" class="input_option" style="width:87px;" onChange="changeScale('qos_ibw');">
 										<option value="Kb/s">Kb/s</option>
 										<option value="Mb/s">Mb/s</option>

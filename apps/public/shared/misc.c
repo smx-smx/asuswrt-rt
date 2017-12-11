@@ -31,7 +31,6 @@
 
 #include "shutils.h"
 #include "shared.h"
-#include "misc.h"
 
 extern char *read_whole_file(const char *target){
 	FILE *fp;
@@ -623,6 +622,74 @@ const char *get_wanface(void)
 	return get_wan_ifname(0);
 }
 
+in_addr_t inet_addr_(const char *addr)
+{
+	struct in_addr in;
+	return inet_aton(addr, &in) ? in.s_addr : INADDR_ANY;
+}
+
+int inet_equal(const char *addr1, const char *mask1, const char *addr2, const char *mask2)
+{
+	return ((inet_network(addr1) & inet_network(mask1)) ==
+		(inet_network(addr2) & inet_network(mask2)));
+}
+
+int inet_intersect(const char *addr1, const char *mask1, const char *addr2, const char *mask2)
+{
+	in_addr_t max_netmask = inet_network(mask1) | inet_network(mask2);
+	return ((inet_network(addr1) & max_netmask) ==
+		(inet_network(addr2) & max_netmask));
+}
+
+int inet_deconflict(const char *addr1, const char *mask1, const char *addr2, const char *mask2, struct in_addr *result)
+{
+	const static struct class {
+		in_addr_t network;
+		in_addr_t netmask;
+	} classes[] = {
+		{ 0xc0a80000, 0xffff0000 }, /* 192.168.0.0/16 */
+		{ 0xac100000, 0xfff00000 }, /* 172.16.0.0/12 */
+		{ 0x0a000000, 0xff000000 }, /* 10.0.0.0/8 */
+		{ 0, 0 }
+	};
+	struct class *class, *found;
+	in_addr_t lan_ipaddr = inet_network(addr1);
+	in_addr_t lan_netmask = inet_network(mask1);
+	in_addr_t wan_ipaddr = inet_network(addr2);
+	in_addr_t wan_netmask = inet_network(mask2);
+	in_addr_t max_netmask = lan_netmask | wan_netmask;
+
+	if ((lan_ipaddr & max_netmask) != (wan_ipaddr & max_netmask)) {
+		/* not really intersecting */
+		return 0;
+	}
+
+	found = NULL;
+	for (class = (struct class *) classes; class->network; class++) {
+		if (~lan_netmask > ~class->netmask)
+			continue;
+		if ((lan_ipaddr & class->netmask) != class->network)
+			found = found ? : class;
+		else if (~lan_netmask < ~class->netmask) {
+			found = class;
+			lan_ipaddr += ~lan_netmask + 1;
+			break;
+		}
+	}
+	if (found)
+		lan_ipaddr = found->network | (lan_ipaddr & ~found->netmask);
+	else {
+		/* non-private address or too big network mask,
+		 * address might become non-RFC1918 */
+		lan_ipaddr += ~lan_netmask + 1;
+	}
+
+	if (result)
+		result->s_addr = htonl(lan_ipaddr);
+
+	return found ? 1 : 2;
+}
+
 #ifdef RTCONFIG_IPV6
 const char *get_wan6face(void)
 {
@@ -1078,12 +1145,16 @@ void bcmvlan_models(int model, char *vlan)
 
 char *get_productid(void)
 {
-	char *productid = nvram_safe_get("productid");
+	char *productid = NULL;
 #ifdef RTCONFIG_ODMPID
 	char *odmpid = nvram_safe_get("odmpid");
-	if (*odmpid)
+	if (*odmpid) {
 		productid = odmpid;
+	}
+	else
 #endif
+		productid = nvram_safe_get("productid");
+
 	return productid;
 }
 
@@ -1382,240 +1453,6 @@ int is_psr(int unit)
 	return 0;
 }
 #endif
-#endif
-
-#ifdef RTCONFIG_OPENVPN
-char *get_parsed_crt(const char *name, char *buf, size_t buf_len)
-{
-	char node[MAXLEN_NODE_NAME] = {0};
-	char value[MAXLEN_TCAPI_MSG] = {0};
-	int unit;
-	int len, i;
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-	FILE *fp;
-	char tmpBuf[256] = {0};
-	char *p = buf;
-#endif
-
-	//vpn_crt_xxxxxx1_xxxxxx
-	unit = atoi(name+14);
-	if(!strncmp(name+8, "client", 6)) {
-		snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+CLIENT_IF_START);
-	}
-	else if(!strncmp(name+8, "server", 6)) {
-		snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+SERVER_IF_START);
-	}
-	if(tcapi_get(node, name, value) == TCAPI_PROCESS_OK)
-		len = strlen(value);
-	else
-		len = 0;
-
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-	if(!check_if_dir_exist(OVPN_FS_PATH))
-		mkdir(OVPN_FS_PATH, S_IRWXU);
-	snprintf(tmpBuf, sizeof(tmpBuf) -1, "%s/%s", OVPN_FS_PATH, name);
-#endif
-
-	if(len) {
-		for (i=0; (i < len); i++) {
-			if (value[i] == '>')
-				buf[i] = '\n';
-			else
-				buf[i] = value[i];
-		}
-
-		buf[i] = '\0';
-
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-		//save to file and then clear nvram value
-		fp = fopen(tmpBuf, "w");
-		if(fp) {
-			chmod(tmpBuf, S_IRUSR|S_IWUSR);
-			fprintf(fp, "%s", buf);
-			fclose(fp);
-			tcapi_set(node, name, "");
-		}
-#endif
-	}
-	else {
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-		//nvram value cleard, get from file
-		fp = fopen(tmpBuf, "r");
-		if(fp) {
-			while(fgets(buf, buf_len, fp)) {
-				if(!strncmp(buf, "-----BEGIN", 10))
-					break;
-			}
-			if(feof(fp)) {
-				fclose(fp);
-				memset(buf, 0, buf_len);
-				return buf;
-			}
-			p += strlen(buf);
-			memset(tmpBuf, 0, sizeof(tmpBuf));
-			while(fgets(tmpBuf, sizeof(tmpBuf), fp)) {
-				strncpy(p, tmpBuf, strlen(tmpBuf));
-				p += strlen(tmpBuf);
-			}
-			*p = '\0';
-			fclose(fp);
-		}
-#endif
-	}
-	return buf;
-}
-
-int set_crt_parsed(const char *name, char *file_path)
-{
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-	char target_file_path[128] ={0};
-
-	if(!check_if_dir_exist(OVPN_FS_PATH))
-		mkdir(OVPN_FS_PATH, S_IRWXU);
-
-	if(check_if_file_exist(file_path)) {
-		snprintf(target_file_path, sizeof(target_file_path) -1, "%s/%s", OVPN_FS_PATH, name);
-		return eval("cp", file_path, target_file_path);
-	}
-	else {
-		return -1;
-	}
-#else
-	FILE *fp=fopen(file_path, "r");
-	char buffer[4000] = {0};
-	char buffer2[256] = {0};
-	char *p = buffer;
-	char node[MAXLEN_NODE_NAME] = {0};
-	int unit;
-
-	if(fp) {
-		while(fgets(buffer, sizeof(buffer), fp)) {
-			if(!strncmp(buffer, "-----BEGIN", 10))
-				break;
-		}
-		if(feof(fp)) {
-			fclose(fp);
-			return -EINVAL;
-		}
-		p += strlen(buffer);
-		//if( *(p-1) == '\n' )
-			//*(p-1) = '>';
-		while(fgets(buffer2, sizeof(buffer2), fp)) {
-			strncpy(p, buffer2, strlen(buffer2));
-			p += strlen(buffer2);
-			//if( *(p-1) == '\n' )
-				//*(p-1) = '>';
-		}
-		*p = '\0';
-
-		//vpn_crt_xxxxxx1_xxxxxx
-		unit = atoi(name+14);
-		if(!strncmp(name+8, "client", 6)) {
-			snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+CLIENT_IF_START);
-		}
-		else if(!strncmp(name+8, "server", 6)) {
-			snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+SERVER_IF_START);
-		}
-		tcapi_set(node, name, buffer);
-
-		fclose(fp);
-		return 0;
-	}
-	else
-		return -ENOENT;
-#endif
-}
-
-int ovpn_crt_is_empty(const char *name)
-{
-	char node[MAXLEN_NODE_NAME] = {0};
-	char value[MAXLEN_TCAPI_MSG] = {0};
-	int unit;
-	size_t len;
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-	char file_path[128] ={0};
-	struct stat st;
-#endif
-
-	//vpn_crt_xxxxxx1_xxxxxx
-	unit = atoi(name+14);
-	if(!strncmp(name+8, "client", 6)) {
-		snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+CLIENT_IF_START);
-	}
-	else if(!strncmp(name+8, "server", 6)) {
-		snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+SERVER_IF_START);
-	}
-	if(tcapi_get(node, name, value) == TCAPI_PROCESS_OK)
-		len = strlen(value);
-	else
-		len = 0;
-
-	if( len )
-		return 0;
-	else {
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-		//check file
-		if(d_exists(OVPN_FS_PATH)) {
-			snprintf(file_path, sizeof(file_path) -1, "%s/%s", OVPN_FS_PATH, name);
-			if(stat(file_path, &st) == 0) {
-				if( !S_ISDIR(st.st_mode) && st.st_size ) {
-					return 0;
-				}
-				else {
-					return 1;
-				}
-			}
-			else {
-				return 1;
-			}
-		}
-		else {
-			mkdir(OVPN_FS_PATH, S_IRWXU);
-			return 1;
-		}
-#else
-		return 1;
-#endif
-	}
-}
-
-int get_openvpn_account(openvpn_accnt_info_t *account_info) 
-{
-	char nv[4096], *nvp, *b;
-	char *username, *passwd;
-	int index = 0;
-
-	if ((account_info == NULL))
-	{
-		return 0;
-	}
-
-	bzero(account_info, sizeof(openvpn_accnt_info_t));
-	bzero(nv, sizeof(nv));
-
-	nvp = nv;
-	if(tcapi_get_multiattr("OpenVPN_Common", "vpn_server_clientlist", nv, sizeof(nv)) == TCAPI_PROCESS_OK)
-	{
-		while ((b = strsep(&nvp, "<")) != NULL) 
-		{
-			if((vstrsep(b, ">", &username, &passwd)!=2)) continue;
-			if(strlen(username)==0||strlen(passwd)==0) continue;
-
-			snprintf(account_info->account[index].name, sizeof(account_info->account[index].name),
-				"%s", username);
-			snprintf(account_info->account[index].passwd, sizeof(account_info->account[index].passwd),
-				"%s", passwd);
-
-			index++;
-		}
-
-		account_info->count = index;
-	}
-
-	return 0;
-}
-
-
 #endif
 
 #if 0//#ifdef RTCONFIG_DUALWAN

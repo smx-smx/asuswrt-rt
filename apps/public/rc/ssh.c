@@ -24,6 +24,7 @@ void start_sshd(void)
 	char enable[4];
 	char cmd[128];
 	int pass;
+	int chk = 0;
 	
 	memset(enable, 0, sizeof(enable));
 	memset(keyvalue, 0, sizeof(keyvalue));
@@ -37,20 +38,28 @@ void start_sshd(void)
 	mkdir("/tmp/etc/dropbear", 0700);
 	
 	unlink("/tmp/home/root/.ssh/authorized_keys");
-	if(!tcapi_get_int("SSH_Entry","Need_Pass")) {
-		tcapi_get("SSH_Entry","Authkeys", keyvalue);
-		f_write_string("/tmp/home/root/.ssh/authorized_keys", keyvalue, 0, 0700);
-	}
 	
-	if(!f_exists("/etc/dropbear/dropbear_rsa_host_key"))
+	tcapi_get_multiattr("SSH_Entry", "Authkeys", keyvalue, sizeof(keyvalue));
+	if(strlen(keyvalue))
+		f_write_string("/tmp/home/root/.ssh/authorized_keys", keyvalue, 0, 0700);
+	
+	if(!f_exists("/etc/dropbear/dropbear_rsa_host_key")) { 
+		chk = 1;
 		check_host_key("rsa", "sshd_hostkey", "/etc/dropbear/dropbear_rsa_host_key");
-	if(!f_exists("/etc/dropbear/dropbear_dss_host_key"))
+	}
+	if(!f_exists("/etc/dropbear/dropbear_dss_host_key")) {
+		chk = 1;
 		check_host_key("dss", "sshd_dsskey",  "/etc/dropbear/dropbear_dss_host_key");
+	}
 	
 	snprintf(cmd, sizeof(cmd), "dropbear -p %d %s -a &", 
 			tcapi_get_int("SSH_Entry", "sshport"), 
 			(tcapi_get_int("SSH_Entry", "Need_Pass")==0)? "-s":"");
 	system(cmd);
+
+	if(chk) {
+		tcapi_save();
+	}
 }
 
 void stop_sshd(void)

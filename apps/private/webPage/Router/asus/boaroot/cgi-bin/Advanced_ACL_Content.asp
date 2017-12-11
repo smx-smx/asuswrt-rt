@@ -43,6 +43,7 @@ load_parameters_to_generic()
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
 <script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <style>
 #pull_arrow{
  	float:center;
@@ -425,7 +426,7 @@ function setClientmac(macaddr){
 	</tr>
 	<tr>
 	<td width="80%">
-		<input type="text" maxlength="17" class="input_macaddr_table" name="wl_maclist_x_0" onKeyPress="return is_hwaddr(this,event)" onClick="hideClients_Block();">
+		<input type="text" maxlength="17" class="input_macaddr_table" name="wl_maclist_x_0" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();">
 		<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;display:none;" onclick="pullWLMACList(this);" title="<% tcWebApi_Get("String_Entry", "select_wireless_MAC", "s") %>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 		<div id="WL_MAC_List_Block" class="WL_MAC_Block"></div>
 	</td>

@@ -22,6 +22,7 @@ OBJS += notify_rc.o
 OBJS += bin_sem_asus.o semaphore.o pids.o
 OBJS += base64.o
 OBJS += tcutils.o
+OBJS += network_utility.o
 
 # ifeq ($(RTCONFIG_RALINK),y)
 # OBJS += $(TOP)/wireless_tools/iwlib.o

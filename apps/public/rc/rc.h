@@ -37,6 +37,11 @@
 #include <shared.h>
 #include <linux/version.h>
 
+#ifdef RTCONFIG_OPENVPN
+#include "openvpn_config.h"
+#include "openvpn_control.h"
+#endif
+
 #define USBCORE_MOD	"usbcore"
 #if defined (RTCONFIG_USB_XHCI)
 #define USB30_MOD	"xhci-hcd"
@@ -120,6 +125,9 @@ do {					\
 #ifndef TRUE
 #define TRUE    1
 #endif
+
+#define NOTIFY_DIR "/tmp/notify"
+#define NOTIFY_TYPE_USB "usb"
 
 #define BOOT		0
 #define REDIAL		1
@@ -417,23 +425,6 @@ extern void update_vpnc_state(int state, int reason);
 extern int vpnc_ip6up_main(int argc, char **argv);
 extern int vpnc_ip6down_main(int argc, char **argv);
 #endif
-#endif
-
-// openvpn.c
-#ifdef RTCONFIG_OPENVPN
-extern void start_vpnclient(int clientNum);
-extern void stop_vpnclient(int clientNum);
-extern void start_vpnserver(int serverNum);
-extern void stop_vpnserver(int serverNum);
-extern void start_vpn_eas();
-extern void stop_vpn_eas();
-extern void run_vpn_firewall_scripts();
-extern void write_vpn_dnsmasq_config(FILE*);
-extern int write_vpn_resolv(FILE*);
-//static inline void start_vpn_eas() { }
-//#define write_vpn_resolv(f) (0)
-extern void create_openvpn_passwd();
-extern void add_openvpn_account(const char *path, const char *fname);
 #endif
 
 // tr069.c

@@ -28,8 +28,6 @@ wget_timeout=`tcapi get Apps_Entry apps_wget_timeout`
 #wget_options="-q -t 2 -T $wget_timeout"
 wget_options="-q"	# since not support -t -T in current busybox version
 
-tcapi set Apps_Entry apps_state_update 0 # INITIALIZING
-#tcapi set Apps_Entry apps_state_error 0
 APPS_PATH=/opt
 CONF_FILE=$APPS_PATH/etc/ipkg.conf
 TEMP_FILE=/tmp/ipkg.server.list
@@ -50,6 +48,8 @@ if [ "$link_internet" != "2" ]; then
 	exit 1
 fi
 
+tcapi set Apps_Entry apps_state_update 0 # INITIALIZING
+#tcapi set Apps_Entry apps_state_error 0
 if [ "$pkg_type" = "arm" ]; then
 	sed -i '/^#src\/gz.*ASUSWRT$/c src/gz optware.mbwe-bluering http://ipkg.nslu2-linux.org/feeds/optware/mbwe-bluering/cross/stable' $CONF_FILE
 fi

@@ -174,6 +174,9 @@ void get_related_nvram(){
 	max_disconn_count = DEFAULT_MAX_DISCONN_COUNT;
 #endif
 	max_wait_time = scan_interval*max_disconn_count;
+
+	Force_off_GuestWL = nvram_get_int("wandog_off_guestwl");
+	Resume_GuestWL = nvram_get_int("wandog_resume_guestwl");
 }
 
 #if ASUSWRT
@@ -920,17 +923,6 @@ void handle_wan_line(int wan_unit, int action){
 	 */
 	else if(conn_changed_state[wan_unit] == D2C || conn_changed_state[wan_unit] == CONNED){
 		start_nat_rules();
-
-#if defined(RTCONFIG_APP_PREINSTALLED) || defined(RTCONFIG_APP_NETINSTALLED)
-		if(check_if_dir_exist("/opt/lib/ipkg")){
-			csprintf("wanduck: update the APP's lists...\n");
-#if ASUSWRT
-			notify_rc("start_apps_update");
-#else
-			system("app_update.sh");
-#endif
-		}
-#endif
 	}
 	else{ // conn_changed_state[wan_unit] == PHY_RECONN
 		_dprintf("\n# wanduck(%d): Try to restart_wan_if [%d].\n", action, wan_unit);
@@ -1125,10 +1117,9 @@ void handle_dns_req(int sfd, char *line, int maxlen, struct sockaddr *pcliaddr, 
 	dns_response_packet d_reply;
 	int reply_size;
 	char reply_content[MAXLINE];
-	char lan_ipaddr[16];
-	
-	tcapi_get("Lan_Entry0", "IP", lan_ipaddr);
-	
+	char buf[MAXLEN_TCAPI_MSG] = {0};
+	in_addr_t lan_ipaddr = inet_addr_(tcapi_get_string("Lan_Entry0", "IP", buf));
+
 	reply_size = 0;
 	memset(reply_content, 0, MAXLINE);
 	memset(&d_req, 0, sizeof(d_req));
@@ -1168,21 +1159,14 @@ void handle_dns_req(int sfd, char *line, int maxlen, struct sockaddr *pcliaddr, 
 			query_name[i] = '.';
 	
 	if(!upper_strcmp(query_name, router_name)){
-#if ASUSWRT
-		d_reply.answers.addr = inet_addr_(nvram_safe_get("lan_ipaddr"));	// router's ip
-#else
-		d_reply.answers.addr = inet_addr_(lan_ipaddr);
-#endif
+		d_reply.answers.addr = lan_ipaddr;
 	}
-#ifdef RTCONFIG_MDNS
-	else if (!upper_strcmp(query_name, "findasus.local")) {
-#if ASUSWRT
-		d_reply.answers.addr = inet_addr_(nvram_safe_get("lan_ipaddr"));	// router's ip
-#else
-		d_reply.answers.addr = inet_addr_(lan_ipaddr);
-#endif
+	else if (!upper_strcmp(query_name, "ntp01.mvp.tivibu.com.tr")) {
+		d_reply.answers.addr = htonl(0xc0a87946);
 	}
-#endif
+	else if (!upper_strcmp(query_name, "ntp02.mvp.tivibu.com.tr")) {
+		d_reply.answers.addr = htonl(0xc0a87947);
+	}
 	else
 		d_reply.answers.addr = htonl(0x0a000001);	// 10.0.0.1
 	
@@ -1457,6 +1441,11 @@ int switch_wan_line(const int wan_unit, const int restart_other){
 	tcapi_commit(tmp);
 #endif
 
+	if (SW_GUEST_NETWORK_F) {
+		tcapi_commit("WLan");
+		SW_GUEST_NETWORK_F = 0;
+	}
+
 #ifdef RTCONFIG_DUALWAN
 	if(sw_mode == SW_MODE_ROUTER
 			&& (!strcmp(dualwan_mode, "fo") || !strcmp(dualwan_mode, "fb"))
@@ -1467,6 +1456,68 @@ int switch_wan_line(const int wan_unit, const int restart_other){
 
 	csprintf("%s: wan(%d) End.\n", __FUNCTION__, wan_unit);
 	return 1;
+}
+
+
+/* 
+   value = 0, force disable guest network 
+   value = 1, turn back guest network
+*/
+static void ForceControlWLan(char *value)
+{
+	int i, j;
+	int bandnum;
+	int restart = 0;
+	char wlEntry[20];
+	char record_en[4];
+
+#if defined(TCSUPPORT_DUAL_WLAN)
+	bandnum = 1;
+#else
+	bandnum = 0;
+#endif
+	for (i=0; i <= bandnum; i++) {
+		for (j=1; j <= 3; j++) {
+			snprintf(wlEntry, sizeof(wlEntry), "wl%d.%d_bss_enabled",i ,j);
+			memset(record_en, 0, sizeof(record_en));
+			if (!strcmp(value, "0")) { /* OFF */
+				tcapi_get("WLan_Entry0", wlEntry, record_en);
+				if(!strcmp(record_en, "1")) { 
+					tcapi_set("WLan_Entry0", wlEntry, value);
+					restart = 1;
+				}
+				csprintf("# wanduck: Store %s:[%s]\n", wlEntry, record_en);
+				tcapi_set("Vram_Entry" , wlEntry, record_en);
+
+			} else { /* ON */
+				tcapi_get("Vram_Entry" , wlEntry, record_en);
+				tcapi_set("WLan_Entry0", wlEntry, record_en);
+				if(!strcmp(record_en, "1")) 
+					restart = 1;
+			}
+		}
+	}
+	
+	if(restart) {
+#if defined(TCSUPPORT_DUAL_WLAN)
+		/* For WLan Guest Network 2.4G and 5G restart flag */
+		tcapi_set("WLan_Common", "force_switch", "1");
+#endif
+		/* For Genreate correct Wireless Profile */
+		tcapi_set("WLan_Common", "editFlag", "0");
+		tcapi_set("WLan_Common", "MBSSID_changeFlag", "0");
+		
+		if(!strcmp(value, "0")) {
+			csprintf("# wanduck: Force Disable Guest Network wireless Lan\n");
+			tcapi_set("WLan_Common", "MBSSID_able_Flag", "1");
+		} else {
+			csprintf("# wanduck: Turn on back Guest Network wireless Lan\n");
+			tcapi_set("WLan_Common", "MBSSID_able_Flag", "0");
+		}
+		
+		/* Enable FLAG */
+		SW_GUEST_NETWORK_F = 1;
+	}
 }
 
 int wanduck_main(int argc, char *argv[]){
@@ -2500,6 +2551,13 @@ _dprintf("wanduck(%d) 6: conn_state %d, conn_state_old %d, conn_changed_state %d
 #else
 				csprintf("# Switching the connect from WAN_PVC %d to %d...\n", current_wan_unit, other_wan_unit);
 #endif
+				if (Force_off_GuestWL && other_wan_unit != WAN_FB_UNIT) {
+					/* only turn off when switch to secondary wan */
+					ForceControlWLan("0");
+				} else {
+					ForceControlWLan("1");
+				}
+				
 				if(!link_wan[current_wan_unit] && dualwan_unit__usbif(current_wan_unit))
 					switch_wan_line(other_wan_unit, 0);
 				else
@@ -2546,6 +2604,11 @@ _dprintf("wanduck(%d) 6: conn_state %d, conn_state_old %d, conn_changed_state %d
 #endif
 			rule_setup = 1;
 			handle_wan_line(other_wan_unit, rule_setup);
+			
+			if (Resume_GuestWL) {
+				ForceControlWLan("1");
+			}
+
 			switch_wan_line(other_wan_unit, 0);
 		}
 		// hot-standby: Try to prepare the backup line.

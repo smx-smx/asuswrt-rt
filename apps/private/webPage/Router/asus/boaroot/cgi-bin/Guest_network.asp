@@ -28,13 +28,23 @@ If Request_Form("editFlag") = "1" then
 	tcWebApi_Set("WLan_Entry","bw_ul","bw_ul")
 	tcWebApi_Set("WLan_Entry","bw_dl","bw_dl")
 	tcWebApi_Set("WLan_Entry","wl0.1_bss_enabled","wl0.1_bss_enabled")
+	tcWebApi_Set("Vram_Entry","wl0.1_bss_enabled","wl0.1_bss_enabled")
 	tcWebApi_Set("WLan_Entry","wl0.2_bss_enabled","wl0.2_bss_enabled")
+	tcWebApi_Set("Vram_Entry","wl0.2_bss_enabled","wl0.2_bss_enabled")
 	tcWebApi_Set("WLan_Entry","wl0.3_bss_enabled","wl0.3_bss_enabled")
+	tcWebApi_Set("Vram_Entry","wl0.3_bss_enabled","wl0.3_bss_enabled")
 	tcWebApi_Set("WLan_Entry","wl1.1_bss_enabled","wl1.1_bss_enabled")
+	tcWebApi_Set("Vram_Entry","wl1.1_bss_enabled","wl1.1_bss_enabled")
 	tcWebApi_Set("WLan_Entry","wl1.2_bss_enabled","wl1.2_bss_enabled")
-	tcWebApi_Set("WLan_Entry","wl1.3_bss_enabled","wl1.3_bss_enabled")		
+	tcWebApi_Set("Vram_Entry","wl1.2_bss_enabled","wl1.2_bss_enabled")
+	tcWebApi_Set("WLan_Entry","wl1.3_bss_enabled","wl1.3_bss_enabled")
+	tcWebApi_Set("Vram_Entry","wl1.3_bss_enabled","wl1.3_bss_enabled")
+
 	tcWebApi_Set("WLan_Entry","wl_macmode","wl_macmode")
-	tcWebApi_Set("WLan_Entry","wl_maclist","wl_maclist")	
+	tcWebApi_Set("WLan_Entry","wl_maclist","wl_maclist")
+	tcWebApi_Set("WLan_Entry","url_enabled","wl_url_enabled")
+	tcWebApi_Set("WLan_Entry","url_mode","wl_url_mode")
+	tcWebApi_Set("WLan_Entry","url_rulelist","wl_url_rulelist")
 
 	If Request_Form("MBSSID_able_Flag") = "0" then
 	load_MBSSID_parameters_from_generic()
@@ -134,6 +144,8 @@ var QoS_type_orig = '<% tcWebApi_get("QoS_Entry0","qos_type","s") %>';
 
 var gn_array = gn_array_2g;
 var wl_maclist_x_array = decodeURIComponent(gn_array[0][16]).replace(/&#60/g, "<");
+var wl_url_rulelist_x_array = decodeURIComponent(gn_array[0][23]).replace(/&#60/g, "<");
+var wl_url_rulelist_x_row = "";
 
 var manually_maclist_list_array = new Array();
 Object.prototype.getKey = function(value) {
@@ -436,6 +448,7 @@ function TranslateWRTtoMTK_auth_mode(term){
 function applyRule(){	
 	if(validForm()){
 		updateMacList();
+		updateURLList();
 		inputCtrl(document.form.wl_crypto, 1);
 		inputCtrl(document.form.wl_wpa_psk, 1);
 		inputCtrl(document.form.wl_wep_x, 1);
@@ -620,6 +633,7 @@ function guest_divctrl(flag){
 		document.getElementById("gnset_table").style.display = "none";
 		document.getElementById("applyButton").style.display = "none";
 		document.getElementById("maclistMain").style.display = "none";
+		document.getElementById("url_rulelistMain").style.display = "none";
 	}
 }
 
@@ -734,6 +748,7 @@ function change_guest_unit(_unit, _subunit){
 	guest_divctrl(1);
 	
 	updateMacModeOption();
+	updateURLModeOption();
 }
 
 function create_guest_unit(_unit, _subunit){	
@@ -822,6 +837,64 @@ function show_wl_maclist_x(){
 	document.getElementById("wl_maclist_x_Block").innerHTML = code;
 }
 
+//url filter
+function updateURLModeOption(){
+	wl_url_rulelist_x_array = decodeURIComponent(gn_array[document.form.wl_subunit.value-1][23]).replace(/&#60/g, "<");
+	wl_url_rulelist_x_row = wl_url_rulelist_x_array.split('<');
+	show_wl_url_rulelist_x();
+
+	if(gn_array[document.form.wl_subunit.value-1][21] == "1"){
+		if(gn_array[document.form.wl_subunit.value-1][22] == "1"){
+			document.form.wl_url_mode_x.value = "white";
+		}
+		else{
+			document.form.wl_url_mode_x.value = "black";	
+		}
+	}	
+	else{
+		document.form.wl_url_mode_x.value = "disabled";		
+	}
+	url_rulelistMain_display(document.form.wl_url_mode_x);
+
+	document.form.wl_url_rulelist.value = decodeURIComponent(gn_array[document.form.wl_subunit.value-1][23]).replace(/&#60/g, "<");
+	document.getElementById("url_rulelistMain").style.display = (gn_array[document.form.wl_subunit.value-1][21] == "0") ? "none" : "";
+
+}
+
+function show_wl_url_rulelist_x(){
+	wl_url_rulelist_x_row = wl_url_rulelist_x_array.split('<');
+	var code = "";
+	code +='<table width="80%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="wl_url_rulelist_x_table">';	
+	if(wl_url_rulelist_x_row.length == 1)
+		code +='<tr><td style="color:#FFCC00;"><%tcWebApi_get("String_Entry","IPC_VSList_Norule","s")%></td>';
+	else{
+		for(var i=1; i < wl_url_rulelist_x_row.length; i++){
+			//Read new url_rulelist format, get keyword of URL only
+			var url_rulelist_col = wl_url_rulelist_x_row[i].split('>');
+			code +='<tr id="row'+i+'">';
+			code +='<td width="80%">'+ url_rulelist_col[2] +'</td>';	//2: Url keyword  0: enable/disabled  1: ALL/MAC/IP/IP range
+			code +='<td width="20%">';
+			code +="<input class=\"remove_btn\" type=\"button\" onclick=\"url_deleteRow(this);\" value=\"\"/></td>";
+		}
+	}
+	code +='</tr></table>';
+  	document.getElementById("wl_url_rulelist_x_Block").innerHTML = code;
+}
+
+function url_deleteRow(r){
+	var i=r.parentNode.parentNode.rowIndex;
+	document.getElementById("wl_url_rulelist_x_table").deleteRow(i);
+	var url_rulelist_value = "";
+	for(i=0; i<document.getElementById("wl_url_rulelist_x_table").rows.length; i++){
+		//Add default field value for "enable" "ALL LAN"  ==>   1>ALL>URL_1<1>ALL>URL_2<1>ALL>URL_3             
+		url_rulelist_value += "<1>ALL>";
+		url_rulelist_value += document.getElementById("wl_url_rulelist_x_table").rows[i].cells[0].innerHTML;
+	}
+	wl_url_rulelist_x_array = url_rulelist_value;
+	if(wl_url_rulelist_x_array == "")
+		show_wl_url_rulelist_x();
+}
+
 function deleteRow(r, delMac){
 	var i = r.parentNode.parentNode.rowIndex;
 	delete manually_maclist_list_array[delMac];
@@ -832,45 +905,83 @@ function deleteRow(r, delMac){
 }
 
 function addRow(obj, upper){
-	var rule_num = document.getElementById('wl_maclist_x_table').rows.length;
-	var item_num = document.getElementById('wl_maclist_x_table').rows[0].cells.length;
-	var mac = obj.value.toUpperCase();
 
-	if(rule_num >= upper){
-		alert("<%tcWebApi_get("String_Entry","JS_itemlimit1","s")%> " + upper + " <%tcWebApi_get("String_Entry","JS_itemlimit2","s")%>");
-		return false;	
-	}	
+	if(obj.name == "wl_maclist_x_0"){
+		var rule_num = document.getElementById('wl_maclist_x_table').rows.length;
+		var item_num = document.getElementById('wl_maclist_x_table').rows[0].cells.length;
+		var mac = obj.value.toUpperCase();
+
+		if(rule_num >= upper){
+			alert("<%tcWebApi_get("String_Entry","JS_itemlimit1","s")%> " + upper + " <%tcWebApi_get("String_Entry","JS_itemlimit2","s")%>");
+			return false;	
+		}	
 	
-	if(mac==""){
-		alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
-		obj.focus();
-		obj.select();			
-		return false;
-	}else if(!check_macaddr(obj, check_hwaddr_flag(obj))){
-		obj.focus();
-		obj.select();	
-		return false;	
-	}
+		if(mac==""){
+			alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
+			obj.focus();
+			obj.select();			
+			return false;
+		}else if(!check_macaddr(obj, check_hwaddr_flag(obj))){
+			obj.focus();
+			obj.select();	
+			return false;	
+		}
 		
 		//Viz check same rule
-	for(i=0; i<rule_num; i++){
-		for(j=0; j<item_num-1; j++){	
-			if(manually_maclist_list_array[mac] != null){
-				alert("<%tcWebApi_get("String_Entry","JS_duplicate","s")%>");
-				return false;
-			}	
+		for(i=0; i<rule_num; i++){
+			for(j=0; j<item_num-1; j++){	
+				if(manually_maclist_list_array[mac] != null){
+					alert("<%tcWebApi_get("String_Entry","JS_duplicate","s")%>");
+					return false;
+				}	
+			}		
 		}		
-	}		
 	
-	if(clientList[mac]) {
-		manually_maclist_list_array[mac] = (clientList[mac].nickName == "") ? clientList[mac].name : clientList[mac].nickName;
-	}
-	else {
-		manually_maclist_list_array[mac] = "New device";
-	}
+		if(clientList[mac]) {
+			manually_maclist_list_array[mac] = (clientList[mac].nickName == "") ? clientList[mac].name : clientList[mac].nickName;
+		}
+		else {
+			manually_maclist_list_array[mac] = "New device";
+		}
 
-	obj.value = ""
-	show_wl_maclist_x();
+		obj.value = ""
+		show_wl_maclist_x();
+
+	}
+	else if(obj.name == "url_keyword_x_0"){
+
+		var rule_num = document.getElementById('wl_url_rulelist_x_table').rows.length;
+		var item_num = document.getElementById('wl_url_rulelist_x_table').rows[0].cells.length;
+		var url_keyword = obj.value.toUpperCase();
+
+		if(rule_num >= upper){
+			alert("<%tcWebApi_get("String_Entry","JS_itemlimit1","s")%> " + upper + " <%tcWebApi_get("String_Entry","JS_itemlimit2","s")%>");
+			return false;
+		}	
+	
+		if(url_keyword==""){
+			alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
+			obj.focus();
+			obj.select();			
+			return false;
+		}else{
+
+			for(i=0; i<rule_num; i++){
+				for(j=0; j<item_num-1; j++){ //only 1 value column, need to fine tune while multiple fields
+					if(obj.value == document.getElementById("wl_url_rulelist_x_table").rows[i].cells[j].innerHTML){
+						alert("<%tcWebApi_get("String_Entry","JS_duplicate","s")%>");
+						return false;
+					}
+				}
+			}	
+		
+			//Add default field value for "enable" "ALL LAN"  ==>   1>ALL>URL_1<1>ALL>URL_2<1>ALL>URL_3
+			wl_url_rulelist_x_array += "<1>ALL>";
+			wl_url_rulelist_x_array += obj.value;
+			obj.value = ""
+			show_wl_url_rulelist_x();
+		}
+	}
 }
 
 function updateMacList(){
@@ -886,6 +997,42 @@ function updateMacList(){
 		tmp_value = "";	
 
 	document.form.wl_maclist.value = tmp_value;
+}
+
+function updateURLList(){
+
+	if(document.form.wl_url_mode_x.value == "black"){
+		document.form.wl_url_enabled.value = "1";
+		document.form.wl_url_mode.value = "0";
+	}
+	else if(document.form.wl_url_mode_x.value == "white"){
+		document.form.wl_url_enabled.value = "1";
+		document.form.wl_url_mode.value = "1";
+	}
+	else{	//disabled
+		document.form.wl_url_enabled.value = "0";
+		document.form.wl_url_mode.value = "0";	//black
+	}
+
+
+	var rule_num = document.getElementById("wl_url_rulelist_x_table").rows.length;
+	var item_num = document.getElementById("wl_url_rulelist_x_table").rows[0].cells.length;
+	var tmp_value = "";
+	for(i=0; i<rule_num; i++){
+		tmp_value += "<"			
+		for(j=0; j<item_num-1; j++){
+			//Add default field value for "enable" "ALL LAN"  ==>   1>ALL>URL_1<1>ALL>URL_2<1>ALL>URL_3
+			tmp_value += "1>ALL>";
+
+			tmp_value += document.getElementById("wl_url_rulelist_x_table").rows[i].cells[j].innerHTML;
+			if(j != item_num-2)
+				tmp_value += ">";
+		}
+	}
+
+	if(tmp_value == "<"+"<%tcWebApi_get("String_Entry","IPC_VSList_Norule","s")%>" || tmp_value == "<")
+		tmp_value = "";
+	document.form.wl_url_rulelist.value = tmp_value;
 }
 
 function check_macaddr(obj,flag){ //control hint of input mac address
@@ -968,6 +1115,10 @@ function setClientmac(macaddr){
 
 function maclistMain_display(obj){	
 	document.getElementById("maclistMain").style.display = (obj.value == "disabled") ? "none" : "";
+}
+
+function url_rulelistMain_display(obj){	
+	document.getElementById("url_rulelistMain").style.display = (obj.value == "disabled") ? "none" : "";
 }
 
 function show_bandwidth(flag){	
@@ -1064,6 +1215,9 @@ function bandwidth_code(o,event){
 <input type="hidden" name="wl_channel_orig" value='<% tcWebApi_get("WLan_Common","Channel","s"); %>'>
 <input type="hidden" name="wl_expire" value='<% tcWebApi_get("WLan_Entry","expire","s"); %>'>
 <input type="hidden" name="wl_maclist" value="<% tcWebApi_get("ACL_Entry0","wl_maclist","s"); %>">
+<input type="hidden" name="wl_url_enabled" value="">
+<input type="hidden" name="wl_url_mode" value="">
+<input type="hidden" name="wl_url_rulelist" value="">
 <input type="hidden" name="wl_gmode_protection" value="auto" disabled>
 <input type="hidden" name="wl_wpa_mode" value="0" disabled>
 <input type="hidden" name="wl_mode_x" value="0" disabled>
@@ -1166,7 +1320,7 @@ function bandwidth_code(o,event){
 				<tr>
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 1);"><% tcWebApi_Get("String_Entry", "QIS_finish_wireless_item1", "s") %></a></th>
 					<td>
-						<input type="text" maxlength="32" class="input_32_table" name="wl_ssid" value="<% If tcWebApi_get("WLan_Entry","ssid","h") <> "" then  tcWebApi_get("WLan_Entry","ssid","s") else asp_Write("ASUS_VSL_N66U") end if %>" onkeypress="return is_string(this, event)">
+						<input type="text" maxlength="32" class="input_32_table" name="wl_ssid" value="<% If tcWebApi_get("WLan_Entry","ssid","h") <> "" then  tcWebApi_get("WLan_Entry","ssid","s") else asp_Write("ASUS_VSL_N66U") end if %>" onkeypress="return validator.isString(this, event)">
 					</td>
 				</tr>
 
@@ -1335,14 +1489,25 @@ function bandwidth_code(o,event){
 					<th><%tcWebApi_get("String_Entry","enable_macmode","s")%></th>
 					<td>
 							<select name="wl_macmode" class="input_option" onChange="maclistMain_display(this);">
-								<option class="content_input_fd" value="disabled" <% if tcWebApi_get("ACL_Entry0","wl_macmode","h") = "disabled" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_disable","s")%></option>
-								<option class="content_input_fd" value="allow" <% if tcWebApi_get("ACL_Entry0","wl_macmode","h") = "allow" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","FC_MFMethod_item1","s")%></option>
-								<option class="content_input_fd" value="deny" <% if tcWebApi_get("ACL_Entry0","wl_macmode","h") = "deny" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","FC_MFMethod_item2","s")%></option>
+								<option class="content_input_fd" value="disabled"><%tcWebApi_get("String_Entry","btn_disable","s")%></option>
+								<option class="content_input_fd" value="allow"><%tcWebApi_get("String_Entry","FC_MFMethod_item1","s")%></option>
+								<option class="content_input_fd" value="deny"><%tcWebApi_get("String_Entry","FC_MFMethod_item2","s")%></option>
 							</select>
+					</td>
+				</tr>
+				<tr>
+					<th><%tcWebApi_get("String_Entry","FC_UrlFilterEnable_in","s")%></th>
+					<td>
+						<select name="wl_url_mode_x" class="input_option" onChange="url_rulelistMain_display(this);">
+								<option class="content_input_fd" value="disabled"><%tcWebApi_get("String_Entry","btn_disable","s")%></option>
+								<option class="content_input_fd" value="black"><%tcWebApi_get("String_Entry","BlackList","s")%></option>
+								<option class="content_input_fd" value="white"><%tcWebApi_get("String_Entry","WhiteList","s")%></option>
+						</select>
 					</td>
 				</tr>
 			</table>
 			
+			<!-- mac filter table start -->
 			<div id="maclistMain">
 			<table id="maclistTable" width="80%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">
 				<thead>
@@ -1351,12 +1516,12 @@ function bandwidth_code(o,event){
 				</tr>
 				</thead>
 				<tr>
-					<th width="80%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);">Client Name (MAC address)<!--untranslated--></th> 
+					<th width="80%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);">Client Name (MAC address)<!--untranslated--></a></th> 
 					<th width="20%"><%tcWebApi_get("String_Entry","list_add_delete","s")%></th>
 				</tr>
 				<tr>
 					<td width="80%">
-						<input type="text" maxlength="17" class="input_macaddr_table" name="wl_maclist_x_0" onKeyPress="return is_hwaddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% tcWebApi_get("Info_Ether","mac","s") %>" style="width:255px;">
+						<input type="text" maxlength="17" class="input_macaddr_table" name="wl_maclist_x_0" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% tcWebApi_get("Info_Ether","mac","s") %>" style="width:255px;">
 						<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;display:none;" onclick="pullWLMACList(this);" title="<%tcWebApi_get("String_Entry","select_wireless_MAC","s")%>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 						<div id="WL_MAC_List_Block" class="WL_MAC_Block"></div>
 					</td>
@@ -1368,6 +1533,33 @@ function bandwidth_code(o,event){
 			
 			<div id="wl_maclist_x_Block"></div>
 			</div>
+			<!-- mac filter table end -->
+
+			<!-- url filter table start -->
+			<div id="url_rulelistMain">
+			<table id="url_rulelistTable" width="80%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">
+				<thead>
+				<tr>
+					<td colspan="2"><%tcWebApi_get("String_Entry","FC_UrlList_groupitemdesc","s")%>&nbsp;(<%tcWebApi_get("String_Entry","List_limit","s")%>&nbsp;16)</td>
+				</tr>
+				</thead>
+				<tr>
+					<th width="80%"><%tcWebApi_get("String_Entry","FC_UrlList_groupitemdesc","s")%></th> 
+					<th width="20%"><%tcWebApi_get("String_Entry","list_add_delete","s")%></th>
+				</tr>
+				<tr>
+					<td width="80%">
+						<input type="text" maxlength="20" class="input_32_table" name="url_keyword_x_0" onKeyPress="return validator.isString(this, event)">
+					</td>
+					<td width="20%">	
+						<input class="add_btn" type="button" onClick="addRow(document.form.url_keyword_x_0, 16);" value="">
+					</td>
+				</tr>      		
+			</table>
+			
+			<div id="wl_url_rulelist_x_Block"></div>
+			</div>
+			<!-- url filter table end -->
 
 			<div class="apply_gen" id="applyButton">
 				<input type="button" class="button_gen" value="<%tcWebApi_get("String_Entry","CTL_Cancel","s")%>" onclick="guest_divctrl(0);">

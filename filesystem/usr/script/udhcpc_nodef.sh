@@ -13,9 +13,10 @@ fi
 #	RESOLV_CONF="/etc/resolv.conf"
 #fi
 GATEWAY_FILE="/etc/"$interface"_gateway.conf"
-WAN_NUM=`expr substr $interface 4 2`
-if [ "`expr index $WAN_NUM _`" != "0" ]; then
-WAN_NUM=`expr substr $WAN_NUM 1 1`
+WAN_NUM=`expr substr $interface 4 4`
+idx=`expr index $WAN_NUM _`
+if [ "$idx" != "0" ]; then
+	WAN_NUM=`expr substr $WAN_NUM 1 $(( $idx - 1 ))``expr substr $WAN_NUM $(( $idx + 1 )) 1`
 fi
 LEASE_FILE="/tmp/udhcpc"$WAN_NUM".lease"
 
@@ -28,11 +29,16 @@ case "$1" in
 		/sbin/ifconfig $interface 0.0.0.0
 		rm -f $GATEWAY_FILE
 		rm -f /tmp/udhcpc*
+		# WAN_STATE_DISCONNECTED
+		/userfs/bin/tcapi set "Wanduck_Common" "wan"$WAN_NUM"_state_t" "4" &
+		/userfs/bin/tcapi set "Wanduck_Common" "wan"$WAN_NUM"_sbstate_t" "3" &
+		/userfs/bin/tcapi set "Wanduck_Common" "wan"$WAN_NUM"_auxstate_t" "0" &		
 		;;
 
 	renew|bound)
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK
-		/userfs/bin/tcapi set System_Entry CurrentWANIP $ip &
+		#Not defult route, no need to setup WAN IP in System node.
+		#/userfs/bin/tcapi set System_Entry CurrentWANIP $ip &
 		/userfs/bin/tcapi set "Wanduck_Common" "wan"$WAN_NUM"_ipaddr" "$ip" &
 		/userfs/bin/tcapi set "Wanduck_Common" "wan"$WAN_NUM"_netmask" "$NETMASK" &
 
@@ -62,16 +68,46 @@ case "$1" in
 			exit 1
 		fi
 
-		# Set gateway info
-		[ -n "$router" ] && /userfs/bin/tcapi set "Wan_PVC"$WAN_NUM "gateway_x" "$router" &
-		[ -n "$router" ] && /userfs/bin/tcapi set "Wanduck_Common" "wan"$WAN_NUM"_gateway" "$router" &
+		#check extend WAN
+		if [ $WAN_NUM -gt 80 ]; then
+			if [ ${#WAN_NUM} -gt 2 ]; then
+				PREFIX="WanExt_PVC"`expr substr $WAN_NUM 1 2`"e"`expr substr $WAN_NUM 3 1`
+			else
+				PREFIX="WanExt_PVC"`expr substr $WAN_NUM 1 1`"e"`expr substr $WAN_NUM 2 1`
+			fi			
+			# Set gateway info
+			[ -n "$router" ] && /userfs/bin/tcapi set $PREFIX "gateway_x" "$router" &		
+			# Set dns info
+			if [ "$DNS_type" != "1" ] ; then
+				[ -n "$dns" ] && /userfs/bin/tcapi set $PREFIX "dns_x" "$dns" &
+			fi
+		else
+			# Set gateway info
+			[ -n "$router" ] && /userfs/bin/tcapi set "Wan_PVC"$WAN_NUM "gateway_x" "$router" &		
+			# Set dns info
+			if [ "$DNS_type" != "1" ] ; then
+				[ -n "$dns" ] && /userfs/bin/tcapi set "Wan_PVC"$WAN_NUM "dns_x" "$dns" &
+			fi
+		fi
 
+		# Set gateway info
+		echo $router
+		[ -n "$router" ] && /userfs/bin/tcapi set "Wanduck_Common" "wan"$WAN_NUM"_gateway" "$router" &
+	
 		# Set dns info
 		if [ "$DNS_type" != "1" ] ; then
-			[ -n "$dns" ] && /userfs/bin/tcapi set "Wan_PVC"$WAN_NUM "dns_x" "$dns" &
+			echo $dns
 			[ -n "$dns" ] && /userfs/bin/tcapi set "Wanduck_Common" "wan"$WAN_NUM"_dns" "$dns" &
 		fi
 
+		# Set static route info
+		echo $staticroutes			
+		[ -n "$staticroutes" ] && /userfs/bin/tcapi set "Wanduck_Common" "wan"$WAN_NUM"_staticroutes" "$staticroutes" &
+		
+		# Set 
+		echo $msstaticroutes 
+		[ -n "$msstaticroutes" ] && /userfs/bin/tcapi set "Wanduck_Common" "wan"$WAN_NUM"_msstaticroutes" "$msstaticroutes" &
+		
 		/sbin/wan_up $interface
 
 		# WAN_STATE_CONNECTED

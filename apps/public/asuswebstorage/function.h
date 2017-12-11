@@ -1,6 +1,5 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
-//#include "api.h"
 #include <sys/types.h>
 #include "data.h"
 
@@ -60,7 +59,6 @@ sync_item_t get_sync_item(char *action,char *name,sync_item_t head);
 void free_sync_item(sync_item_t head);
 void print_sync_item(sync_item_t head,int type);
 void print_all_sync_item(struct sync_item *head);
-//void update_all_item_path(struct sync_item *head,char *new_sync_path);
 
 /*basic function */
 char *oauth_encode_base64(int size, const unsigned char *src);
@@ -74,11 +72,10 @@ char* MD5_string(char *string);
 
 int get_all_folder_in_mount_path(const char *const mount_path, int *sh_num, char ***folder_list);
 
-int syncServerAllItem(char *username,int parentid,char *localpath);
-//int mySync(char *username,int parentid,char *localpath,NodeStack **head);
+int syncServerAllItem(char *username,long long int parentid,char *localpath);
 
 int get_all_folders(const char *dirname,Folders *allfolderlist);
-int initMyLocalFolder(char *username,int parentid,char *localpath,char *xmlfilename);
+int initMyLocalFolder(char *username,long long int parentid,char *localpath,char *xmlfilename);
 
 long long int check_disk_space(char *path);
 
@@ -144,8 +141,6 @@ int check_token_file(struct asus_config *cfg);
 int check_record_token_file(char *record_filename,char *token_filename);
 int write_token_file(char *path,char *token_filename);
 int record_token_to_file(char *filename,char *token_filename);
-//int get_token_filename(char *filename,char *sync_path);
-//int rewrite_config(char *config_path,char *new_sync_path);
 
 int detect_process_file();
 void create_start_file();
@@ -156,10 +151,6 @@ int write_get_nvram_script(char *nvram_name,char *nvram_path,char *script_path);
 int create_asuswebstorage_conf_file(char *path);
 #else
 int convert_nvram_to_file(char *file);
-//int create_shell_file();
-//int write_to_nvram(char *contents,char *nv_name);
-//int del_old_token_file(char *mount_path);
-//int check_nvram_token_file(char *token_filename);
 #endif
 
 
@@ -176,8 +167,7 @@ char *get_confilicted_name_case(const char *fullname,const char *path,const char
 typedef struct FolderNode_t
 {
     char *path;
-    //char *name;
-    int id;
+    long long id;
     int seq;
 }FolderNode;
 
@@ -196,8 +186,7 @@ int LoadFileIntoBuffer(const char* szFileName, char** pBuffer, int* pBufferLengt
 /*save cloud all folders id and seqnum*/
 struct SubNode
 {
-    //int pid;
-    int id;
+    long long id;
     int seq;
     struct SubNode *Child;
     struct SubNode *NextBrother;
@@ -205,15 +194,15 @@ struct SubNode
 
 typedef struct SubNode Hb_SubNode;
 
-Hb_SubNode *create_node(int id,int seq);
-Hb_SubNode *get_parent_node(int pid,Hb_SubNode *node);
-Hb_SubNode *find_node(Hb_SubNode *pnode,int id);
-int update_seq(int id,int seq,Hb_SubNode *node);
-int del_node(int pid,int id);
-int remove_node(Hb_SubNode *node,int id);
-int add_node(int id,int seq,Hb_SubNode *node);
-int insert_node(int pid,int id,int seq);
-int move_node(int move_from_pid,int id,int move_to_pid);
+Hb_SubNode *create_node(long long int id,int seq);
+Hb_SubNode *get_parent_node(long long int pid,Hb_SubNode *node);
+Hb_SubNode *find_node(Hb_SubNode *pnode,long long int id);
+int update_seq(long long int id,int seq,Hb_SubNode *node);
+int del_node(long long int pid,long long int id);
+int remove_node(Hb_SubNode *node,long long int id);
+int add_node(long long int id,int seq,Hb_SubNode *node);
+int insert_node(long long int pid,long long int id,int seq);
+int move_node(long long int move_from_pid,long long int id,long long int move_to_pid);
 void free_node(Hb_SubNode *node);
 void print_all_nodes(Hb_SubNode *node);
 

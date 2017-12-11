@@ -103,9 +103,9 @@ function initial(){
 		showtext($("#suggestion_title")[0], "<%tcWebApi_get("String_Entry","w_r_suggestion0","s")%>:");
 
 		html_code += "<ul>\n";
-		html_code += "<li><%tcWebApi_get("String_Entry","w_r_case6_desc1","s")%><br>";
+		html_code += "<li><%tcWebApi_get("String_Entry","web_redirect_case6_desc1","s")%><br>";
 		html_code += "<B>"+new_lan_ip+"</B></li>\n";
-		html_code += "<li><%tcWebApi_get("String_Entry","w_r_case6_desc2","s")%></li>\n";
+		html_code += "<li><%tcWebApi_get("String_Entry","web_redirect_case6_desc2","s")%></li>\n";
 		html_code += "</ul>\n";
 		html_code += "<br>\n";
 		html_code += "<div style=\"text-align: right;\">\n";

@@ -23,9 +23,15 @@
 /* $Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/apps/public/boa-asp/src/response.c#2 $*/
 
 #include "boa.h"
+#include "shared.h"
+#include "tcapi.h"
 
 #define HTML "text/html; charset=ISO-8859-1"
 #define CRLF "\r\n"
+
+extern int req_write_escape_http_new(request * req, char *msg);
+extern asus_token_t* add_asus_token(const CLIENT_TYPE cli_type, const char *token, const char *ipaddr);
+extern int decode_uri(char *uri);
 
 void print_content_type(request * req)
 {
@@ -64,6 +70,39 @@ void print_ka_phrase(request * req)
 }
 }
 
+void print_fromapp_header(request *req)
+{
+	char buf[1024], tmp[64];
+
+	if(!req)
+	{
+		_dprintf("[%s, %d] no req!\n", __FUNCTION__, __LINE__);
+		return;
+	}
+
+	int cli_type = check_client_type(req->header_user_agent);
+
+	if(cli_type != CLI_TYPE_BROWSER)
+	{
+		//req_write(req, "Cache-Control: no-store\r\n");
+		//req_write(req, "Pragma: no-cache\r\n");
+		if(CLI_TYPE_APP == cli_type)
+		{
+			snprintf(buf, sizeof(buf), "AiHOMEAPILevel: %d\r\n", EXTEND_AIHOME_API_LEVEL);
+			req_write(req, buf);
+			snprintf(buf, sizeof(buf), "Httpd_AiHome_Ver: %d\r\n", EXTEND_HTTPD_AIHOME_VER);
+			req_write(req, buf);
+			snprintf(buf, sizeof(buf), "Model_Name: %s\r\n", get_productid());
+			req_write(req, buf);
+		}
+		else if(CLI_TYPE_ASSIA == cli_type)
+		{
+			snprintf(buf, sizeof(buf), "ASSIA_API_Level: %d\r\n", EXTEND_ASSIA_API_LEVEL);
+			req_write(req, buf);
+		}
+	}	
+}
+
 void print_http_headers(request * req)
 {
     static char stuff[] = "Date: "
@@ -76,6 +115,7 @@ void print_http_headers(request * req)
 	if(req->ssl==NULL)
 #endif 
     print_ka_phrase(req);
+    print_fromapp_header(req);
 }
 
 void print_no_cache(request * req)
@@ -89,7 +129,6 @@ void print_no_cache(request * req)
     req_write(req, "Expires: 0\r\n");
 	}
 }
-
 
 /* The routines above are only called by the routines below.
  * The rest of Boa only enters through the routines below.
@@ -109,7 +148,7 @@ void send_r_request_ok(request * req)
 
     req_write(req, "HTTP/1.0 200 OK\r\n");
     print_http_headers(req);
-    print_no_cache(req);
+    print_no_cache(req);    
 
     if (!req->is_cgi) {
         print_content_length(req);
@@ -588,6 +627,12 @@ void send_r_bad_version(request * req)
 *******************************************************************/
 void send_r_login_page(request *req, int error_status, char* url, int lock_time)
 {
+	if(!req)
+	{
+		_dprintf("[%s, %d]no req!\n", __FUNCTION__, __LINE__);
+		return;
+	}
+	
 	SQUASH_KA(req);
 	req->response_status = R_REQUEST_OK;
 
@@ -595,7 +640,7 @@ void send_r_login_page(request *req, int error_status, char* url, int lock_time)
 	char url_tmp[64]={0};
 	int flag;
 	int fromapp = 0;
-
+	
 	if(url)
 	{
 		if(strstr(url, "Main_Login.asp"))
@@ -675,6 +720,12 @@ void send_r_login_page(request *req, int error_status, char* url, int lock_time)
 *******************************************************************/
 void send_r_password_page(request *req, char* url)
 {
+	if(!req)
+	{
+		_dprintf("[%s, %d]no req!\n", __FUNCTION__, __LINE__);
+		return;
+	}
+	
 	SQUASH_KA(req);
 	req->response_status = R_REQUEST_OK;
 
@@ -721,13 +772,24 @@ void send_redirect_packet_with_token(request *req, char *redirect_path)
 {
 	int fromapp = 0;
 	char wp[2048];
-	char dst_page[256] = {0};
 	char buff[256] = {0};
 	CLIENT_TYPE cli_type;
 	asus_token_t *token;
+	login_retry_t *retry_tmp = NULL;
 
 	if(!req)
+	{
+		_dprintf("[%s, %d]no req!\n", __FUNCTION__, __LINE__);
 		return;
+	}
+
+	retry_tmp = get_login_retry_by_url(req->remote_ip_addr);
+
+	if(!retry_tmp)
+	{
+		dbgprintf("[%s, %d]ERROR!! Can not judge the remote ip (%s) is WAN or LAN! Drop packets!\n", __FUNCTION__, __LINE__, req->remote_ip_addr);
+		return;
+	}
 
 	SQUASH_KA(req);	
 	req->response_status = R_REQUEST_OK;
@@ -740,11 +802,12 @@ void send_redirect_packet_with_token(request *req, char *redirect_path)
 	token = add_asus_token(cli_type, generate_token(buff, sizeof(buff)), req->remote_ip_addr);
 	if(!token)
 	{
+		retry_tmp->err_status = ACCOUNTFAIL;
 		send_r_login_page(req, ACCOUNTFAIL, NULL, 0);
 		return;
 	}
 	
-	http_login_header(token->token, req);
+	http_login_header(token->token, req, cli_type);
 
 	//Andy Chiu, 2016/01/05. Check APP
 	if(cli_type != CLI_TYPE_BROWSER)
@@ -787,7 +850,13 @@ void send_redirect_packet_with_token(request *req, char *redirect_path)
 *******************************************************************/
 void send_r_redirect_page(request *req, const int with_token)
 {
-	SQUASH_KA(req);	
+	if(!req)
+	{
+		_dprintf("[%s, %d]no req!\n", __FUNCTION__, __LINE__);
+		return;
+	}
+	
+	SQUASH_KA(req);		
 	char *p = req->request_uri;
 	char tmp[512];
 
@@ -797,7 +866,9 @@ void send_r_redirect_page(request *req, const int with_token)
 		p += strlen("/cgi-bin");	
 
 	if(with_token)
+	{
 		send_redirect_packet_with_token(req, p);
+	}
 	else
 	{
 		req_write(req, "HTTP/1.0 200 OK\r\n");	

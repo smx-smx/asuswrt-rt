@@ -25,6 +25,11 @@ function LoadingTime(seconds, flag){
 				showtext($("proceeding_main_txt"), "Identical firmware, now rebooting.<br><%tcWebApi_get("String_Entry","Main_alert_proceeding_desc4","s")%> ");
 				hideInitialLoading = "1";
 			}
+			else if(flag == "upgrade_FLASH_NOT_SUPPORT")
+			{
+				showtext($("proceeding_main_txt"), "Invalid firmware, this firmware does not support current hardware(flash).<br><br>Please upgrade with latest firmware, now rebooting.<br><%tcWebApi_get("String_Entry","Main_alert_proceeding_desc4","s")%> ");
+				hideInitialLoading = "1";
+			}
 			else if(flag == "upgrade_FAIL_ROMFILE")
 			{
 				showtext($("proceeding_main_txt"), "Upload setting failed, now rebooting.<br><%tcWebApi_get("String_Entry","Main_alert_proceeding_desc4","s")%> ");
@@ -39,7 +44,7 @@ function LoadingTime(seconds, flag){
 				showtext($("proceeding_txt"), Math.round(y)+"% <%tcWebApi_get("String_Entry","Main_alert_proceeding_desc1","s")%>");
 			--seconds;
 			
-			if(flag != "upgrade_FAIL" && flag != "upgrade_SAME" && flag != "upgrade_FAIL_ROMFILE" && hideInitialLoading == "1"){
+			if(flag != "upgrade_FAIL" && flag != "upgrade_SAME" && flag != "upgrade_FAIL_ROMFILE" && flag != "upgrade_FLASH_NOT_SUPPORT" && hideInitialLoading == "1"){
 				//skip setTimeout();
 			}
 			else

@@ -47,6 +47,7 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_manual_setting.asp" Then
 		tcWebApi_set("Adsl_Entry","MODULATIONTYPE","dsltmp_cfg_modulation")
 		tcWebApi_set("Adsl_Entry","ANNEXTYPEA","dsltmp_cfg_annex")
 	end if
+	tcWebApi_set("GUITemp_Entry0","dsltmp_auto_detect_bng_flag","dsltmp_auto_detect_bng_flag")
 	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_PTM_manual_setting.asp" Then
@@ -73,7 +74,9 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_PTM_manual_setting.asp" 
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_de17a","dsltmp_cfg_de17a")
 	if Request_Form("dsltmp_cfg_de17a") = "1" Then
 		tcWebApi_set("Adsl_Entry","vdsl_profile","dsltmp_cfg_vdslprofile")
-	end if
+	end if	
+	tcWebApi_set("GUITemp_Entry0","dsltmp_auto_detect_bng_flag","dsltmp_auto_detect_bng_flag")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_uksky","dsltmp_cfg_uksky")
 	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ppp_cfg.asp" Then
@@ -92,6 +95,7 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ppp_cfg.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_pppoe_passwd","dsltmp_cfg_pppoe_passwd")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_wanTypeOption","dsltmp_wanTypeOption")
 	tcWebApi_set("GUITemp_Entry0","with_wan_setting","with_wan_setting")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_auto_detect_bng_flag","dsltmp_auto_detect_bng_flag")
 	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ppp_cfg_tmp.asp" Then
@@ -382,7 +386,10 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_finish.asp" Then
 			end if
 
 		end if
-
+		
+		/* Deutsche Telekom IPTV detect */
+		tcWebApi_set("GUITemp_Entry0","auto_detect_bng","dsltmp_auto_detect_bng")
+		
 		TCWebApi_set("Upnpd_Entry","Active","Yes")
 		tcWebApi_commit("Wan_PVC")
 		tcWebApi_commit("Upnpd_Entry")

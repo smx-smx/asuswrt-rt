@@ -19,9 +19,7 @@ void replace_char_in_str(char *str,char newchar,char oldchar){
     {
         if(str[i] == oldchar)
         {
-            //printf("str[i] = %c\n",str[i]);
             str[i] = newchar;
-            //printf("str[i] 222 = %c\n",str[i]);
         }
     }
 
@@ -40,8 +38,6 @@ Server_TreeNode *create_server_treeroot()
     }
     TreeRoot->level=0;
     TreeRoot->NextBrother = NULL;
-    //TreeRoot->browse = NULL;
-    //sprintf(TreeRoot->parenthref,"%s%s/",HOST,ROOTFOLDER);
     TreeRoot->parenthref = NULL;
     TreeRoot->browse = NULL;
     TreeRoot->Child = NULL;
@@ -51,11 +47,8 @@ Server_TreeNode *create_server_treeroot()
 
 int browse_to_tree(char *parenthref,Server_TreeNode *node)
 {
-    //printf("browse_to_tree node parenthref is %s\n",parenthref);
     Browse *br = NULL;
     int fail_flag = 0;
-    //int loop;
-    //int i;
 
     Server_TreeNode *tempnode = NULL, *p1 = NULL,*p2 = NULL;
     tempnode = create_server_treeroot();
@@ -64,12 +57,11 @@ int browse_to_tree(char *parenthref,Server_TreeNode *node)
     tempnode->parenthref = my_str_malloc((size_t)(strlen(parenthref)+1));
 
     br = browseFolder(parenthref);
-    sprintf(tempnode->parenthref,"%s",parenthref);
+    snprintf(tempnode->parenthref, sizeof(char)*(strlen(parenthref)+1), "%s",parenthref);
 
     if(NULL == br)
     {
         free_server_tree(tempnode);
-        //printf("browse folder failed\n");
         return -1;
     }
 
@@ -81,13 +73,11 @@ int browse_to_tree(char *parenthref,Server_TreeNode *node)
     }
     else
     {
-        //printf("have child\n");
         p2 = node->Child;
         p1 = p2->NextBrother;
 
         while(p1 != NULL)
         {
-            //printf("p1 nextbrother have\n");
             p2 = p1;
             p1 = p1->NextBrother;
         }
@@ -96,7 +86,6 @@ int browse_to_tree(char *parenthref,Server_TreeNode *node)
         tempnode->NextBrother = NULL;
     }
 
-    //printf("browse folder num is %d\n",br->foldernumber);
     CloudFile *de_foldercurrent;
     de_foldercurrent = br->folderlist->next;
     while(de_foldercurrent != NULL && !exit_loop)
@@ -108,39 +97,25 @@ int browse_to_tree(char *parenthref,Server_TreeNode *node)
         }
         de_foldercurrent = de_foldercurrent->next;
     }
-    /*for( i= 0; i <br->foldernumber;i++)
-    {
-        id = (br->folderlist)[i]->id;
 
-        if(browse_to_tree(username,id,xmlfilename,tempnode) == -1)
-        {
-            fail_flag = 1;
-        }
-    }*/
     if(exit_loop)
         fail_flag = 1;
-    //free_server_list(br);
-    //my_free(br);
 
     return (fail_flag == 1) ? -1 : 0 ;
 
 }
 void free_CloudFile_item(CloudFile *head)
 {
-    //printf("***************free_CloudFile_item*********************\n");
-
     CloudFile *p = head;
     while(p != NULL)
     {
         head = head->next;
         if(p->href != NULL)
         {
-            //printf("free CloudFile %s\n",p->href);
             free(p->href);
         }
         if(p->name != NULL)
         {
-            //printf("free CloudFile %s\n",p->href);
             free(p->name);
         }
         free(p);
@@ -149,13 +124,8 @@ void free_CloudFile_item(CloudFile *head)
 }
 void free_server_tree(Server_TreeNode *node)
 {
-    //printf("free_server_tree\n");
     if(node != NULL)
     {
-        //printf("free tree node\n");
-
-        //free_server_list(node->browse);
-
         if(node->NextBrother != NULL)
             free_server_tree(node->NextBrother);
         if(node->Child != NULL)
@@ -177,7 +147,6 @@ void free_server_tree(Server_TreeNode *node)
 void SearchServerTree(Server_TreeNode* treeRoot)
 {
     int i;
-    //int j;
     for(i=0;i<treeRoot->level;i++)
         printf("-");
 
@@ -242,12 +211,6 @@ int create_sync_list()
         g_pSyncList[i]->sync_disk_exist = 0;
 #endif
 
-//        sprintf(g_pSyncList[i]->temp_path,"%s/.smartsync/dropbox",asus_cfg.prule[i]->base_path);
-//        my_mkdir_r(g_pSyncList[i]->temp_path);    //have mountpath
-
-//        snprintf(g_pSyncList[i]->conflict_file,255,"%s/conflict_%s",
-//                 g_pSyncList[i]->temp_path,asus_cfg.prule[i]->rooturl+1);
-
         g_pSyncList[i]->ServerRootNode = NULL;
         g_pSyncList[i]->OldServerRootNode = NULL;
         g_pSyncList[i]->VeryOldServerRootNode = NULL;
@@ -270,8 +233,6 @@ int create_sync_list()
         tokenfile_info_tmp = tokenfile_info_start->next;
         while(tokenfile_info_tmp != NULL)
         {
-            //printf("asus_cfg.prule[%d]->rooturl=%s,asus_cfg.user=%s\n",i,asus_cfg.prule[i]->rooturl,asus_cfg.user);
-            //printf("tokenfile_info_tmp->folder=%s,tokenfile_info_tmp->url=%s\n",tokenfile_info_tmp->folder,tokenfile_info_tmp->url);
             if(!strcmp(tokenfile_info_tmp->folder,asus_cfg.prule[i]->rooturl) && !strcmp(tokenfile_info_tmp->url,asus_cfg.user))
             {
                 g_pSyncList[i]->sync_disk_exist = 1;
@@ -374,18 +335,16 @@ int initMyLocalFolder(Server_TreeNode *servertreenode,int index)
 char *serverpath_to_localpath(char *from_serverpath,int index){
     char *to_localpath;
 
-    //hreftmp = strstr(from_serverpath,asus_cfg.prule[index]->rootfolder)+asus_cfg.prule[index]->rootfolder_length;
-    //hreftmp = oauth_url_unescape(hreftmp,NULL);
 #ifdef MULTI_PATH
     to_localpath = (char *)malloc(sizeof(char)*(strlen(from_serverpath)+asus_cfg.prule[index]->base_path_len+2));
     memset(to_localpath,'\0',sizeof(char)*(strlen(from_serverpath)+asus_cfg.prule[index]->base_path_len+2));
 
-    sprintf(to_localpath,"%s%s",asus_cfg.prule[index]->base_path,from_serverpath);
+    snprintf(to_localpath, sizeof(char)*(strlen(from_serverpath)+asus_cfg.prule[index]->base_path_len+2), "%s%s",asus_cfg.prule[index]->base_path,from_serverpath);
 #else
     to_localpath = (char *)malloc(sizeof(char)*(strlen(from_serverpath)+asus_cfg.prule[index]->base_path_len+asus_cfg.prule[index]->rooturl_len+2));
     memset(to_localpath,'\0',sizeof(char)*(strlen(from_serverpath)+asus_cfg.prule[index]->base_path_len+asus_cfg.prule[index]->rooturl_len+2));
 
-    sprintf(to_localpath,"%s%s%s",asus_cfg.prule[index]->base_path,asus_cfg.prule[index]->rooturl,from_serverpath);
+    snprintf(to_localpath, sizeof(char)*(strlen(from_serverpath)+asus_cfg.prule[index]->base_path_len+asus_cfg.prule[index]->rooturl_len+2), "%s%s%s",asus_cfg.prule[index]->base_path,asus_cfg.prule[index]->rooturl,from_serverpath);
 #endif
     wd_DEBUG("serverpath_to_localpath to_localpath = %s\n",to_localpath);
 
@@ -403,7 +362,7 @@ char *localpath_to_serverpath(char *from_localpath,int index)
 #endif
     to_serverpath=(char *)malloc(sizeof(char)*(strlen(hreftmp)+2));
     memset(to_serverpath,0,sizeof(char)*(strlen(hreftmp)+2));
-    sprintf(to_serverpath,"%s",hreftmp);
+    snprintf(to_serverpath, sizeof(char)*(strlen(hreftmp)+2), "%s",hreftmp);
     wd_DEBUG("from_localpath = %s\n",from_localpath);
     wd_DEBUG("Localpath_to_serverpath to_serverpath = %s\n",to_serverpath);
 
@@ -411,8 +370,6 @@ char *localpath_to_serverpath(char *from_localpath,int index)
 }
 
 int is_local_space_enough(CloudFile *do_file,int index){
-
-    //printf("************is_local_space_enough start*************\n");
 
     long long int freespace;
     freespace = get_local_freespace(index);
@@ -440,14 +397,9 @@ long long int get_local_freespace(int index){
 
     long long int freespace = 0;
     struct statvfs diskdata;
-    //long long totalspace = 0;
     if(!statvfs(asus_cfg.prule[index]->base_path,&diskdata))
     {
-        //printf("aaaaaaaaaaaaaaaaaa\n");
         freespace = (long long)diskdata.f_bsize * (long long)diskdata.f_bavail;
-        //totalspace = (((long long)disk_statfs.f_bsize * (long long)disk_statfs.f_blocks));
-        //printf("freespace = %lld\n",freespace);
-        //printf("totalspace = %lld\n",totalspace);
         return freespace;
     }
     else
@@ -463,11 +415,8 @@ int ChangeFile_modtime(char *filepath,time_t servermodtime){
     {
         return -1;
     }
-    //char *localfilepath_tmp;
-    //char localfilepath[256];
     struct utimbuf *ub;
     ub = (struct utimbuf *)malloc(sizeof(struct utimbuf));
-    //memset(localfilepath,0,sizeof(localfilepath));
 
     wd_DEBUG("servermodtime = %lu\n",servermodtime);
 
@@ -481,25 +430,7 @@ int ChangeFile_modtime(char *filepath,time_t servermodtime){
     ub->actime = servermodtime;
     ub->modtime = servermodtime;
 
-    //localfilepath_tmp = strstr(filepath,"/RT-N16/");
-    //sprintf(localfilepath,"%s%s",base_path,localfilepath_tmp);
     utime(filepath,ub);
-
-    /*struct stat buf;
-
-                if( stat(localfilepath,&buf) == -1)
-                {
-                        perror("stat:");
-                }
-
-                                //unsigned long asec = buf.st_atime;
-                                unsigned long msec = buf.st_mtime;
-                                //unsigned long csec = buf.st_ctime;
-
-                                //printf("accesstime = %lu\n",asec);
-                                //printf("creationtime = %lu\n",csec);
-                                printf("lastwritetime = %lu\n",msec);
-                                printf("servermodtime = %lu\n",servermodtime);*/
 
     free(ub);
     return 0;
@@ -550,8 +481,6 @@ Local *Find_Floor_Dir(const char *path)
         /*
          fix :accept the begin of '.' files;
         */
-//        if(ent->d_name[0] == '.')
-//            continue;
         if(!strcmp(ent->d_name,".") || !strcmp(ent->d_name,".."))
             continue;
 
@@ -562,10 +491,7 @@ Local *Find_Floor_Dir(const char *path)
         size_t len;
         len = strlen(path)+strlen(ent->d_name)+2;
         fullname = my_str_malloc(len);
-        sprintf(fullname,"%s/%s",path,ent->d_name);
-
-        //printf("folder fullname = %s\n",fullname);
-        //printf("ent->d_ino = %d\n",ent->d_ino);
+        snprintf(fullname, sizeof(char)*len, "%s/%s",path,ent->d_name);
 
         if(test_if_dir(fullname) == 1)
         {
@@ -573,8 +499,8 @@ Local *Find_Floor_Dir(const char *path)
             memset(localfloorfoldertmp,0,sizeof(localfloorfoldertmp));
             localfloorfoldertmp->path = my_str_malloc((size_t)(strlen(fullname)+1));
 
-            sprintf(localfloorfoldertmp->name,"%s",ent->d_name);
-            sprintf(localfloorfoldertmp->path,"%s",fullname);
+            snprintf(localfloorfoldertmp->name, MAX_CONTENT, "%s",ent->d_name);
+            snprintf(localfloorfoldertmp->path, sizeof(char)*(strlen(fullname)+1), "%s",fullname);
 
             ++foldernum;
 
@@ -600,12 +526,12 @@ Local *Find_Floor_Dir(const char *path)
             unsigned long msec = buf.st_mtime;
             unsigned long csec = buf.st_ctime;
 
-            sprintf(localfloorfiletmp->creationtime,"%lu",csec);
-            sprintf(localfloorfiletmp->lastaccesstime,"%lu",asec);
-            sprintf(localfloorfiletmp->lastwritetime,"%lu",msec);
+            snprintf(localfloorfiletmp->creationtime, MINSIZE, "%lu",csec);
+            snprintf(localfloorfiletmp->lastaccesstime, MINSIZE, "%lu",asec);
+            snprintf(localfloorfiletmp->lastwritetime, MINSIZE, "%lu",msec);
 
-            sprintf(localfloorfiletmp->name,"%s",ent->d_name);
-            sprintf(localfloorfiletmp->path,"%s",fullname);
+            snprintf(localfloorfiletmp->name, MAX_CONTENT, "%s",ent->d_name);
+            snprintf(localfloorfiletmp->path, sizeof(char)*(strlen(fullname)+1), "%s",fullname);
 
             localfloorfiletmp->size = buf.st_size;
 
@@ -615,9 +541,7 @@ Local *Find_Floor_Dir(const char *path)
             localfloorfiletail = localfloorfiletmp;
             localfloorfiletail->next = NULL;
         }
-        //printf("free fullname\n");
         free(fullname);
-        //printf("free fullname over\n");
     }
 
     local->filelist = localfloorfile;
@@ -644,7 +568,6 @@ int test_if_dir(const char *dir){
 /*free保存单层文件夹信息所用的空间*/
 void free_localfloor_node(Local *local)
 {
-    //printf("local->filenumber = %d\nlocal->foldernumber = %d\n",local->filenumber,local->foldernumber);
     free_LocalFile_item(local->filelist);
     free_LocalFolder_item(local->folderlist);
     free(local);
@@ -657,7 +580,6 @@ void free_LocalFile_item(LocalFile *head)
         head = head->next;
         if(p->path != NULL)
         {
-            //printf("free LocalFile %s\n",point->path);
             free(p->path);
         }
         free(p);
@@ -672,7 +594,6 @@ void free_LocalFolder_item(LocalFolder *head)
         head = head->next;
         if(p->path != NULL)
         {
-            //printf("free LocalFolder %s\n",point->path);
             free(p->path);
         }
         free(p);
@@ -693,12 +614,11 @@ int upload_serverlist(Server_TreeNode *treenode,Browse *perform_br, LocalFolder 
         foldertmp_1=foldertmp_1->next;
     }
     if(foldertmp_1->next == NULL){
-        //wd_DEBUG("1111\n");
         char *serverpath;
         serverpath=localpath_to_serverpath(localfoldertmp->path,index);
         foldertmp->href=(char *)malloc(sizeof(char)*(strlen(serverpath)+1));
         memset(foldertmp->href,'\0',sizeof(char)*(strlen(serverpath)+1));
-        strcpy(foldertmp->href,serverpath);
+        snprintf(foldertmp->href, sizeof(char)*(strlen(serverpath)+1), "%s", serverpath);
         foldertmp->size=0;
         foldertmp->name=parse_name_from_path(foldertmp->href);
         foldertmp->isFolder=1;
@@ -735,24 +655,20 @@ int upload_serverlist(Server_TreeNode *treenode,Browse *perform_br, LocalFolder 
     treenodetmp->parenthref=(char *)malloc(sizeof(char)*(strlen(foldertmp->href)+1));
     treenodetmp->level = treenode->level + 1;
     memset(treenodetmp,'\0',sizeof(treenodetmp));
-    strcpy(treenodetmp->parenthref,foldertmp->href);
+    snprintf(treenodetmp->parenthref, sizeof(char)*(sizeof(char)*(strlen(foldertmp->href)+1)), "%s", foldertmp->href);
 
     treenodetmp->browse=br;
     if(treenode->Child == NULL)
     {
-        //wd_DEBUG("222\n");
         treenode->Child = treenodetmp;
     }
     else
     {
-        //wd_DEBUG("333\n");
-        //printf("have child\n");
         p2 = treenode->Child;
         p1 = p2->NextBrother;
 
         while(p1 != NULL)
         {
-            //printf("p1 nextbrother have\n");
             p2 = p1;
             p1 = p1->NextBrother;
         }
@@ -769,7 +685,6 @@ int upload_serverlist(Server_TreeNode *treenode,Browse *perform_br, LocalFolder 
 */
 CloudFile *get_CloudFile_node(Server_TreeNode* treeRoot,const char *dofile_href,int a){
 
-    //printf("****get_CloudFile_node****dofile_href = %s\n",dofile_href);
     int href_len = strlen(dofile_href);
     CloudFile *finded_file = NULL;
     if(treeRoot == NULL)
@@ -782,7 +697,6 @@ CloudFile *get_CloudFile_node(Server_TreeNode* treeRoot,const char *dofile_href,
         int int_file = 0x2;
         CloudFile *de_foldercurrent = NULL;
         CloudFile *de_filecurrent = NULL;
-        //printf("111111folder = %d,file = %d\n",treeRoot->browse->foldernumber,treeRoot->browse->filenumber);
         if(treeRoot->browse->foldernumber > 0)
             de_foldercurrent = treeRoot->browse->folderlist->next;
         if(treeRoot->browse->filenumber > 0)
@@ -793,7 +707,6 @@ CloudFile *get_CloudFile_node(Server_TreeNode* treeRoot,const char *dofile_href,
             {
                 if(de_foldercurrent->href != NULL)
                 {
-                    //printf("de_foldercurrent->href = %s\n",de_foldercurrent->href);
                     if(!(strncmp(de_foldercurrent->href,dofile_href,href_len)))
                     {
                         return de_foldercurrent;
@@ -808,10 +721,8 @@ CloudFile *get_CloudFile_node(Server_TreeNode* treeRoot,const char *dofile_href,
             {
                 if(de_filecurrent->href != NULL)
                 {
-                    //printf("de_filecurrent->href = %s\n",de_filecurrent->href);
                     if(!(strncmp(de_filecurrent->href,dofile_href,href_len)))
                     {
-                        //printf("get it\n");
                         return de_filecurrent;
                     }
                 }
@@ -822,31 +733,22 @@ CloudFile *get_CloudFile_node(Server_TreeNode* treeRoot,const char *dofile_href,
 
     if((treeRoot->Child!=NULL))
     {
-        //printf("444444444\n");
         finded_file = get_CloudFile_node(treeRoot->Child,dofile_href,a);
         if(finded_file != NULL)
         {
-            //printf("444444444 return\n");
             return finded_file;
         }
-        //else
-            //printf("child not get\n");
     }
 
 
     if(treeRoot->NextBrother != NULL)
     {
-        //printf("33333333\n");
         finded_file = get_CloudFile_node(treeRoot->NextBrother,dofile_href,a);
         if(finded_file != NULL)
         {
-            //printf("33333333 return\n");
             return finded_file;
         }
-        //else
-            //printf("brother not get\n");
     }
-    //printf("##return NULL\n");
     return finded_file;
 }
 /*
@@ -855,11 +757,9 @@ CloudFile *get_CloudFile_node(Server_TreeNode* treeRoot,const char *dofile_href,
 */
 int wait_handle_socket(int index){
 
-    //if(receve_socket)
     if(g_pSyncList[index]->receve_socket)
     {
         server_sync = 0;
-        //while(receve_socket)
         while(g_pSyncList[index]->receve_socket || local_sync)
         {
             usleep(1000*100);

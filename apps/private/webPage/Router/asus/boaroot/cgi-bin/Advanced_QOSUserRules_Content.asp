@@ -15,15 +15,16 @@ End If
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title>ASUS <% tcWebApi_get("SysInfo_Entry","ProductName","s") %> <% tcWebApi_get("SysInfo_Entry","ProductTitle","s") %> - EZQoS Bandwidth Management</title>
+<title>ASUS <% tcWebApi_get("String_Entry","Web_Title2","s") %> <% tcWebApi_get("SysInfo_Entry","ProductTitle","s") %> - EZQoS Bandwidth Management</title>
 <link rel="stylesheet" type="text/css" href="/index_style.css"> 
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/general.js"></script>
+<script language="JavaScript" type="text/javascript" src="/popup.js"></script>
+<script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 
 <style>
 .Portrange{
@@ -58,7 +59,7 @@ function initial(){
 
 	load_QoS_rule();
 	if( '<%tcWebApi_get("QoS_Entry0","qos_enable","s")%>' == '1' )
-		$('is_qos_enable_desc').style.display = "none";
+		document.getElementById("is_qos_enable_desc").style.display = "none";
 }
 
 function applyRule(){	
@@ -80,8 +81,8 @@ function applyRule(){
 }
 
 function save_table(){
-	var rule_num = $('qos_rulelist_table').rows.length;
-	var item_num = $('qos_rulelist_table').rows[0].cells.length;
+	var rule_num = document.getElementById("qos_rulelist_table").rows.length;
+	var item_num = document.getElementById("qos_rulelist_table").rows[0].cells.length;
 	var tmp_value = "";
      var comp_tmp = "";
 
@@ -89,12 +90,12 @@ function save_table(){
 		tmp_value += "<"		
 		for(j=0; j<item_num-1; j++){							
 			if(j==5){
-				tmp_value += $('qos_rulelist_table').rows[i].cells[j].firstChild.value;
+				tmp_value += document.getElementById("qos_rulelist_table").rows[i].cells[j].firstChild.value;
 			}else{						
-				if($('qos_rulelist_table').rows[i].cells[j].innerHTML.lastIndexOf("...")<0){
-					tmp_value += $('qos_rulelist_table').rows[i].cells[j].innerHTML;
+				if(document.getElementById("qos_rulelist_table").rows[i].cells[j].innerHTML.lastIndexOf("...")<0){
+					tmp_value += document.getElementById("qos_rulelist_table").rows[i].cells[j].innerHTML;
 				}else{
-					tmp_value += $('qos_rulelist_table').rows[i].cells[j].title;
+					tmp_value += document.getElementById("qos_rulelist_table").rows[i].cells[j].title;
 				}
 			}
 			
@@ -150,8 +151,8 @@ function validForm(){
 
 function addRow_Group(upper){
 	if(validForm()){
-		var rule_num = $('qos_rulelist_table').rows.length;
-		var item_num = $('qos_rulelist_table').rows[0].cells.length;	
+		var rule_num = document.getElementById("qos_rulelist_table").rows.length;
+		var item_num = document.getElementById("qos_rulelist_table").rows[0].cells.length;	
 
 		if(rule_num >= upper){
 			alert("<%tcWebApi_get("String_Entry","JS_itemlimit1","s")%> " + upper + " <%tcWebApi_get("String_Entry","JS_itemlimit2","s")%>");
@@ -162,22 +163,22 @@ function addRow_Group(upper){
 		if(item_num >=2){		//duplicate check: {IP/MAC, port, proto, transferred}
 			for(i=0; i<rule_num; i++){
 				if(overlib_str[i]){
-					if(document.form.qos_ip_x_0.value == $('qos_rulelist_table').rows[i].cells[1].innerHTML
+					if(document.form.qos_ip_x_0.value == document.getElementById("qos_rulelist_tabl").rows[i].cells[1].innerHTML
 						&& document.form.qos_port_x_0.value == overlib_str[i] 
-						&& document.form.qos_transferred_x_0.value == $('qos_rulelist_table').rows[i].cells[4].innerHTML){
+						&& document.form.qos_transferred_x_0.value == document.getElementById("qos_rulelist_table").rows[i].cells[4].innerHTML){
 						
-							if(document.form.qos_proto_x_0.value == $('qos_rulelist_table').rows[i].cells[3].innerHTML
+							if(document.form.qos_proto_x_0.value == document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML
 								|| document.form.qos_proto_x_0.value == 'any'
-								|| $('qos_rulelist_table').rows[i].cells[3].innerHTML == 'any'){
+								|| document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML == 'any'){
 										alert("<% tcWebApi_get("String_Entry","JS_duplicate","s") %>");
 										parse_port="";
 										document.form.qos_port_x_0.value =="";
 										document.form.qos_ip_x_0.focus();
 										document.form.qos_ip_x_0.select();
 										return;
-							}else if(document.form.qos_proto_x_0.value == $('qos_rulelist_table').rows[i].cells[3].innerHTML
-											|| (document.form.qos_proto_x_0.value == 'tcp/udp' && ($('qos_rulelist_table').rows[i].cells[3].innerHTML == 'tcp' || $('qos_rulelist_table').rows[i].cells[3].innerHTML == 'udp'))
-											|| ($('qos_rulelist_table').rows[i].cells[3].innerHTML == 'tcp/udp' && (document.form.qos_proto_x_0.value == 'tcp' || document.form.qos_proto_x_0.value == 'udp'))){
+							}else if(document.form.qos_proto_x_0.value == document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML
+											|| (document.form.qos_proto_x_0.value == 'tcp/udp' && (document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML == 'tcp' || document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML == 'udp'))
+											|| (document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML == 'tcp/udp' && (document.form.qos_proto_x_0.value == 'tcp' || document.form.qos_proto_x_0.value == 'udp'))){
 													alert("<% tcWebApi_get("String_Entry","JS_duplicate","s") %>");
 													parse_port="";
 													document.form.qos_port_x_0.value =="";
@@ -187,13 +188,13 @@ function addRow_Group(upper){
 							}				
 					}
 				}else{
-					if(document.form.qos_ip_x_0.value == $('qos_rulelist_table').rows[i].cells[1].innerHTML 
-						&& document.form.qos_port_x_0.value == $('qos_rulelist_table').rows[i].cells[2].innerHTML
-						&& document.form.qos_transferred_x_0.value == $('qos_rulelist_table').rows[i].cells[4].innerHTML){
+					if(document.form.qos_ip_x_0.value == document.getElementById("qos_rulelist_table").rows[i].cells[1].innerHTML 
+						&& document.form.qos_port_x_0.value == document.getElementById("qos_rulelist_table").rows[i].cells[2].innerHTML
+						&& document.form.qos_transferred_x_0.value == document.getElementById("qos_rulelist_table").rows[i].cells[4].innerHTML){
 						
-								if(document.form.qos_proto_x_0.value == $('qos_rulelist_table').rows[i].cells[3].innerHTML
+								if(document.form.qos_proto_x_0.value == document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML
 										|| document.form.qos_proto_x_0.value == 'any'
-										|| $('qos_rulelist_table').rows[i].cells[3].innerHTML == 'any'){
+										|| document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML == 'any'){
 												alert("<% tcWebApi_get("String_Entry","JS_duplicate","s") %>");							
 												parse_port="";
 												document.form.qos_port_x_0.value =="";
@@ -201,9 +202,9 @@ function addRow_Group(upper){
 												document.form.qos_ip_x_0.select();
 												return;
 											
-								}else if(document.form.qos_proto_x_0.value == $('qos_rulelist_table').rows[i].cells[3].innerHTML
-											|| (document.form.qos_proto_x_0.value == 'tcp/udp' && ($('qos_rulelist_table').rows[i].cells[3].innerHTML == 'tcp' || $('qos_rulelist_table').rows[i].cells[3].innerHTML == 'udp'))
-											|| ($('qos_rulelist_table').rows[i].cells[3].innerHTML == 'tcp/udp' && (document.form.qos_proto_x_0.value == 'tcp' || document.form.qos_proto_x_0.value == 'udp'))){
+								}else if(document.form.qos_proto_x_0.value == document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML
+											|| (document.form.qos_proto_x_0.value == 'tcp/udp' && (document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML == 'tcp' || document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML == 'udp'))
+											|| (document.getElementById("qos_rulelist_table").rows[i].cells[3].innerHTML == 'tcp/udp' && (document.form.qos_proto_x_0.value == 'tcp' || document.form.qos_proto_x_0.value == 'udp'))){
 													alert("<% tcWebApi_get("String_Entry","JS_duplicate","s") %>");							
 													parse_port="";
 													document.form.qos_port_x_0.value =="";
@@ -232,22 +233,22 @@ function addRow_Group(upper){
 
 function del_Row(r){
   var i=r.parentNode.parentNode.rowIndex;
-  $('qos_rulelist_table').deleteRow(i);
+  document.getElementById("qos_rulelist_table").deleteRow(i);
   
   var qos_rulelist_value = "";
-	for(k=0; k<$('qos_rulelist_table').rows.length; k++){
-		for(j=0; j<$('qos_rulelist_table').rows[k].cells.length-1; j++){
+	for(k=0; k<document.getElementById("qos_rulelist_table").rows.length; k++){
+		for(j=0; j<document.getElementById("qos_rulelist_table").rows[k].cells.length-1; j++){
 			if(j == 0)	
 				qos_rulelist_value += "<";
 			else
 				qos_rulelist_value += ">";
 				
 			if(j == 5){
-				qos_rulelist_value += $('qos_rulelist_table').rows[k].cells[j].firstChild.value;
-			}else if($('qos_rulelist_table').rows[k].cells[j].innerHTML.lastIndexOf("...")<0){	
-				qos_rulelist_value += $('qos_rulelist_table').rows[k].cells[j].innerHTML;	
+				qos_rulelist_value += document.getElementById("qos_rulelist_table").rows[k].cells[j].firstChild.value;
+			}else if(document.getElementById("qos_rulelist_table").rows[k].cells[j].innerHTML.lastIndexOf("...")<0){	
+				qos_rulelist_value += document.getElementById("qos_rulelist_table").rows[k].cells[j].innerHTML;	
 			}else{
-				qos_rulelist_value += $('qos_rulelist_table').rows[k].cells[j].title;
+				qos_rulelist_value += document.getElementById("qos_rulelist_table").rows[k].cells[j].title;
 			}
 		}
 	}
@@ -326,7 +327,7 @@ function showqos_rulelist(){
 		}
 	}
 	code +='</table>';
-	$("qos_rulelist_Block").innerHTML = code;
+	document.getElementById("qos_rulelist_Block").innerHTML = code;
 	
 	
 	parse_port="";
@@ -627,20 +628,20 @@ function showQoSList(){
 			code += '<a><div onclick="setClientIP('+i+');"><dd>'+rule_desc[i]+'</dd></div></a>';
 	}
 	code +='<!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';	
-	$("QoSList_Block").innerHTML = code;
+	document.getElementById("QoSList_Block").innerHTML = code;
 }
 
 var isMenuopen = 0;
 function pullQoSList(obj){
 	if(isMenuopen == 0){
 		obj.src = "/images/arrow-top.gif"
-		$("QoSList_Block").style.display = 'block';
+		document.getElementById("QoSList_Block").style.display = 'block';
 		//document.form.qos_service_name_x_0.focus();		
 		isMenuopen = 1;
 	}
 	else{
-		$("pull_arrow").src = "/images/arrow-down.gif";
-		$('QoSList_Block').style.display='none';
+		document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+		document.getElementById("QoSList_Block").style.display="none";
 		isMenuopen = 0;
 	}
 }
@@ -655,8 +656,8 @@ function hideClients_Block(evt){
 		}
 	}
 
-	$("pull_arrow").src = "/images/arrow-down.gif";
-	$('QoSList_Block').style.display='none';
+	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("QoSList_Block").style.display="none";
 	isMenuopen = 0;
 }
 /*----------} Mouse event of fake LAN IP select menu-----------------*/
@@ -776,13 +777,16 @@ function valid_IPorMAC(obj){
 		  			<tr>
           				<td height="5"><img src="/images/New_ui/export/line_export.png" /></td>
         			</tr>
-					<tr id="is_qos_enable_desc">
+					<tr>
 					<td>
-		  			<div class="formfontdesc" style="font-style: italic;font-size: 14px;color:#FFCC00;">
+		  			<div id="is_qos_enable_desc" class="formfontdesc" style="font-style: italic;font-size: 14px;color:#FFCC00;">
 					<ul>
 						<li><% tcWebApi_Get("String_Entry", "UserQoSRule_desc_zero", "s") %></li>
 						<li><% tcWebApi_Get("String_Entry", "UserQoSRule_desc_one", "s") %></li>
 					</ul>
+					</div>
+					<div class="formfontdesc">
+						<a style="text-decoration:underline;" href="https://www.asus.com/support/FAQ/1010951/" target="_blank">QoS FAQ</a>
 					</div>
 					</td>
 					</tr>
@@ -811,12 +815,12 @@ function valid_IPorMAC(obj){
 							</tr>							
 							<tr>
 								<td width="20%">							
-									<input type="text" class="input_12_table" maxlength="20" style="float:left;width:105px;" placeholder="<% tcWebApi_Get("String_Entry", "Select_menu_default", "s") %>" name="qos_service_name_x_0" onKeyPress="return is_string(this, event)">
+									<input type="text" class="input_12_table" maxlength="20" style="float:left;width:105px;" placeholder="<% tcWebApi_Get("String_Entry", "Select_menu_default", "s") %>" name="qos_service_name_x_0" onKeyPress="return validator.isString(this, event)">
 									<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" onclick="pullQoSList(this);" title="<% tcWebApi_Get("String_Entry", "select_service", "s") %>" >
 									<div id="QoSList_Block" class="QoSList_Block" onclick="hideClients_Block()"></div>
 								</td>
 								<td width="19%"><input type="text" maxlength="17" class="input_15_table" name="qos_ip_x_0" style="width:125px;"></td>
-								<td width="15%"><input type="text" class="input_12_table" maxlength="64" name="qos_port_x_0" onKeyPress="return is_portrange(this, event)"></td>
+								<td width="15%"><input type="text" class="input_12_table" maxlength="64" name="qos_port_x_0" onKeyPress="return validator.isPortRange(this, event)"></td>
 								<td width="13%">
 									<select name='qos_proto_x_0' class="input_option" style="width:75px;">
 										<option value='tcp'>TCP</option>
@@ -829,8 +833,8 @@ function valid_IPorMAC(obj){
 									</select>
 								</td>
 								<td width="16%">
-									<input type="text" class="input_3_table" maxlength="7" onKeyPress="return is_number(this,event);" onblur="conv_to_transf();" name="qos_min_transferred_x_0">~
-									<input type="text" class="input_3_table" maxlength="7" onKeyPress="return is_number(this,event);" onblur="conv_to_transf();" name="qos_max_transferred_x_0"> KB
+									<input type="text" class="input_3_table" maxlength="7" onKeyPress="return validator.isNumber(this,event);" onblur="conv_to_transf();" name="qos_min_transferred_x_0">~
+									<input type="text" class="input_3_table" maxlength="7" onKeyPress="return validator.isNumber(this,event);" onblur="conv_to_transf();" name="qos_max_transferred_x_0"> KB
 									<input type="hidden" name="qos_transferred_x_0" value="">
 								</td>
 								<td width="11%">

@@ -8,6 +8,7 @@
 
 #include "shared.h"
 #include "openvpn_options.h"
+#include "openvpn_config.h"
 #define TYPEDEF_BOOL
 #include "shutils.h"
 #include "tcapi.h"
@@ -362,7 +363,7 @@ add_custom(int unit, char *p[])
 		i++;
 	}
 
-	snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit + CLIENT_IF_START);
+	snprintf(node, sizeof(node), "OpenVPN_Entry%d", OVPN_CLIENT_BASE + unit);
 	tcapi_get(node, "custom", custom);
 	if(strlen(custom)) {
 		if(strlen(custom) + strlen(param) + 1 > MAXLEN_TCAPI_MSG) {
@@ -390,12 +391,9 @@ add_custom(int unit, char *p[])
 static int
 add_option (char *p[], int line, int unit)
 {
-	char buf[32] = {0};
-	FILE *fp;
-	char file_path[128] ={0};
 	char node[MAXLEN_NODE_NAME];
 
-	snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit + CLIENT_IF_START);
+	snprintf(node, sizeof(node), "OpenVPN_Entry%d", OVPN_CLIENT_BASE + unit);
 
 	if  (streq (p[0], "dev") && p[1])
 	{
@@ -416,6 +414,13 @@ add_option (char *p[], int line, int unit)
 			tcapi_set(node, "port", p[2]);
 		else
 			tcapi_set(node, "port", "1194");
+
+		if(p[3])
+			tcapi_set(node, "proto", p[3]);
+	}
+	else if  (streq (p[0], "port") && p[1])
+	{
+		tcapi_set(node, "port", p[1]);
 	}
 	else if (streq (p[0], "resolv-retry") && p[1])
 	{
@@ -426,7 +431,6 @@ add_option (char *p[], int line, int unit)
 	}
 	else if (streq (p[0], "comp-lzo"))
 	{
-		sprintf(buf, "vpn_client%d_comp", unit);
 		if(p[1])
 			tcapi_set(node, "comp", p[1]);
 		else
@@ -449,22 +453,7 @@ add_option (char *p[], int line, int unit)
 		tcapi_set(node, "crypt", "tls");
 		if (streq (p[1], INLINE_FILE_TAG) && p[2])
 		{
-			sprintf(buf, "vpn_crt_client%d_ca", unit);
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-			snprintf(file_path, sizeof(file_path) -1, "%s/%s", OVPN_FS_PATH, buf);
-			fp = fopen(file_path, "w");
-			if(fp) {
-				fprintf(fp, "%s", strstr(p[2], "-----BEGIN"));
-				fclose(fp);
-			}
-			else {
-				_dprintf("write %s file to %s failed\n", buf, OVPN_FS_PATH);
-				logmessage ("OVPN", "Write CA to filesystem failed");
-				return -1;
-			}
-#else
-			tcapi_set(node, buf, strstr(p[2], "-----BEGIN"));
-#endif
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CA, p[2], NULL);
 		}
 		else
 		{
@@ -475,22 +464,7 @@ add_option (char *p[], int line, int unit)
 	{
 		if (streq (p[1], INLINE_FILE_TAG) && p[2])
 		{
-			sprintf(buf, "vpn_crt_client%d_crt", unit);
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-			snprintf(file_path, sizeof(file_path) -1, "%s/%s", OVPN_FS_PATH, buf);
-			fp = fopen(file_path, "w");
-			if(fp) {
-				fprintf(fp, "%s", strstr(p[2], "-----BEGIN"));
-				fclose(fp);
-			}
-			else {
-				_dprintf("write %s file to %s failed\n", buf, OVPN_FS_PATH);
-				logmessage ("OVPN", "Write Certificate to filesystem failed");
-				return -1;
-			}
-#else
-			tcapi_set(node, buf, strstr(p[2], "-----BEGIN"));
-#endif
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CERT, p[2], NULL);
 		}
 		else
 		{
@@ -501,22 +475,7 @@ add_option (char *p[], int line, int unit)
 	{
 		if (streq (p[1], INLINE_FILE_TAG) && p[2])
 		{
-			sprintf(buf, "vpn_crt_client%d_key", unit);
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-			snprintf(file_path, sizeof(file_path) -1, "%s/%s", OVPN_FS_PATH, buf);
-			fp = fopen(file_path, "w");
-			if(fp) {
-				fprintf(fp, "%s", strstr(p[2], "-----BEGIN"));
-				fclose(fp);
-			}
-			else {
-				_dprintf("write %s file to %s failed\n", buf, OVPN_FS_PATH);
-				logmessage ("OVPN", "Write key to filesystem failed");
-				return -1;
-			}
-#else
-			tcapi_set(node, buf, strstr(p[2], "-----BEGIN"));
-#endif
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_KEY, p[2], NULL);
 		}
 		else
 		{
@@ -527,24 +486,8 @@ add_option (char *p[], int line, int unit)
 	{
 		if (streq (p[1], INLINE_FILE_TAG) && p[2])
 		{
-			sprintf(buf, "vpn_crt_client%d_static", unit);
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-			snprintf(file_path, sizeof(file_path) -1, "%s/%s", OVPN_FS_PATH, buf);
-			fp = fopen(file_path, "w");
-			if(fp) {
-				fprintf(fp, "%s", strstr(p[2], "-----BEGIN"));
-				fclose(fp);
-			}
-			else {
-				_dprintf("write %s file to %s failed\n", buf, OVPN_FS_PATH);
-				logmessage ("OVPN", "Write static-key to filesystem failed");
-				return -1;
-			}
-#else
-			tcapi_set(node, buf, strstr(p[2], "-----BEGIN"));
-#endif
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_STATIC, p[2], NULL);
 			//key-direction
-			sprintf(buf, "vpn_crt_client%d_hmac", unit);
 			if(tcapi_match(node, "hmac", "-1"))	//default, disable
 				tcapi_set(node, "hmac", "2");	//openvpn default value: KEY_DIRECTION_BIDIRECTIONAL
 		}
@@ -561,22 +504,7 @@ add_option (char *p[], int line, int unit)
 		tcapi_set(node, "crypt", "secret");
 		if (streq (p[1], INLINE_FILE_TAG) && p[2])
 		{
-			sprintf(buf, "vpn_crt_client%d_static", unit);
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-			snprintf(file_path, sizeof(file_path) -1, "%s/%s", OVPN_FS_PATH, buf);
-			fp = fopen(file_path, "w");
-			if(fp) {
-				fprintf(fp, "%s", strstr(p[2], "-----BEGIN"));
-				fclose(fp);
-			}
-			else {
-				_dprintf("write %s file to %s failed\n", buf, OVPN_FS_PATH);
-				logmessage ("OVPN", "Write static-key to filesystem failed");
-				return -1;
-			}
-#else
-			tcapi_set(node, buf, strstr(p[2], "-----BEGIN"));
-#endif
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_STATIC, p[2], NULL);
 		}
 		else
 		{
@@ -626,6 +554,7 @@ read_config_file (const char *file, int unit)
 	char line[OPTION_LINE_SIZE];
 	char *p[MAX_PARMS];
 	int ret = 0;
+	char node[MAXLEN_NODE_NAME];
 
 	fp = fopen (file, "r");
 	if (fp)
@@ -647,6 +576,13 @@ read_config_file (const char *file, int unit)
 			}
 		}
 		fclose (fp);
+
+		if( !(ret & VPN_UPLOAD_NEED_KEY)
+			&& !ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_KEY)
+		) {
+			snprintf(node, sizeof(node), "OpenVPN_Entry%d", OVPN_CLIENT_BASE + unit);
+			tcapi_set(node, "useronly", "1");
+		}
 	}
 	else
 	{
@@ -659,66 +595,11 @@ read_config_file (const char *file, int unit)
 	return ret;
 }
 
-void reset_client_setting(int unit){
-	char node[MAXLEN_NODE_NAME];
-	char nv[32];
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-	char file_path[128] ={0};
-#endif
-
-	snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit+CLIENT_IF_START);
-	tcapi_set(node, "custom", "");
-	tcapi_set(node, "comp", "-1");
-	tcapi_set(node, "reneg", "-1");
-	tcapi_set(node, "hmac", "-1");
-	tcapi_set(node, "retry", "-1");
-	tcapi_set(node, "cipher", "default");
-	tcapi_set(node, "digest", "default");
-	tcapi_set(node, "tlsremote", "0");
-	tcapi_set(node, "common_name", "");
-	tcapi_set(node, "userauth", "0");
-	tcapi_set(node, "username", "");
-	tcapi_set(node, "password", "");
-
-	sprintf(nv, "vpn_crt_client%d_ca", unit);
-	tcapi_set(node, nv, "");
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-	snprintf(file_path, sizeof(file_path) -1, "%s/%s", OVPN_FS_PATH, nv);
-	unlink(file_path);
-#endif
-	sprintf(nv, "vpn_crt_client%d_crt", unit);
-	tcapi_set(node, nv, "");
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-	snprintf(file_path, sizeof(file_path) -1, "%s/%s", OVPN_FS_PATH, nv);
-	unlink(file_path);
-#endif
-	sprintf(nv, "vpn_crt_client%d_key", unit);
-	tcapi_set(node, nv, "");
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-	snprintf(file_path, sizeof(file_path) -1, "%s/%s", OVPN_FS_PATH, nv);
-	unlink(file_path);
-#endif
-	sprintf(nv, "vpn_crt_client%d_static", unit);
-	tcapi_set(node, nv, "");
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-	snprintf(file_path, sizeof(file_path) -1, "%s/%s", OVPN_FS_PATH, nv);
-	unlink(file_path);
-#endif
-	sprintf(nv, "vpn_crt_client%d_crl", unit);
-	tcapi_set(node, nv, "");
-#if defined(TCSUPPORT_ADD_JFFS) || defined(TCSUPPORT_SQUASHFS_ADD_YAFFS)
-	snprintf(file_path, sizeof(file_path) -1, "%s/%s", OVPN_FS_PATH, nv);
-	unlink(file_path);
-#endif
-}
-
 void parse_openvpn_status(int unit){
 	FILE *fpi, *fpo;
 	char buf[512];
 	char *token;
-	char node[MAXLEN_NODE_NAME];
-	char value[MAXLEN_TCAPI_MSG];
-	enum { TLS, SECRET, CUSTOM } cryptMode = CUSTOM;
+	ovpn_sconf_t conf;
 
 	sprintf(buf, "/etc/openvpn/server%d/status", unit);
 	fpi = fopen(buf, "r");
@@ -726,23 +607,14 @@ void parse_openvpn_status(int unit){
 	sprintf(buf, "/etc/openvpn/server%d/client_status", unit);
 	fpo = fopen(buf, "w");
 
-	snprintf(node, sizeof(node), "OpenVPN_Entry%d", unit + SERVER_IF_START);
-
-	CLEAR(value);
-	tcapi_get(node, "crypt", value);
-	if ( strstr(value, "tls") )
-		cryptMode = TLS;
-	else if ( strstr(value, "secret") )
-		cryptMode = SECRET;
-	else if ( strstr(value, "custom") )
-		cryptMode = CUSTOM;
+	get_ovpn_sconf(unit, &conf);
 
 	if(fpi && fpo) {
 		while(!feof(fpi)){
 			CLEAR(buf);
 			if (!fgets(buf, sizeof(buf), fpi))
 				break;
-			if(!strncmp(buf, "CLIENT_LIST", 11) && cryptMode == TLS) {
+			if(!strncmp(buf, "CLIENT_LIST", 11) && conf.auth_mode == OVPN_AUTH_TLS) {
 				//printf("%s", buf);
 				token = strtok(buf, ",");	//CLIENT_LIST
 				token = strtok(NULL, ",");	//Common Name
@@ -752,8 +624,7 @@ void parse_openvpn_status(int unit){
 				else
 					fprintf(fpo, "NoRealAddress ");
 
-				if(tcapi_match(node, "iface", "tap")
-					&& tcapi_match(node, "dhcp", "1")) {
+				if( conf.if_type == OVPN_IF_TAP && conf.dhcp == 1) {
 					fprintf(fpo, "VirtualAddressAssignedByDhcp ");
 				}
 				else {
@@ -773,7 +644,7 @@ void parse_openvpn_status(int unit){
 				else
 					fprintf(fpo, "NoUsername");
 			}
-			else if(!strncmp(buf, "REMOTE", 6) && cryptMode == SECRET) {
+			else if(!strncmp(buf, "REMOTE", 6) && conf.auth_mode == OVPN_AUTH_STATIC) {
 				token = strtok(buf, ",");	//REMOTE,
 				token = strtok(NULL, ",");	//Real Address
 				if(token)
@@ -781,9 +652,7 @@ void parse_openvpn_status(int unit){
 				else
 					fprintf(fpo, "NoRealAddress ");
 
-				CLEAR(value);
-				tcapi_get(node, "remote", value);
-				fprintf(fpo, "%s ", value);
+				fprintf(fpo, "%s ", conf.remote);
 				fprintf(fpo, "Static_Key");
 				break;
 			}

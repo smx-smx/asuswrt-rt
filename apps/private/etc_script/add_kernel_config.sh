@@ -63,6 +63,16 @@ if [ "$TCSUPPORT_SAMBA" != "" ] || [ "$TCSUPPORT_DMS" != "" ] || [ "$TCSUPPORT_6
 		SEDCMD="$SEDCMD -e 's/CONFIG_JFFS2_CMODE_PRIORITY=y/# CONFIG_JFFS2_CMODE_PRIORITY is not set/'"
 	fi
 
+	if [ "$TCSUPPORT_PIMD" != "" ];then
+		echo "Add PIM config for PIMD"
+		SEDCMD="$SEDCMD -e 's/# CONFIG_IP_PIMSM_V1 is not set/CONFIG_IP_PIMSM_V1=y/'"
+		SEDCMD="$SEDCMD -e 's/# CONFIG_IP_PIMSM_V2 is not set/CONFIG_IP_PIMSM_V2=y/'"
+	else
+		echo "Remove kernel config of PIMD"
+		SEDCMD="$SEDCMD -e 's/CONFIG_IP_PIMSM_V1=y/# CONFIG_IP_PIMSM_V1 is not set/'"
+		SEDCMD="$SEDCMD -e 's/CONFIG_IP_PIMSM_V2=y/# CONFIG_IP_PIMSM_V2 is not set/'"
+	fi
+
 	echo "sed $SEDCMD"
 	gen="sed $SEDCMD $KERNEL_CONFIG"
 	eval $gen > $NEW_KERNEL_CONFIG

@@ -58,16 +58,17 @@ load_parameters_to_generic()
 <title>ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","menu5_1_2","s")%></title>
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/ajax.js"></script>
-<script type="text/javascript" src="/detect.js"></script>
-<script type="text/javascript" src="/jquery.js"></script>
-<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script language="JavaScript" type="text/javascript" src="/general.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/popup.js"></script>
+<script language="JavaScript" type="text/javascript" src="/ajax.js"></script>
+<script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
-var $kk = jQuery.noConflict();
+var $j = jQuery.noConflict();
 </script>
 <script>
 wan_route_x = '';
@@ -88,20 +89,22 @@ var timerID = null;
 var timerRunning = false;
 var timeout = 2000;
 var delay = 1000;
+var radio_2 = '<% tcWebApi_get("WLan_Entry","wl0_radio_on","s"); %>';
+var radio_5 = '<% tcWebApi_get("WLan_Entry","wl1_radio_on","s"); %>';
 
 function initial(){
 	show_menu();
 
 	if(!wl_info.band5g_support){	//single band
-		$("wps_band_tr").style.display = "none";
+		document.getElementById("wps_band_tr").style.display = "none";
 
 	}else{										//Dual band
-		$("wps_band_tr").style.display = "";
+		document.getElementById("wps_band_tr").style.display = "";
 		if(document.form.wl_unit.value == 1){
-			$("wps_band_word").innerHTML = "5GHz";
+			document.getElementById("wps_band_word").innerHTML = "5GHz";
 		}
 		else if(document.form.wl_unit.value == 0){
-			$("wps_band_word").innerHTML = "2.4GHz";
+			document.getElementById("wps_band_word").innerHTML = "2.4GHz";
 		}
 	}
 
@@ -115,19 +118,23 @@ function initial(){
 	}
 
 	if((document.form.APOn.value == "0") || (document.form.radio_on.value == "0")){
-		$("wpsDesc").style.display = "none";
-		$("wpsmethod_tr").style.display = "none";
-		$("wps_conf_tr").style.display = "none";
+		document.getElementById("wpsDesc").style.display = "none";
+		document.getElementById("wpsmethod_tr").style.display = "none";
+		document.getElementById("wps_conf_tr").style.display = "none";
 		wps_enable_old = "0";
 	}
 	
 	//Hide button WPS_reset or not
 	if(wps_reset_support == -1){
-		$("wps_conf_tr").style.display = "none";
+		document.getElementById("wps_conf_tr").style.display = "none";
 		document.getElementById("Reset_OOB").disabled = true;
 	}
 	
-	loadXML();
+	loadXML();	
+	if("<% tcWebApi_get("WLan_Entry","HideSSID","s"); %>" == "1"){		
+		document.getElementById('WPS_hideSSID_hint').innerHTML = "<% tcWebApi_get("String_Entry","FW_note","s") %> <% tcWebApi_get("String_Entry","WPS_hideSSID_hint","s") %>";
+		document.getElementById('WPS_hideSSID_hint').style.display = "";
+	}
 
 }
 
@@ -139,7 +146,7 @@ function SwitchBand(){
 			document.form.wl_unit.value = "1";
 	}
 	else{
-		$("wps_band_hint").innerHTML = "* <%tcWebApi_get("String_Entry","WC11b_x_WPSband_hint","s")%>";
+		document.getElementById("wps_band_hint").innerHTML = "* <%tcWebApi_get("String_Entry","WC11b_x_WPSband_hint","s")%>";
 		return false;
 	}
 	showLoading(2);
@@ -173,12 +180,12 @@ function PIN_PBC_Check(){
 
 function changemethod(wpsmethod){
 	if(wpsmethod == 0){
-		$("starBtn").style.marginTop = "9px";
-		$("wps_sta_pin").style.display = "none";
+		document.getElementById("starBtn").style.marginTop = "9px";
+		document.getElementById("wps_sta_pin").style.display = "none";
 	}
 	else{
-		$("starBtn").style.marginTop = "5px";
-		$("wps_sta_pin").style.display = "";
+		document.getElementById("starBtn").style.marginTop = "5px";
+		document.getElementById("wps_sta_pin").style.display = "";
 	}
 }
 
@@ -227,13 +234,13 @@ function doWPSUseChange(flag){
 	}
 	
 	if(flag == 0){
-		$("wpsDesc").style.display = "none";
-		$("wpsmethod_tr").style.display = "none";
+		document.getElementById("wpsDesc").style.display = "none";
+		document.getElementById("wpsmethod_tr").style.display = "none";
 		document.form.wps_enable.value = "0";
 	}
 	else{
-		$("wpsDesc").style.display = "";
-		$("wpsmethod_tr").style.display = "";
+		document.getElementById("wpsDesc").style.display = "";
+		document.getElementById("wpsmethod_tr").style.display = "";
 		document.form.wps_enable.value = "1";
 	}
 
@@ -318,72 +325,87 @@ function refresh_wpsinfo(xmldoc){
 }
 
 function show_wsc_status(wps_infos){
-	if( (wps_infos[11].firstChild.nodeValue == "OPEN" && document.form.wl_wep_x.value != "0")
+
+	var controlDisplayItem = function () {
+		document.getElementById("wps_state_tr").style.display = "none";
+		document.getElementById("devicePIN_tr").style.display = "none";
+		document.getElementById("wpsmethod_tr").style.display = "none";
+	};
+
+	// First filter whether turn on Wi-Fi or not
+	if(document.form.wl_unit.value == 0 && radio_2 != "1") {        //2.4GHz
+			document.getElementById("wps_enable_hint").innerHTML = "* <%tcWebApi_get("String_Entry","note_turn_wifi_on_WPS","s")%> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' href=\"Advanced_WAdvanced_Content.asp?af=radio_on\"><%tcWebApi_get("String_Entry","btn_go","s")%></a>";
+			controlDisplayItem();
+			return;
+	}
+	else if(document.form.wl_unit.value == 1 && radio_5 != "1") {   //5GHz
+			document.getElementById("wps_enable_hint").innerHTML = "* <%tcWebApi_get("String_Entry","note_turn_wifi_on_WPS","s")%> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' href=\"Advanced_WAdvanced_Content.asp?af=radio_on\"><%tcWebApi_get("String_Entry","btn_go","s")%></a>"
+			controlDisplayItem();
+			return;
+	}
+	else if( (wps_infos[11].firstChild.nodeValue == "OPEN" && document.form.wl_wep_x.value != "0")
 		  || wps_infos[11].firstChild.nodeValue == "SHARED"
 		  || wps_infos[11].firstChild.nodeValue == "WPAPSK"
 			|| wps_infos[11].firstChild.nodeValue == "WPA"
 			|| wps_infos[11].firstChild.nodeValue == "WPA2"
 			|| wps_infos[11].firstChild.nodeValue == "WPA1WPA2"
 			|| wps_infos[11].firstChild.nodeValue == "Radius"){
-		$("wps_enable_hint").innerHTML = "<%tcWebApi_get("String_Entry","WPS_weptkip_hint","s")%><br><%tcWebApi_get("String_Entry","wsc_mode_hint1","s")%> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;' href=\"Advanced_Wireless_Content.asp?af=wl_auth_mode_x\"><%tcWebApi_get("String_Entry","menu5_1_1","s")%></a> <%tcWebApi_get("String_Entry","wsc_mode_hint2","s")%>"
-		$("wps_state_tr").style.display = "none";
-		$("devicePIN_tr").style.display = "none";
-		$("wpsmethod_tr").style.display = "none";
-		$("wps_band_tr").style.display = "none";
+		document.getElementById("wps_enable_hint").innerHTML = "<%tcWebApi_get("String_Entry","WPS_weptkip_hint","s")%><br><%tcWebApi_get("String_Entry","wsc_mode_hint1","s")%> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;' href=\"Advanced_Wireless_Content.asp?af=wl_auth_mode_x\"><%tcWebApi_get("String_Entry","menu5_1_1","s")%></a> <%tcWebApi_get("String_Entry","wsc_mode_hint2","s")%>";
+		controlDisplayItem();
+		document.getElementById("wps_band_tr").style.display = "none";
 
 		return;
 	}
 
 	// enable button
 	if(wps_enable_old == "1"){
-		$("wps_enable_word").innerHTML = "<%tcWebApi_get("String_Entry","btn_Enabled","s")%>";
-		$("enableWPSbtn").value = "<%tcWebApi_get("String_Entry","btn_disable","s")%>";
-		$("switchWPSbtn").style.display = "none";
+		document.getElementById("wps_enable_word").innerHTML = "<%tcWebApi_get("String_Entry","btn_Enabled","s")%>";
+		document.getElementById("enableWPSbtn").value = "<%tcWebApi_get("String_Entry","btn_disable","s")%>";
+		document.getElementById("switchWPSbtn").style.display = "none";
 	}
 	else{
-		$("wps_enable_word").innerHTML = "<%tcWebApi_get("String_Entry","btn_Disabled","s")%>"
-		$("enableWPSbtn").value = "<%tcWebApi_get("String_Entry","btn_Enabled","s")%>";
+		document.getElementById("wps_enable_word").innerHTML = "<%tcWebApi_get("String_Entry","btn_Disabled","s")%>"
+		document.getElementById("enableWPSbtn").value = "<%tcWebApi_get("String_Entry","btn_Enabled","s")%>";
 
 		if(wps_infos[12].firstChild.nodeValue == 0){
-			$("wps_band_word").innerHTML = "2.4GHz";
+			document.getElementById("wps_band_word").innerHTML = "2.4GHz";
 		}
 		else if(wps_infos[12].firstChild.nodeValue == 1){
-			$("wps_band_word").innerHTML = "5GHz";
+			document.getElementById("wps_band_word").innerHTML = "5GHz";
 		}
-		$("switchWPSbtn").style.display = "";
-	}
-	//$("wps_enable_block").style.display = "";
+		document.getElementById("switchWPSbtn").style.display = "";
+	}	
 
 	// WPS status
 	if(wps_enable_old == "0"){
-		$("wps_state_tr").style.display = "";
-		$("wps_state_td").innerHTML = "Not used";
-		$("WPSConnTble").style.display = "none";
-		$("wpsDesc").style.display = "none";
+		document.getElementById("wps_state_tr").style.display = "";
+		document.getElementById("wps_state_td").innerHTML = "Not used";
+		document.getElementById("WPSConnTble").style.display = "none";
+		document.getElementById("wpsDesc").style.display = "none";
 	}
 	else{
-		$("wps_state_tr").style.display = "";
-		$("wps_state_td").innerHTML = wps_infos[0].firstChild.nodeValue;
-		$("WPSConnTble").style.display = "";
-		$("wpsDesc").style.display = "";
+		document.getElementById("wps_state_tr").style.display = "";
+		document.getElementById("wps_state_td").innerHTML = wps_infos[0].firstChild.nodeValue;
+		document.getElementById("WPSConnTble").style.display = "";
+		document.getElementById("wpsDesc").style.display = "";
 	}
 
 	// device's PIN code
-	$("devicePIN_tr").style.display = "";
-	$("devicePIN").value = wps_infos[7].firstChild.nodeValue;
+	document.getElementById("devicePIN_tr").style.display = "";
+	document.getElementById("devicePIN").value = wps_infos[7].firstChild.nodeValue;
 
 	// the input of the client's PIN code
-	$("wpsmethod_tr").style.display = "";
+	document.getElementById("wpsmethod_tr").style.display = "";
 	if(wps_enable_old == "1"){
 		inputCtrl(document.form.wps_sta_pin, 1);
 		if(wps_infos[1].firstChild.nodeValue == "Yes")
-			$("Reset_OOB").style.display = "";
+			document.getElementById("Reset_OOB").style.display = "";
 		else
-			$("Reset_OOB").style.display = "none";
+			document.getElementById("Reset_OOB").style.display = "none";
 	}
 	else{
 		inputCtrl(document.form.wps_sta_pin, 0);
-		$("Reset_OOB").style.display = "none";
+		document.getElementById("Reset_OOB").style.display = "none";
 	}
 
 	// show connecting btn
@@ -398,30 +420,29 @@ function show_wsc_status(wps_infos){
 	}
 
 	if(show_method == 1) {
-		$("addEnrolleebtn_client").style.display = "";
-		$("WPSConnTble").style.display = "";
-		$("wpsDesc").style.display = "";
+		document.getElementById("addEnrolleebtn_client").style.display = "";
+		document.getElementById("WPSConnTble").style.display = "";
+		document.getElementById("wpsDesc").style.display = "";
 		document.form.wps_sta_pin.focus();
 	}
 	else{
-		$("addEnrolleebtn_client").style.display = "none";
-		$("WPSConnTble").style.display = "none";
-		$("wpsDesc").style.display = "none";
+		document.getElementById("addEnrolleebtn_client").style.display = "none";
+		document.getElementById("WPSConnTble").style.display = "none";
+		document.getElementById("wpsDesc").style.display = "none";
 	}
 	*/
 
 	if(wps_infos[0].firstChild.nodeValue == "Start WPS Process")
-		$("wps_pin_hint").style.display = "inline";
+		document.getElementById("wps_pin_hint").style.display = "inline";
 	else
-		$("wps_pin_hint").style.display = "none";
+		document.getElementById("wps_pin_hint").style.display = "none";
 
 
 	if(wps_infos[1].firstChild.nodeValue == "No")
-			$("wps_config_td").innerHTML = "No";
+			document.getElementById("wps_config_td").innerHTML = "No";
 	else
-			$("wps_config_td").innerHTML = "Yes";
+			document.getElementById("wps_config_td").innerHTML = "Yes";
 }
-
 
 </script>
 </head>
@@ -479,9 +500,9 @@ function show_wsc_status(wps_infos){
 <td bgcolor="#4D595D" valign="top" >
 <div>&nbsp;</div>
 		  <div class="formfonttitle"><%tcWebApi_get("String_Entry","menu5_1","s")%> - <%tcWebApi_get("String_Entry","menu5_1_2","s")%></div>
-<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		  <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 		  <div class="formfontdesc"><%tcWebApi_get("String_Entry","WC11b_display6_sd","s")%></div>
-		  <div id="WPS_hideSSID_hint" class="formfontdesc" style="color:#FFCC00;"><%tcWebApi_get("String_Entry","WPS_hideSSID_hint","s")%></div>
+		  <div id="WPS_hideSSID_hint" class="formfontdesc" style="display:none;color:#FFCC00;"></div>
 
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 
@@ -497,7 +518,7 @@ function show_wsc_status(wps_infos){
 			<div class="left" style="width: 94px;" id="radio_wps_enable"></div>
 				<div class="clear"></div>
 				<script type="text/javascript">
-					$kk('#radio_wps_enable').iphoneSwitch( document.form.wps_enable.value,
+					$j('#radio_wps_enable').iphoneSwitch( document.form.wps_enable.value,
 						 function() {
 							doWPSUseChange(1);
 						 },
@@ -567,7 +588,7 @@ function show_wsc_status(wps_infos){
 		<td>
 			<input type="radio" value="0" name="WPSMode_Selection" class="input" onClick="changemethod(0);" <%If tcWebApi_get("WLan_Entry","WPSMode","h") = "0" then asp_Write("checked") end if%> >PBC
 			<input type="radio" value="1" name="WPSMode_Selection" class="input" onClick="changemethod(1);" <%If tcWebApi_get("WLan_Entry","WPSMode","h") = "1" then asp_Write("checked") end if%> <%If tcWebApi_get("WLan_Entry","WPSMode","h") = "" then asp_Write("checked") end if%> >PIN Code
-			<input type="text" id="wps_sta_pin" size="9" maxlength="9" class="input_12_table" name="WPSEnrolleePINCode" onblur="PIN_PBC_Check()" value="" onKeyPress="return is_string(this, event)">
+			<input type="text" id="wps_sta_pin" size="9" maxlength="9" class="input_12_table" name="WPSEnrolleePINCode" onblur="PIN_PBC_Check()" value="" onKeyPress="return validator.isString(this, event)">
 			<div id="starBtn" style="margin-top:10px;">
 				<input class="button_gen" type="button" id="addEnrolleebtn_client" style="margin-left:5px;" name="StartWPS" onClick="doStartWPS()" value="<% tcWebApi_Get("String_Entry", "WlanWPStimerRunning0Text", "s") %>">
 			</div>

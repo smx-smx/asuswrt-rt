@@ -1,24 +1,29 @@
 <%
 If Request_Form("IPTV_flag") = "1" Then
-	TCWebApi_set("IPTV_Entry","ad_mr_enable_x","mr_enable_x")
+	TCWebApi_set("IPTV_Entry","ad_mr_enable_x","igmp_enable_x")
+	TCWebApi_set("IPTV_Entry","ad_pim_enable_x","pim_enable_x")
 	TCWebApi_set("IPTV_Entry","ad_wan_port","pvc_service_num")
 	TCWebApi_set("IPTV_Entry","ad_udpxy_enable_x","udpxy_enable_x")
 	TCWebApi_set("IPTV_Entry","ad_rmvlan","rmvlan_x")
+	TCWebApi_set("IPTV_Entry","TransMode","wan_TransMode")
+	TCWebApi_commit("IPTV_Entry")
 Elseif Request_Form("IPTV_flag") = "2" Then
-	TCWebApi_set("IPTV_Entry","vd_mr_enable_x","mr_enable_x")
+	TCWebApi_set("IPTV_Entry","vd_mr_enable_x","igmp_enable_x")
+	TCWebApi_set("IPTV_Entry","vd_pim_enable_x","pim_enable_x")
 	TCWebApi_set("IPTV_Entry","vd_wan_port","pvc_service_num")
 	TCWebApi_set("IPTV_Entry","vd_udpxy_enable_x","udpxy_enable_x")
 	TCWebApi_set("IPTV_Entry","vd_rmvlan","rmvlan_x")
+	TCWebApi_set("IPTV_Entry","TransMode","wan_TransMode")
+	TCWebApi_commit("IPTV_Entry")
 Elseif Request_Form("IPTV_flag") = "3" Then
-	TCWebApi_set("IPTV_Entry","eth_mr_enable_x","mr_enable_x")
+	TCWebApi_set("IPTV_Entry","eth_mr_enable_x","igmp_enable_x")
+	TCWebApi_set("IPTV_Entry","eth_pim_enable_x","pim_enable_x")
 	TCWebApi_set("IPTV_Entry","eth_wan_port","pvc_service_num")
 	TCWebApi_set("IPTV_Entry","eth_udpxy_enable_x","udpxy_enable_x")
 	TCWebApi_set("IPTV_Entry","eth_rmvlan","rmvlan_x")
-End If
-
-If Request_Form("IPTV_flag") <> "0" Then
+	TCWebApi_set("IPTV_Entry","TransMode","wan_TransMode")
 	TCWebApi_commit("IPTV_Entry")
-End If	
+End If
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -51,10 +56,19 @@ var iptv_list_eth = [<%get_iptv_wan_list_eth()%>];
 
 var wans_dualwan_orig = '<%tcWebApi_Get("Dualwan_Entry","wans_dualwan","s")%>';
 var isMultiService_supported = '<%tcWebApi_Get("WebCustom_Entry","isMultiSerSupported","s")%>';
-	
+var isPIMDSupport = '<%tcWebApi_Get("WebCustom_Entry","isPIMDSupport","s")%>';
+var ad_mr_enable_x =  '<% tcWebApi_get("IPTV_Entry","ad_mr_enable_x","s") %>';
+var vd_mr_enable_x =  '<% tcWebApi_get("IPTV_Entry","vd_mr_enable_x","s") %>';
+var eth_mr_enable_x =  '<% tcWebApi_get("IPTV_Entry","eth_mr_enable_x","s") %>';
+var ad_pim_enable_x = '<% tcWebApi_get("IPTV_Entry","ad_pim_enable_x","s") %>';
+var vd_pim_enable_x = '<% tcWebApi_get("IPTV_Entry","vd_pim_enable_x","s") %>';
+var eth_pim_enable_x = '<% tcWebApi_get("IPTV_Entry","eth_pim_enable_x","s") %>';
+var iptv_wan_TransMode = '<% tcWebApi_get("IPTV_Entry","TransMode","s") %>';
+
 function initial(){
 	show_menu();	
 	load_TransMode();
+	load_MulticastRouting();
 	if(wans_dualwan_orig == "lan none" || wans_dualwan_orig == "usb none" ||
 		wans_dualwan_orig == "lan usb" || wans_dualwan_orig == "usb lan"){
 		doTransChange("disabled");
@@ -63,17 +77,30 @@ function initial(){
 
 function load_TransMode(){
 	if(iptv_list_ad.length > 0){
-		add_option(document.form.wan_TransMode, "ADSL WAN (ATM)", "ATM", 1);
+		if(iptv_wan_TransMode == "ATM") {
+			add_option(document.form.wan_TransMode, "ADSL WAN (ATM)", "ATM", 1);
+		}
+		else {
+			add_option(document.form.wan_TransMode, "ADSL WAN (ATM)", "ATM", 0);
+		}
 	}	
-	if(isMultiService_supported == "Yes" && iptv_list_vd.length > 0){
-		add_option(document.form.wan_TransMode, "VDSL WAN (PTM)", "PTM", 0);
+	if(iptv_list_vd.length > 0){
+		if(iptv_wan_TransMode == "PTM") {
+			add_option(document.form.wan_TransMode, "VDSL WAN (PTM)", "PTM", 1);
+		}
+		else {
+			add_option(document.form.wan_TransMode, "VDSL WAN (PTM)", "PTM", 0);
+		}
 	}	
-	if(isMultiService_supported == "Yes" && iptv_list_eth.length > 0){
-		if(model_name != "DSL-N66U"){	//modeldep: DSL-N66U not support IPTV through Ethernet WAN
+	if(iptv_list_eth.length > 0){
+		if(iptv_wan_TransMode == "Ethernet") {
+			add_option(document.form.wan_TransMode, "Ethernet WAN", "Ethernet", 1);
+		}
+		else {
 			add_option(document.form.wan_TransMode, "Ethernet WAN", "Ethernet", 0);
 		}
 	}
-		
+
 	if(document.form.wan_TransMode.length == 0){
 		if("<% tcWebApi_get("Wan_Common","TransMode","s") %>" == "ATM"){
 			add_option(document.form.wan_TransMode, "ADSL WAN (ATM)", "ATM", 1);
@@ -81,6 +108,8 @@ function load_TransMode(){
 			if(iptv_list_ad.length == 0){	//Default setting
 				document.form.mr_enable_x.value = "0";
 				document.form.mr_enable_x[1].disabled = true;
+				if(isPIMDSupport == "Yes")
+					document.form.mr_enable_x[2].disabled = true;
 				enable_wan_port("0");
 			}	
 	
@@ -91,12 +120,10 @@ function load_TransMode(){
 			if(iptv_list_vd.length == 0){	//Default setting
 				document.form.mr_enable_x.value = "0";
 				document.form.mr_enable_x[1].disabled = true;
+				if(isPIMDSupport == "Yes")
+					document.form.mr_enable_x[2].disabled = true;
 				enable_wan_port("0");
 			}
-			
-			if(isMultiService_supported != "Yes"){
-				doTransChange("disabled");
-			}	
 		}
 		else if("<% tcWebApi_get("Wan_Common","TransMode","s") %>" == "Ethernet"){
 			add_option(document.form.wan_TransMode, "Ethernet WAN", "Ethernet", 1);
@@ -104,12 +131,10 @@ function load_TransMode(){
 			if(iptv_list_eth.length == 0){	//Default setting
 				document.form.mr_enable_x.value = "0";
 				document.form.mr_enable_x[1].disabled = true;
+				if(isPIMDSupport == "Yes")
+					document.form.mr_enable_x[2].disabled = true;
 				enable_wan_port("0");
 			}
-			
-			/*if(isMultiService_supported != "Yes" || model_name == "DSL-N66U"){		//modeldep: DSL-N66U not support IPTV through Ethernet WAN
-				doTransChange("disabled");
-			}*/
 		}			
 	}
 	else{
@@ -117,8 +142,38 @@ function load_TransMode(){
 	}	
 }
 
+function load_MulticastRouting(){
+	if(isPIMDSupport == "Yes"){
+		var selected;
+		if(document.form.wan_TransMode.value == "ATM" && ad_pim_enable_x == "1"
+			|| document.form.wan_TransMode.value == "PTM" && vd_pim_enable_x == "1"
+			|| document.form.wan_TransMode.value == "Ethernet" && eth_pim_enable_x == "1"
+		) {
+			selected = 1;
+		}
+		else
+			selected = 0;
+		add_option(document.form.mr_enable_x, "PIM", "2", selected);
+	}
+}
+
+function compile_multicast_routing(){
+	if(document.form.mr_enable_x){
+		if(document.form.mr_enable_x.value == "1"){
+			document.form.igmp_enable_x.value = "1";
+			document.form.pim_enable_x.value = "0";
+		}
+		else if(document.form.mr_enable_x.value == "2"){
+			document.form.igmp_enable_x.value = "0";
+			document.form.pim_enable_x.value = "1";
+		}
+	}
+}
+
 function applyRule(){
 	if(validForm()){
+		
+		compile_multicast_routing();
 						
 		showLoading(5);
 		setTimeout("redirect();", 5000);
@@ -155,25 +210,33 @@ function Setting_load_disabled(){
 	document.getElementById("lan_none_desc").style.display = "";
 	document.form.wan_TransMode.disabled = true;
 	document.form.mr_enable_x.disabled = true;
+	document.form.pvc_service_num.disabled = true;
 	document.form.udpxy_enable_x.disabled = true;
 	document.form.rmvlan_x.disabled = true;
 	document.form.wan_TransMode.style.backgroundColor = "#CCCCCC";
 	document.form.mr_enable_x.style.backgroundColor = "#CCCCCC";
+	document.form.pvc_service_num.style.backgroundColor = "#CCCCCC";
 	document.form.udpxy_enable_x.style.backgroundImage = "url(/images/New_ui/inputbg_disable.png)";
 	document.form.rmvlan_x.style.backgroundColor = "#CCCCCC";
 	document.getElementById("button_gen_div").style.display = "none";
 }
 
 /*
-[mr_enable_x]  0 (disable) / 1 (enable) :: ad_mr_enable_x, vd_mr_enable_x, eth_mr_enable_x
+[mr_enable_x]  0 (disable) / 1 (IGMP Proxy) / 2 (PIM) :: ad_mr_enable_x, vd_mr_enable_x, eth_mr_enable_x / ad_pim_enable_x, vd_pim_enable_x, eth_pim_enable_x
 [pvc_service_num]  0~7 :: ad_wan_port, vd_wan_port, eth_wan_port
 [udpxy_enable_x]  1024 ~ 65535 :: ad_udpxy_enable_x, vd_udpxy_enable_x, eth_udpxy_enable_x
 [rmvlan_x]  0 (disable) / 1 (enable) :: ad_rmvlan, vd_rmvlan, eth_rmvlan
 */
 
 function Setting_load_ATM(){
-	document.form.mr_enable_x.value = "<% tcWebApi_get("IPTV_Entry","ad_mr_enable_x","s") %>";
-	enable_wan_port("<% tcWebApi_get("IPTV_Entry","ad_mr_enable_x","s") %>");
+	if(ad_mr_enable_x == "1" && ad_pim_enable_x == "0")
+		document.form.mr_enable_x.value = "1";
+	else if(ad_mr_enable_x == "0" && ad_pim_enable_x == "1")
+		document.form.mr_enable_x.value = "2";
+	else
+		document.form.mr_enable_x.value = "0";	
+		
+	enable_wan_port(document.form.mr_enable_x.value);
 	free_options(document.form.pvc_service_num);
 	for(var i=0; i<iptv_list_ad.length; i++){
 		var pvc_service_num_temp = eval(iptv_list_ad[i]+1);
@@ -185,15 +248,19 @@ function Setting_load_ATM(){
 		}	
 	}	
 	document.form.udpxy_enable_x.value = "<% tcWebApi_get("IPTV_Entry","ad_udpxy_enable_x","s") %>";
-	<%if tcWebApi_get("WebCustom_Entry","isMultiSerSupported","h") = "Yes" then%>
-		inputCtrl(document.form.rmvlan_x, 1);
-		document.form.rmvlan_x.value = "<% tcWebApi_get("IPTV_Entry","ad_rmvlan","s") %>";
-	<% end if %>
+	inputCtrl(document.form.rmvlan_x, 1);
+	document.form.rmvlan_x.value = "<% tcWebApi_get("IPTV_Entry","ad_rmvlan","s") %>";
 	document.form.IPTV_flag.value = 1;
 }
 function Setting_load_PTM(){
-	document.form.mr_enable_x.value = "<% tcWebApi_get("IPTV_Entry","vd_mr_enable_x","s") %>";
-	enable_wan_port("<% tcWebApi_get("IPTV_Entry","vd_mr_enable_x","s") %>");
+	if(vd_mr_enable_x == "1" && vd_pim_enable_x == "0")
+		document.form.mr_enable_x.value = "1";
+	else if(vd_mr_enable_x == "0" && vd_pim_enable_x == "1")
+		document.form.mr_enable_x.value = "2";
+	else
+		document.form.mr_enable_x.value = "0";
+		
+	enable_wan_port(document.form.mr_enable_x.value);
 	free_options(document.form.pvc_service_num);
 	for(var i=0; i<iptv_list_vd.length; i++){
 		var pvc_service_num_temp = eval(iptv_list_vd[i]+1);		
@@ -208,12 +275,20 @@ function Setting_load_PTM(){
 	<%if tcWebApi_get("WebCustom_Entry","isMultiSerSupported","h") = "Yes" then%>
 		inputCtrl(document.form.rmvlan_x, 1);
 		document.form.rmvlan_x.value = "<% tcWebApi_get("IPTV_Entry","vd_rmvlan","s") %>";
-	<% end if %>	
+	<%else%>
+		inputCtrl(document.form.rmvlan_x, 0);
+	<% end if %>
 	document.form.IPTV_flag.value = 2;
 }
 function Setting_load_Ethernet(){
-	document.form.mr_enable_x.value = "<% tcWebApi_get("IPTV_Entry","eth_mr_enable_x","s") %>";
-	enable_wan_port("<% tcWebApi_get("IPTV_Entry","eth_mr_enable_x","s") %>");
+	if(eth_mr_enable_x == "1" && eth_pim_enable_x == "0")
+		document.form.mr_enable_x.value = "1";
+	else if(eth_mr_enable_x == "0" && eth_pim_enable_x == "1")
+		document.form.mr_enable_x.value = "2";
+	else
+		document.form.mr_enable_x.value = "0";
+		
+	enable_wan_port(document.form.mr_enable_x.value);
 	free_options(document.form.pvc_service_num);
 	<%if tcWebApi_get("WebCustom_Entry","isMultiSerSupported","h") = "Yes" then%>		
 		for(var i=0; i<iptv_list_eth.length; i++){
@@ -240,6 +315,7 @@ function Setting_load_Ethernet(){
 }
 
 function enable_wan_port(flag){
+//	if(flag==1 || flag==2){	//enable
 	if(flag==1){	//enable
 		inputCtrl(document.form.pvc_service_num, 1);
 		if(document.form.wan_TransMode.value == "Ethernet" && isMultiService_supported != "Yes"){
@@ -282,6 +358,8 @@ function enable_wan_port(flag){
 <input type="hidden" name="IPTV_flag" value="0">
 <input type="hidden" name="firmver" value="<% tcWebApi_staticGet("DeviceInfo","FwVer","s") %>">
 <input type="hidden" name="rmvlan" value='<% tcWebApi_get("IPTV_Entry","rmvlan","s"); %>'>
+<input type="hidden" name="igmp_enable_x" value="0">
+<input type="hidden" name="pim_enable_x" value="0">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 <tr>
 <td width="17">&nbsp;</td>
@@ -326,11 +404,11 @@ function enable_wan_port(flag){
 	</tr>
 	</thead>	
 	<tr>
-		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,11);"><%tcWebApi_get("String_Entry","RC_GWMulticastEnable_in","s")%> (IGMP Proxy)</a></th>
+		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,11);"><%tcWebApi_get("String_Entry","RC_GWMulticastEnable_in","s")%></a></th>
 		<td>
 			<select name="mr_enable_x" class="input_option" onChange="enable_wan_port(this.value);">
 				<option value="0"><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_buttonname","s")%></option>
-				<option value="1"><%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_button1name","s")%></option>
+				<option value="1">IGMP Proxy</option>
 			</select>
 		</td>
 	</tr>
@@ -344,10 +422,9 @@ function enable_wan_port(flag){
 	<tr>
 		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(6, 6);"><%tcWebApi_get("String_Entry","RC_IPTV_in","s")%></a></th>
 		<td>
-			<input id="udpxy_enable_x" type="text" maxlength="5" class="input_6_table" name="udpxy_enable_x" value="<%tcWebApi_get("IPTV_Entry", "udpxy_enable_x", "s")%>" onkeypress="return is_number(this,event);">
+			<input id="udpxy_enable_x" type="text" maxlength="5" class="input_6_table" name="udpxy_enable_x" value="<%tcWebApi_get("IPTV_Entry", "udpxy_enable_x", "s")%>" onkeypress="return validator.isNumber(this,event);">
 		</td>
 	</tr>
-	<%if tcWebApi_get("WebCustom_Entry","isMultiSerSupported","h") = "Yes" then%>
 	<tr>
 		<th>Remove VLAN TAG from WAN</th>
 		<td>
@@ -357,7 +434,6 @@ function enable_wan_port(flag){
 			</select>
 		</td>
 	</tr>
-	<% end if %>
 </table>
 
 </div>

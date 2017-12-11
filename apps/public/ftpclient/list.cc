@@ -22,7 +22,6 @@ void replace_char_in_str(char *str,char newchar,char oldchar){
 
 void my_local_mkdir(char *path)//看是否有此(path)路径，没有就创建
 {
-    //char error_message[256];
     DIR *dir;
     if(NULL == (dir = opendir(path)))
     {
@@ -43,7 +42,6 @@ int is_server_have_localpath(char *path,Server_TreeNode *treenode,int index)
     if(treenode == NULL)
         return 0;
 
-    //char *hreftmp;
     char *localpath;
     int ret = 0;
     int cmp = 1;
@@ -83,17 +81,12 @@ int is_server_have_localpath(char *path,Server_TreeNode *treenode,int index)
 
 Server_TreeNode * getoldnode(Server_TreeNode *tempoldnode,char *href)
 {
-    //Server_TreeNode *tempoldnode;
     Server_TreeNode *retnode;
-    //tempoldnode = NULL;
     retnode = NULL;
 
-    //DEBUG("getoldnode tempoldnode->parenthref -> %s   %d\n",tempoldnode->parenthref,strlen(tempoldnode->parenthref));
-    //DEBUG("                              href -> %s   %d\n",href,strlen(href));
 
     if(strcmp(href,tempoldnode->parenthref) == 0)
     {
-        //DEBUG("*****get the retnode\n");
         retnode = tempoldnode;
         return retnode;
     }
@@ -128,7 +121,7 @@ int get_path_to_index(char *path)
     temp = my_nstrchr('/',path,5);
     if(temp == NULL)
     {
-        sprintf(root_path,"%s",path);
+        snprintf(root_path, sizeof(char)*512,"%s",path);
     }
     else
     {
@@ -163,14 +156,12 @@ char *change_server_same_name(char *fullname,int index)
 
     char *fullname_tmp = NULL;
     fullname_tmp = my_str_malloc(strlen(fullname)+1);
-    sprintf(fullname_tmp,"%s",fullname);
+    snprintf(fullname_tmp, sizeof(char)*(strlen(fullname)+1), "%s",fullname);
 
     DEBUG("%s\n",fullname);
     char *temp = get_prepath(fullname_tmp,strlen(fullname_tmp));
     filename = (char *)malloc(sizeof(char)*(strlen(fullname_tmp) - strlen(temp) + 1));
-    sprintf(filename,"%s",fullname_tmp + strlen(temp));
-    DEBUG("filename=%s\n",filename);
-    //filename = fullname_tmp + strlen(temp);
+    snprintf(filename, sizeof(char)*(strlen(fullname_tmp) - strlen(temp) + 1), "%s",fullname_tmp + strlen(temp));
     free(temp);
     //len = strlen(fullname_tmp);//2014.11.11 by sherry
     path = get_prepath(fullname,strlen(fullname));
@@ -188,35 +179,29 @@ char *change_server_same_name(char *fullname,int index)
         memset(newfilename,'\0',sizeof(newfilename));
         snprintf(newfilename,252-j,"%s",filename);
         lens = get_prefix(newfilename,strlen(newfilename));
-        sprintf(tail,"(%d)",i);
+        snprintf(tail, 512, "(%d)",i);
 
         string newname(newfilename),temp(tail);//拷贝构造函数
         newname = newname.insert(lens,temp);
-        //sprintf(newfilename,"%s(%d)",newfilename,i);
         memset(newfilename,'\0',sizeof(newfilename));
-        //strcpy(newfilename,newname.c_str());
-        sprintf(newfilename,"%s",newname.c_str());
+        snprintf(newfilename, 512, "%s",newname.c_str());
 
-        //newname.~string();
-        //temp.~string();
         DEBUG("newfilename = %s\n",newfilename);
         i++;
 
         temp_name = (char *)malloc(sizeof(char)*(strlen(path) + strlen(newfilename) + 1));
-        sprintf(temp_name,"%s%s",path,newfilename);
+        snprintf(temp_name, sizeof(char)*(strlen(path) + strlen(newfilename) + 1), "%s%s",path,newfilename);
         DEBUG("temp_name = %s\n",temp_name);
 
         exist = is_server_exist(path,temp_name,index);
 
         if(exist)
         {
-            //free(path);
             free(temp_name);
         }
         else
         {
             exit = 0;
-            //return temp_name;
         }
     }
     free(path);
@@ -225,13 +210,12 @@ char *change_server_same_name(char *fullname,int index)
     //temp_name = temp_name + strlen(tmp) + 1;
     char *temp_name1=NULL;
     temp_name1=my_str_malloc(strlen(temp_name)-strlen(tmp)+1);
-    sprintf(temp_name1,"%s",temp_name + strlen(tmp) + 1);
+    snprintf(temp_name1, sizeof(char)*(strlen(temp_name)-strlen(tmp)+1), "%s",temp_name + strlen(tmp) + 1);
 
     free(tmp);
     free(filename);
     free(temp_name);//2014.11.11 by sherry
 
-//    temp_name = temp_name + strlen(get_prepath(temp_name,strlen(temp_name))) + 1;
     return temp_name1;//2014.11.11 by sherry
 }
 
@@ -247,7 +231,7 @@ char *change_local_same_name(char *fullname)
 
     char *fullname_tmp = NULL;
     fullname_tmp = my_str_malloc(strlen(fullname)+1);
-    sprintf(fullname_tmp,"%s",fullname);
+    snprintf(fullname_tmp, sizeof(char)*(strlen(fullname)+1), "%s",fullname);
 
     char *temp = get_prepath(fullname_tmp,strlen(fullname_tmp));
     char *filename = fullname_tmp + strlen(temp);
@@ -258,7 +242,6 @@ char *change_local_same_name(char *fullname)
     DEBUG("fullname = %s\n",fullname);
     snprintf(path,strlen(fullname)-len+1,"%s",fullname);
     DEBUG("path = %s\n",path);
-    //free(fullname_tmp);
 
     while(1)
     {
@@ -271,23 +254,20 @@ char *change_local_same_name(char *fullname)
         memset(newfilename,'\0',sizeof(newfilename));
         snprintf(newfilename,252-j,"%s",filename);
         lens = get_prefix(newfilename,strlen(newfilename));
-        sprintf(tail,"(%d)",i);
+        snprintf(tail, 512, "(%d)",i);
         string newname(newfilename),temp(tail);
         newname = newname.insert(lens,temp);
-        //sprintf(newfilename,"%s(%d)",newfilename,i);
         memset(newfilename,'\0',sizeof(newfilename));
-        sprintf(newfilename,"%s",newname.c_str());
+        snprintf(newfilename, 256, "%s",newname.c_str());
 
         DEBUG("newfilename = %s\n",newfilename);
         i++;
 
         temp_name = my_str_malloc((size_t)(strlen(path)+strlen(newfilename)+1));
-        sprintf(temp_name,"%s%s",path,newfilename);
+        snprintf(temp_name, sizeof(char)*(strlen(path)+strlen(newfilename)+1), "%s%s",path,newfilename);
 
         if(access(temp_name,F_OK) != 0)
         {
-            //free(path);
-            //return temp_name;
             break;
         }
         else
@@ -295,7 +275,6 @@ char *change_local_same_name(char *fullname)
     }
     free(path);
     free(fullname_tmp);
-    //free(filename);
     return temp_name;
 }
 
@@ -513,7 +492,7 @@ void del_all_items(char *dir,int index)
             size_t len;
             len = strlen(dir)+strlen(ent->d_name)+2;
             fullname = my_str_malloc(len);
-            sprintf(fullname,"%s/%s",dir,ent->d_name);
+            snprintf(fullname, sizeof(char)*len, "%s/%s",dir,ent->d_name);
 
             if(test_if_dir(fullname) == 1)
             {
@@ -542,29 +521,6 @@ char *get_prepath(char *temp,int len)
 {
     //2014.09.26 by sherry
     //野指针，内存越界
-//    char *p = temp;
-//    char *q = temp;
-//    int count = 0,count_1 = 0;
-//    while(strlen(p) != 0) //p 得到字符串的总长度
-//    {
-//        if(p[0] == '/')
-//        {
-//            count++;
-//        }
-//        p++;
-//    }
-//    while(strlen(q) != 0) //q 定位到最后一个'/'
-//    {
-//        if(q[0] == '/')
-//        {
-//            count_1++;
-//            if(count_1 == count)
-//            {
-//                break;
-//            }
-//        }
-//        q++;
-//    }
     char *q;
     q=strrchr(temp,'/');
     if( q == NULL)
@@ -580,34 +536,10 @@ char *get_prepath(char *temp,int len)
 
 int get_prefix(char *temp,int len)
 {
-//    char *p = temp;
-//    char *q = temp;
-//    int count = 0,count_1 = 0;
-//    while(strlen(p) != 0)
-//    {
-//        if(p[0] == '.')
-//        {
-//            count++;
-//        }
-//        p++;
-//    }
-//    while(strlen(q) != 0)
-//    {
-//        if(q[0] == '.')
-//        {
-//            count_1++;
-//            if(count_1 == count)
-//            {
-//                break;
-//            }
-//        }
-//        q++;
-//    }
     //2014.11.06 by sherry 程序挂掉
     char *q;
     q=strrchr(temp,'.');
     if(q==NULL)
-        //return NULL;  //2014.12.1 by sherry
         return len;
     return len-strlen(q);
 }
@@ -654,13 +586,8 @@ void free_LocalFile_item(LocalFile *head)
 
 void free_server_tree(Server_TreeNode *node)
 {
-    //DEBUG("free_server_tree\n");
     if(node != NULL)
     {
-        //DEBUG("free tree node\n");
-
-        //free_server_list(node->browse);
-
         if(node->NextBrother != NULL)
             free_server_tree(node->NextBrother);
         if(node->Child != NULL)
@@ -681,21 +608,18 @@ void free_server_tree(Server_TreeNode *node)
 
 void free_CloudFile_item(CloudFile *head)
 {
-    //DEBUG("***************free_CloudFile_item*********************\n");
-
     CloudFile *p = head;
     while(p != NULL)
     {
         head = head->next;
         if(p->href != NULL)
         {
-            //DEBUG("free CloudFile %s\n",p->href);
             free(p->href);
+	   p->href = NULL;
         }
         free(p);
         p = head;
     }
-    //head=NULL;
 }
 
 int is_folder(char *p){
@@ -718,8 +642,6 @@ Server_TreeNode *create_server_treeroot()
     }
     TreeRoot->level=0;
     TreeRoot->NextBrother = NULL;
-    //TreeRoot->browse = NULL;
-    //sprintf(TreeRoot->parenthref,"%s%s/",HOST,ROOTFOLDER);
     TreeRoot->parenthref = NULL;
     TreeRoot->browse = NULL;
     TreeRoot->Child = NULL;
@@ -732,13 +654,17 @@ int getCloudInfo_forsize(char *URL,void (* cmd_data)(char *),int index)
 {
     char *command = (char *)malloc(sizeof(char)*(strlen(URL) + 7));
     memset(command,'\0',sizeof(command));
-    sprintf(command,"LIST %s",URL);
+    snprintf(command, sizeof(char)*(strlen(URL) + 7), "LIST %s",URL);
     char *temp = utf8_to(command,index);
     free(command);
     CURL *curl;
     CURLcode res;
     FILE *fp = fopen(LIST_SIZE_DIR,"w");
-    //fp=fopen("/tmp/ftpclient/list_size.txt","w");
+    if(fp == NULL)
+    {
+        free(temp);
+        return -1;
+    }
     curl=curl_easy_init();
     if(curl){
         curl_easy_setopt(curl, CURLOPT_URL, ftp_config.multrule[index]->server_ip);
@@ -750,12 +676,9 @@ int getCloudInfo_forsize(char *URL,void (* cmd_data)(char *),int index)
         curl_easy_setopt(curl,CURLOPT_LOW_SPEED_TIME,30);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
         res=curl_easy_perform(curl);
-        //DEBUG("%d\n",res);
-
         if(res != CURLE_OK && res != CURLE_FTP_COULDNT_RETR_FILE){
             curl_easy_cleanup(curl);
             fclose(fp);
-            //free(command);
             free(temp);
             if(res == CURLE_COULDNT_CONNECT)
             {
@@ -773,14 +696,12 @@ int getCloudInfo_forsize(char *URL,void (* cmd_data)(char *),int index)
         }
         curl_easy_cleanup(curl);
         fclose(fp);
-        //free(command);
         free(temp);
     }
     else
     {
         curl_easy_cleanup(curl);
         fclose(fp);
-        //free(command);
         free(temp);
     }
     cmd_data(URL);
@@ -791,8 +712,6 @@ int getCloudInfo_forsize(char *URL,void (* cmd_data)(char *),int index)
 
 int is_ftp_file_copying(char *serverhref,int index)
 {
-    //DEBUG("########check copying#######\n");
-    //DEBUG("\rFtp file copying...");
     long long int old_length;
     long long int new_length;
     long long int d_value;
@@ -844,13 +763,6 @@ char *localpath_to_serverpath(char *from_localpath,int index)
 {
     //2014.10.27 by sherry
     //未考虑在根目录下操作的情况
-//    char *p = from_localpath;
-//    p = p + strlen(ftp_config.multrule[index]->base_path);
-//    char *serverpath = (char*)malloc(sizeof(char)*(strlen(ftp_config.multrule[index]->rooturl) + strlen(p) + 1));
-//    memset(serverpath,'\0',sizeof(char)*(strlen(ftp_config.multrule[index]->rooturl) + strlen(p) + 1));
-//    sprintf(serverpath,"%s%s",ftp_config.multrule[index]->rooturl,p);
-//    return serverpath;
-
     char *p = from_localpath;
     char *serverpath;
 
@@ -858,7 +770,7 @@ char *localpath_to_serverpath(char *from_localpath,int index)
     {
         serverpath = (char*)malloc(sizeof(char)*(strlen(ftp_config.multrule[index]->rooturl) + 1));
         memset(serverpath,'\0',sizeof(char)*(strlen(ftp_config.multrule[index]->rooturl) + 1));
-        sprintf(serverpath,"%s",ftp_config.multrule[index]->rooturl);
+        snprintf(serverpath, sizeof(char)*(strlen(ftp_config.multrule[index]->rooturl) + 1), "%s",ftp_config.multrule[index]->rooturl);
         return serverpath;
     }
     else
@@ -866,7 +778,7 @@ char *localpath_to_serverpath(char *from_localpath,int index)
         p = p + strlen(ftp_config.multrule[index]->base_path);
         serverpath = (char*)malloc(sizeof(char)*(strlen(ftp_config.multrule[index]->rooturl) + strlen(p) + 1));
         memset(serverpath,'\0',sizeof(char)*(strlen(ftp_config.multrule[index]->rooturl) + strlen(p) + 1));
-        sprintf(serverpath,"%s%s",ftp_config.multrule[index]->rooturl,p);
+        snprintf(serverpath, sizeof(char)*(strlen(ftp_config.multrule[index]->rooturl) + strlen(p) + 1), "%s%s",ftp_config.multrule[index]->rooturl,p);
         return serverpath;
     }
 }
@@ -875,12 +787,6 @@ char *serverpath_to_localpath(char *from_serverpath,int index)
 {
     //2014.10.28 by sherry
     //未考虑在根目录下操作的情况
-//    char *p = from_serverpath;
-//    p = p + strlen(ftp_config.multrule[index]->rooturl);
-//    char *localpath = (char*)malloc(sizeof(char)*(ftp_config.multrule[index]->base_path_len + strlen(p) + 1));
-//    memset(localpath,'\0',sizeof(char)*(ftp_config.multrule[index]->base_path_len + strlen(p) + 1));
-//    sprintf(localpath,"%s%s",ftp_config.multrule[index]->base_path,p);
-//    return localpath;
 
     char *p = from_serverpath;
     char *localpath;
@@ -888,7 +794,7 @@ char *serverpath_to_localpath(char *from_serverpath,int index)
     {
         localpath=(char*)malloc(sizeof(char)*(ftp_config.multrule[index]->base_path_len + 1));
         memset(localpath,'\0',sizeof(char)*(ftp_config.multrule[index]->base_path_len + 1));
-        sprintf(localpath,"%s",ftp_config.multrule[index]->base_path);
+        snprintf(localpath, sizeof(char)*(ftp_config.multrule[index]->base_path_len + 1), "%s",ftp_config.multrule[index]->base_path);
         return localpath;
     }
     else
@@ -896,7 +802,7 @@ char *serverpath_to_localpath(char *from_serverpath,int index)
         p = p + strlen(ftp_config.multrule[index]->rooturl);
         localpath = (char*)malloc(sizeof(char)*(ftp_config.multrule[index]->base_path_len + strlen(p) + 1));
         memset(localpath,'\0',sizeof(char)*(ftp_config.multrule[index]->base_path_len + strlen(p) + 1));
-        sprintf(localpath,"%s%s",ftp_config.multrule[index]->base_path,p);
+        snprintf(localpath, sizeof(char)*(ftp_config.multrule[index]->base_path_len + strlen(p) + 1), "%s%s",ftp_config.multrule[index]->base_path,p);
         return localpath;
     }
 
@@ -932,46 +838,6 @@ Node *queue_dequeue (Node *q)
     return first;
 }
 
-//void SearchServerTree(Server_TreeNode* treeRoot)
-//{
-//    FILE *fp = NULL;
-//
-//    if(treeRoot->level == 0)
-//    {
-//        fp = fopen(SERVERLIST_0,"a");
-//        //fprintf(fp,"%d\n",treeRoot->level);
-//    }
-//
-//    if(treeRoot->level == 1)
-//    {
-//        fp = fopen(SERVERLIST_1,"a");
-//        //fprintf(fp,"%d\n",treeRoot->level);
-//    }
-//
-//    if(treeRoot->level == 2)
-//    {
-//        fp = fopen(SERVERLIST_2,"a");
-//        //fprintf(fp,"%d\n",treeRoot->level);
-//    }
-//
-//    if(treeRoot->browse != NULL)
-//    {
-//
-//        CloudFile *de_foldercurrent;
-//        de_foldercurrent = treeRoot->browse->folderlist->next;
-//        while(de_foldercurrent != NULL){
-//            //DEBUG("serverfolder->href = %s\n",de_foldercurrent->href);
-//            fprintf(fp,"%s\n",de_foldercurrent->href);
-//            de_foldercurrent = de_foldercurrent->next;
-//        }
-//    }
-//    fclose(fp);
-//    if((treeRoot->Child != NULL))
-//        SearchServerTree(treeRoot->Child);
-//
-//    if(treeRoot->NextBrother != NULL)
-//        SearchServerTree(treeRoot->NextBrother);
-//}
 
 void free_action_item(action_item *head)
 {
@@ -991,7 +857,6 @@ void free_action_item(action_item *head)
 
 void del_download_only_action_item(const char *action,const char *path,action_item *head)
 {
-    //DEBUG("del_sync_item action=%s,path=%s\n",action,path);
     action_item *p1, *p2;
     char *cmp_name;
     char *p1_cmp_name;
@@ -999,22 +864,20 @@ void del_download_only_action_item(const char *action,const char *path,action_it
     p2 = head;
 
     cmp_name = my_str_malloc((size_t)(strlen(path)+2));
-    sprintf(cmp_name,"%s/",path);    //add for delete folder and subfolder in download only socket list
+    snprintf(cmp_name, sizeof(char)*(strlen(path)+2), "%s/",path);    //add for delete folder and subfolder in download only socket list
 
     while(p1 != NULL)
     {
         p1_cmp_name = my_str_malloc((size_t)(strlen(p1->path)+2));
-        sprintf(p1_cmp_name,"%s/",p1->path);      //add for delete folder and subfolder in download only socket list
-        //DEBUG("del_download_only_sync_item  p1->name = %s\n",p1->name);
-        //DEBUG("del_download_only_sync_item  cmp_name = %s\n",cmp_name);
+        snprintf(p1_cmp_name, sizeof(char)*(strlen(p1->path)+2), "%s/",p1->path);      //add for delete folder and subfolder in download only socket list
+
         if(strstr(p1_cmp_name,cmp_name) != NULL)
         {
             p2->next = p1->next;
             free(p1->action);
             free(p1->path);
             free(p1);
-            //DEBUG("del sync item ok\n");
-            //break;
+
             p1 = p2->next;
         }
         else
@@ -1026,7 +889,6 @@ void del_download_only_action_item(const char *action,const char *path,action_it
     }
 
     free(cmp_name);
-    //DEBUG("del sync item fail\n");
 }
 
 int add_all_download_only_socket_list(char *cmd,const char *dir,int index)
@@ -1034,7 +896,6 @@ int add_all_download_only_socket_list(char *cmd,const char *dir,int index)
     struct dirent* ent = NULL;
     char *fullname;
     int fail_flag = 0;
-    //char error_message[256];
 
     DIR *dp = opendir(dir);
 
@@ -1057,7 +918,7 @@ int add_all_download_only_socket_list(char *cmd,const char *dir,int index)
 
         fullname = my_str_malloc((size_t)(strlen(dir)+strlen(ent->d_name)+2));
 
-        sprintf(fullname,"%s/%s",dir,ent->d_name);
+        snprintf(fullname, sizeof(char)*(strlen(dir)+strlen(ent->d_name)+2), "%s/%s",dir,ent->d_name);
 
         if( test_if_dir(fullname) == 1)
         {
@@ -1078,16 +939,15 @@ int add_all_download_only_socket_list(char *cmd,const char *dir,int index)
 int test_if_download_temp_file(char *filename)
 {
     char file_suffix[9];
-    //char *temp_suffix = ".asus.td";
     char *temp_suffix = (char*)malloc(sizeof(char)*9);
     memset(temp_suffix,'\0',sizeof(char)*9);
-    strcpy(temp_suffix,".asus.td");
+    snprintf(temp_suffix, sizeof(char)*9, "%s", ".asus.td");
 
     memset(file_suffix,0,sizeof(file_suffix));
     char *p = filename;
     if(strstr(filename,temp_suffix))
     {
-        strcpy(file_suffix,p+(strlen(filename)-strlen(temp_suffix)));
+        snprintf(file_suffix, 9, "%s", p+(strlen(filename)-strlen(temp_suffix)));
         if(!strcmp(file_suffix,temp_suffix))
         {
             free(temp_suffix);
@@ -1103,11 +963,9 @@ int test_if_dir(const char *dir)
     DIR *dp = opendir(dir);
     if(dp == NULL)
     {
-        //DEBUG("file\n");
         return 0;
     }
     closedir(dp);
-    //DEBUG("dir\n");
     return 1;
 }
 
@@ -1125,7 +983,6 @@ void show(Node* head)
 void show_item(action_item* head)
 {
     action_item *pTemp = head->next;
-    //DEBUG(">>>>Chain:%s\n",head->cmdName);
     while(pTemp!=NULL)
     {
         DEBUG("*****%s:%s\n",pTemp->action,pTemp->path);
@@ -1167,7 +1024,6 @@ int is_local_space_enough(CloudFile *do_file,int index)
     }
     else
     {
-        //DEBUG("local freespace is enough!\n");
         return 1;
     }
 }
@@ -1200,8 +1056,8 @@ int add_action_item(const char *action,const char *path,action_item *head)
     p2->path = (char *)malloc(sizeof(char)*(strlen(path)+1));
     memset(p2->action,'\0',sizeof(p2->action));
     memset(p2->path,'\0',sizeof(p2->path));
-    sprintf(p2->action,"%s",action);
-    sprintf(p2->path,"%s",path);
+    snprintf(p2->action, sizeof(char)*(strlen(action)+1), "%s",action);
+    snprintf(p2->path, sizeof(char)*(strlen(path)+1), "%s",path);
     while(p1->next != NULL)
         p1 = p1->next;
     p1->next = p2;
@@ -1246,7 +1102,7 @@ char *my_str_malloc(size_t len)
         exit(1);
     }
 
-    //memset(s,'\0',sizeof(s));//2014.10.28 by sherry sizeof(指针)为固定值4
+//2014.10.28 by sherry sizeof(指针)为固定值4
     memset(s,'\0',sizeof(char)*len);
     return s;
 }
@@ -1281,7 +1137,7 @@ char *get_socket_base_path(char *cmd)
     {
         temp = strchr(cmd,'/');
         root_path = my_str_malloc(512);
-        sprintf(root_path,"%s",temp);
+        snprintf(root_path, sizeof(char)*512, "%s",temp);
     }
     else
     {
@@ -1293,14 +1149,13 @@ char *get_socket_base_path(char *cmd)
         temp = my_nstrchr('/',path,5);
         if(temp == NULL)
         {
-            sprintf(root_path,"%s",path);
+            snprintf(root_path, sizeof(char)*512, "%s",path);
         }
         else
         {
             snprintf(root_path,strlen(path)-strlen(temp) + 1,"%s",path);
         }
     }
-    //DEBUG("get_socket_base_path root_path = %s\n",root_path);
     return root_path;
 }
 
@@ -1330,7 +1185,7 @@ mod_time *get_mtime_1(FILE *fp)
                 case 1:
                     if(res == 213)
                     {
-                        strcpy(modtime_1->mtime, p);
+                        snprintf(modtime_1->mtime, MINSIZE, "%s", p);
                         DEBUG("%s", modtime_1->mtime);
                         modtime_1->modtime = change_time_to_sec(modtime_1->mtime);
                     }
@@ -1355,21 +1210,20 @@ mod_time *get_mtime_1(FILE *fp)
         DEBUG("fp is NULL \n");
 }
 
-int getCloudInfo_one(char *URL,int (* cmd_data)(char *,int),int index)
+int getCloudInfo_one(char *URL,int (* cmd_data)(char *,CloudFile *,int),CloudFile * FileTail_one,int index)
 {
     DEBUG("%s\n",URL);
     int status;
     char *command = (char *)malloc(sizeof(char)*(strlen(URL) + 7));
-    //memset(command,'\0',sizeof(command));//2014.10.28 by sherry sizeof(指针)=4
+//2014.10.28 by sherry sizeof(指针)=4
     memset(command,'\0',sizeof(char)*(strlen(URL) + 7));
-    sprintf(command,"LIST %s",URL);
+    snprintf(command, sizeof(char)*(strlen(URL) + 7), "LIST %s",URL);
     DEBUG("command = %s\n",command);
     char *temp = utf8_to(command,index);
     free(command);
     CURL *curl;
     CURLcode res;
     FILE *fp = fopen(LIST_ONE_DIR,"w");
-    //fp=fopen("/tmp/ftpclient/list_one.txt","w");
     curl=curl_easy_init();
     if(curl){
         curl_easy_setopt(curl, CURLOPT_URL, ftp_config.multrule[index]->server_ip);
@@ -1399,7 +1253,7 @@ int getCloudInfo_one(char *URL,int (* cmd_data)(char *,int),int index)
         fclose(fp);
         free(temp);//free(command);
     }
-    status = cmd_data(URL,index);
+    status = cmd_data(URL, FileTail_one, index);
     if(status)
     {
         return UNSUPPORT_ENCODING;
@@ -1419,7 +1273,8 @@ time_t change_time_to_sec(char *time)
     time_t sec;
     struct tm *timeptr = (struct tm *)malloc(sizeof(struct tm));
 
-    memset(timeptr,'\0',sizeof(timeptr));
+   //memset(timeptr,'\0',sizeof(timeptr));
+    memset(timeptr,'\0',sizeof(struct tm));//2016.12.21 tina modify for repeat upload and download
     strncpy(buf,p,4);
     timeptr->tm_year = atoi(buf) - 1900;
 
@@ -1456,7 +1311,6 @@ time_t change_time_to_sec(char *time)
 
 mod_time *get_mtime(FILE *fp)
 {
-    //DEBUG("*********************get_mtime***********************\n");
     if(fp != NULL){
         mod_time *modtime;
         modtime=(mod_time *)malloc(sizeof(mod_time));
@@ -1480,7 +1334,7 @@ mod_time *get_mtime(FILE *fp)
                 case 1:
                     if(res == 213)
                     {
-                        strcpy(modtime->mtime,p);
+                        snprintf(modtime->mtime, MINSIZE, "%s", p);
                         modtime->modtime = change_time_to_sec(modtime->mtime);
                     }
                     break;
@@ -1514,9 +1368,8 @@ void my_mkdir_r(char *path,int index)
     temp = strstr(path,ftp_config.multrule[index]->mount_path);
 
     len = strlen(ftp_config.multrule[index]->mount_path);
-    strcpy(str,temp + len);
+    snprintf(str, 512, "%s", temp + len);
 
-    //strncpy(str,path,512);
     len = strlen(str);
     for(i=0; i < len ; i++)
     {
@@ -1524,7 +1377,7 @@ void my_mkdir_r(char *path,int index)
         {
             str[i] = '\0';
             memset(fullname,0,sizeof(fullname));
-            sprintf(fullname,"%s%s",ftp_config.multrule[index]->mount_path,str);
+            snprintf(fullname, 512, "%s%s",ftp_config.multrule[index]->mount_path,str);
             if(access(fullname,F_OK) != 0)
             {
                 DEBUG("%s\n",fullname);
@@ -1536,7 +1389,7 @@ void my_mkdir_r(char *path,int index)
 
 
     memset(fullname,0,sizeof(fullname));
-    sprintf(fullname,"%s%s",ftp_config.multrule[index]->mount_path,str);
+    snprintf(fullname, 512, "%s%s",ftp_config.multrule[index]->mount_path,str);
 
     if(len > 0 && access(fullname,F_OK) != 0)
     {
@@ -1549,7 +1402,6 @@ int parse_config(const char *path,Config *config)
 {
     DEBUG("#####parse_config####\n");
     FILE *fp;
-    //DIR *dir;
     int status;
     char buffer[256];
     char *p;
@@ -1588,24 +1440,24 @@ int parse_config(const char *path,Config *config)
             }
             else if(i == (k*8 + 2))
             {
-                strcpy(config->multrule[k]->f_usr,p);
+                snprintf(config->multrule[k]->f_usr, 32, "%s", p);
             }
             else if(i == (k*8 + 3))
             {
-                strcpy(config->multrule[k]->f_pwd,p);
-                sprintf(config->multrule[k]->user_pwd,"%s:%s",config->multrule[k]->f_usr,config->multrule[k]->f_pwd);
+                snprintf(config->multrule[k]->f_pwd, 32, "%s", p);
+                snprintf(config->multrule[k]->user_pwd, 64, "%s:%s",config->multrule[k]->f_usr,config->multrule[k]->f_pwd);
                 DEBUG("config->multrule[%d]->user_pwd = %s len:%d\n",k,config->multrule[k]->user_pwd,strlen(config->multrule[k]->user_pwd));
             }
             else if(i == (k*8 + 4))
             {
-                strcpy(config->multrule[k]->server_ip,p);
+                snprintf(config->multrule[k]->server_ip, 256, "%s", p);
                 len = strlen(config->multrule[k]->server_ip);
                 config->multrule[k]->server_ip_len = len;
                 DEBUG("config->multrule[%d]->server_ip = %s\n",k,config->multrule[k]->server_ip);
             }
             else if(i == (k*8 + 5))
             {
-                strcpy(config->multrule[k]->rooturl,p);
+                snprintf(config->multrule[k]->rooturl, 256, "%s", p);
                 char *p1 = config->multrule[k]->rooturl + strlen(config->multrule[k]->rooturl);
                 while(p1[0] != '/')
                     p1--;
@@ -1623,7 +1475,7 @@ int parse_config(const char *path,Config *config)
                 len = strlen(p);
                 if(p[len-1] == '\n')
                     p[len-1] = '\0';
-                strcpy(config->multrule[k]->base_path,p);
+                snprintf(config->multrule[k]->base_path, 256, "%s", p);
                 len = strlen(config->multrule[k]->base_path);
                 config->multrule[k]->base_path_len = len;
                 if(config->multrule[k]->base_path[len-1] == '/')
@@ -1633,13 +1485,11 @@ int parse_config(const char *path,Config *config)
                 while(p2[0] != '/')
                     p2--;
                 snprintf(config->multrule[k]->mount_path,config->multrule[k]->base_path_len - strlen(p2) + 1,"%s",config->multrule[k]->base_path);
-                sprintf(config->multrule[k]->base_folder,"%s",p2);
-                //sprintf(config->multrule[k]->base_path_parentref,"%s",config->multrule[k]->mount_path);
-                sprintf(config->multrule[k]->fullrooturl,"%s%s",config->multrule[k]->server_ip,config->multrule[k]->rooturl);
+                snprintf(config->multrule[k]->base_folder, 256, "%s",p2);
+                snprintf(config->multrule[k]->fullrooturl, 256, "%s%s",config->multrule[k]->server_ip,config->multrule[k]->rooturl);
 
                 DEBUG("config->multrule[%d]->mount_path = %s\n",k,config->multrule[k]->mount_path);
                 DEBUG("config->multrule[%d]->base_path = %s\n",k,config->multrule[k]->base_path);
-                //DEBUG("config->multrule[%d]->base_path_parentref = %s\n",k,config->multrule[k]->base_path_parentref);
                 DEBUG("config->multrule[%d]->base_folder = %s\n",k,config->multrule[k]->base_folder);
                 DEBUG("config->multrule[%d]->rooturl = %s\n",k,config->multrule[k]->rooturl);
                 DEBUG("config->multrule[%d]->fullrooturl = %s\n",k,config->multrule[k]->fullrooturl);
@@ -1647,11 +1497,6 @@ int parse_config(const char *path,Config *config)
             }
             i++;
         }
-
-        //DEBUG("%s\n",buffer);
-        //int x;
-        //x = config->dir_num;
-        //for(x=0;)
 
         fclose(fp);
     }
@@ -1683,42 +1528,3 @@ int usr_auth(char *ip,char *user_pwd)
         return res;
     }
 }
-
-//void create_start_file()
-//{
-//    my_local_mkdir("/tmp/smartsync_app");
-//    FILE *fp;
-//    fp = fopen("/tmp/smartsync_app/ftpclient_start","w");
-//    fclose(fp);
-//}
-//
-///*
-// *0,no file
-// *1,have file
-//*/
-//int detect_process_file()
-//{
-//    struct dirent *ent = NULL;
-//    DIR *pdir;
-//    int num = 0;
-//    pdir = opendir("/tmp/smartsync_app");
-//
-//    if(pdir != NULL)
-//    {
-//        while (NULL != (ent=readdir(pdir)))
-//        {
-//            //printf("%s is ent->d_name\n",ent->d_name);
-//            if(!strcmp(ent->d_name,".") || !strcmp(ent->d_name,".."))
-//                continue;
-//            num++;
-//        }
-//        closedir(pdir);
-//    }
-//    else
-//        return 0;
-//
-//    if(num)
-//        return 1;
-//
-//    return 0;
-//}

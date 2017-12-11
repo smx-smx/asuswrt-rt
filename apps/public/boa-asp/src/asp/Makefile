@@ -16,8 +16,13 @@ CFLAGS += -I$(APP_JSONC_DIR)
 ifneq ($(TCSUPPORT_WEBSERVER_SSL), )
 CFLAGS += -I../../../matrixssl-1-8
 endif
+
 #LDFLAGS = -mips1 -G0 -msoft-float -O2 -fshort-wchar
 LDFLAGS = -mips32r2 -G0 -msoft-float -O2 -fshort-wchar
+
+ifneq ($(strip $(TC_LDFLAGS)),)
+LDFLAGS += $(TC_LDFLAGS)
+endif
 
 SRC = grammar.c gb-lex.c asp.c asp_handler.c http-get-utils.c parsers.c
 ifneq ($(RTCONFIG_OPENVPN), )

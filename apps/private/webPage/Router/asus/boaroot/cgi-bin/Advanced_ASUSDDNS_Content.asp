@@ -14,9 +14,10 @@
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" language="JavaScript" src="/help.js"></script>
-<script type="text/javascript" language="JavaScript" src="/detect.js"></script>
-<script type="text/javaScript" src="/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javaScript" src="/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
@@ -293,6 +294,7 @@ function cleandef(){
 						<td>
 							<select name="ddns_server_x"class="input_option"onchange="return change_common(this, 'LANHostConfig', 'ddns_server_x')">
 								<option value="WWW.ASUS.COM" <% if tcWebApi_get("Ddns_Entry","SERVERNAME","h") = "WWW.ASUS.COM" then asp_Write("selected") end if %>>WWW.ASUS.COM</option>
+								<option value="DOMAINS.GOOGLE.COM"  <% if tcWebApi_get("Ddns_Entry","SERVERNAME","h") = "DOMAINS.GOOGLE.COM" then asp_Write("selected") end if %>>DOMAINS.GOOGLE.COM</option>
 								<option value="WWW.DYNDNS.ORG" <% if tcWebApi_get("Ddns_Entry","SERVERNAME","h") = "WWW.DYNDNS.ORG" then asp_Write("selected") end if %>>WWW.DYNDNS.ORG</option>
 								<option value="WWW.DYNDNS.ORG_CUSTOM" <% if tcWebApi_get("Ddns_Entry","SERVERNAME","h") = "WWW.DYNDNS.ORG_CUSTOM" then asp_Write("selected") end if %>>WWW.DYNDNS.ORG(CUSTOM)</option>
 								<option value="WWW.DYNDNS.ORG_STATIC" <% if tcWebApi_get("Ddns_Entry","SERVERNAME","h") = "WWW.DYNDNS.ORG_STATIC" then asp_Write("selected") end if %>>WWW.DYNDNS.ORG(STATIC)</option>								
@@ -310,10 +312,10 @@ function cleandef(){
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,13);"><%tcWebApi_get("String_Entry","LHC_x_DDNSHostNames_in","s")%></a></th>
 						<td>
 							<div id="ddnsname_input" style="display:none;">
-								<input type="text" maxlength="64" class="input_25_table" name="ddns_hostname_x" id="ddns_hostname_x" value="<% If tcWebApi_get("Ddns_Entry","MYHOST","h") <> "" then  tcWebApi_get("Ddns_Entry","MYHOST","s") end if %>" onKeyPress="return is_string(this, event)">
+								<input type="text" maxlength="64" class="input_25_table" name="ddns_hostname_x" id="ddns_hostname_x" value="<% If tcWebApi_get("Ddns_Entry","MYHOST","h") <> "" then  tcWebApi_get("Ddns_Entry","MYHOST","s") end if %>" onKeyPress="return validator.isString(this, event)">
 							</div>
 							<div id="asusddnsname_input" style="display:none;">
-								<input type="text" maxlength="32" class="input_32_table" name="DDNSName" id="DDNSName" class="inputtext" onKeyPress="return is_string(this, event)" OnClick="cleandef();">.asuscomm.com
+								<input type="text" maxlength="32" class="input_32_table" name="DDNSName" id="DDNSName" class="inputtext" onKeyPress="return validator.isString(this, event)" OnClick="cleandef();">.asuscomm.com
 								<div id="alert_block" style="color:#FFCC00; margin-left:5px; font-size:11px;display:none;">
 									<span id="alert_str"></span>
 								</div>
@@ -322,7 +324,7 @@ function cleandef(){
 					</tr>
 					<tr>
 						<th><%tcWebApi_get("String_Entry","LHC_x_DDNSUserName_in","s")%></th>
-						<td><input type="text" maxlength="64" class="input_25_table" name="ddns_username_x" value="<% If tcWebApi_get("Ddns_Entry","USERNAME","h") <> "" then  tcWebApi_get("Ddns_Entry","USERNAME","s") end if %>" onKeyPress="return is_string(this, event)" autocapitalization="off" autocomplete="off"></td>
+						<td><input type="text" maxlength="64" class="input_25_table" name="ddns_username_x" value="<% If tcWebApi_get("Ddns_Entry","USERNAME","h") <> "" then  tcWebApi_get("Ddns_Entry","USERNAME","s") end if %>" onKeyPress="return validator.isString(this, event)" autocapitalization="off" autocomplete="off"></td>
 					</tr>
 					<tr>
 						<th><%tcWebApi_get("String_Entry","LHC_x_DDNSPassword_in","s")%></th>

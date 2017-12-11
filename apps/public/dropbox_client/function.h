@@ -1,4 +1,3 @@
-//#include "api.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -13,7 +12,6 @@ extern char *parse_name_from_path(const char *path);
 extern int is_server_exist();
 extern char *serverpath_to_localpath(char *from_serverpath,int index);
 extern int test_if_dir(const char *dir);
-//extern int add_action_item(const char *action,const char *path,action_item *head);
 
 char *oauth_encode_base64(int size, const unsigned char *src);
 int oauth_decode_base64(unsigned char *dest, const char *src);
@@ -29,7 +27,6 @@ char *oauth_sign_plaintext (const char *m, const char *k);
 char *my_str_malloc(size_t len);
 void my_mkdir_r(char *path);
 void my_mkdir(char *path);
-//int create_sync_list();
 int test_if_dir_empty(char *dir);
 char *my_nstrchr(const char chr,char *str,int n);
 char *strlwr(char *s);

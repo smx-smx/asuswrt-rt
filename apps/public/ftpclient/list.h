@@ -38,20 +38,6 @@
 #define PERMISSION_DENIED               911
 #define UNSUPPORT_ENCODING              912
 
-//#define SHELL_FILE  "/tmp/write_nvram"
-//#define CONFIG_PATH "/tmp/Cloud/ftp.conf"
-
-//#ifndef NVRAM_
-//#define TOKENFILE_RECORD "/opt/etc/ftp_tokenfile"
-//#endif
-
-//#define LIST_DIR "/tmp/ftpclient/list"
-//#define LIST_ONE_DIR "/tmp/ftpclient/list_one.txt"
-//#define LIST_SIZE_DIR "/tmp/ftpclient/list_size.txt"
-//#define TIME_DIR "/tmp/ftpclient/time.txt"
-//#define TIME_ONE_DIR "/tmp/ftpclient/time_one.txt"
-//#define LOG_DIR "/tmp/ftpclient/log/log.txt"
-
 #ifndef NVRAM_
 #define TOKENFILE_RECORD "/opt/etc/.smartsync/ftp_tokenfile"
 #endif
@@ -59,12 +45,7 @@
 
 //20140914  by sherry
 #ifdef _PC
-//#define SHELL_FILE    "/tmp/smartsync/ftpclient/script/write_nvram"
 #define CONFIG_PATH   "/home/eric/sherry/ftpclient_PC/ftp.conf"
-//#define TMP_CONFIG    "/tmp/smartsync/ftpclient/config/ftp_tmpconfig"
-//#define GET_NVRAM     "/tmp/smartsync/ftpclient/script/ftpclient_get_nvram"
-//#define GET_INTERNET  "/tmp/smartsync/ftpclient/script/ftpclient_get_internet"
-//#define VAL_INTERNET  "/tmp/smartsync/ftpclient/config/ftp_val_internet"
 #define LIST_DIR      "/home/eric/sherry/ftpclient_PC/temp/list"
 #define LIST_ONE_DIR  "/home/eric/sherry/ftpclient_PC/temp/list_one.txt"
 #define LIST_SIZE_DIR "/home/eric/sherry/ftpclient_PC/temp/list_size.txt"
@@ -90,16 +71,9 @@
 #define LOG_DIR       "/tmp/smartsync/.logs/ftpclient"
 #define CONFLICT_DIR  "/tmp/smartsync/.logs/ftpclient_errlog"
 #endif
-//#define SERVERLIST_XML "/tmp/smartsync/ftpclient/temp/serverlist.xml"
-//#define SERVERLIST_TD  "/tmp/smartsync/ftpclient/temp/serverlist.td"
-//#define SERVERLIST_LOG "/tmp/smartsync/ftpclient/temp/serverlist.log"
-//#define SERVERLIST_0   "/tmp/smartsync/ftpclient/temp/serverlist_0"
-//#define SERVERLIST_1   "/tmp/smartsync/ftpclient/temp/serverlist_1"
-//#define SERVERLIST_2   "/tmp/smartsync/ftpclient/temp/serverlist_2"
 
 #define SPACE " "
 #define ENTER "\n"
-
 #define PLAN_B 0
 
 #endif // LIST_H

@@ -476,19 +476,19 @@ function pass_checked(obj){
   		</tr>
   
   		<tr id="tr_DE_Deutsche_id" style="display:none;">
-  			<th>ID Connection</th>
+  			<th><% tcWebApi_Get("String_Entry", "ppp_ID_Connection", "s") %></th>
   			<td>
 	  			<input type="text" name="pppoe_id_Deutsche" class="input_18_table" value="" maxlength="12" autocomplete="off" autocorrect="off" autocapitalize="off" autocapitalize="off">
   			</td>
   		</tr>	
   		<tr id="tr_DE_Deutsche_AN" style="display:none;">
-  			<th>Access Number</th>
+  			<th><% tcWebApi_Get("String_Entry", "ppp_Access_Number", "s") %></th>
   			<td>
 	  			<input type="text" name="pppoe_AN_Deutsche" class="input_18_table" value="" maxlength="12" autocomplete="off" autocorrect="off" autocapitalize="off" autocapitalize="off">
   			</td>
   		</tr>
   		<tr id="tr_DE_Deutsche_Co" style="display:none;">
-  			<th>Co-user Number</th>
+  			<th><% tcWebApi_Get("String_Entry", "ppp_CoUser_Number", "s") %></th>
   			<td>
 	  			<input type="text" name="pppoe_Co_Deutsche" class="input_6_table" value="" maxlength="4" autocomplete="off" autocorrect="off" autocapitalize="off" autocapitalize="off">
   			</td>

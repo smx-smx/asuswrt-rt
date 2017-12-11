@@ -10,7 +10,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="/images/favicon.png">
 <link rel="icon" href="/images/favicon.png">
-<title>ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - Dual WAN</title>
+<title>ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_Get("String_Entry", "dualwan", "s")%></title>
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <style>
@@ -119,6 +119,7 @@ function form_show(v){
 		document.form.wandog_enable_radio[1].disabled = true;
 		document.getElementById("wans_mode_tr").style.display = "none";
 		document.getElementById("watchdog_table").style.display = "none";
+		document.getElementById("GNTS_table").style.display = "none";
 		document.getElementById("routing_table").style.display = "none";
 		inputCtrl(document.form.wans_primary, 0);	//dualwan disable, also hidden primary, we change wan mode at internet connnection page
 	}
@@ -168,7 +169,7 @@ function form_show(v){
 		if(document.form.wans_mode.value == "lb")
 			document.getElementById("wans_mode_option").value = "lb";
 		else{
-			document.getElementById("wans_mode_option").value = "fo";
+			document.getElementById("wans_mode_option").value = "fo";			
 		}
 
 		appendModeOption(document.form.wans_mode.value);
@@ -450,6 +451,7 @@ function appendModeOption(v){
 			document.form.wandog_enable_radio[0].disabled = true;
 			document.form.wandog_enable_radio[1].disabled = true;
 			document.getElementById("watchdog_table").style.display = "none";
+			document.getElementById("GNTS_table").style.display = "none";
 			document.getElementById("routing_table").style.display = "";
 			document.getElementById("fb_span").style.display = "none";
 			document.form.wans_mode.value = "lb";
@@ -481,6 +483,7 @@ function appendModeOption(v){
 			appendModeOption2(wandog_enable_orig);
 
 			document.getElementById("watchdog_table").style.display = "";
+			document.getElementById("GNTS_table").style.display = "";
 			document.getElementById("routing_table").style.display = "none";
 
 			document.getElementById("fb_span").style.display = "";
@@ -492,12 +495,17 @@ function appendModeOption(v){
 				document.getElementById("fb_checkbox").checked = true;
 				document.getElementById("wandog_fb_count_tr").style.display = "";
 				add_option_count(document.form.wandog_interval, document.form.wandog_fb_count, wandog_fb_count_orig);
+				inputCtrl(document.form.resume_guestwl[0], 1);
+				inputCtrl(document.form.resume_guestwl[1], 1);
+				enable_GNTS((document.form.resume_guestwl[0].checked)?1:0);
 				document.form.wans_mode.value = "fb";
 			}
 			else
 			{
 				document.getElementById("fb_checkbox").checked = false;
 				document.getElementById("wandog_fb_count_tr").style.display = "none";
+				inputCtrl(document.form.resume_guestwl[0], 0);
+				inputCtrl(document.form.resume_guestwl[1], 0);
 				document.form.wans_mode.value = "fo";
 			}
 		}
@@ -802,6 +810,12 @@ function add_option_count(obj, obj_t, selected_flag){
 				return;
 		}
 }
+
+function enable_GNTS(flag){
+	document.form.resume_guestwl[0].disabled = (flag == 1)? false:true;
+	document.form.resume_guestwl[1].disabled = (flag == 1)? false:true;
+}
+
 </script>
 </head>
 <body onload="initial();">
@@ -912,9 +926,12 @@ function add_option_count(obj, obj_t, selected_flag){
 										  			document.getElementById("fb_checkbox").onclick = function(){
 											  				document.form.wans_mode.value = (this.checked == true ? "fb" : "fo");
 											  				document.getElementById("wandog_fb_count_tr").style.display = (this.checked == true ? "" : "none");
-																if(document.getElementById("wandog_fb_count_tr").style.display == "")
-																		add_option_count(document.form.wandog_interval, document.form.wandog_fb_count, wandog_fb_count_orig);
-										  			}
+															if(document.getElementById("wandog_fb_count_tr").style.display == "")
+																add_option_count(document.form.wandog_interval, document.form.wandog_fb_count, wandog_fb_count_orig);
+															inputCtrl(document.form.resume_guestwl[0], this.checked);
+															inputCtrl(document.form.resume_guestwl[1], this.checked);
+															enable_GNTS((document.form.off_guestwl[0].checked == true)?1:0);
+													}
 										  		</script>
 													<div id="lb_note" style="color:#FFCC00; display:none;"><%tcWebApi_Get("String_Entry", "dualwan_lb_note", "s")%></div>
 												</td>
@@ -922,9 +939,9 @@ function add_option_count(obj, obj_t, selected_flag){
 											<tr>
 												<th><%tcWebApi_Get("String_Entry", "dualwan_mode_lb_setting", "s")%></th>
 												<td>
-													<input type="text" maxlength="1" class="input_3_table" name="wans_lb_ratio_0" value="" onkeypress="return is_number(this,event);" />
+													<input type="text" maxlength="1" class="input_3_table" name="wans_lb_ratio_0" value="" onkeypress="return validator.isNumber(this,event);" />
 													&nbsp; : &nbsp;
-													<input type="text" maxlength="1" class="input_3_table" name="wans_lb_ratio_1" value="" onkeypress="return is_number(this,event);" />
+													<input type="text" maxlength="1" class="input_3_table" name="wans_lb_ratio_1" value="" onkeypress="return validator.isNumber(this,event);" />
 												</td>
 											</tr>
 											<tr class="ISPProfile">
@@ -963,13 +980,13 @@ function add_option_count(obj, obj_t, selected_flag){
 											<tr>
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,4);"><%tcWebApi_Get("String_Entry", "Delay", "s")%></a></th>
 												<td>
-													<input type="text" name="wandog_delay" class="input_3_table" maxlength="2" value="<% tcWebApi_Get("Dualwan_Entry", "wandog_delay", "s") %>" onKeyPress="return is_number(this, event);" placeholder="0">&nbsp;&nbsp;<%tcWebApi_Get("String_Entry", "Second", "s")%>
+													<input type="text" name="wandog_delay" class="input_3_table" maxlength="2" value="<% tcWebApi_Get("Dualwan_Entry", "wandog_delay", "s") %>" onKeyPress="return validator.isNumber(this, event);" placeholder="0">&nbsp;&nbsp;<%tcWebApi_Get("String_Entry", "Second", "s")%>
 												</td>
 											</tr>
 											<tr>
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,3);"><%tcWebApi_Get("String_Entry", "Interval", "s")%></a></th>
 												<td>
-													<input type="text" name="wandog_interval" class="input_3_table" maxlength="1" value="<% tcWebApi_Get("Dualwan_Entry", "wandog_interval", "s") %>" onBlur="add_option_count(this, document.form.wandog_maxfail, document.form.wandog_maxfail.value);add_option_count(this, document.form.wandog_fb_count, document.form.wandog_fb_count.value);" onKeyPress="return is_number(this, event);" placeholder="5">&nbsp;&nbsp;<%tcWebApi_Get("String_Entry", "Second", "s")%>
+													<input type="text" name="wandog_interval" class="input_3_table" maxlength="1" value="<% tcWebApi_Get("Dualwan_Entry", "wandog_interval", "s") %>" onBlur="add_option_count(this, document.form.wandog_maxfail, document.form.wandog_maxfail.value);add_option_count(this, document.form.wandog_fb_count, document.form.wandog_fb_count.value);" onKeyPress="return validator.isNumber(this, event);" placeholder="5">&nbsp;&nbsp;<%tcWebApi_Get("String_Entry", "Second", "s")%>
 												</td>
 											</tr>
 											<tr>
@@ -1003,6 +1020,31 @@ function add_option_count(obj, obj_t, selected_flag){
 											</tr>
 										</table>
 										<!-- -----------Enable Ping time watch dog end----------------------- -->
+
+										<!-- -----------Enable Guest Network Terminate Switch start----------------------- -->
+										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" style="margin-top:8px;" id="GNTS_table">
+											<thead>
+											<tr>
+												<td colspan="2">Guest Network Terminate Switch</td>	<!-- untranslated -->
+											</tr>
+											</thead>
+											<tr>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,7);">Enable Guest Network Terminate Switch</a></th>
+												<td>
+													<input type="radio" value="1" name="off_guestwl" onClick="enable_GNTS(this.value);" class="content_input_fd" <% if tcWebApi_Get("Dualwan_Entry", "wandog_off_guestwl", "h") = "1" then asp_Write("checked") end if %>><%tcWebApi_Get("String_Entry", "checkbox_Yes", "s")%>
+													<input type="radio" value="0" name="off_guestwl" onClick="enable_GNTS(this.value);" class="content_input_fd" <% if tcWebApi_Get("Dualwan_Entry", "wandog_off_guestwl", "h") = "0" then asp_Write("checked") end if %>><%tcWebApi_Get("String_Entry", "checkbox_No", "s")%>
+												</td>
+											</tr>
+											<tr>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,8);">Enable Guest Network Resume</a></th>
+												<td>
+													<input type="radio" value="1" name="resume_guestwl" class="content_input_fd" <% if tcWebApi_Get("Dualwan_Entry", "wandog_resume_guestwl", "h") = "1" then asp_Write("checked") end if %>><%tcWebApi_Get("String_Entry", "checkbox_Yes", "s")%>
+													<input type="radio" value="0" name="resume_guestwl" class="content_input_fd" <% if tcWebApi_Get("Dualwan_Entry", "wandog_resume_guestwl", "h") = "0" then asp_Write("checked") end if %>><%tcWebApi_Get("String_Entry", "checkbox_No", "s")%>
+												</td>
+											</tr>
+										</table>
+										<!-- -----------Enable Guest Network Terminate Switch end----------------------- -->
+
 
 										<!-- -----------Enable Routing rules table start----------------------- -->
 										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" style="margin-top:8px;" id="routing_table">

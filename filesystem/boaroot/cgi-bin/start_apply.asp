@@ -8,6 +8,9 @@ end if
 If Request_Form("experience_DSL_Flag") = "1" then
 	tcWebApi_Set("Misc_Entry","experience_DSL_fb","experience_DSL_Feedback")
 End if
+If Request_Form("qis_notification_iptv_Flag") = "1" then
+	tcWebApi_Set("Misc_Entry","qis_notification_iptv","qis_notification_iptv")
+End if
 if Request_Form("action_script") = "aidisk_asusddns_register" then
 	tcWebApi_Set("Ddns_Entry", "Active", "ddns_enable_x")
 	tcWebApi_Set("Ddns_Entry", "MYHOST", "ddns_hostname_x")
@@ -27,39 +30,6 @@ elseif Request_Form("action_script") = "notif_hint" then
 elseif Request_Form("action_script") = "disable_aidisk_ddns" then
 	tcWebApi_Set("Ddns_Entry", "Active", "ddns_enable_x")
 	tcWebApi_Commit("Ddns_Entry")
-elseif Request_Form("current_page") = "Advanced_VPN_Content.asp" then
-	tcWebApi_Set("PPTP_Entry", "pptpd_enable", "pptpd_enable")
-	tcWebApi_Set("PPTP_Entry", "pptpd_broadcast", "pptpd_broadcast")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist", "pptpd_clientlist")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist1", "pptpd_clientlist1")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist2", "pptpd_clientlist2")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist3", "pptpd_clientlist3")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist4", "pptpd_clientlist4")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist5", "pptpd_clientlist5")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist6", "pptpd_clientlist6")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist7", "pptpd_clientlist7")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist8", "pptpd_clientlist8")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist9", "pptpd_clientlist9")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist10", "pptpd_clientlist10")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist11", "pptpd_clientlist11")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist12", "pptpd_clientlist12")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist13", "pptpd_clientlist13")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist14", "pptpd_clientlist14")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clientlist15", "pptpd_clientlist15")
-	tcWebApi_Commit("PPTP")
-	tcWebApi_Commit("Firewall")
-elseif Request_Form("current_page") = "Advanced_VPNAdvanced_Content.asp" then
-	tcWebApi_Set("PPTP_Entry", "pptpd_broadcast", "pptpd_broadcast")
-	tcWebApi_Set("PPTP_Entry", "pptpd_chap", "pptpd_chap")
-	tcWebApi_Set("PPTP_Entry", "pptpd_mppe", "pptpd_mppe")
-	tcWebApi_Set("PPTP_Entry", "pptpd_dns1", "pptpd_dns1")
-	tcWebApi_Set("PPTP_Entry", "pptpd_dns2", "pptpd_dns2")
-	tcWebApi_Set("PPTP_Entry", "pptpd_wins1", "pptpd_wins1")
-	tcWebApi_Set("PPTP_Entry", "pptpd_wins2", "pptpd_wins2")
-	tcWebApi_Set("PPTP_Entry", "pptpd_mru", "pptpd_mru")
-	tcWebApi_Set("PPTP_Entry", "pptpd_mtu", "pptpd_mtu")
-	tcWebApi_Set("PPTP_Entry", "pptpd_clients", "pptpd_clients")
-	tcWebApi_Commit("PPTP")
 elseif Request_Form("current_page") = "Advanced_VPN_PPTP.asp" then
 	tcWebApi_Set("VPNControl_Entry", "VPNServer_enable", "VPNServer_enable")
 	tcWebApi_Set("VPNControl_Entry", "VPNServer_mode", "VPNServer_mode")
@@ -112,6 +82,7 @@ elseif Request_Form("current_page") = "Advanced_VPN_OpenVPN.asp" then
 		tcWebApi_Set("OpenVPN_Entry", "c2c", "vpn_server_c2c")
 		tcWebApi_Set("OpenVPN_Entry", "ccd_excl", "vpn_server_ccd_excl")
 		tcWebApi_Set("OpenVPN_Entry", "ccd_val", "vpn_server_ccd_val")
+		tcWebApi_Set("OpenVPN_Entry", "tls_keysize", "vpn_server_tls_keysize")
 		tcWebApi_Set("OpenVPN_Entry", "custom", "vpn_server_custom")
 		update_variables()
 	end if
@@ -120,7 +91,6 @@ elseif Request_Form("current_page") = "Advanced_VPNClient_Content.asp" then
 	if Request_form("listFlag") = "1" Then
 		tcWebApi_Set("VPNC_Entry", "clientlist", "vpnc_clientlist")
 		tcWebApi_Set("VPNC_Entry", "pptp_options_list", "vpnc_pptp_options_x_list")
-		update_variables()
 	end if
 	if Request_form("connFlag") = "1" Then
 		tcWebApi_Set("VPNC_Entry", "proto", "vpnc_proto")
@@ -139,7 +109,6 @@ elseif Request_Form("current_page") = "Advanced_VPNClient_Content.asp" then
 		tcWebApi_Set("OpenVPN_Entry", "password", "vpn_client_password")
 		update_variables()
 	end if
-	tcWebApi_Save()
 	tcWebApi_commit("VPNC_Entry")
 elseif Request_Form("current_page") = "Main_LogStatus_Content.asp" then	
 	if Request_Form("clearLog_Flag") = "1" then
@@ -195,6 +164,8 @@ elseif Request_Form("current_page") = "Advanced_WANPort_Content.asp" then
 	tcWebApi_Set("Dualwan_Entry","wandog_maxfail","wandog_maxfail")
 	tcWebApi_Set("Dualwan_Entry","wandog_delay","wandog_delay")
 	tcWebApi_Set("Dualwan_Entry","wandog_fb_count","wandog_fb_count")
+	tcWebApi_Set("Dualwan_Entry","wandog_off_guestwl","off_guestwl")
+	tcWebApi_Set("Dualwan_Entry","wandog_resume_guestwl","resume_guestwl")
 	tcWebApi_commit("Dualwan")
 elseif Request_Form("current_page") = "Advanced_DSL_Content.asp" then
 	If Request_Form("next_page") = "Advanced_Modem_Content.asp" Then
@@ -284,7 +255,10 @@ function redirect_qis(){
 	parent.location.href = 'http://'+parent.document.form.lan_ipaddr.value+'/index.asp';
 }
 function initial(){
-	if(getflag == "set_language"){
+	if(getflag == "background") {
+		return false;
+	}
+	else if(getflag == "set_language"){
 		if(navigator.appName.indexOf("Microsoft") >= 0)
 			parent.parent.location.reload();
 		else

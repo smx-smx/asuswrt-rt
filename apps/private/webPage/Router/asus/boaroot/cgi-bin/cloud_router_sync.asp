@@ -8,19 +8,20 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="/images/favicon.png">
 <link rel="icon" href="/images/favicon.png">
-<title>ASUS <% tcWebApi_Get("SysInfo_Entry","ProductName","s") %> <% tcWebApi_Get("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%></title>
+<title>ASUS <% tcWebApi_Get("String_Entry","Web_Title2","s") %> <% tcWebApi_Get("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%></title>
 <link rel="stylesheet" type="text/css" href="/index_style.css"> 
 <link rel="stylesheet" type="text/css" href="/form_style.css">
-<script type="text/javascript" src="/md5.js"></script>
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/detect.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/jquery.js"></script>
-<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
-<script type="text/javascript" src="/disk_functions.js"></script>
 <script language="JavaScript" type="text/javascript" src="/md5.js"></script>
+<script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script language="JavaScript" type="text/javascript" src="/popup.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/general.js"></script>
+<script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script language="JavaScript" type="text/javascript" src="/disk_functions.js"></script>
+<script language="JavaScript" type="text/javascript" src="/md5.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <style type="text/css">
 /* folder tree */
 .mask_bg{
@@ -103,11 +104,11 @@ background-size: 100% 100%;
 height:260px;
 
 filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(
-src='images/New_ui/midup_bg.png',
+src='/images/New_ui/midup_bg.png',
 sizingMethod='scale');
 
 -ms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(
-src='images/New_ui/midup_bg.png',
+src='/images/New_ui/midup_bg.png',
 sizingMethod='scale')";
 
 }
@@ -158,7 +159,7 @@ var router_synclist_rule = new Array();
 var router_synclist_captcha = new Array();
 var router_synclist_localfolder = new Array();
 var router_synclist_array = router_sync.replace(/>/g, "&#62").replace(/</g, "&#60");
-var based_modelid = '<% tcWebApi_Get("SysInfo_Entry","ProductName","s") %>'; 
+var based_modelid = '<% ej_get_productid() %>';
 var invitation_flag = 0;
 var ip_flag = 0;  // 0: public, 1: private
 var ddns_enable = '<% if tcWebApi_Get("Ddns_Entry","Active","s") = "1" then asp_write("1") else asp_write("0") end if%>';
@@ -999,7 +1000,7 @@ hint_string += "<% tcWebApi_Get("String_Entry", "routerSync_rule_CtoS", "s") %>"
 <div id="folderTree_panel" class="panel_folder">
 	<table><tr>
 		<td>
-			<div class="machineName" style="width:200px;font-family:Microsoft JhengHei;font-size:12pt;font-weight:bolder; margin-top:15px;margin-left:30px;"><% tcWebApi_staticGet("SysInfo_Entry","ProductName","s") %></div>
+			<div class="machineName" style="width:200px;font-family:Microsoft JhengHei;font-size:12pt;font-weight:bolder; margin-top:15px;margin-left:30px;"><% tcWebApi_get("String_Entry","Web_Title2","s") %></div>
 		</td>
 		<td>
 			<div style="width:240px;margin-top:15px;margin-left:125px;">
@@ -1158,7 +1159,7 @@ hint_string += "<% tcWebApi_Get("String_Entry", "routerSync_rule_CtoS", "s") %>"
 								</table>
 							</div>	
 							<div>
-								<img src="images/New_ui/midup_bg.png" width="751px;">
+								<img src="/images/New_ui/midup_bg.png" width="751px;">
 								<table  width="736px" height="200px;" style="text-align:left;margin-left:15px;position:absolute;margin-top:-130px;*margin-left:-740px;*margin-top:0px;">
 									<tr style="height:40px;">
 										<th width="25%"><% tcWebApi_Get("String_Entry","IPC_autofwDesc_in","s") %></th>
@@ -1173,8 +1174,8 @@ hint_string += "<% tcWebApi_Get("String_Entry", "routerSync_rule_CtoS", "s") %>"
 												<option value="0">Http</option>
 												<option value="1">Https</option>
 											</select>
-											<input id="host_name" type="text" maxlength="32"  class="input_32_table" style="height:25px;font-size:13px;"  onKeyPress="return is_string(this, event)">&nbsp:
-											<input type="text" maxlength="6" id="url_port" class="input_6_table" style="height:25px;font-size:13px;"  onKeyPress="return is_string(this, event)">
+											<input id="host_name" type="text" maxlength="32"  class="input_32_table" style="height:25px;font-size:13px;"  onKeyPress="return validator.isString(this, event)">&nbsp:
+											<input type="text" maxlength="6" id="url_port" class="input_6_table" style="height:25px;font-size:13px;"  onKeyPress="return validator.isString(this, event)">
 										</td>
 									</tr>
 									<tr style="height:40px;">
@@ -1212,7 +1213,7 @@ hint_string += "<% tcWebApi_Get("String_Entry", "routerSync_rule_CtoS", "s") %>"
 													<option value="2"><%tcWebApi_get("String_Entry","sync_router_generate","s")%></option>
 												</select>
 												<span id="captcha_input" style="display:none;">											
-													<input id="captcha_inputfield" type="text" class="input_6_table" style="margin-left:10px;" maxlength="4" value="" onclick=""  onkeypress="return is_number(this,event);">
+													<input id="captcha_inputfield" type="text" class="input_6_table" style="margin-left:10px;" maxlength="4" value="" onclick=""  onkeypress="return validator.isNumber(this,event);">
 												</span>
 											</div>
 										</td>				
@@ -1226,7 +1227,7 @@ hint_string += "<% tcWebApi_Get("String_Entry", "routerSync_rule_CtoS", "s") %>"
 										</td>
 									</tr>	
 								</table>
-								<img src="images/New_ui/middown_bg.png" height="150px" width="751px;" style="*margin-top:-4px;*margin-bottom:-4px;">
+								<img src="/images/New_ui/middown_bg.png" height="150px" width="751px;" style="*margin-top:-4px;*margin-bottom:-4px;">
 							</div>
 							<div  class="invitation_foot" style="height:20px;"></div>
 							<div style="position:absolute;margin:-175px 0px 0px 500px;"><img src="/images/cloudsync/invite_model.jpg" ></div>

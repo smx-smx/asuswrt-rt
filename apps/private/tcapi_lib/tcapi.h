@@ -28,6 +28,7 @@
 //added by xyzhu_nj_20091204
 #define TCAPI_READALL_CMD		7
 #define TCAPI_STATIC_GET_CMD                   8
+#define TCAPI_RESET_CMD			9
 
 /*TCAPI return message*/
 #define TCAPI_PROCESS_OK	0

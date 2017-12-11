@@ -20,6 +20,7 @@
 		<node acl='' getc='0' name='SpecVersion' noc='0' nocc='' rw='0' type='string'>1.0</node>
 		<node acl='' getc='0' name='ProvisioningCode' noc='0' nocc='' rw='1' type='string' cmd='nvram' arg='pvgcode'></node>
 		<node acl='' getc='0' name='UpTime' noc='0' nocc='' rw='0' type='unsignedInt' cmd='uptime'></node>
+		<node acl='' getc='0' name='DeviceLog' noc='0' nocc='' rw='0' type='string' cmd='dev_syslog'></node>
 		<node acl='' getc='0' name='VendorConfigFileNumberOfEntries' noc='0' nocc='' rw='0' type='unsignedInt'>0</node>
 		<node il='32' name='VendorConfigFile' nin='1' rw='1' type='node'>
 			<node name='template' rw='1' type='node'>
@@ -81,6 +82,9 @@
 				<node acl='' getc='0' name='ForwardingMetric' noc='0' nocc='' rw='1' type='int' cmd='l3_metric' act='Route'>-1</node>
 			</node>
 		</node>
+	</node>
+	<node name='LANConfigSecurity' rw='0' type='node'>
+		<node acl='' getc='1' name='ConfigPassword' noc='0' nocc='' rw='1' type='string' cmd='user_passwd' act='Account_Entry0'></node>		
 	</node>
 	<node name='IPPingDiagnostics' rw='0' type='node'>
 		<node acl='' getc='0' name='DiagnosticsState' noc='0' nocc='' rw='1' type='string'></node>

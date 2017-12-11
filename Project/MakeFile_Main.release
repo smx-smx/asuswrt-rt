@@ -5794,6 +5794,7 @@ ifneq ($(strip $(TCSUPPORT_SYSLOG_ENHANCE)),)
 	cp $(APP_PUBLIC_DIR)/boa-asp/LogFileParser/LogFileParser $(FILESYSTEM_DIR)/usr/bin
 endif
 
+ifeq ($(strip $(RTCONFIG_ODMPID)),)
 ifneq ($(strip $(UC_PROFILE)),)
 ifeq ($(PROFILE),dsl-n10-c1_dodo)
 	ln -s /tmp/var/romfile_encrypt.cfg $(FILESYSTEM_DIR)/boaroot/html/Settings_DSL-N10-C1.cfg
@@ -5805,6 +5806,7 @@ ifeq ($(PROFILE),dsl-n12u-c1_dodo)
 	ln -s /tmp/var/romfile_encrypt.cfg $(FILESYSTEM_DIR)/boaroot/html/Settings_DSL-N12U-C1.cfg
 else
 	ln -s /tmp/var/romfile_encrypt.cfg $(FILESYSTEM_DIR)/boaroot/html/Settings_$(UC_PROFILE).cfg
+endif
 endif
 endif
 endif

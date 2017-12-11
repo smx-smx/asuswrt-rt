@@ -45,12 +45,13 @@ load_parameters_to_generic()
 <title></title>
 <link href="/NM_style.css" rel="stylesheet" type="text/css" />
 <link href="/form_style.css" rel="stylesheet" type="text/css" />
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" src="/md5.js"></script>
-<script type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/general.js"></script>
+<script language="JavaScript" type="text/javascript" src="/popup.js"></script>
+<script language="JavaScript" type="text/javascript" src="/md5.js"></script>
+<script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 function redirect(){
 	document.location.href = "/cgi-bin/device-map/router.asp";
@@ -342,7 +343,7 @@ function doLoad(){
 <tr>
 <td style="padding:5px 10px 0px 10px; ">
 <p class="formfonttitle_nwm" ><%tcWebApi_get("String_Entry","Wireless_name","s")%>(SSID)</p>
-<input style="*margin-top:-7px; width:260px;" type="text" maxlength="32" class="input_20_table" id="wl_ssid" name="wl_ssid" value="<% If tcWebApi_get("WLan_Entry","ssid","h") <> "" then  tcWebApi_get("WLan_Entry","ssid","s") else asp_Write("ASUS") end if %>" onkeypress="return is_string(this, event)">
+<input style="*margin-top:-7px; width:260px;" type="text" maxlength="32" class="input_20_table" id="wl_ssid" name="wl_ssid" value="<% If tcWebApi_get("WLan_Entry","ssid","h") <> "" then  tcWebApi_get("WLan_Entry","ssid","s") else asp_Write("ASUS") end if %>" onkeypress="return validator.isString(this, event)">
 <img style="margin-top:5px; *margin-top:-10px;"src="/images/New_ui/networkmap/linetwo2.png">
 </td>
 </tr>
@@ -447,7 +448,7 @@ function doLoad(){
 <tr>
 <td style="padding:5px 10px 0px 10px; *padding:1px 10px 0px 10px;">
 <p class="formfonttitle_nwm" ><% tcWebApi_Get("String_Entry", "WC11b_x_Rekey_in", "s") %></p>
-	<input type="text" maxlength="7" name="wl_wpa_gtk_rekey" class="input_6_table" value="<% If tcWebApi_get("WLan_Entry","RekeyInterval","h") <> "" then  tcWebApi_get("WLan_Entry","RekeyInterval","s") else asp_Write("3600") end if %>" onKeyPress="return is_number(this,event);" onblur="validate_number_range(this, 0, 259200)">
+	<input type="text" maxlength="7" name="wl_wpa_gtk_rekey" class="input_6_table" value="<% If tcWebApi_get("WLan_Entry","RekeyInterval","h") <> "" then  tcWebApi_get("WLan_Entry","RekeyInterval","s") else asp_Write("3600") end if %>" onKeyPress="return validator.isNumber(this,event);" onblur="validate_number_range(this, 0, 259200)">
 <img style="margin-top:5px; *margin-top:-10px;"src="/images/New_ui/networkmap/linetwo2.png">
 </td>
 </tr>

@@ -162,7 +162,7 @@ function drawClientList(tab){
 	var clientHtmlTd = '';
 	var i = pagesVar.startIndex;
 	var userImage = "";
-	var custom_usericon = '';	//<nvram_dump("usericon.log","");>
+	var custom_usericon = '';
 	
 	//user icon
 	var userIconBase64 = "NoIcon";
@@ -318,7 +318,7 @@ function drawClientList(tab){
 
 	
 	$j(".circle").mouseover(function(){
-		return overlib(this.firstChild.innerHTML + " clients are connecting to <% nvram_get("productid"); %> through this device.");
+		return overlib(this.firstChild.innerHTML + " clients are connecting to <% tcWebApi_staticGet("SysInfo_Entry","ProductName","s") %> through this device.");
 	});
 
 	$j(".circle").mouseout(function(){

@@ -450,6 +450,9 @@ function btnNext() {
 		document.form.dsltmp_cfg_modulation.value = "ADSL2+";
 		document.form.dsltmp_cfg_annex.value = "ANNEX M";
 	}
+	if(document.form.dsltmp_cfg_ispname.value.search("Deutsche Telekom") >= 0 && document.form.dsltmp_cfg_iptv_idx.value > 0){
+		document.form.dsltmp_auto_detect_bng_flag.value = 1;
+	}
 
 	if (connection_type==0 || connection_type==1) //PPPoE, PPPoA
 	{
@@ -497,6 +500,7 @@ function submit_detect(){
 <input type="hidden" name="dsltmp_cfg_country" value="">
 <input type="hidden" name="dsltmp_cfg_ispname" value="">
 <input type="hidden" name="dsltmp_cfg_ispservice" value="">
+<input type="hidden" name="dsltmp_auto_detect_bng_flag" value="0">
 <input type="hidden" name="dsltmp_cfg_vpi" value="">
 <input type="hidden" name="dsltmp_cfg_vci" value="">
 <input type="hidden" name="dsltmp_cfg_prctl" value="">

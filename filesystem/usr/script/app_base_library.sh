@@ -6,21 +6,22 @@ f=`tcapi get Apps_Entry apps_install_folder`
 case $f in
 	"asusware.arm")
 		pkg_type=`echo $f|sed -e "s,asusware\.,,"`
-		PKG_LIST="openssl zlib libcurl libevent ncurses libxml2 libsigc++ libpar2 pcre spawn-fcgi"
+		PKG_LIST="asusopenssl zlib asuslibcurl libevent ncurses libxml2 libsigc++ libpar2 pcre spawn-fcgi bzip2" 
+		
 		;;
 	"asusware.big")
 		# DSL big-endian MIPS: DSL-N66U
 		pkg_type="mipsbig"
-		PKG_LIST="openssl zlib libevent ncurses readline libxml2 pcre spawn-fcgi libjpeg libexif libogg flac libvorbis expat bzip2 gdbm sqlite"
+		PKG_LIST="asusopenssl zlib libevent ncurses readline libxml2 pcre spawn-fcgi bzip2 asuslibcurl"
 		;;
 	"asusware.mipsbig")
 		# QCA big-endian MIPS: RT-AC55U
 		pkg_type=`echo $f|sed -e "s,asusware\.,,"`
-		PKG_LIST="openssl zlib libevent ncurses libxml2 pcre spawn-fcgi"
+		PKG_LIST="asusopenssl zlib asuslibcurl libevent ncurses libxml2 pcre spawn-fcgi bzip2"
 		;;
 	"asusware")
 		pkg_type="mipsel"
-		PKG_LIST="openssl zlib libcurl libevent ncurses libxml2 libuclibc++ libsigc++ libpar2 pcre spawn-fcgi"
+		PKG_LIST="asusopenssl zlib asuslibcurl libevent ncurses libxml2 libuclibc++ libsigc++ libpar2 pcre spawn-fcgi bzip2"
 		;;
 	*)
 		echo "Unknown apps_install_folder: $f"

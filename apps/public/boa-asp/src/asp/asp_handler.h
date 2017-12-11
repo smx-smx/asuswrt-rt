@@ -592,8 +592,11 @@ struct tcapi_tuple wlan_configuration_router_defaults[] = {
 	{"WLan_Common", "RTSThreshold", "2347"},
 	{"WLan_Common", "FragThreshold", "2346"},
 	{"WLan_Common", "TxBurst", "1"},
-#if defined(MT7612E) || defined(DSL_N55U_D1) || defined (DSL_N10_C1)  || defined (DSL_N10P_C1) || defined (DSL_N12E_C1) || defined (DSL_N10_D1) || defined (DSL_N14U) || defined (DSL_N14U_B1)
+#if defined(MT7612E) || defined(MT7610E) || defined(DSL_N55U_D1) || defined (DSL_N10_C1)  || defined (DSL_N10P_C1) || defined (DSL_N12E_C1) || defined (DSL_N10_D1) || defined (DSL_N14U) || defined (DSL_N14U_B1)
 	{"WLan_Common", "ED_MODE", "2"},
+#endif
+#ifdef MT7610E
+	{"WLan_Common", "EfuseBufferMode", "1"},
 #endif
 	{"WLan_Common", "EDCCA_AP_STA_TH", "255"},
 	{"WLan_Common", "EDCCA_AP_AP_TH", "255"},
@@ -770,6 +773,9 @@ struct tcapi_tuple wlan_MBSSID_system_defaults[] = {
 	{"WLan_Entry", "bw_enabled", "0"},
 	{"WLan_Entry", "bw_dl", ""},
 	{"WLan_Entry", "bw_ul", ""},
+	{"WLan_Entry", "url_enabled", "0"},
+	{"WLan_Entry", "url_mode", "0"},
+	{"WLan_Entry", "url_rulelist", ""},
 	{NULL, NULL, NULL }
 };
 /*Multiple BSSID*/

@@ -172,6 +172,17 @@ extern int reboot_main(int argc, char **argv)
 	if_down("rai3");
 	syscall(__NR_delete_module, "mt7662e_ap", O_NONBLOCK|O_EXCL);
 #endif
+#if defined(MT7610E)
+	if_down("wdsi0");
+	if_down("wdsi1");
+	if_down("wdsi2");
+	if_down("wdsi3");
+	if_down("rai0");
+	if_down("rai1");
+	if_down("rai2");
+	if_down("rai3");
+	syscall(__NR_delete_module, "mt7610e_ap", O_NONBLOCK|O_EXCL);
+#endif
 #endif
 
 #ifndef CONFIG_INIT

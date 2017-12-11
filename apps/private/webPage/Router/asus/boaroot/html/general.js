@@ -226,88 +226,6 @@ return false;
 return true;
 }
 
-function is_functionButton(e){
-//function keycode for Firefox/Opera
-	var keyCode = e.keyCode;
-	if(e.which == 0) {
-		if (keyCode == 0
-			|| keyCode == 27 //Esc
-			|| keyCode == 35 //end
-			|| keyCode == 36 //home
-			|| keyCode == 37 //<-
-			|| keyCode == 39 //->
-			|| keyCode == 45 //Insert
-			|| keyCode == 46 //Del
-			){
-			return true;
-		}
-	}
-	if (       keyCode == 8 	//backspace
-		|| keyCode == 9 	//tab
-		){
-		return true;
-	}
-	return false;
-}
-
-function is_hwaddr(o,event){
-	keyPressed = event.keyCode ? event.keyCode : event.which;
-	
-	if (is_functionButton(event)){
-		return true;
-	}
-
-	if((keyPressed>47 && keyPressed<58)||(keyPressed>64 && keyPressed<71)||(keyPressed>96 && keyPressed<103)){	//Hex
-		j = 0;
-		
-		for(i = 0; i < o.value.length; i++){
-			if(o.value.charAt(i) == ':'){
-				j++;
-			}
-		}
-		
-		if(j < 5 && i >= 2){
-			if(o.value.charAt(i-2) != ':' && o.value.charAt(i-1) != ':'){
-				o.value = o.value+':';
-			}
-		}
-		
-		return true;
-	}	
-	else if(keyPressed == 58 || keyPressed == 13){	//symbol ':' & 'ENTER'
-		return true;
-	}
-	else{
-		return false;
-	}
-}
-
-function validate_hwaddr(o)
-{
-if (o.value.length == 0) return true;
-if(o.value != "")
-{
-if(o.value.length == 12)
-{
-for(i=0; i<o.value.length; i++)
-{c=o.value.charAt(i);
-if (!(c>='0'&&c<='9') && !(c>='a'&&c<='f') && !(c>='A'&&c<='F'))
-{alert("<%tcWebApi_get("String_Entry","LHC_MnlDHCPMacaddr_id","s")%>");
-o.value = "";
-o.focus();
-o.select();
-return false;
-}
-}
-return true;
-}
-}
-alert("<%tcWebApi_get("String_Entry","LHC_MnlDHCPMacaddr_id","s")%>");
-o.value = "";
-o.focus();
-o.select();
-return false;
-}
 function validate_ssidchar(ch){
 if(ch >= 32 && ch <= 126)
 return false;
@@ -374,23 +292,7 @@ if(ch == 60 || ch == 62) /*ch == 39 || */
 return false;
 return true;
 }
-function is_number(o,event){
-	keyPressed = event.keyCode ? event.keyCode : event.which;
-	
-	if (is_functionButton(event)){
-	return true;
-	}
-	
-	if (keyPressed>47 && keyPressed<58){
-		/*if (keyPressed==48 && o.value.length == 0){	//single 0
-			return false;
-		}*/
-		return true;
-	}
-	else{
-		return false;
-	}
-}
+
 function isNumberFloat(o,event){
 		var keyPressed = event.keyCode ? event.keyCode : event.which;
 
@@ -512,47 +414,6 @@ function isFunctionButton(e){
 		return false;
 }
 
-function change_ipaddr(o){}
-function is_ipaddr(o,event){
-keyPressed = event.keyCode ? event.keyCode : event.which;
-if ( (keyPressed==0)||
-(keyPressed==8)|| // backspace
-(keyPressed==9)|| // Tab
-(keyPressed==35)|| // end
-(keyPressed==36)|| // home
-(keyPressed==37)|| // <-
-(keyPressed==39)|| // ->
-(keyPressed==46) ){ // delete
-return true;
-}
-if((keyPressed > 47 && keyPressed < 58)){
-j = 0;
-for(i = 0; i < o.value.length; i++){
-if(o.value.charAt(i) == '.'){
-j++;
-}
-}
-if(j < 3 && i >= 3){
-if(o.value.charAt(i-3) != '.' && o.value.charAt(i-2) != '.' && o.value.charAt(i-1) != '.'){
-o.value = o.value+'.';
-}
-}
-return true;
-}
-else if(keyPressed == 46){
-j = 0;
-for(i = 0; i < o.value.length; i++){
-if(o.value.charAt(i) == '.'){
-j++;
-}
-}
-if(o.value.charAt(i-1) == '.' || j == 3){
-return false;
-}
-return true;
-}
-return false;
-}
 function intoa(ip)
 {n=0;
 vip=0;
@@ -987,16 +848,7 @@ return false;
 }
 return true;
 }
-function is_ipaddrport(o,event){
-keyPressed = event.keyCode ? event.keyCode : event.which;
-if (keyPressed==0){
-return true;
-}
-if ((keyPressed>47 && keyPressed<58) || keyPressed == 46 || keyPressed == 58){
-return true;
-}
-return false;
-}
+
 function validate_ipaddrport(o, v)
 {num = -1;
 pos = 0;
@@ -1054,116 +906,6 @@ else if (v=='IPRouters' && document.form.lan_netmask.value == '')
 {document.form.lan_netmask.value = "255.255.255.0";
 }
 return true;
-}
-function change_iprange(o)
-{}
-function is_iprange(o, event){
-keyPressed = event.keyCode ? event.keyCode : event.which;
-if (keyPressed==0)
-return true;
-if ((keyPressed>47 && keyPressed<58)){
-j = 0;
-for(i=0; i<o.value.length; i++){
-if (o.value.charAt(i)=='.'){
-j++;
-}
-}
-if (j<3 && i>=3){
-if (o.value.charAt(i-3)!='.' && o.value.charAt(i-2)!='.' && o.value.charAt(i-1)!='.')
-o.value = o.value + '.';
-}
-return true;
-}
-else if (keyPressed == 46){
-j = 0;
-for(i=0; i<o.value.length; i++){
-if (o.value.charAt(i)=='.'){
-j++;
-}
-}
-if (o.value.charAt(i-1)=='.' || j==3){
-return false;
-}
-return true;
-}
-else if (keyPressed == 42){ /* '*' */
-return true;
-}
-return false;
-}
-function validate_iprange(o, v)
-{num = -1;
-pos = 0;
-if (o.value.length==0)
-return true;
-for(i=0; i<o.value.length; i++)
-{c=o.value.charAt(i);
-if(c>='0'&&c<='9')
-{if ( num==-1 )
-{num = (c-'0');
-}
-else
-{num = num*10 + (c-'0');
-}
-}
-else if (c=='*'&&num==-1)
-{num = 0;
-}
-else
-{if ( num<0 || num>255 || (c!='.'))
-{alert(o.value + " <%tcWebApi_get("String_Entry","JS_validip","s")%>");
-o.value = "";
-o.focus();
-o.select();
-return false;
-}
-num = -1;
-pos++;
-}
-}
-if (pos!=3 || num<0 || num>255)
-{alert(o.value + " <%tcWebApi_get("String_Entry","JS_validip","s")%>");
-o.value = "";
-o.focus();
-o.select();
-return false;
-}
-if (v=='ExternalIPAddress' && document.form.wan_netmask_x.value == '')
-{document.form.wan_netmask_x.value = "255.255.255.0";
-}
-else if (v=='IPRouters' && document.form.lan_netmask.value == '')
-{document.form.lan_netmask.value = "255.255.255.0";
-}
-return true;
-}
-function is_portrange(o,event){
-keyPressed = event.keyCode ? event.keyCode : event.which;
-if (keyPressed==0)
-return true;
-if ((keyPressed>47 && keyPressed<58)){
-return true;
-}
-else if (keyPressed == 58 && o.value.length>0){
-for(i=0; i<o.value.length; i++){
-c=o.value.charAt(i);
-if (c==':' || c=='>' || c=='<' || c=='=')
-return false;
-}
-return true;
-}
-else if (keyPressed==44){ //"�? can be type in first charAt ::: 0220 Lock add"
-if (o.value.length==0)
-return false;
-else
-return true;
-}
-else if (keyPressed==60 || keyPressed==62){ //">" and "<" only can be type in first charAt ::: 0220 Lock add
-if (o.value.length==0)
-return true;
-else
-return false;
-}
-return false;
 }
 function validate_portrange(o, v){
 if(o.value.length == 0)
@@ -1243,17 +985,7 @@ o.value = num; //single port number case;
 }// correct port
 return true;
 }
-function is_portlist(o,event){
-keyPressed = event.keyCode ? event.keyCode : event.which;
-if (keyPressed == 0 )
-return true;
-if ((keyPressed>47 && keyPressed<58) || keyPressed == 32){
-return true;
-}
-else{
-return false;
-}
-}
+
 function validate_portlist(o, v)
 {if (o.value.length==0)
 return true;
@@ -1603,57 +1335,7 @@ return false;
 function onSubmitApply(s){
 pageChanged = 0;
 pageChangedCount = 0;
-if (document.form.current_page.value == "Advanced_PortMapping_Content.asp")
-{if (s == "0")
-{action = document.form.IPConnection_MappedAction_0;
-local = document.form.IPConnection_MappedIP_0;
-port = document.form.IPConnection_MappedInPort_0;
-desc = document.form.IPConnection_MappedDescript_0;
-}
-else if (s == "1")
-{action = document.form.IPConnection_MappedAction_1;
-local = document.form.IPConnection_MappedIP_1;
-port = document.form.IPConnection_MappedInPort_1;
-desc = document.form.IPConnection_MappedDescript_1;
-}
-else if (s == "2")
-{action = document.form.IPConnection_MappedAction_2;
-local = document.form.IPConnection_MappedIP_2;
-port = document.form.IPConnection_MappedInPort_2;
-desc = document.form.IPConnection_MappedDescript_2;
-}
-else if (s == "3")
-{action = document.form.IPConnection_MappedAction_3;
-local = document.form.IPConnection_MappedIP_3;
-port = document.form.IPConnection_MappedInPort_3;
-desc = document.form.IPConnection_MappedDescript_3;
-}
-else if (s == "4")
-{action = document.form.IPConnection_MappedAction_4;
-local = document.form.IPConnection_MappedIP_4;
-port = document.form.IPConnection_MappedInPort_4;
-desc = document.form.IPConnection_MappedDescript_4;
-}
-else if (s == "5")
-{action = document.form.IPConnection_MappedAction_5;
-local = document.form.IPConnection_MappedIP_5;
-port = document.form.IPConnection_MappedInPort_5;
-desc = document.form.IPConnection_MappedDescript_5;
-}
-if (action.value == "Set")
-{if (!validate_ipaddr(local, "") ||
-!validate_portrange(port, ""))
-{return false;
-}
-else if (local.value=="" || port.value == "")
-{alert("<%tcWebApi_get("String_Entry","JS_ipblank1","s")%>");
-return false;
-}
-}
-document.form.action_mode.value = action.value;
-document.form.action_script.value = "portmapping.sh" + " " + action.value + " " + local.value + " " + port.value;
-}
-else if(document.form.current_page.value == "Advanced_ASUSDDNS_Content.asp"){
+if(document.form.current_page.value == "Advanced_ASUSDDNS_Content.asp"){
 if(s == "hostname_check"){
 showLoading();
 if(!validate_ddns_hostname(document.form.ddns_hostname_x)){
@@ -1877,14 +1559,14 @@ function change_ddns_setting(v){
 		document.form.DDNSName.parentNode.style.display = "none";
 		inputCtrl(document.form.ddns_username_x, 1);
 		inputCtrl(document.form.ddns_passwd_x, 1);
-		if(v == "WWW.SELFHOST.DE" || v == "WWW.TUNNELBROKER.NET")
+		if(v == "WWW.TUNNELBROKER.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM")
 			var disable_wild = 1;
 		else
 			var disable_wild = 0;	
 		document.form.ddns_wildcard_x[0].disabled= disable_wild;
 		document.form.ddns_wildcard_x[1].disabled= disable_wild;
 		
-		if(v == "WWW.ZONEEDIT.COM"){			 // Jieming added at 2013/03/06, remove free trail of zoneedit and add a link to direct to zoneedit 
+		if(v == "WWW.ZONEEDIT.COM" || v == "DOMAINS.GOOGLE.COM"){
 			showhide("link", 0);
 			showhide("linkToHome", 1);
 		}
@@ -2079,29 +1761,7 @@ function change_wlweptype(o, s, isload, edit_unit){
 	
 	wl_wep_change(edit_unit);
 }
-function is_wlkey(o, event){
-keyPressed = event.keyCode ? event.keyCode : event.which;
-if(keyPressed == 0)
-return true;
-wep = document.form.wl_wep_x.value;
-if((keyPressed > 47 && keyPressed < 58) ||
-(keyPressed > 64 && keyPressed < 71) ||
-(keyPressed > 96 && keyPressed < 103)){
-if(wep == "1"){
-if(o.value != "" && o.value.length > 10)
-return false;
-}
-else if(wep == "2"){
-if(o.value != "" && o.value.length > 26)
-return false;
-}
-else
-return false;
-}
-else
-return false;
-return true;
-}
+
 function change_wlkey(o, s){
 wep = document.form.wl_wep_x.value;
 if(wep == "1"){
@@ -2341,6 +2001,8 @@ if (s == 'x_DDNSServer'){
 		tourl = "";
 	else if (document.form.ddns_server_x.value == 'WWW.NO-IP.COM')
 		tourl = "http://www.no-ip.com/newUser.php";
+	else if (document.form.ddns_server_x.value == 'DOMAINS.GOOGLE.COM')
+		tourl = "https://domains.google/";
 	else tourl = "";
 	link = window.open(tourl, "DDNSLink","toolbar=yes,location=yes,directories=no,status=yes,menubar=yes,scrollbars=yes,resizable=yes,copyhistory=no,width=640,height=480");
 }
@@ -2552,9 +2214,14 @@ document.form.wl_auth_mode_x.options[i] = null;
 
 function insertExtChannelOption(){
 	if('<% tcWebApi_get("WLan_Common","wl_unit","s"); %>' == '1')
+	{
 		insertExtChannelOption_5g();
+	}
 	else
+	{
 		insertExtChannelOption_2g();
+	}
+
 }
 
 function insertExtChannelOption_5g(){
@@ -3065,6 +2732,24 @@ function insertExtChannelOption_2g(){
 	else
 		inputCtrl(document.form.wl_nctrlsb, 0);
 }
+
+function change_channel() {
+	var band = document.form.wl_unit.value;
+
+	if(band == 0){
+		if(document.form.wl_channel.value  == '0'){
+			document.getElementById('acs_ch13_checkbox').style.display = "";
+			document.form.acs_ch13.disabled = false;					
+		}
+		else{
+			document.getElementById('acs_ch13_checkbox').style.display = "none";
+			document.form.acs_ch13.disabled = true;							
+		}
+	}
+	
+	insertExtChannelOption();
+}
+
 function wl_auth_mode_change(isload, edit_unit){
 	var mode = document.form.wl_auth_mode_x.value;
 	var i, cur, algos;

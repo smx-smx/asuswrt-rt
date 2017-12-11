@@ -18,6 +18,7 @@
 <script type="text/javascript" src="/detect.js"></script>
 <script type="text/javascript" src="/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
 <script>
 var $j = jQuery.noConflict();
 <% login_state_hook(); %>
@@ -207,10 +208,10 @@ function unlockAcc(){
 									  <tr bgcolor="#444f53">
 											<td colspan="5" class="cloud_main_radius">
 												<div style="padding:30px;font-size:18px;word-break:break-all;border-style:dashed;border-radius:10px;border-width:1px;border-color:#999;">
-													<%tcWebApi_get("String_Entry","AiCloud_webport", "s") %><input type="text" name="webdav_https_port" class="input_6_table" maxlength="5" onKeyPress="return is_number(this,event);" value="<% tcWebApi_get("AiCloud_Entry", "webdav_https_port", "s") %>">
+													<%tcWebApi_get("String_Entry","AiCloud_webport", "s") %><input type="text" name="webdav_https_port" class="input_6_table" maxlength="5" onKeyPress="return validator.isNumber(this,event);" value="<% tcWebApi_get("AiCloud_Entry", "webdav_https_port", "s") %>">
 													<br>
 													<br>
-													<%tcWebApi_get("String_Entry","AiCloud_streamport", "s") %><input type="text" name="webdav_http_port" class="input_6_table" maxlength="5" onKeyPress="return is_number(this,event);" value="<% tcWebApi_get("AiCloud_Entry", "webdav_http_port", "s") %>">
+													<%tcWebApi_get("String_Entry","AiCloud_streamport", "s") %><input type="text" name="webdav_http_port" class="input_6_table" maxlength="5" onKeyPress="return validator.isNumber(this,event);" value="<% tcWebApi_get("AiCloud_Entry", "webdav_http_port", "s") %>">
 												</div>
 											</td>
 									  </tr>

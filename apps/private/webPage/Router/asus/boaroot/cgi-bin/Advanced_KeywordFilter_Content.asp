@@ -22,10 +22,11 @@ end if
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" language="JavaScript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
@@ -220,7 +221,7 @@ refreshpage();
 </tr>
 <tr>
 <td width="80%">
-<input type="text" maxlength="20" class="input_32_table" name="keyword_keyword_x_0" onKeyPress="return is_string(this, event)">
+<input type="text" maxlength="20" class="input_32_table" name="keyword_keyword_x_0" onKeyPress="return validator.isString(this, event)">
 </td>
 <td width="20%">
 <input class="add_btn" type="button" onClick="if(validForm()){addRow(document.form.keyword_keyword_x_0, 27);}" value="">

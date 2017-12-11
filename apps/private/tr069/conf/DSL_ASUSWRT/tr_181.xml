@@ -675,6 +675,9 @@
 			</node>
 		</node>
 	</node>
+	<node name='LANConfigSecurity' rw='0' type='node'>
+		<node acl='' getc='1' name='ConfigPassword' noc='0' nocc='' rw='1' type='string' cmd='user_passwd' act='Account_Entry0'></node>
+	</node>
 	<node name='Hosts' rw='0' type='node'>
 		<node acl='' getc='0' name='HostNumberOfEntries' noc='0' nocc='' rw='0' type='unsignedInt'>1</node>
 		<node il='32' name='Host' nin='1' rw='1' type='node'>

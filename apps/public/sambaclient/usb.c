@@ -16,14 +16,12 @@ int get_mounts_info(struct mounts_info_tag *info)
         FILE *fp;
         int i = 0;
         int num = 0;
-        //char *mount_path;
         char **tmp_mount_list = NULL;
         char **tmp_mount = NULL;
 
         char buf[len + 1];
         memset(buf, '\0', sizeof(buf));
         char a[1024];
-        //char *temp;
         char *p, *q;
         fp = fopen("/proc/mounts", "r");
         if(fp)
@@ -82,7 +80,6 @@ int get_mounts_info(struct mounts_info_tag *info)
 
 int get_tokenfile_info()
 {
-        //printf("get_tokenfile_info()- start\n");
         int i;
         int j = 0;
         struct mounts_info_tag *info = NULL;
@@ -114,10 +111,7 @@ int get_tokenfile_info()
         {
                 DEBUG("info->paths[%d] = %s\n", i, info->paths[i]);
                 tokenfile = my_malloc(strlen(info->paths[i]) + 24);
-                //2014.10.20 by sherry malloc申请内存是否成功
-                //if(tokenfile==NULL)
-                    //return NULL;
-                sprintf(tokenfile, "%s/.sambaclient_tokenfile", info->paths[i]);
+                snprintf(tokenfile, sizeof(char)*(strlen(info->paths[i]) + 24), "%s/.sambaclient_tokenfile", info->paths[i]);
                 DEBUG("tokenfile = %s\n", tokenfile);
                 if(!access(tokenfile, F_OK))
                 {
@@ -140,24 +134,15 @@ int get_tokenfile_info()
                                                 return -1;
                                         }
                                         tokenfile_info_tmp->url = my_malloc(strlen(p) + 1);
-                                        //2014.10.20 by sherry malloc申请内存是否成功
-                                        //if(tokenfile_info_tmp->url==NULL)
-                                            //return NULL;
-                                        sprintf(tokenfile_info_tmp->url, "%s", p);
+                                        snprintf(tokenfile_info_tmp->url, sizeof(char)*(strlen(p) + 1), "%s", p);
                                         tokenfile_info_tmp->mountpath = my_malloc(strlen(info->paths[i]) + 1);
-                                        //2014.10.20 by sherry malloc申请内存是否成功
-                                        //if(tokenfile_info_tmp->mountpath==NULL)
-                                            //return NULL;
-                                        sprintf(tokenfile_info_tmp->mountpath, "%s", info->paths[i]);
+                                        snprintf(tokenfile_info_tmp->mountpath, sizeof(char)*(strlen(info->paths[i]) + 1), "%s", info->paths[i]);
                                         j++;
                                 }
                                 else
                                 {
                                         tokenfile_info_tmp->folder = my_malloc(strlen(p) + 1);
-                                        //2014.10.20 by sherry malloc申请内存是否成功
-                                        //if(tokenfile_info_tmp->folder==NULL)
-                                            //return NULL;
-                                        sprintf(tokenfile_info_tmp->folder, "%s", p);
+                                        snprintf(tokenfile_info_tmp->folder, sizeof(char)*(strlen(p) + 1), "%s", p);
                                         tokenfile_info->next = tokenfile_info_tmp;
                                         tokenfile_info = tokenfile_info_tmp;
                                         j = 0;
@@ -175,7 +160,6 @@ int get_tokenfile_info()
         if(info->paths != NULL)
                 free(info->paths);
         free(info);
-        //printf("get_tokenfile_info()- end\n");
         return 0;
 }
 
@@ -195,10 +179,7 @@ int check_config_path(int is_read_config)
         char tmp[MAXLEN_TCAPI_MSG] = {0};
         tcapi_get(AICLOUD, "smb_tokenfile", tmp);
         nv = my_malloc(strlen(tmp) + 1);
-        //2014.10.20 by sherry malloc申请内存是否成功
-        //if(nv==NULL)
-           // return NULL;
-        sprintf(nv, "%s", tmp);
+        snprintf(nv, sizeof(char)*(strlen(tmp) + 1), "%s", tmp);
 #else
         nv = strdup(nvram_safe_get("smb_tokenfile"));
 #endif
@@ -208,10 +189,7 @@ int check_config_path(int is_read_config)
         if(fp == NULL)
         {
                 nv = my_malloc(2);
-                //2014.10.20 by sherry malloc申请内存是否成功
-               //if(nv==NULL)
-                 //   return NULL;
-                sprintf(nv, "");
+                snprintf(nv, sizeof(char)*2, "%s", "");
         }
         else
         {
@@ -219,12 +197,7 @@ int check_config_path(int is_read_config)
                 int file_size;
                 file_size = ftell( fp );
                 fseek(fp, 0, SEEK_SET);
-                //nv =  (char *)malloc( file_size * sizeof( char ) );
                 nv = my_malloc(file_size + 2);
-                //2014.10.20 by sherry malloc申请内存是否成功
-                //if(nv==NULL)
-                    //return NULL;
-                //fread(nv , file_size , sizeof(char) , fp);
                 fscanf(fp, "%[^\n]%*c", nv);
                 fclose(fp);
         }
@@ -245,9 +218,9 @@ int check_config_path(int is_read_config)
                                 if(strcmp(tokenfile_info_tmp->mountpath, smb_config.multrule[i]->mount_path))
                                 {
                                         memset(smb_config.multrule[i]->mount_path, 0, sizeof(smb_config.multrule[i]->mount_path));
-                                        sprintf(smb_config.multrule[i]->mount_path, "%s", tokenfile_info_tmp->mountpath);
+                                        snprintf(smb_config.multrule[i]->mount_path, 255, "%s", tokenfile_info_tmp->mountpath);
                                         memset(smb_config.multrule[i]->client_root_path, 0, sizeof(smb_config.multrule[i]->client_root_path));
-                                        sprintf(smb_config.multrule[i]->client_root_path, "%s%s", tokenfile_info_tmp->mountpath,tokenfile_info_tmp->folder);
+                                        snprintf(smb_config.multrule[i]->client_root_path, 255, "%s%s", tokenfile_info_tmp->mountpath,tokenfile_info_tmp->folder);
                                         is_path_change = 1;
                                 }
                                 if(!is_read_config)
@@ -260,23 +233,17 @@ int check_config_path(int is_read_config)
                         }
                         tokenfile_info_tmp = tokenfile_info_tmp->next;
                 }
-                //printf("flag = %d\n", flag);
                 if(!flag)
                 {
                         nvp = my_malloc(strlen(smb_config.multrule[i]->server_root_path) + strlen(smb_config.multrule[i]->client_root_path) + 2);
-                        //2014.10.20 by sherry malloc申请内存是否成功
-                        //if(nvp==NULL)
-                         //   return NULL;
-                        sprintf(nvp, "%s>%s", smb_config.multrule[i]->server_root_path, smb_config.multrule[i]->client_root_path);
+                        snprintf(nvp, sizeof(char)*(strlen(smb_config.multrule[i]->server_root_path) + strlen(smb_config.multrule[i]->client_root_path) + 2), "%s>%s", smb_config.multrule[i]->server_root_path, smb_config.multrule[i]->client_root_path);
 
                         if(!is_read_config)
                         {
                                 if(g_pSyncList[i]->sync_disk_exist == 1)
                                         is_path_change = 2;   //remove the disk and the mout_path not change
                         }
-
                         DEBUG("write nvram and tokenfile if before\n");
-
                         if(strstr(nv, nvp) == NULL)
                         {
                                 DEBUG("write nvram and tokenfile if behind");
@@ -286,22 +253,13 @@ int check_config_path(int is_read_config)
                                         return -1;
                                 }
                                 tokenfile_info_tmp->url = my_malloc(strlen(smb_config.multrule[i]->server_root_path) + 1);
-                                //2014.10.20 by sherry malloc申请内存是否成功
-                               // if(tokenfile_info_tmp->url==NULL)
-                                 //   return NULL;
-                                sprintf(tokenfile_info_tmp->url, "%s", smb_config.multrule[i]->server_root_path);
+                                snprintf(tokenfile_info_tmp->url, sizeof(char)*(strlen(smb_config.multrule[i]->server_root_path) + 1), "%s", smb_config.multrule[i]->server_root_path);
 
                                 tokenfile_info_tmp->mountpath = my_malloc(strlen(smb_config.multrule[i]->mount_path) + 1);
-                                //2014.10.20 by sherry malloc申请内存是否成功
-                                //if(tokenfile_info_tmp->mountpath==NULL)
-                                 //   return NULL;
-                                sprintf(tokenfile_info_tmp->mountpath, "%s", smb_config.multrule[i]->mount_path);
+                                snprintf(tokenfile_info_tmp->mountpath, sizeof(char)*(strlen(smb_config.multrule[i]->mount_path) + 1), "%s", smb_config.multrule[i]->mount_path);
 
                                 tokenfile_info_tmp->folder = my_malloc(strlen(smb_config.multrule[i]->client_root_path) + 1);
-                                //2014.10.20 by sherry malloc申请内存是否成功
-                                //if(tokenfile_info_tmp->folder==NULL)
-                                //    return NULL;
-                                sprintf(tokenfile_info_tmp->folder, "%s", smb_config.multrule[i]->client_root_path);
+                                snprintf(tokenfile_info_tmp->folder, sizeof(char)*(strlen(smb_config.multrule[i]->client_root_path) + 1), "%s", smb_config.multrule[i]->client_root_path);
 
                                 tokenfile_info->next = tokenfile_info_tmp;
                                 tokenfile_info = tokenfile_info_tmp;
@@ -311,19 +269,13 @@ int check_config_path(int is_read_config)
                                 if(nv_len)
                                 {
                                         new_nv = my_malloc(strlen(nv) + strlen(nvp) + 2);
-                                        //2014.10.20 by sherry malloc申请内存是否成功
-                                       // if(new_nv==NULL)
-                                       //     return NULL;
-                                        sprintf(new_nv, "%s<%s", nv,nvp);
+                                        snprintf(new_nv, sizeof(char)*(strlen(nv) + strlen(nvp) + 2), "%s<%s", nv,nvp);
 
                                 }
                                 else
                                 {
                                         new_nv = my_malloc(strlen(nvp) + 1);
-                                        //2014.10.20 by sherry malloc申请内存是否成功
-                                        //if(new_nv==NULL)
-                                        //    return NULL;
-                                        sprintf(new_nv, "%s", nvp);
+                                        snprintf(new_nv, sizeof(char)*(strlen(nvp) + 1), "%s", nvp);
                                 }
 #ifdef NVRAM_
                                 write_to_nvram(new_nv, "smb_tokenfile");
@@ -391,8 +343,6 @@ int check_disk_change()
         if(status == 2 || status == 1)
         {
                 exit_loop = 1;
-                //sync_up = 0;
-                //sync_down = 0;
                 sync_disk_removed = 1;
         }
         return 0;
@@ -403,13 +353,8 @@ int write_to_nvram(char *contents,char *nv_name)
 {
         char *command;
         command = my_malloc(strlen(contents) + strlen(SHELL_FILE) + strlen(nv_name) + 8);
-        //2014.10.20 by sherry malloc申请内存是否成功
-        //if(command==NULL)
-        //    return NULL;
-        sprintf(command, "sh %s \"%s\" %s", SHELL_FILE, contents, nv_name);
-
+        snprintf(command, sizeof(char)*(strlen(contents) + strlen(SHELL_FILE) + strlen(nv_name) + 8), "sh %s \"%s\" %s", SHELL_FILE, contents, nv_name);
         DEBUG("command : [%s]\n", command);
-
         system(command);
         free(command);
 
@@ -426,12 +371,10 @@ int write_to_smb_tokenfile(char *contents)
         FILE *fp;
         if( ( fp = fopen(TOKENFILE_RECORD, "w") ) == NULL )
         {
-                //printf("open wd_tokenfile failed!\n");
                 return -1;
         }
         fprintf(fp, "%s", contents);
         fclose(fp);
-        //printf("write_to_wd_tokenfile end\n");
         return 0;
 }
 #endif
@@ -478,10 +421,7 @@ char *delete_nvram_contents(char *url,char *folder)
         char tmp[MAXLEN_TCAPI_MSG] = {0};
         tcapi_get(AICLOUD, "smb_tokenfile", tmp);
         nv = my_malloc(strlen(tmp) + 1);
-        //2014.10.20 by sherry malloc申请内存是否成功
-        //if(nv==NULL)
-        //    return NULL;
-        sprintf(nv, "%s", tmp);
+        snprintf(nv, sizeof(char)*(strlen(tmp) + 1), "%s", tmp);
         p = nv;
 #else
         p = nv = strdup(nvram_safe_get("smb_tokenfile"));
@@ -492,10 +432,7 @@ char *delete_nvram_contents(char *url,char *folder)
         if (fp == NULL)
         {
                 nv = my_malloc(2);
-                //2014.10.20 by sherry malloc申请内存是否成功
-//                if(nv==NULL)
-//                    return NULL;
-                sprintf(nv, "");
+                snprintf(nv, sizeof(char)*2, "%s", "");
         }
         else
         {
@@ -504,9 +441,6 @@ char *delete_nvram_contents(char *url,char *folder)
                 file_size = ftell( fp );
                 fseek(fp , 0 , SEEK_SET);
                 nv = my_malloc(file_size + 2);
-                //2014.10.20 by sherry malloc申请内存是否成功
-               // if(nv==NULL)
-                //    return NULL;
                 fscanf(fp, "%[^\n]%*c", nv);
                 p = nv;
                 fclose(fp);
@@ -515,10 +449,7 @@ char *delete_nvram_contents(char *url,char *folder)
 #endif
 
         nvp = my_malloc(strlen(url) + strlen(folder) + 2);
-        //2014.10.20 by sherry malloc申请内存是否成功
-       //if(nvp==NULL)
-        //    return NULL;
-        sprintf(nvp, "%s>%s", url, folder);
+        snprintf(nvp, sizeof(char)*(strlen(url) + strlen(folder) + 2), "%s>%s", url, folder);
 
         if(strstr(nv, nvp) == NULL)
         {
@@ -544,10 +475,7 @@ char *delete_nvram_contents(char *url,char *folder)
                                 if(i == 0)
                                 {
                                         new_nv = my_malloc(n + 1);
-                                        //2014.10.20 by sherry malloc申请内存是否成功
-                                      //  if(new_nv==NULL)
-                                      //      return NULL;
-                                        sprintf(new_nv, "%s", b);
+                                        snprintf(new_nv, sizeof(char)*(n + 1), "%s", b);
                                         ++i;
                                 }
                                 else
@@ -571,10 +499,7 @@ int write_to_tokenfile(char *mpath)
 
         char *filename = NULL;
         filename = my_malloc(strlen(mpath) + 24);
-        //2014.10.20 by sherry malloc申请内存是否成功
-       // if(filename==NULL)
-       //    return NULL;
-        sprintf(filename, "%s/.sambaclient_tokenfile", mpath);
+        snprintf(filename, sizeof(char)*(strlen(mpath) + 24), "%s/.sambaclient_tokenfile", mpath);
 
         int i = 0;
         if( ( fp = fopen(filename, "w") ) == NULL )
@@ -641,22 +566,13 @@ int add_tokenfile_info(char *url, char *folder, char *mpath)
         }
 
         tokenfile_info_tmp->url = my_malloc(strlen(url) + 1);
-        //2014.10.20 by sherry malloc申请内存是否成功
-       // if(tokenfile_info_tmp->url==NULL)
-       //     return NULL;
-        sprintf(tokenfile_info_tmp->url, "%s", url);
+        snprintf(tokenfile_info_tmp->url, sizeof(char)*(strlen(url) + 1), "%s", url);
 
         tokenfile_info_tmp->mountpath = my_malloc(strlen(mpath) + 1);
-        //2014.10.20 by sherry malloc申请内存是否成功
-      // if(tokenfile_info_tmp->mountpath==NULL)
-       //     return NULL;
-        sprintf(tokenfile_info_tmp->mountpath, "%s", mpath);
+        snprintf(tokenfile_info_tmp->mountpath, sizeof(char)*(strlen(mpath) + 1), "%s", mpath);
 
         tokenfile_info_tmp->folder = my_malloc(strlen(folder) + 1);
-        //2014.10.20 by sherry malloc申请内存是否成功
-//        if(tokenfile_info_tmp->folder==NULL)
-//            return NULL;
-        sprintf(tokenfile_info_tmp->folder, "%s", folder);
+        snprintf(tokenfile_info_tmp->folder, sizeof(char)*(strlen(folder) + 1), "%s", folder);
 
         tokenfile_info->next = tokenfile_info_tmp;
         tokenfile_info = tokenfile_info_tmp;
@@ -674,10 +590,7 @@ char *add_nvram_contents(char *url,char *folder)
         char *nvp;
 
         nvp = my_malloc(strlen(url) + strlen(folder) + 2);
-        //2014.10.20 by sherry malloc申请内存是否成功
-       // if(nvp==NULL)
-        //    return NULL;
-        sprintf(nvp, "%s>%s", url, folder);
+        snprintf(nvp, sizeof(char)*(strlen(url) + strlen(folder) + 2), "%s>%s", url, folder);
 
         DEBUG("add_nvram_contents     nvp = %s\n",nvp);
 
@@ -686,11 +599,7 @@ char *add_nvram_contents(char *url,char *folder)
         char tmp[MAXLEN_TCAPI_MSG] = {0};
         tcapi_get(AICLOUD, "smb_tokenfile", tmp);
         nv = my_malloc(strlen(tmp) + 1);
-        //2014.10.20 by sherry malloc申请内存是否成功
-       // if(nv==NULL)
-       //     return NULL;
-        sprintf(nv, "%s", tmp);
-        //p = nv;
+        snprintf(nv, sizeof(char)*(strlen(tmp) + 1), "%s", tmp);
 #else
         nv = strdup(nvram_safe_get("smb_tokenfile"));
 #endif
@@ -700,9 +609,6 @@ char *add_nvram_contents(char *url,char *folder)
         if (fp == NULL)
         {
                 nv = my_malloc(2);
-                //2014.10.20 by sherry malloc申请内存是否成功
-          //      if(nv==NULL)
-           //         return NULL;
                 sprintf(nv, "");
         }
         else
@@ -712,9 +618,6 @@ char *add_nvram_contents(char *url,char *folder)
                 file_size = ftell( fp );
                 fseek(fp , 0 , SEEK_SET);
                 nv = my_malloc(file_size + 2);
-                //2014.10.20 by sherry malloc申请内存是否成功
-               // if(nv==NULL)
-               //     return NULL;
                 fscanf(fp, "%[^\n]%*c", nv);
                 fclose(fp);
         }
@@ -725,19 +628,13 @@ char *add_nvram_contents(char *url,char *folder)
         if(nv_len)
         {
                 new_nv = my_malloc(strlen(nv) + strlen(nvp) + 2);
-                //2014.10.20 by sherry malloc申请内存是否成功
-               // if(new_nv==NULL)
-               //     return NULL;
-                sprintf(new_nv, "%s<%s", nv, nvp);
+                snprintf(new_nv, sizeof(char)*(strlen(nv) + strlen(nvp) + 2), "%s<%s", nv, nvp);
 
         }
         else
         {
                 new_nv = my_malloc(strlen(nvp) + 1);
-                //2014.10.20 by sherry malloc申请内存是否成功
-               // if(new_nv==NULL)
-               //     return NULL;
-                sprintf(new_nv, "%s", nvp);
+                snprintf(new_nv, sizeof(char)*(strlen(nvp) + 1), "%s", nvp);
         }
 
         free(nvp);
@@ -750,15 +647,14 @@ int rewrite_tokenfile_and_nv(){
 
         int i, j;
         int exist;
-        //printf("rewrite_tokenfile_and_nv start\n");
         if(smb_config.dir_num > smb_config_stop.dir_num)
         {
                 for(i = 0; i < smb_config.dir_num; i++)
                 {
                         exist = 0;
                         for(j = 0; j < smb_config_stop.dir_num; j++)
-                        {
-                                if(!strcmp(smb_config_stop.multrule[j]->server_root_path, smb_config.multrule[i]->server_root_path))
+                        {                            
+			       if(!strcmp(smb_config_stop.multrule[j]->server_root_path, smb_config.multrule[i]->server_root_path)&&!strcmp(smb_config_stop.multrule[j]->client_root_path, smb_config.multrule[i]->client_root_path))
                                 {
                                         exist = 1;
                                         break;
@@ -766,11 +662,9 @@ int rewrite_tokenfile_and_nv(){
                         }
                         if(!exist)
                         {
-                                //printf("del form nv\n");
                                 char *new_nv;
                                 delete_tokenfile_info(smb_config.multrule[i]->server_root_path, smb_config.multrule[i]->client_root_path);
                                 new_nv = delete_nvram_contents(smb_config.multrule[i]->server_root_path, smb_config.multrule[i]->client_root_path);
-                                //printf("new_nv = %s\n", new_nv);
                                 write_to_tokenfile(smb_config.multrule[i]->mount_path);
 #ifdef NVRAM_
                                 write_to_nvram(new_nv, "smb_tokenfile");
@@ -781,7 +675,7 @@ int rewrite_tokenfile_and_nv(){
                         }
                 }
         }
-        else
+        else if(smb_config.dir_num < smb_config_stop.dir_num)
         {
                 for(i = 0; i < smb_config_stop.dir_num; i++)
                 {
@@ -809,6 +703,67 @@ int rewrite_tokenfile_and_nv(){
                                 free(new_nv);
                         }
                 }
+        }
+
+        else if(smb_config_stop.dir_num == smb_config.dir_num)
+        {
+                char *new_nv = NULL;
+                char *nvp = NULL;
+                char *filename = NULL;
+                FILE *fp = NULL;
+                for(i = 0; i < smb_config_stop.dir_num; i++)
+                {
+                    filename = my_malloc(strlen(smb_config_stop.multrule[i]->mount_path) + 24);
+                    snprintf(filename, sizeof(char)*(strlen(smb_config_stop.multrule[i]->mount_path) + 24), "%s/.sambaclient_tokenfile", smb_config_stop.multrule[i]->mount_path);
+                    remove(filename);
+                    free(filename);
+                }
+                for(i = 0; i < smb_config_stop.dir_num; i++)
+                {
+                    nvp = my_malloc(strlen(smb_config.multrule[i]->server_root_path) + strlen(smb_config.multrule[i]->client_root_path) + 2);
+                    snprintf(nvp, sizeof(char)*(strlen(smb_config.multrule[i]->server_root_path) + strlen(smb_config.multrule[i]->client_root_path) + 2), "%s>%s", smb_config_stop.multrule[i]->server_root_path, smb_config_stop.multrule[i]->client_root_path);
+                    if(0 == i)
+                    {
+                        new_nv = my_malloc(strlen(nvp) + 1);
+                        snprintf(new_nv, sizeof(char)*(strlen(nvp) + 1), "%s", nvp);
+                    }
+                    else
+                    {
+                        new_nv = (char*)realloc(new_nv, strlen(nvp) + strlen(nvp) + 2);
+                        sprintf(new_nv, "%s<%s", new_nv, nvp);
+                    }
+                    free(nvp);
+
+
+                    filename = my_malloc(strlen(smb_config_stop.multrule[i]->mount_path) + 24);
+                    snprintf(filename, sizeof(char)*(strlen(smb_config_stop.multrule[i]->mount_path) + 24), "%s/.sambaclient_tokenfile", smb_config_stop.multrule[i]->mount_path);
+
+                    if( ( fp = fopen(filename, "a+") ) == NULL )
+                    {
+                            DEBUG("open tokenfile failed!\n");
+                            return -1;
+                    }
+                    fseek( fp, 0, SEEK_END );
+                    int file_size;
+                    file_size = ftell( fp );
+                    fseek(fp, 0, SEEK_SET);
+                    if(0 == file_size)
+                    {
+                        fprintf(fp, "%s\n%s", smb_config_stop.multrule[i]->server_root_path, smb_config_stop.multrule[i]->client_root_path);
+                    }
+                    else
+                    {
+                            fprintf(fp, "\n%s\n%s", smb_config_stop.multrule[i]->server_root_path, smb_config_stop.multrule[i]->client_root_path);
+                    }
+                    fclose(fp);
+                    free(filename);
+                }
+#ifdef NVRAM_
+            write_to_nvram(new_nv, "smb_tokenfile");
+#else
+            write_to_smb_tokenfile(new_nv);
+#endif
+            free(new_nv);
         }
         return 0;
 }

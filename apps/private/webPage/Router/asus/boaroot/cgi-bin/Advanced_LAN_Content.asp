@@ -9,6 +9,7 @@ If Request_Form("lanFlag") <> "" Then
     	TCWebApi_set("Dhcpd_Common","start","dhcp_start")
     	TCWebApi_set("Dhcpd_Common","end","dhcp_end")
 		tcWebApi_CommitWithoutSave("Dhcpd")
+  		update_variables()
   	End If		
   	tcWebApi_CommitWithoutSave("Wan")
   End If
@@ -39,12 +40,15 @@ End If
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'pppoe';
 wanip_obj = '<%tcWebApi_staticGet("DeviceInfo_PVC","WanIP","s")%>';
 wannm_obj= '<%tcWebApi_staticGet("DeviceInfo_PVC","WanSubMask","s")%>';
+var lan_proto = '<%tcWebApi_staticGet("Lan_Dhcp","type","s")%>';        //1: dhcp enable 0: dhcp disabled
+var extend_sec = (productid == "DSL-AC52U")?5:0;
 
 var origin_lan_ip = '<%If tcWebApi_get("Lan_Entry","IP","h") <> "" then tcWebApi_get("Lan_Entry","IP","s") end if%>';
 
@@ -66,12 +70,19 @@ function showLANIPList(){
 
 function applyRule(){
 	if(validForm()){
-		showLoading(23);
-		document.getElementById('drword').innerHTML = "<%tcWebApi_get("String_Entry","LAN_IP_changed_suggedtion1","s")%>"+document.uiViewLanForm.lan_ipaddr.value+"<%tcWebApi_get("String_Entry","LAN_IP_changed_suggedtion2","s")%>";
-		setTimeout("hideLoading();", 23000);
-		setTimeout("dr_advise();", 23000);
-		setTimeout("redirect();", 26000);
+		showLoading(22+extend_sec);
+		if(lan_proto == '1'){   //1: "value", dhcp enable
+			document.getElementById('drword').innerHTML = "<%tcWebApi_get("String_Entry","Main_alert_proceeding_desc3","s")%>.<%tcWebApi_get("String_Entry","LANConfig_ChangedLANIP","s")%>";
+		}
+		else{
+			document.getElementById('drword').innerHTML = "<%tcWebApi_get("String_Entry","LAN_IP_changed_suggedtion1","s")%>"+document.uiViewLanForm.lan_ipaddr.value+"<%tcWebApi_get("String_Entry","LAN_IP_changed_suggedtion2","s")%><br/>";
+		}
+		setTimeout("hideLoading();", 23000+extend_sec*1000);
+		setTimeout("dr_advise();", 23000+extend_sec*1000);
+		setTimeout("redirect();", 27000+extend_sec*1000);
 		originData.onlinelist_cache = "";
+		document.uiViewLanForm.action_script.value = "restart_boa";
+		document.uiViewLanForm.action_mode.value = "apply";
 		document.uiViewLanForm.submit();
 	}
 }
@@ -289,6 +300,8 @@ function check_vpn(){ //true: lAN ip & VPN client ip conflict
 <input type="hidden" name="action_script" value="">
 <input type="hidden" name="action_wait" value=""></form>
 <FORM METHOD="POST" ACTION="/cgi-bin/Advanced_LAN_Content.asp" name="uiViewLanForm" target="hidden_frame">
+<input type="hidden" name="action_mode" value="">
+<input type="hidden" name="action_script" value="">
 <input type="hidden" name="productid" value="<% tcWebApi_staticGet("SysInfo_Entry","ProductName","s") %>">
 <INPUT TYPE="HIDDEN" NAME="dhcppoolFlag" VALUE="0">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
@@ -318,7 +331,7 @@ function check_vpn(){ //true: lAN ip & VPN client ip conflict
 			  <a class="hintstyle" href="javascript:void(0);" onClick="openHint(4,1);"><%tcWebApi_get("String_Entry","IPC_ExternalIPAddress_in","s")%></a>
 </th>
 <td>
-<input type="text" name="uiViewIPAddr" id="lan_ipaddr" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<%If tcWebApi_get("Lan_Entry","IP","h") <> "" then tcWebApi_get("Lan_Entry","IP","s") end if%>" onKeyPress="return is_ipaddr(this, event);">
+<input type="text" name="uiViewIPAddr" id="lan_ipaddr" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<%If tcWebApi_get("Lan_Entry","IP","h") <> "" then tcWebApi_get("Lan_Entry","IP","s") end if%>" onKeyPress="return validator.isIPAddr(this, event);">
 <INPUT TYPE="HIDDEN" NAME="dhcpFlag" VALUE="0"><INPUT TYPE="HIDDEN" NAME="lanFlag" VALUE="0">
 </td>
 </tr>
@@ -327,7 +340,7 @@ function check_vpn(){ //true: lAN ip & VPN client ip conflict
 			  <a class="hintstyle"  href="javascript:void(0);" onClick="openHint(4,2);"><%tcWebApi_get("String_Entry","IPC_x_ExternalSubnetMask_in","s")%></a>
 </th>
 <td>
-<input type="text" name="uiViewNetMask" id="lan_netmask" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<%If tcWebApi_get("Lan_Entry","netmask","h") <> "" then tcWebApi_get("Lan_Entry","netmask","s") end if%>" onkeypress="return is_ipaddr(this, event);">
+<input type="text" name="uiViewNetMask" id="lan_netmask" class="input_15_table" SIZE="15" MAXLENGTH="15" VALUE="<%If tcWebApi_get("Lan_Entry","netmask","h") <> "" then tcWebApi_get("Lan_Entry","netmask","s") end if%>" onkeypress="return validator.isIPAddr(this, event);">
 <input type="hidden" name="dhcp_start" value="<% tcWebApi_get("Dhcpd_Common","start","s") %>">
 <input type="hidden" name="dhcp_end" value="<% tcWebApi_get("Dhcpd_Common","end","s") %>">
 </td>

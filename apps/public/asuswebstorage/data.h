@@ -25,11 +25,8 @@
 
 #define LOG_SIZE                sizeof(struct LOG_STRUCT)
 
-//#ifndef IPKG
 #define CONFIG_PATH "/tmp/smartsync/asuswebstorage/config/Cloud.conf"
-//#else
-//#define CONFIG_PATH "/opt/etc/Cloud.conf"
-//#endif
+#define CA_INFO_FILE "/tmp/smartsync/asuswebstorage/cert/GeoTrustGlobalCA.crt"
 
 #ifdef IPKG
 #define NOTIFY_PATH "/tmp/notify/usb"
@@ -43,26 +40,17 @@
 #define NVRAM_PATH_2 "/tmp/smartsync/asuswebstorage/config/link_internet"
 #endif
 
-
-//#ifndef IPKG
-//#define SHELL_FILE  "/tmp/asuswebstorage_write_nvram"
-//#define NVRAM_TOKENFILE "asuswebstorage_tokenfile"
-//#endif
-
-
 /*servergetway struct*/
 typedef struct SERVICEGATEWAY
 {
     int status;
     char gateway[MINSIZE];
-//    char liveupdateuri[NORMALSIZE];
-//    char time[MINSIZE];
 }Servicegateway;
 
 /*get tokey struct*/
 typedef struct PACKAGE
 {
-    int id;
+    long long id;
     char display[NORMALSIZE];
     int capacity;
     int uploadbandwidth;
@@ -94,7 +82,7 @@ typedef struct INITBINARYUPLOAD
     int offset;
     char latestchecksum[256];
     char logmessage[NORMALSIZE];
-    int fileid;
+    long long int fileid;
 }Initbinaryupload;
 
 /* resume binary upload*/
@@ -107,7 +95,7 @@ typedef struct RESUMEBINARYUPLOAD
 typedef struct FINISHBINARYUPLOAD
 {
     int status;
-    int fileid;
+    long long int fileid;
 }Finishbinaryupload;
 
 /*browse folder struct*/
@@ -115,7 +103,7 @@ typedef struct FINISHBINARYUPLOAD
 typedef struct PARENTFOLDER
 {
     char name[NORMALSIZE];
-    int id;
+    long long int id;
 }Parentfolder;
 
 typedef struct PAGE
@@ -128,67 +116,34 @@ typedef struct PAGE
 
 typedef struct ATTRIBUTE
 {
-//    char creationtime[MINSIZE];
-//    char lastaccesstime[MINSIZE];
     char lastwritetime[16];
-//    char finfo[MINSIZE];
-//    char xtimeforsynccheck[NORMALSIZE];
-//    char xmachinename[NORMALSIZE];
 }Attribute;
 
 typedef struct FOLDER
 {
-    int id;
-//    long long treesize;
+    long long id;
     char *display;
-//    Attribute attribute;
-//    int isencrypted;
-//    int issharing;
-//    int isowner;
-//    int isbackup;
-//    int isorigdeleted;
-//    int ispublic;
-//    char createdtime[MINSIZE];
-//    int markid;
-//    char metadata[NORMALSIZE];
     int isdeleted;
     int ischangeseq;
 }Folder;
 
 typedef struct FILEATTRIBUTE
 {
-//    char creationtime[MINSIZE];
     char lastaccesstime[16];
     char lastwritetime[16];
-//    char finfo[MINSIZE];
-//    char xtimeforsynccheck[NORMALSIZE];
-//    char xmachinename[NORMALSIZE];
 }Fileattribute;
 
 typedef struct FILE
 {
-    int id;
-//    int status;
+    long long  id;
     char *display;
     Fileattribute attribute;
     long long size;
-//    int isencrypted;
-//    int isowner;
-//    int isbackup;
-//    int isorigdeleted;
-//    int isinfected;
-//    int ispublic;
-//    int headversion;
-//    char createdtime[MINSIZE];
-//    int markid;
-//    char metadata[NORMALSIZE];
 }File;
 
 typedef struct BROWSE
 {
     int status;
-    //char scrip[MINSIZE];
-    //Parentfolder parentfolder;
     int foldernumber;
     int filenumber;
     Folder **folderlist;
@@ -199,19 +154,14 @@ typedef struct BROWSE
 /*struct local folder struct*/
 typedef struct LOCALFOLDER
 {
-  //char name[NORMALSIZE];
   char *name;
-  //struct LOCALFOLDER *next;
-  //int isfolder;
 }Localfolder;
 
 typedef struct LOCALFILE
 {
-    //char name[NORMALSIZE];
     char *name;
     Attribute attribute;
     long long size;
-    //struct LOCALFILE *next;
 }Localfile;
 
 typedef struct LOCAL
@@ -220,11 +170,9 @@ typedef struct LOCAL
  int filenum;
  Localfolder **folderlist;
  Localfile   **filelist;
- //Localfolder *folder_head;
- //Localfolder *file_head;
 }Local;
 
-//typedef struct
+
 typedef struct LOCALS
 {
     Parentfolder parent;
@@ -240,7 +188,7 @@ typedef struct PROPFIND
     long long size;
     unsigned long script;
     char type[MINSIZE];
-    int id;
+    long long id;
 }Propfind;
 
 /*get change seq*/
@@ -257,7 +205,7 @@ typedef struct CREATEFOLDER
 {
     int status;
     char scrip[MINSIZE];
-    int id;
+    long long id;
 
 }Createfolder;
 
@@ -276,8 +224,8 @@ typedef struct FOLDERS
 /* get file and folderid*/
 typedef struct ITEMID
 {
-    int fileID;
-    int parentID;
+    long long fileID;
+    long long parentID;
 }ItemID;
 
 /*rename struct*/
@@ -309,7 +257,7 @@ typedef struct FEATURELIST
 
 typedef struct INFOPACKAGE
 {
-    int id;
+    long long id;
     char display[NORMALSIZE];
     int capacity;
     int uploadbandwidth;
@@ -347,7 +295,7 @@ typedef struct GETINFO
 typedef struct GETMYSYNCFOLDER
 {
     int status;
-    int id;
+    long long id;
 }Getmysyncfolder;
 
 /*get PersonalSystemFolder data struct*/
@@ -355,13 +303,13 @@ typedef struct GETPERSONALSYSTEMFOLDER
 {
     int status;
     char script[16];
-    int  folderid;
+    long long folderid;
 }Getpersonalsystemfolder;
 
 /*upload and download item struct*/
 typedef struct TRANSITEM
 {
-    int id;
+    long long id;
     char name[NORMALSIZE];
     long long int size;
     char transid[64];
@@ -383,7 +331,7 @@ typedef struct GETENTRYINFO
     char scrip[MINSIZE];
     int isfolder;
     char display[NORMALSIZE];
-    int parent;
+    long long  parent;
     int headversion;
     Fileattribute attr;
     long long filesize;     // for file
@@ -403,14 +351,6 @@ typedef struct my_mutex_tag
     int ready;
 }my_mutex_t;
 
-/*add by alan*/
-/*typedef struct socket_action{
-	char buf[1024];
-	struct socket_action *next;
-}Socket_Action;
-Socket_Action *SocketActionList;
-Socket_Action *SocketActionTail;
-Socket_Action *SocketActionTmp;*/
 
 typedef struct SOCKET_CMD
 {

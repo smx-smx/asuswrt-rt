@@ -32,7 +32,10 @@ tcWebApi_set("Adsl_Entry","ANNEXTYPEA","AnnexTypeA")
 	if tcWebApi_get("WebCustom_Entry", "havePtm", "h") = "Yes" then
 		tcWebApi_set("Adsl_Entry","vdsl_profile","vdsl_profile")
 	end if
-tcWebApi_set("Adsl_Entry","dslx_ginp","dslx_ginp")
+	if tcWebApi_get("WebCustom_Entry", "isGINPSupport", "h") = "Yes" then
+		tcWebApi_set("Adsl_Entry","dslx_ginp","dslx_ginp")
+		tcWebApi_set("Adsl_Entry","dslx_ginp_try_enable","dslx_ginp_try_enable")
+	end if
 tcWebApi_set("Adsl_Entry","dslx_vdsl_vectoring","dslx_vdsl_vectoring")
 tcWebApi_set("Adsl_Entry","dslx_vdsl_nonstd_vectoring","dslx_vdsl_nonstd_vectoring")
 tcWebApi_set("Adsl_Entry","dslx_dla_enable","dslx_dla_enable")
@@ -70,6 +73,8 @@ var log_lineState;
 var log_SNRMarginDown;
 var init_dla_enable = "<%tcWebApi_get("Adsl_Entry", "dslx_dla_enable", "s")%>";
 init_dla_enable = (init_dla_enable.length > 0)?init_dla_enable:1;
+var dslx_ginp_try_enable = "<%tcWebApi_get("Adsl_Entry", "dslx_ginp_try_enable", "s")%>";
+var dslx_ginp_try_enable_disp = "<%tcWebApi_get("Adsl_Entry", "dslx_ginp_try_enable_disp", "s")%>";
 
 var display_dslx_adsl_esnp = 0;
 <%if tcWebApi_get("WebCustom_Entry","isMT7510","h") = "Yes" then%>
@@ -101,6 +106,27 @@ function initial(){
 		document.getElementById("show_dslx_adsl_esnp").style.display = "none";
 	}
 	setTimeout("update_current_SNR_margin();", 3000);
+
+<%if tcWebApi_get("WebCustom_Entry", "isGINPSupport", "h") = "Yes" then%>
+	if(dslx_ginp_try_enable_disp == 1)
+	{
+		document.getElementById('dslx_ginp_try_checkbox').style.display = "";
+		if(dslx_ginp_try_enable == 1)
+		{
+			document.getElementById('dslx_ginp_try_checkbox').checked = true;
+		}
+		else
+		{
+			document.getElementById('dslx_ginp_try_checkbox').checked = false;
+		}
+		check_ginp_try(document.getElementById('dslx_ginp_try_checkbox'));
+	}
+	else
+	{
+		document.getElementById('dslx_ginp_try_checkbox').style.display = "none";
+	}
+<%end if%>
+
 }
 
 function update_current_SNR_margin(){
@@ -365,6 +391,38 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 }
 <%end if%>
 
+<%if tcWebApi_get("WebCustom_Entry", "isGINPSupport", "h") = "Yes" then%>
+function get_dslx_ginp(){
+	var dslx_ginp="<%tcWebApi_get("Adsl_Entry","dslx_ginp","s")%>";
+	switch(dslx_ginp){
+		case "on":
+			return "<%tcWebApi_get("String_Entry","btn_Enabled","s")%>";
+		case "off":
+		default:
+			return "<%tcWebApi_get("String_Entry","btn_Disabled","s")%>";
+	}
+}
+
+function check_ginp_try(obj){
+	if(obj.checked)
+	{
+		document.form.dslx_ginp.style.display = "none";
+		document.form.dslx_ginp.disabled = true;
+		document.getElementById("dslx_ginp_read").style.display = "";
+		document.getElementById("dslx_ginp_read").innerHTML = get_dslx_ginp();
+		document.form.dslx_ginp_try_enable.value = 1;
+	}
+	else
+	{
+		document.form.dslx_ginp.style.display = "";
+		document.form.dslx_ginp.disabled = false;
+		document.getElementById("dslx_ginp_read").style.display = "none";
+		document.form.dslx_ginp_try_enable.value = 0;
+	}
+}
+
+<%end if%>
+
 </script>
 </head>
 <body onload="initial();" onunLoad="return unload_body();">
@@ -387,6 +445,7 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
 <form method="POST" action="/cgi-bin/Advanced_ADSL_Content.asp" name="form" target="hidden_frame">
 <input type="hidden" name="UniqueMac" value="<%tcWebApi_get("Wan_Common", "UniqueMac", "s")%>"/>
+<input type="hidden" name="dslx_ginp_try_enable" value="<%tcWebApi_get("Adsl_Entry", "dslx_ginp_try_enable", "s")%>"/>
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 <tr>
 <td width="17">&nbsp;</td>
@@ -466,6 +525,8 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 					<option value="ANNEX B/J" <% if tcWebApi_get("Adsl_Entry","ANNEXTYPEA","h") = "ANNEX B/J" then asp_Write("selected") end if %>>ANNEX B/J</option>
 				<%elseif tcWebApi_get("SysInfo_Entry","ProductName","h") = "DSL-N16" then%>
 					<option value="ANNEX B/J" <% if tcWebApi_get("Adsl_Entry","ANNEXTYPEA","h") = "ANNEX B/J" then asp_Write("selected") end if %>>ANNEX B/J</option>
+				<%elseif tcWebApi_get("SysInfo_Entry","ProductName","h") = "DSL-AC51" then%>
+					<option value="ANNEX B/J" <% if tcWebApi_get("Adsl_Entry","ANNEXTYPEA","h") = "ANNEX B/J" then asp_Write("selected") end if %>>ANNEX B/J</option>
 				<%elseif tcWebApi_get("SysInfo_Entry","ProductName","h") = "DSL-AC56U" then%>
 					<option value="ANNEX B/J" <% if tcWebApi_get("Adsl_Entry","ANNEXTYPEA","h") = "ANNEX B/J" then asp_Write("selected") end if %>>ANNEX B/J</option>
 				<%elseif tcWebApi_get("SysInfo_Entry","ProductName","h") = "DSL-AC52U" then%>
@@ -543,6 +604,11 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 			<option value="off" <% if tcWebApi_get("Adsl_Entry","dslx_ginp","h") = "off" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
 			<option value="on" <% if tcWebApi_get("Adsl_Entry","dslx_ginp","h") = "on" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Enabled","s")%></option>
 		</select>
+		<span id="dslx_ginp_read" style="display:none;color:#FFFFFF;"></span>
+		<span id="dslx_ginp_try_checkbox" style="display:none;">
+			<br/>
+			<input type="checkbox" onClick="check_ginp_try(this);" <% tcWebApi_MatchThenWrite("Adsl_Entry","dslx_ginp_try_enable","1","checked") %>>Try to connect with G.INP Enabled</input>
+		</span>
 	</td>
 </tr>
 <%end if%>
@@ -674,6 +740,7 @@ $("nonstd_vectoring").style.display = (_value == "0") ? "none" : "";
 		<td>
 			<select id="" class="input_option" name="vdsl_snrm_offset">
 				<option value="32767" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "32767" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
+				<option value="1024" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "1024" then asp_Write("selected") end if %>>2 dB</option>
 				<option value="1536" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "1536" then asp_Write("selected") end if %>>3 dB</option>
 				<option value="2048" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "2048" then asp_Write("selected") end if %>>4 dB</option>
 				<option value="2560" <% if tcWebApi_get("Adsl_Entry","vdsl_snrm_offset","h") = "2560" then asp_Write("selected") end if %>>5 dB</option>

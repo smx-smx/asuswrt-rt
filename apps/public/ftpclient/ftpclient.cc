@@ -2,6 +2,7 @@
 
 int no_config;
 int exit_loop;
+int error_flag;//2016.10.19 tina add for status changes between ERROR and Finish
 int stop_down;
 int stop_up;
 
@@ -38,11 +39,6 @@ pthread_mutex_t mutex,mutex_socket,mutex_socket_1,mutex_receve_socket,mutex_log,
 
 Config ftp_config,ftp_config_stop;
 Node *newNode;
-CloudFile *FileList_one;
-CloudFile *FileTail_one;
-CloudFile *FolderList_one;
-CloudFile *FolderTail_one;
-CloudFile *FolderTmp_one;
 CloudFile *FileList_size;
 CloudFile *FileTail_size;
 CloudFile *FolderTmp_size;
@@ -54,6 +50,35 @@ CloudFile *FolderTmp;
 Server_TreeNode *ServerNode_del,*ServerNode_List;
 sync_list **g_pSyncList;
 struct tokenfile_info_tag *tokenfile_info,*tokenfile_info_start,*tokenfile_info_tmp;
+
+int set_iptables(int flag)
+{
+    int rc = -1;
+    char cmd[1024]={0};
+#ifdef I686
+#else
+    snprintf(cmd,  1024, "iptables -D INPUT -p tcp -m tcp --dport %d -j DROP", MYPORT);
+    rc = system(cmd);
+    snprintf(cmd, 1024, "iptables -D INPUT -p tcp -m tcp -s 127.0.0.1 --dport %d -j ACCEPT", MYPORT);
+    rc = system(cmd);
+#endif
+    if(flag)
+    {
+#ifdef I686
+            rc = 0;
+#else
+        snprintf(cmd, 1024, "iptables -I INPUT -p tcp -m tcp --dport %d -j DROP", MYPORT);
+        rc = system(cmd);
+        snprintf(cmd, 1024, "iptables -I INPUT -p tcp -m tcp -s 127.0.0.1 --dport %d -j ACCEPT", MYPORT);
+        rc = system(cmd);
+#endif
+    }
+
+    if(rc == 0)
+        return 0;
+    else
+        return 1;
+}
 
 int check_link_internet()
 {
@@ -70,7 +95,7 @@ int check_link_internet()
         char tmp[MAXLEN_TCAPI_MSG] = {0};
         tcapi_get(WANDUCK,"link_internet",tmp);
         link_internet = my_str_malloc(strlen(tmp) + 1);
-        sprintf(link_internet,"%s",tmp);
+        snprintf(link_internet, sizeof(char)*(strlen(tmp) + 1), "%s",tmp);
         link_flag = atoi(link_internet);//字符串转化为值
         free(link_internet);
     #else
@@ -82,22 +107,15 @@ int check_link_internet()
 #else
         char cmd_p[128] = {0};
 
-#ifdef _PC
-        //sprintf(cmd_p,"sh %s",GET_INTERNET);
-#else
-        sprintf(cmd_p,"sh %s",GET_INTERNET);
-#endif
+        snprintf(cmd_p, 128, "sh %s",GET_INTERNET);
+
         system(cmd_p);
         sleep(2);
 
         char nv[64] = {0};
         FILE *fp;
 
-#ifdef _PC
-       // fp = fopen(VAL_INTERNET,"r");
-#else
         fp = fopen(VAL_INTERNET,"r");
-#endif
 
         fgets(nv,sizeof(nv),fp);
         fclose(fp);
@@ -132,28 +150,7 @@ int check_link_internet()
            write_log(S_ERROR,"check your ip or network","",i);
            g_pSyncList[i]->IsNetWorkUnlink = 0;
         }
-//        else if(g_pSyncList[i]->IsPermission && !exit_loop)//2014.11.04 by sherry sever权限不足
-//        {
-//           write_log(S_ERROR,"Permission Denied.","",i);
-//           g_pSyncList[i]->IsPermission = 0;
-//        }
-        else
-            write_log(S_SYNC,"","",i);
-
     }
-
-//    for(i = 0;i < ftp_config.dir_num;i++)//原始的代码
-//    {
-//        write_log(S_SYNC,"","",i);
-//    }
-//    if(!exit_loop && IsNetWorkUnlink)//2014.10.31修改后
-//    {
-//        for(i = 0;i < ftp_config.dir_num;i++)
-//        {
-//            write_log(S_SYNC,"","",i);
-//            IsNetWorkUnlink=0;
-//        }
-//    }
 }
 
 char *parse_nvram(char *nvram)
@@ -163,7 +160,6 @@ char *parse_nvram(char *nvram)
     char *buf,*b;
     char *new_nv = (char*)malloc(sizeof(char));
     //2014.10.30 by sherry sizeof(指针)
-    //memset(new_nv,'\0',sizeof(new_nv));
     memset(new_nv,'\0',sizeof(char));//对nvram进行清零操作
     while((b = strsep(&nv, "<")) != NULL)//strsep(&nv, "<")分解字符串为一组字符串
     {
@@ -178,7 +174,6 @@ char *parse_nvram(char *nvram)
             if(p[0] == '>')
             {
                 count++;
-                DEBUG("count = %d\n",count);
             }
             if(count == 6)
                 break;
@@ -188,12 +183,9 @@ char *parse_nvram(char *nvram)
         char *same_part = (char*)malloc(sizeof(char)*(strlen(buf) - strlen(p) + 2));
         memset(same_part,'\0',strlen(buf) - strlen(p) + 2);
         strncpy(same_part,buf,strlen(buf) - strlen(p) + 1);
-        DEBUG("same_part = %s\n",same_part);
 
         p = p + 3;
-        DEBUG("p = %s\n",p);
         char *q = p;
-        DEBUG("q = %s\n",q);
         int _count = 0;
         while(strlen(q) != 0)
         {
@@ -204,7 +196,6 @@ char *parse_nvram(char *nvram)
                 char *temp = (char*)malloc(sizeof(char)*(strlen(p) - strlen(q) + 1));
                 memset(temp,'\0',strlen(p) - strlen(q) + 1);
                 strncpy(temp,p,strlen(p) - strlen(q));
-                DEBUG("temp = %s\n",temp);
                 new_nv = (char *)realloc(new_nv,strlen(new_nv) + strlen(same_part) + strlen(temp) + 1 + 3);
                 strcat(new_nv,same_part);
                 strcat(new_nv,temp);
@@ -234,7 +225,6 @@ int convert_nvram_to_file_mutidir(char *file,Config *config)
     char *new_nv;
     int i;
     int j = 0;
-    //int status;
     char *p;
     char *buffer;
     char *buf;
@@ -246,7 +236,7 @@ int convert_nvram_to_file_mutidir(char *file,Config *config)
         char tmp[MAXLEN_TCAPI_MSG] = {0};
         tcapi_get(AICLOUD,"cloud_sync",tmp);
         nvp = my_str_malloc(strlen(tmp) + 1);
-        sprintf(nvp,"%s",tmp);
+        snprintf(nvp, sizeof(char)*(strlen(tmp) + 1), "%s",tmp);
     #else
         nvp = strdup(nvram_safe_get("cloud_sync"));
     #endif
@@ -317,15 +307,12 @@ int create_ftp_conf_file(Config *config)
     char *buffer;
     char *buf;
 
-#ifdef _PC
-    //fp = fopen(TMP_CONFIG,"r");
-#else
     fp = fopen(TMP_CONFIG,"r");
-#endif
+
     if (fp == NULL)
     {
         nvp = my_str_malloc(2);
-        sprintf(nvp,"");
+        snprintf(nvp, sizeof(char)*2, "%s", "");
     }
     else
     {
@@ -397,7 +384,7 @@ int write_get_nvram_script(char *name,char *shell_dir,char *val_dir)
     FILE *fp;
     char contents[512];
     memset(contents,0,512);
-    sprintf(contents,"#! /bin/sh\n" \
+    snprintf(contents, 512, "#! /bin/sh\n" \
                     "NV=`nvram get %s`\n" \
                     "if [ ! -f \"%s\" ]; then\n" \
                         "touch %s\n" \
@@ -424,26 +411,17 @@ int create_shell_file()
     char contents[256];
     memset(contents,0,256);
 #ifndef USE_TCAPI
-    strcpy(contents,"#! /bin/sh\n" \
+    snprintf(contents, 256, "%s", "#! /bin/sh\n" \
                     "nvram set $2=\"$1\"\n" \
                     "nvram commit");
 #else
-    strcpy(contents,"#! /bin/sh\n" \
+    snprintf(contents, 256, "%s", "#! /bin/sh\n" \
                     "tcapi set AiCloud_Entry $2 \"$1\"\n" \
                     "tcapi commit AiCloud\n" \
                     "tcapi save");
 #endif
-#ifdef _PC
-//    if(( fp = fopen(SHELL_FILE,"w"))==NULL)
-//    {
-//        fprintf(stderr,"create shell file error");
-//        return -1;
-//    }
 
-//    fprintf(fp,"%s",contents);
-//    fclose(fp);
-//    return 0;
-#else
+
         if(( fp = fopen(SHELL_FILE,"w"))==NULL)
         {
             fprintf(stderr,"create shell file error");
@@ -453,16 +431,46 @@ int create_shell_file()
         fprintf(fp,"%s",contents);
         fclose(fp);
         return 0;
-#endif
 }
-
+#ifdef OLEG_ARM
 int detect_process(char * process_name)
 {
     FILE *ptr;
     char buff[512];
     char ps[128];
-    sprintf(ps,"ps | grep -c %s",process_name);
-    strcpy(buff,"ABNORMAL");
+    int n=0;
+    snprintf(ps, 128, "ps | awk '{print $3}' |grep  %s",process_name);
+    snprintf(buff, 512, "%s", "ABNORMAL");
+    if((ptr=popen(ps, "r")) != NULL)
+    {
+        while (fgets(buff, 512, ptr) != NULL)
+        {
+            if(strcmp(buff, "nvram") == 0)
+            n++;
+
+            if(n>0)
+            {
+                pclose(ptr);
+                return 1;
+            }
+        }
+    }
+    if(strcmp(buff,"ABNORMAL")==0)  /*ps command error*/
+    {
+        return 0;
+    }
+    pclose(ptr);
+    return 0;
+}
+#else
+#ifdef I686
+int detect_process(char * process_name)
+{
+    FILE *ptr;
+    char buff[512];
+    char ps[128];
+    snprintf(ps, 128, "ps | awk '{print $5  $6}' |grep -c %s",process_name);
+    snprintf(buff, 512, "%s", "ABNORMAL");
     if((ptr=popen(ps, "r")) != NULL)
     {
         while (fgets(buff, 512, ptr) != NULL)
@@ -481,13 +489,42 @@ int detect_process(char * process_name)
     pclose(ptr);
     return 0;
 }
+#else
+int detect_process(char * process_name)
+{
+    FILE *ptr;
+    char buff[512];
+    char ps[128];
+    snprintf(ps, 128, "ps | grep -c %s",process_name);
+    snprintf(buff, 512, "%s", "ABNORMAL");
+    if((ptr=popen(ps, "r")) != NULL)
+    {
+        while (fgets(buff, 512, ptr) != NULL)
+        {
+            if(atoi(buff)>2)
+            {
+                pclose(ptr);
+                return 1;
+            }
+        }
+    }
+    if(strcmp(buff,"ABNORMAL")==0)  /*ps command error*/
+    {
+        return 0;
+    }
+    pclose(ptr);
+    return 0;
+}
+#endif
+#endif
+
 
 #ifdef NVRAM_
 int write_to_nvram(char *contents,char *nv_name)
 {
     char *command;
     command = my_str_malloc(strlen(contents)+strlen(SHELL_FILE)+strlen(nv_name)+8);
-    sprintf(command,"sh %s \"%s\" %s",SHELL_FILE,contents,nv_name);//8是：字符sh，3个空格，两个转义字符\" 以及\0
+    snprintf(command, sizeof(char)*(strlen(contents)+strlen(SHELL_FILE)+strlen(nv_name)+8), "sh %s \"%s\" %s",SHELL_FILE,contents,nv_name);//8是：字符sh，3个空格，两个转义字符\" 以及\0
     DEBUG("command : [%s]\n",command);
     system(command);
     free(command);
@@ -510,7 +547,6 @@ int write_to_ftp_tokenfile(char *contents)
     }
     fprintf(fp,"%s",contents);
     fclose(fp);
-    //DEBUG("write_to_ftp_tokenfile end\n");
     return 0;
 }
 #endif
@@ -546,13 +582,9 @@ int delete_tokenfile_info(char *url,char *folder){
 
 char *delete_nvram_contents(char *url,char *folder)
 {
-    //write_debug_log("delete_nvram_contents start");
-
     char *nv;
     char *nvp;
     char *p,*b;
-    //char buffer;
-    //const char *split = "<";
     char *new_nv;
     int n;
     int i=0;
@@ -561,7 +593,7 @@ char *delete_nvram_contents(char *url,char *folder)
         char tmp[MAXLEN_TCAPI_MSG] = {0};
         tcapi_get(AICLOUD,"ftp_tokenfile",tmp);
         nv = my_str_malloc(strlen(tmp) + 1);
-        sprintf(nv,"%s",tmp);
+        snprintf(nv, sizeof(char)*(strlen(tmp) + 1), "%s",tmp);
 	p = nv;
     #else
         p = nv = strdup(nvram_safe_get("ftp_tokenfile"));
@@ -572,7 +604,7 @@ char *delete_nvram_contents(char *url,char *folder)
     if (fp==NULL)
     {
         nv = my_str_malloc(2);
-        sprintf(nv,"");
+        snprintf(nv, sizeof(char)*2, "%s", "");
     }
     else
     {
@@ -580,9 +612,7 @@ char *delete_nvram_contents(char *url,char *folder)
         int file_size;
         file_size = ftell( fp );
         fseek(fp , 0 , SEEK_SET);
-        //nv =  (char *)malloc( file_size * sizeof( char ) );
         nv = my_str_malloc(file_size+2);
-        //fread(nv , file_size , sizeof(char) , fp);
         fscanf(fp,"%[^\n]%*c",nv);//[^\n]字符串的分隔符是 "\n",中括号里可以写分隔符表
         p = nv;
         fclose(fp);
@@ -591,17 +621,12 @@ char *delete_nvram_contents(char *url,char *folder)
 #endif
 
     nvp = my_str_malloc(strlen(url)+strlen(folder)+2);
-    sprintf(nvp,"%s>%s",url,folder);
-
-    //write_debug_log(nv);
-
+    snprintf(nvp, sizeof(char)*(strlen(url)+strlen(folder)+2), "%s>%s",url,folder);
     if(strstr(nv,nvp) == NULL)
     {
         free(nvp);
         return nv;
     }
-
-    //write_debug_log("first if");
 
     if(!strcmp(nv,nvp))
     {
@@ -611,21 +636,17 @@ char *delete_nvram_contents(char *url,char *folder)
         return nv;
     }
 
-    //write_debug_log("second if");
-
     if(nv)
     {
-        //write_debug_log("if nv");
         while((b = strsep(&p, "<")) != NULL)
         {
-            //write_debug_log(b);
             if(strcmp(b,nvp))
             {
                 n = strlen(b);
                 if(i == 0)
                 {
                     new_nv = my_str_malloc(n+1);
-                    sprintf(new_nv,"%s",b);
+                    snprintf(new_nv, sizeof(char)*(n+1), "%s",b);
                     ++i;
                 }
                 else
@@ -646,13 +667,11 @@ int write_to_tokenfile(char *mpath)
 {
     DEBUG("write_to_tokenfile\n");
     FILE *fp;
-    //int flag=0;
 
     char *filename;
 
     filename = my_str_malloc(strlen(mpath) + 21 + 1);
-    //filename = my_str_malloc(strlen(mpath) + strlen("/.ftpclient_tokenfile") + 1);
-    sprintf(filename,"%s/.ftpclient_tokenfile",mpath);
+    snprintf(filename, sizeof(char)*(strlen(mpath) + 21 + 1), "%s/.ftpclient_tokenfile",mpath);
 
     int i = 0;
     if( ( fp = fopen(filename,"w") ) == NULL )
@@ -667,7 +686,6 @@ int write_to_tokenfile(char *mpath)
         DEBUG("tokenfile_info_tmp->mountpath = %s\n",tokenfile_info_tmp->mountpath);
         if(!strcmp(tokenfile_info_tmp->mountpath,mpath))
         {
-            //write_debug_log(tokenfile_info_tmp->folder);
             if(i == 0)
             {
                 fprintf(fp,"%s\n%s",tokenfile_info_tmp->url,tokenfile_info_tmp->folder);
@@ -677,7 +695,6 @@ int write_to_tokenfile(char *mpath)
             {
                 fprintf(fp,"\n%s\n%s",tokenfile_info_tmp->url,tokenfile_info_tmp->folder);
             }
-            //flag = 1;
         }
 
         tokenfile_info_tmp = tokenfile_info_tmp->next;
@@ -700,13 +717,13 @@ int add_tokenfile_info(char *url,char *folder,char *mpath)
     }
 
     tokenfile_info_tmp->url = my_str_malloc(strlen(url)+1);
-    sprintf(tokenfile_info_tmp->url,"%s",url);
+    snprintf(tokenfile_info_tmp->url, sizeof(char)*(strlen(url)+1), "%s",url);
 
     tokenfile_info_tmp->mountpath = my_str_malloc(strlen(mpath)+1);
-    sprintf(tokenfile_info_tmp->mountpath,"%s",mpath);
+    snprintf(tokenfile_info_tmp->mountpath, sizeof(char)*(strlen(mpath)+1), "%s",mpath);
 
     tokenfile_info_tmp->folder = my_str_malloc(strlen(folder)+1);
-    sprintf(tokenfile_info_tmp->folder,"%s",folder);
+    snprintf(tokenfile_info_tmp->folder, sizeof(char)*(strlen(folder)+1), "%s",folder);
 
     tokenfile_info->next = tokenfile_info_tmp;
     tokenfile_info = tokenfile_info_tmp;
@@ -724,8 +741,7 @@ char *add_nvram_contents(char *url,char *folder)
     char *nvp;
 
     nvp = my_str_malloc(strlen(url)+strlen(folder)+2);
-    //nvp = my_str_malloc(strlen(url)+strlen(folder)+strlen(">")+1);
-    sprintf(nvp,"%s>%s",url,folder);
+    snprintf(nvp, sizeof(char)*(strlen(url)+strlen(folder)+2), "%s>%s",url,folder);
 
     DEBUG("add_nvram_contents     nvp = %s\n",nvp);
 
@@ -734,8 +750,7 @@ char *add_nvram_contents(char *url,char *folder)
         char tmp[MAXLEN_TCAPI_MSG] = {0};
         tcapi_get(AICLOUD,"ftp_tokenfile",tmp);
         nv = my_str_malloc(strlen(tmp) + 1);
-        sprintf(nv,"%s",tmp);
-    //p = nv;
+        snprintf(nv, sizeof(char)*(strlen(tmp) + 1), "%s",tmp);
     #else
     	nv = strdup(nvram_safe_get("ftp_tokenfile"));
     #endif
@@ -745,7 +760,7 @@ char *add_nvram_contents(char *url,char *folder)
     if (fp==NULL)
     {
         nv = my_str_malloc(2);
-        sprintf(nv,"");
+        snprintf(nv, sizeof(char)*2, "%s", "");
     }
     else
     {
@@ -754,9 +769,7 @@ char *add_nvram_contents(char *url,char *folder)
         file_size = ftell( fp );
         fseek(fp , 0 , SEEK_SET);
         DEBUG("add_nvram_contents     file_size = %d\n",file_size);
-        //nv =  (char *)malloc( file_size * sizeof( char ) );
         nv = my_str_malloc(file_size+2);
-        //fread(nv , file_size ,1, fp);
         fscanf(fp,"%[^\n]%*c",nv);
         fclose(fp);
     }
@@ -767,13 +780,13 @@ char *add_nvram_contents(char *url,char *folder)
     if(nv_len)
     {
         new_nv = my_str_malloc(strlen(nv)+strlen(nvp)+2);
-        sprintf(new_nv,"%s<%s",nv,nvp);
+        snprintf(new_nv, sizeof(char)*(strlen(nv)+strlen(nvp)+2), "%s<%s",nv,nvp);
 
     }
     else
     {
         new_nv = my_str_malloc(strlen(nvp)+1);
-        sprintf(new_nv,"%s",nvp);
+        snprintf(new_nv, sizeof(char)*(strlen(nvp)+1), "%s",nvp);
     }
 
     DEBUG("add_nvram_contents     new_nv = %s\n",new_nv);
@@ -804,7 +817,6 @@ int rewrite_tokenfile_and_nv()
             }
             if(!exist)
             {
-                //write_debug_log("del form nv");
                 char *new_nv;
                 del_acount = i;
                 delete_tokenfile_info(ftp_config.multrule[i]->fullrooturl,ftp_config.multrule[i]->base_folder);
@@ -861,7 +873,7 @@ int write_notify_file(char *path,int signal_num)
 
     my_local_mkdir("/tmp/notify");
     my_local_mkdir("/tmp/notify/usb");
-    sprintf(fullname,"%s/ftpclient",path);
+    snprintf(fullname, 64, "%s/ftpclient",path);
     fp = fopen(fullname,"w");
     if(NULL == fp)
     {
@@ -881,7 +893,6 @@ int free_tokenfile_info(struct tokenfile_info_tag *head)
         head->next = p->next;
         if(p->folder != NULL)
         {
-            //DEBUG("free CloudFile %s\n",p->href);
             free(p->folder);
         }
         if(p->mountpath != NULL)
@@ -924,14 +935,12 @@ int get_mounts_info(struct mounts_info_tag *info)
     FILE *fp;
     int i = 0;
     int num = 0;
-    //char *mount_path;
     char **tmp_mount_list=NULL;
     char **tmp_mount=NULL;
 
     char buf[len+1];
     memset(buf,'\0',sizeof(buf));
     char a[1024];
-    //char *temp;
     char *p,*q;
     fp = fopen("/proc/mounts","r");
     if(fp)
@@ -1022,8 +1031,7 @@ int get_tokenfile_info()
         DEBUG("info->paths[%d] = %s\n",i,info->paths[i]);
 
         tokenfile = my_str_malloc(strlen(info->paths[i]) + 21 + 1);
-        //tokenfile = my_str_malloc(strlen(info->paths[i]) + strlen("/.ftpclient_tokenfile") + 1);
-        sprintf(tokenfile,"%s/.ftpclient_tokenfile",info->paths[i]);
+        snprintf(tokenfile, sizeof(char)*(strlen(info->paths[i]) + 21 + 1), "%s/.ftpclient_tokenfile",info->paths[i]);
         DEBUG("tokenfile = %s\n",tokenfile);
         if(!access(tokenfile,F_OK))
         {
@@ -1046,15 +1054,15 @@ int get_tokenfile_info()
                         return -1;
                     }
                     tokenfile_info_tmp->url = my_str_malloc(strlen(p)+1);
-                    sprintf(tokenfile_info_tmp->url,"%s",p);
+                    snprintf(tokenfile_info_tmp->url, sizeof(char)*(strlen(p)+1), "%s",p);
                     tokenfile_info_tmp->mountpath = my_str_malloc(strlen(info->paths[i])+1);
-                    sprintf(tokenfile_info_tmp->mountpath,"%s",info->paths[i]);
+                    snprintf(tokenfile_info_tmp->mountpath, sizeof(char)*(strlen(info->paths[i])+1), "%s",info->paths[i]);
                     j++;
                 }
                 else
                 {
                     tokenfile_info_tmp->folder = my_str_malloc(strlen(p)+1);
-                    sprintf(tokenfile_info_tmp->folder,"%s",p);
+                    snprintf(tokenfile_info_tmp->folder, sizeof(char)*(strlen(p)+1), "%s",p);
                     tokenfile_info->next = tokenfile_info_tmp;
                     tokenfile_info = tokenfile_info_tmp;
                     j = 0;
@@ -1091,8 +1099,7 @@ int check_config_path(int is_read_config)
         char tmp[MAXLEN_TCAPI_MSG] = {0};
         tcapi_get(AICLOUD,"ftp_tokenfile",tmp);
         nv = my_str_malloc(strlen(tmp) + 1);
-        sprintf(nv,"%s",tmp);
-    //p = nv;
+        snprintf(nv, sizeof(char)*(strlen(tmp) + 1), "%s",tmp);
     #else
     	nv = strdup(nvram_safe_get("ftp_tokenfile"));
     #endif
@@ -1102,7 +1109,7 @@ int check_config_path(int is_read_config)
     if(fp==NULL)
     {
         nv = my_str_malloc(2);
-        sprintf(nv,"");
+        snprintf(nv, sizeof(char)*2, "%s", "");
     }
     else
     {
@@ -1110,16 +1117,12 @@ int check_config_path(int is_read_config)
         int file_size;
         file_size = ftell( fp );
         fseek(fp , 0 , SEEK_SET);
-        //nv =  (char *)malloc( file_size * sizeof( char ) );
         nv = my_str_malloc(file_size+2);
-        //fread(nv , file_size , sizeof(char) , fp);
         fscanf(fp,"%[^\n]%*c",nv);
         fclose(fp);
     }
 #endif
     nv_len = strlen(nv);
-
-    //write_debug_log("check_config_path");
     DEBUG("nv_len = %d\n",nv_len);
 
     for(i=0;i<ftp_config.dir_num;i++)
@@ -1134,9 +1137,9 @@ int check_config_path(int is_read_config)
                 if(strcmp(tokenfile_info_tmp->mountpath,ftp_config.multrule[i]->mount_path))
                 {
                     memset(ftp_config.multrule[i]->mount_path,0,sizeof(ftp_config.multrule[i]->mount_path));
-                    sprintf(ftp_config.multrule[i]->mount_path,"%s",tokenfile_info_tmp->mountpath);
+                    snprintf(ftp_config.multrule[i]->mount_path, 256, "%s",tokenfile_info_tmp->mountpath);
                     memset(ftp_config.multrule[i]->base_path,0,sizeof(ftp_config.multrule[i]->base_path));
-                    sprintf(ftp_config.multrule[i]->base_path,"%s%s",tokenfile_info_tmp->mountpath,tokenfile_info_tmp->folder);
+                    snprintf(ftp_config.multrule[i]->base_path, 256, "%s%s",tokenfile_info_tmp->mountpath,tokenfile_info_tmp->folder);
                     ftp_config.multrule[i]->base_path_len = strlen(ftp_config.multrule[i]->base_path);
                     is_path_change = 1;
                 }
@@ -1154,11 +1157,7 @@ int check_config_path(int is_read_config)
         {
 
             nvp = my_str_malloc(strlen(ftp_config.multrule[i]->fullrooturl)+strlen(ftp_config.multrule[i]->base_folder)+2);
-            //nvp = my_str_malloc(strlen(ftp_config.multrule[i]->fullrooturl)+strlen(ftp_config.multrule[i]->base_folder)+strlen(">")+1);
-            sprintf(nvp,"%s>%s",ftp_config.multrule[i]->fullrooturl,ftp_config.multrule[i]->base_folder);
-
-            //write_debug_log(nv);
-            //write_debug_log(nvp);
+            snprintf(nvp, sizeof(char)*(strlen(ftp_config.multrule[i]->fullrooturl)+strlen(ftp_config.multrule[i]->base_folder)+2), "%s>%s",ftp_config.multrule[i]->fullrooturl,ftp_config.multrule[i]->base_folder);
 
             if(!is_read_config)
             {
@@ -1177,13 +1176,13 @@ int check_config_path(int is_read_config)
                     return -1;
                 }
                 tokenfile_info_tmp->url = my_str_malloc(strlen(ftp_config.multrule[i]->fullrooturl) + 1);
-                sprintf(tokenfile_info_tmp->url,"%s",ftp_config.multrule[i]->fullrooturl);
+                snprintf(tokenfile_info_tmp->url, sizeof(char)*(strlen(ftp_config.multrule[i]->fullrooturl) + 1), "%s",ftp_config.multrule[i]->fullrooturl);
 
                 tokenfile_info_tmp->mountpath = my_str_malloc(strlen(ftp_config.multrule[i]->mount_path) + 1);
-                sprintf(tokenfile_info_tmp->mountpath,"%s",ftp_config.multrule[i]->mount_path);
+                snprintf(tokenfile_info_tmp->mountpath, sizeof(char)*(strlen(ftp_config.multrule[i]->mount_path) + 1), "%s",ftp_config.multrule[i]->mount_path);
 
                 tokenfile_info_tmp->folder = my_str_malloc(strlen(ftp_config.multrule[i]->base_folder) + 1);
-                sprintf(tokenfile_info_tmp->folder,"%s",ftp_config.multrule[i]->base_folder);
+                snprintf(tokenfile_info_tmp->folder, sizeof(char)*(strlen(ftp_config.multrule[i]->base_folder) + 1), "%s",ftp_config.multrule[i]->base_folder);
 
                 tokenfile_info->next = tokenfile_info_tmp;
                 tokenfile_info = tokenfile_info_tmp;
@@ -1194,14 +1193,13 @@ int check_config_path(int is_read_config)
                 {
 
                     new_nv = my_str_malloc(strlen(nv)+strlen(nvp) + 2);
-                    //new_nv = my_str_malloc(strlen(nv)+strlen(nvp) + strlen("<")+1);
-                    sprintf(new_nv,"%s<%s",nv,nvp);
+                    snprintf(new_nv, sizeof(char)*(strlen(nv)+strlen(nvp) + 2), "%s<%s",nv,nvp);
 
                 }
                 else
                 {
                     new_nv = my_str_malloc(strlen(nvp)+1);
-                    sprintf(new_nv,"%s",nvp);
+                    snprintf(new_nv, sizeof(char)*(strlen(nvp)+1), "%s",nvp);
                 }
 #ifdef NVRAM_
                 write_to_nvram(new_nv,"ftp_tokenfile");
@@ -1337,7 +1335,6 @@ char *oauth_url_escape(const char *string) {
                 testing_ptr = (char*) xrealloc(ns, alloc);
                 ns = testing_ptr;
             }
-            //snprintf(&ns[strindex], 4, "%%%02X", in);
             snprintf(&ns[strindex], 4, "%%%02x", in);
             strindex+=3;
             break;
@@ -1450,7 +1447,7 @@ int do_unfinished(int index)
             serverpath = localpath_to_serverpath(p->path,index);
             char *path_temp;
             path_temp = my_str_malloc(strlen(p->path)+1);
-            sprintf(path_temp,"%s",p->path);
+            snprintf(path_temp, sizeof(char)*(strlen(p->path)+1), "%s",p->path);
             ret = upload(p->path,index);
             DEBUG("********* upload ret = %d\n",ret);
 
@@ -1494,9 +1491,8 @@ char *get_currtm()
     time_t rawtime;
     time(&rawtime);
     struct tm *timeinfo = localtime(&rawtime);
-    //DEBUG("%s",ctime(&rawtime));
     char *ret = my_str_malloc(22);
-    sprintf(ret,"%d-%d-%d %d:%d:%d",1900+timeinfo->tm_year,1+timeinfo->tm_mon,timeinfo->tm_mday,
+    snprintf(ret, sizeof(char)*22, "%d-%d-%d %d:%d:%d",1900+timeinfo->tm_year,1+timeinfo->tm_mon,timeinfo->tm_mday,
            timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
     return ret;
 }
@@ -1506,7 +1502,6 @@ char *write_error_message(char *format,...)
     int size=256;
     char *p=(char *)malloc(size);
     memset(p,0,size);//2014.11.11 by sherry
-    //memset(p,0,sizeof(p));
     va_list ap;
     va_start(ap,format);
     vsnprintf(p,size,format,ap);
@@ -1517,15 +1512,14 @@ char *write_error_message(char *format,...)
 int write_conflict_log(char *fullname, int type,char *msg)
 {
     FILE *fp = 0;
-    //int len;
     char ctype[16] = {0};
 
     if(type == 1)
-        strcpy(ctype,"Error");
+        snprintf(ctype, 16, "%s", "Error");
     else if(type == 2)
-        strcpy(ctype,"Info");
+        snprintf(ctype, 16, "%s", "Info");
     else if(type == 3)
-        strcpy(ctype,"Warning");
+        snprintf(ctype, 16, "%s", "Warning");
 
 
     if(access(CONFLICT_DIR,0) == 0)
@@ -1540,10 +1534,7 @@ int write_conflict_log(char *fullname, int type,char *msg)
         return -1;
     }
 
-    //len = strlen(mount_path);
     fprintf(fp,"TYPE:%s\nUSERNAME:%s\nFILENAME:%s\nMESSAGE:%s\n",ctype,"NULL",fullname,msg);
-    //fprintf(fp,"ERR_CODE:%d\nMOUNT_PATH:%s\nFILENAME:%s\nRULENUM:%d\n",
-                //err_code,mount_path,fullname+len,0);
     fclose(fp);
     return 0;
 }
@@ -1559,7 +1550,6 @@ int write_log(int status, char *message, char *filename,int index)
     struct timeval now;
     struct timespec outtime;
     FILE *fp;
-    //int ret;
     Log_struc log_s;
     memset(&log_s,0,LOG_SIZE);
 
@@ -1575,25 +1565,23 @@ int write_log(int status, char *message, char *filename,int index)
 
     if(log_s.status == S_ERROR)
     {
+        error_flag = 1;
         DEBUG("******** status is ERROR *******\n");
         //2014.10.31 by sherry 写入log的RuleNum的值出错为4527456
-        //fprintf(fp,"STATUS:%d\nMESSAGE:%s\nTOTAL_SPACE:%lld\nUSED_SPACE:%lld\nRULENUM:%d\n",log_s.status,message,0,0,index);
-        //字串写错 cookie抓不到值
-        //fprintf(fp,"STATUS:%d\nMESSAGE:%s\nTOTAL_SPACE:0\nUSED_SPACE:0\nRULENUM:%d\n",log_s.status,message,0);
         fprintf(fp,"STATUS:%d\nERR_MSG:%s\nTOTAL_SPACE:0\nUSED_SPACE:0\nRULENUM:%d\n",log_s.status,message,0);
         DEBUG("Status:%d\tERR_MSG:%s\tRule:%d\n",log_s.status,message,index);
     }
     else if(log_s.status == S_DOWNLOAD)
     {
         DEBUG("******** status is DOWNLOAD *******\n");
-        strcpy(log_s.path,filename);
+        snprintf(log_s.path, 512, "%s", filename);
         fprintf(fp,"STATUS:%d\nMOUNT_PATH:%s\nFILENAME:%s\nTOTAL_SPACE:0\nUSED_SPACE:0\nRULENUM:%d\n",log_s.status,log_s.path,filename,index);
         DEBUG("Status:%d\tDownloading:%s\tRule:%d\n",log_s.status,log_s.path,index);
     }
     else if(log_s.status == S_UPLOAD)
     {
         DEBUG("******** status is UPLOAD *******\n");
-        strcpy(log_s.path,filename);
+        snprintf(log_s.path, 512, "%s", filename);
         fprintf(fp,"STATUS:%d\nMOUNT_PATH:%s\nFILENAME:%s\nTOTAL_SPACE:0\nUSED_SPACE:0\nRULENUM:%d\n",log_s.status,log_s.path,filename,index);
         DEBUG("Status:%d\tUploading:%s\tRule:%d\n",log_s.status,log_s.path,index);
     }
@@ -1637,7 +1625,6 @@ int my_stat(_info *FILE_INFO)
 
 int debugFun(CURL *curl,curl_infotype type,char *str,size_t len,void *stream)
 {
-    //if(type == CURLINFO_TEXT)
         fwrite(str,1,len,(FILE*)stream);
 }
 
@@ -1652,8 +1639,7 @@ size_t my_write_func(void *ptr, size_t size, size_t nmemb, FILE *stream)
 
     int len ;
     char *temp = (char*)malloc(sizeof(char)*(strlen(SERVER_FILE.path) + 9));
-    //char *temp = (char*)malloc(sizeof(char)*(strlen(SERVER_FILE.path) + strlen(".asus.td")+1));
-    sprintf(temp, "%s.asus.td", SERVER_FILE.path);
+    snprintf(temp, sizeof(char)*(strlen(SERVER_FILE.path) + 9), "%s.asus.td", SERVER_FILE.path);
     struct stat info;
     if(stat(temp,&info) == -1)
     {
@@ -1663,12 +1649,6 @@ size_t my_write_func(void *ptr, size_t size, size_t nmemb, FILE *stream)
         return -1;
     }
 
-//    if(my_stat(&SERVER_FILE) == -1)
-//    {
-//        DEBUG("break!\n");
-//        return size*nmemb - 1;
-//        //return -1;
-//    }
     free(temp);//valgrind
     len = fwrite(ptr, size, nmemb, stream);
     return len;
@@ -1701,7 +1681,7 @@ size_t my_read_func(void *ptr, size_t size, size_t nmemb, FILE *stream)
         {
             free(LOCAL_FILE.path);
             LOCAL_FILE.path = (char *)malloc(sizeof(char)*(strlen(ret) + 1));
-            sprintf(LOCAL_FILE.path,"%s",ret);
+            snprintf(LOCAL_FILE.path, sizeof(char)*(strlen(ret) + 1), "%s",ret);
             free(ret);
         }
     }
@@ -1722,7 +1702,6 @@ int my_progress_func(char *progress_data,double t, double d,double ultotal,doubl
         DEBUG("\r%s %10.0f / %10.0f (%g %%)", progress_data, d, t, d*100.0/t);
     }else{
         DEBUG("2\n");
-        //DEBUG("\r%s %10.0f / %10.0f (%g %%)", progress_data, ulnow, ultotal, ulnow*100.0/ultotal);
         DEBUG("\r%s %10.0f", progress_data,ulnow);
     }
     return 0;
@@ -1734,12 +1713,9 @@ int my_progress_func(char *progress_data,double t, double d,double ultotal,doubl
  *1,have local socket
 */
 int wait_handle_socket(int index){
-
-    //if(receve_socket)
     if(g_pSyncList[index]->receve_socket)
     {
         server_sync = 0;
-        //while(receve_socket)
         while(g_pSyncList[index]->receve_socket || local_sync)
         {
             usleep(1000*100);
@@ -1780,15 +1756,12 @@ int deal_dragfolder_to_socketlist(char *dir,int index)
             char *fullname;
 
             fullname = (char *)malloc(sizeof(char)*(strlen(dir)+strlen(ent->d_name)+2));
-            //fullname = (char *)malloc(sizeof(char)*(strlen(dir)+strlen(ent->d_name)+strlen("/")+1));
             //2014.10.30 by sherry  sizeof(指针)=4
-            //memset(fullname,'\0',sizeof(fullname));
-            //memset(fullname,'\0',sizeof(char)*(strlen(dir)+strlen(ent->d_name)+strlen("/")+1));
             memset(fullname,'\0',sizeof(char)*(strlen(dir)+strlen(ent->d_name)+2));
-            sprintf(fullname,"%s/%s",dir,ent->d_name);
+            snprintf(fullname, sizeof(char)*(strlen(dir)+strlen(ent->d_name)+2), "%s/%s",dir,ent->d_name);
             if(test_if_dir(fullname) == 1)
             {
-                sprintf(info,"createfolder%s%s%s%s","\n",dir,"\n",ent->d_name);
+                snprintf(info, 512, "createfolder%s%s%s%s","\n",dir,"\n",ent->d_name);
                 pthread_mutex_lock(&mutex_socket);
                 add_socket_item(info,index);
                 pthread_mutex_unlock(&mutex_socket);
@@ -1796,7 +1769,7 @@ int deal_dragfolder_to_socketlist(char *dir,int index)
             }
             else
             {
-                sprintf(info,"createfile%s%s%s%s","\n",dir,"\n",ent->d_name);
+                snprintf(info, 512, "createfile%s%s%s%s","\n",dir,"\n",ent->d_name);
                 pthread_mutex_lock(&mutex_socket);
                 add_socket_item(info,index);
                 pthread_mutex_unlock(&mutex_socket);
@@ -1832,9 +1805,7 @@ int add_all_download_only_dragfolder_socket_list(const char *dir,int index)
 
 
         fullname = my_str_malloc((size_t)(strlen(dir)+strlen(ent->d_name)+2));
-        //fullname = my_str_malloc((size_t)(strlen(dir)+strlen(ent->d_name)+strlen("/")+1));
-
-        sprintf(fullname,"%s/%s",dir,ent->d_name);
+        snprintf(fullname, sizeof(char)*(strlen(dir)+strlen(ent->d_name)+2), "%s/%s",dir,ent->d_name);
 
         if( test_if_dir(fullname) == 1)
         {
@@ -1860,12 +1831,12 @@ mod_time *Getmodtime(char *href,int index)
     mod_time *mtime_1;
 
     char *command = (char *)malloc(sizeof(char)*(strlen(href) + 6));
-    //char *command = (char *)malloc(sizeof(char)*(strlen(href) + strlen("MDTM ")+1));
     //2014.10.29 by sherry   sizeof(指针)=4
-    //memset(command,'\0',sizeof(command));
-    //memset(command,'\0',sizeof(char)*(strlen(href) + strlen("MDTM ")+1));
     memset(command,'\0',sizeof(char)*(strlen(href) + 6));
-    sprintf(command,"MDTM %s",href + 1);
+    if(strncmp(href, "/", 1) == 0 || strncmp(href, "\\", 1) == 0) //2016.10.19 tina modify for server path support:1.serverpath 2./serverpath 3.\serverpath
+        snprintf(command, sizeof(char)*(strlen(href) + 6), "MDTM %s",href + 1);
+    else
+        snprintf(command, sizeof(char)*(strlen(href) + 6), "MDTM %s",href);
     DEBUG("command:%s\n",command);
     char *temp = utf8_to(command,index);
     free(command);
@@ -1873,14 +1844,12 @@ mod_time *Getmodtime(char *href,int index)
     CURL *curl_handle;
     CURLcode res;
     curl_handle = curl_easy_init();
-    FILE *fp = fopen(TIME_ONE_DIR,"w+");;
-    //fp=fopen("/tmp/ftpclient/time_one.txt","w+");
+    FILE *fp = fopen(TIME_ONE_DIR,"w+");
     if(curl_handle)
     {
         curl_easy_setopt(curl_handle, CURLOPT_URL, ftp_config.multrule[index]->server_ip);
         if(strlen(ftp_config.multrule[index]->user_pwd) != 1)
             curl_easy_setopt(curl_handle, CURLOPT_USERPWD, ftp_config.multrule[index]->user_pwd);
-        //curl_easy_setopt(curl_handle, CURLOPT_FTP_USE_EPSV, 0);
         curl_easy_setopt(curl_handle, CURLOPT_WRITEHEADER,fp);
         curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST,temp);
         curl_easy_setopt(curl_handle, CURLOPT_LOW_SPEED_LIMIT,1);
@@ -1893,7 +1862,6 @@ mod_time *Getmodtime(char *href,int index)
             curl_easy_cleanup(curl_handle);
             fclose(fp);
             free(temp);
-            //DEBUG("get %s mtime failed res = %d\n",href,res);
             if(res == CURLE_COULDNT_CONNECT)
             {
                 write_log(S_ERROR,"Could not connect.","",index);
@@ -1921,32 +1889,6 @@ mod_time *Getmodtime(char *href,int index)
     }
 }
 
-//int add_socket_item_for_refresh(char *buf,int i)
-//{
-//    DEBUG("comeing add_socket_item_for_refresh\n");
-//
-//    pthread_mutex_lock(&mutex_receve_socket);
-//    g_pSyncList[i]->receve_socket = 1;
-//    pthread_mutex_unlock(&mutex_receve_socket);
-//
-//    newNode = (Node *)malloc(sizeof(Node));
-//    memset(newNode,0,sizeof(Node));
-//    newNode->cmdName = (char *)malloc(sizeof(char)*(strlen(buf)+1));
-//    memset(newNode->cmdName,'\0',sizeof(newNode->cmdName));
-//    sprintf(newNode->cmdName,"%s",buf);
-//
-//    //newNode->re_cmd = NULL;
-//
-//    Node *pTemp = g_pSyncList[i]->SocketActionList_Refresh;
-//    //Node *pTemp = ActionList;
-//    while(pTemp->next!=NULL)
-//        pTemp=pTemp->next;
-//    pTemp->next=newNode;
-//    newNode->next=NULL;
-//    show(g_pSyncList[i]->SocketActionList_Refresh);
-//    DEBUG("end add_socket_item_for_rename\n");
-//    return 0;
-//}
 
 int add_socket_item_for_rename(char *buf,int i)
 {
@@ -1960,12 +1902,9 @@ int add_socket_item_for_rename(char *buf,int i)
     memset(newNode,0,sizeof(Node));
     newNode->cmdName = (char *)malloc(sizeof(char)*(strlen(buf)+1));
     memset(newNode->cmdName,'\0',sizeof(newNode->cmdName));
-    sprintf(newNode->cmdName,"%s",buf);
-
-    //newNode->re_cmd = NULL;
+    snprintf(newNode->cmdName, sizeof(char)*(strlen(buf)+1), "%s",buf);
 
     Node *pTemp = g_pSyncList[i]->SocketActionList_Rename;
-    //Node *pTemp = ActionList;
     while(pTemp->next!=NULL)
         pTemp=pTemp->next;
     pTemp->next=newNode;
@@ -1980,7 +1919,7 @@ char *search_newpath(char *href,int i)//传入文件路径
     char *ret = (char*)malloc(sizeof(char)*(strlen(href) + 1));
     //2014.10.29 by sherry 未初始化ret
     memset(ret,0,sizeof(char)*(strlen(href) + 1));
-    sprintf(ret,"%s",href);
+    snprintf(ret, sizeof(char)*(strlen(href) + 1), "%s",href);
     Node *pTemp = g_pSyncList[i]->SocketActionList_Rename->next;
     while(pTemp != NULL)
     {
@@ -2003,7 +1942,7 @@ char *search_newpath(char *href,int i)//传入文件路径
         ch++;
         k++;
         temp = my_str_malloc((size_t)(strlen(ch)+1));
-        strcpy(temp,ch);
+        snprintf(temp, sizeof(char)*(strlen(ch)+1), "%s", ch);
         p = strchr(temp,'\n');
         path = my_str_malloc((size_t)(strlen(temp)- strlen(p)+1));
         if(p!=NULL)
@@ -2014,29 +1953,25 @@ char *search_newpath(char *href,int i)//传入文件路径
         if(p1 != NULL)
             strncpy(oldname,p,strlen(p)- strlen(p1));
         p1++;
-        strcpy(newname,p1);
+        snprintf(newname, 512, "%s", p1);
 
         oldpath = my_str_malloc((size_t)(strlen(path) + strlen(oldname) + 3));
         newpath = my_str_malloc((size_t)(strlen(path) + strlen(newname) + 3));
-        //oldpath = my_str_malloc((size_t)(strlen(path) + strlen(oldname) + strlen("/")+strlen("/")+1));
-        //newpath = my_str_malloc((size_t)(strlen(path) + strlen(newname) + strlen("/")+strlen("/")+1));
-        sprintf(oldpath,"%s/%s/",path,oldname);
-        sprintf(newpath,"%s/%s/",path,newname);
+        snprintf(oldpath, sizeof(char)*(strlen(path) + strlen(oldname) + 3), "%s/%s/",path,oldname);
+        snprintf(newpath, sizeof(char)*(strlen(path) + strlen(newname) + 3), "%s/%s/",path,newname);
         free(path);
         free(temp);
 
         string temp1(ret),tmp;
         int m = strncmp(ret,oldpath,strlen(oldpath));
-        //char *m = strstr(ret,oldpath);
         int start,end;
         if(m == 0)
         {
-            //start = strlen(ret) - strlen(m);
             end = strlen(oldpath);
             tmp = temp1.replace(0,end,newpath);
             free(ret);
             ret = (char*)malloc(sizeof(char)*(tmp.length() + 1));
-            sprintf(ret,"%s",tmp.c_str());
+            snprintf(ret, sizeof(char)*(tmp.length() + 1), "%s",tmp.c_str());
         }
         pTemp = pTemp->next;
     }
@@ -2070,7 +2005,7 @@ void set_re_cmd_(char *oldpath,char *oldpath_1,char *oldpath_2,char *newpath,cha
         {
             i = 0;
             old_buf = (char *)malloc(sizeof(char)*(strlen(pTemp->cmdName) + 1));
-            strcpy(old_buf,pTemp->cmdName);
+            snprintf(old_buf, sizeof(char)*(strlen(pTemp->cmdName) + 1), "%s", pTemp->cmdName);
             p = strtok(old_buf,ENTER);
 
             while(p != NULL)
@@ -2080,11 +2015,11 @@ void set_re_cmd_(char *oldpath,char *oldpath_1,char *oldpath_2,char *newpath,cha
                     if(i == 0)
                     {
                         i++;
-                        sprintf(new_buf,"%s",p);
+                        snprintf(new_buf, 1024, "%s",p);
                     }
                     else
                     {
-                        sprintf(new_buf,"%s\n%s",new_buf,p);
+                        snprintf(new_buf, 1024, "%s\n%s",new_buf,p);
                     }
                 }
                 else    //have oldpath_full
@@ -2092,11 +2027,11 @@ void set_re_cmd_(char *oldpath,char *oldpath_1,char *oldpath_2,char *newpath,cha
                     if(i == 0)
                     {
                         i++;
-                        sprintf(new_buf,"%s",newpath);
+                        snprintf(new_buf, 1024, "%s",newpath);
                     }
                     else
                     {
-                        sprintf(new_buf,"%s\n%s",new_buf,newpath);
+                        snprintf(new_buf, 1024, "%s\n%s",new_buf,newpath);
                     }
                 }
 
@@ -2104,14 +2039,14 @@ void set_re_cmd_(char *oldpath,char *oldpath_1,char *oldpath_2,char *newpath,cha
             }
             free(pTemp->cmdName);
             pTemp->cmdName = (char*)malloc(sizeof(char)*(strlen(new_buf) + 1));
-            sprintf(pTemp->cmdName,"%s",new_buf);
+            snprintf(pTemp->cmdName, sizeof(char)*(strlen(new_buf) + 1), "%s",new_buf);
         }
 
         else if((change_start = strstr(pTemp->cmdName,oldpath_2)) != NULL)
         {
             i = 0;
             old_buf = (char *)malloc(sizeof(char)*(strlen(pTemp->cmdName) + 1));
-            strcpy(old_buf,pTemp->cmdName);
+            snprintf(old_buf, sizeof(char)*(strlen(pTemp->cmdName) + 1), "%s", pTemp->cmdName);
             p = strtok(old_buf,ENTER);
             while(p != NULL)
             {
@@ -2120,11 +2055,11 @@ void set_re_cmd_(char *oldpath,char *oldpath_1,char *oldpath_2,char *newpath,cha
                     if(i == 0)
                     {
                         i++;
-                        sprintf(new_buf,"%s",p);
+                        snprintf(new_buf, 1024, "%s",p);
                     }
                     else
                     {
-                        sprintf(new_buf,"%s\n%s",new_buf,p);
+                        snprintf(new_buf, 1024, "%s\n%s",new_buf,p);
                     }
                 }
                 else    //have oldpath_part
@@ -2133,11 +2068,11 @@ void set_re_cmd_(char *oldpath,char *oldpath_1,char *oldpath_2,char *newpath,cha
                     if(i == 0)
                     {
                         i++;
-                        sprintf(new_buf,"%s%s",newpath_2,change_stop);
+                        snprintf(new_buf, 1024, "%s%s",newpath_2,change_stop);
                     }
                     else
                     {
-                        sprintf(new_buf,"%s\n%s%s",new_buf,newpath_2,change_stop);
+                        snprintf(new_buf, 1024, "%s\n%s%s",new_buf,newpath_2,change_stop);
                     }
                 }
                 p=strtok(NULL,ENTER);
@@ -2161,7 +2096,7 @@ void set_re_cmd_(char *oldpath,char *oldpath_1,char *oldpath_2,char *newpath,cha
             socket_new = socket_old.replace(0,end,newpath_2);
             free(item->path);
             item->path = (char *)malloc(sizeof(char)*(socket_new.length() + 1));
-            sprintf(item->path,"%s",socket_new.c_str());
+            snprintf(item->path, sizeof(char)*(socket_new.length() + 1), "%s",socket_new.c_str());
         }
         item = item->next;
     }
@@ -2187,7 +2122,7 @@ void set_re_cmd(char *oldpath,char *oldpath_1,char *oldpath_2,char *newpath,char
             socket_new = socket_old.replace(start,end,newpath_1);
             free(pTemp->cmdName);
             pTemp->cmdName = (char *)malloc(sizeof(char)*(socket_new.length() + 1));
-            sprintf(pTemp->cmdName,"%s",socket_new.c_str());
+            snprintf(pTemp->cmdName, sizeof(char)*(socket_new.length() + 1), "%s",socket_new.c_str());
         }
         if(q != NULL)
         {
@@ -2196,7 +2131,7 @@ void set_re_cmd(char *oldpath,char *oldpath_1,char *oldpath_2,char *newpath,char
             socket_new = socket_old.replace(start,end,newpath_2);
             free(pTemp->cmdName);
             pTemp->cmdName = (char *)malloc(sizeof(char)*(socket_new.length() + 1));
-            sprintf(pTemp->cmdName,"%s",socket_new.c_str());
+            snprintf(pTemp->cmdName, sizeof(char)*(socket_new.length() + 1), "%s",socket_new.c_str());
         }
 
         pTemp=pTemp->next;
@@ -2213,12 +2148,10 @@ void set_re_cmd(char *oldpath,char *oldpath_1,char *oldpath_2,char *newpath,char
             socket_new = socket_old.replace(0,end,newpath_2);
             free(item->path);
             item->path = (char *)malloc(sizeof(char)*(socket_new.length() + 1));
-            sprintf(item->path,"%s",socket_new.c_str());
+            snprintf(item->path, sizeof(char)*(socket_new.length() + 1), "%s",socket_new.c_str());
         }
         item = item->next;
     }
-
-    //show(g_pSyncList[i]->SocketActionList);
 }
 
 int handle_rename_socket(char *buf,int i)
@@ -2247,11 +2180,9 @@ int handle_rename_socket(char *buf,int i)
     ch++;
     k++;
     temp = my_str_malloc((size_t)(strlen(ch)+1));
-    strcpy(temp,ch);
-    //cout << temp << endl;
+    snprintf(temp, sizeof(char)*(strlen(ch)+1), "%s", ch);
     p = strchr(temp,'\n');
     path = my_str_malloc((size_t)(strlen(temp)- strlen(p) + 1));
-    //cout << path << endl;
     if(p!=NULL)
         snprintf(path,strlen(temp)- strlen(p)+1,"%s",temp);
     p++;
@@ -2260,7 +2191,7 @@ int handle_rename_socket(char *buf,int i)
     if(p1 != NULL)
         strncpy(oldname,p,strlen(p)- strlen(p1));
     p1++;
-    strcpy(newname,p1);
+    snprintf(newname, 512, "%s", p1);
 
     oldpath = my_str_malloc((size_t)(strlen(path) + strlen(oldname) + 2));
     oldpath_1 = my_str_malloc((size_t)(strlen(path) + strlen(oldname) + 3));
@@ -2268,18 +2199,12 @@ int handle_rename_socket(char *buf,int i)
     newpath = my_str_malloc((size_t)(strlen(path) + strlen(newname) + 2));
     newpath_1 = my_str_malloc((size_t)(strlen(path) + strlen(newname) + 3));
     newpath_2 = my_str_malloc((size_t)(strlen(path) + strlen(newname) + 3));
-    //oldpath = my_str_malloc((size_t)(strlen(path) + strlen(oldname) + strlen("/")+1));
-   // oldpath_1 = my_str_malloc((size_t)(strlen(path) + strlen(oldname) + strlen("/")+strlen("\n")+1));
-    //oldpath_2 = my_str_malloc((size_t)(strlen(path) + strlen(oldname) + strlen("/")+strlen("/")+1));
-    //newpath = my_str_malloc((size_t)(strlen(path) + strlen(newname) + strlen("/")+1));
-    //newpath_1 = my_str_malloc((size_t)(strlen(path) + strlen(newname) + strlen("/")+strlen("\n")+1));
-    //newpath_2 = my_str_malloc((size_t)(strlen(path) + strlen(newname) + strlen("/")+strlen("/")+1));
-    sprintf(oldpath,"%s/%s",path,oldname);
-    sprintf(oldpath_1,"%s/%s\n",path,oldname);
-    sprintf(oldpath_2,"%s/%s/",path,oldname);
-    sprintf(newpath,"%s/%s",path,newname);
-    sprintf(newpath_1,"%s/%s\n",path,newname);
-    sprintf(newpath_2,"%s/%s/",path,newname);
+    snprintf(oldpath, sizeof(char)*(strlen(path) + strlen(oldname) + 2), "%s/%s",path,oldname);
+    snprintf(oldpath_1, sizeof(char)*(strlen(path) + strlen(oldname) + 3), "%s/%s\n",path,oldname);
+    snprintf(oldpath_2, sizeof(char)*(strlen(path) + strlen(oldname) + 3), "%s/%s/",path,oldname);
+    snprintf(newpath, sizeof(char)*(strlen(path) + strlen(newname) + 2), "%s/%s",path,newname);
+    snprintf(newpath_1, sizeof(char)*(strlen(path) + strlen(newname) + 3), "%s/%s\n",path,newname);
+    snprintf(newpath_2, sizeof(char)*(strlen(path) + strlen(newname) + 3), "%s/%s/",path,newname);
     free(path);
     free(temp);
 
@@ -2305,10 +2230,8 @@ int add_socket_item(char *buf,int i)
     memset(newNode,0,sizeof(Node));
     newNode->cmdName = (char *)malloc(sizeof(char)*(strlen(buf)+1));
     //2014.10.29 by sherry sizeof(指针)=4
-    //memset(newNode->cmdName,'\0',sizeof(newNode->cmdName));
     memset(newNode->cmdName,'\0',sizeof(char)*(strlen(buf)+1));
-    sprintf(newNode->cmdName,"%s",buf);
-    //newNode->re_cmd = NULL;
+    snprintf(newNode->cmdName, sizeof(char)*(strlen(buf)+1), "%s",buf);
     Node *pTemp = g_pSyncList[i]->SocketActionList;
     while(pTemp->next != NULL)
         pTemp = pTemp->next;
@@ -2319,68 +2242,9 @@ int add_socket_item(char *buf,int i)
     return 0;
 }
 
-//char *search_xml_node(xmlNodePtr p)
-//{
-//    int count = 0;
-//    xmlChar *szAttr;
-//    char fold0[1024];
-//    char *temp;
-//    char *res;
-//    res = (char*)malloc(sizeof(char));
-//    memset(res,'\0',sizeof(res));
-//    while(p != NULL)
-//    {
-//        szAttr = xmlGetProp(p,BAD_CAST p->properties->name);
-//        sprintf(fold0,"%s",szAttr);
-//        xmlNodePtr q = p->children;
-//        int _count = 0;
-//        while(q != NULL)
-//        {
-//            szAttr = xmlGetProp(q,BAD_CAST q->properties->name);
-//            q = q->next;
-//            _count++;
-//        }
-//        if(!xmlStrcmp(p->name,(const xmlChar*)("fold0")))
-//        {
-//            temp = (char *)malloc(sizeof(char)*(strlen(fold0) + 12));
-//            memset(temp,'\0',sizeof(char)*(strlen(fold0) + 12));
-//            sprintf(temp,",\"%s#%d#%d\"",fold0,count,_count);
-//            int len = strlen(res) + strlen(temp) + 1;
-//            res = (char*)realloc(res,len);
-//            strncat(res,temp,strlen(temp));
-//            free(temp);
-//        }
-//        p = p->next;
-//        count++;
-//    }
-//    if(count)
-//    {
-//        res = (char*)realloc(res,strlen(res) + 3);
-//        sprintf(res,"[%s]",res + 1);
-//        return res;
-//    }
-//    else
-//    {
-//        free(res);
-//        return NULL;
-//    }
-//}
 
 void *Save_Socket(void *argc)
 {
-    //写死socket
-    //    char buf1[256] ={0};
-    //    char buf2[256] = {0};
-    //    sprintf(buf1,"%s","createfolder\n/tmp/mnt/SNK/sync\n未命名文件夹");
-    //    sprintf(buf2,"%s","rename0\n/tmp/mnt/SNK/sync\n未命名文件夹\na");
-
-    //    int i=0;
-    //    pthread_mutex_lock(&mutex_socket);
-    //    handle_rename_socket(buf2,i);
-    //    add_socket_item_for_rename(buf2,i);
-    //    add_socket_item(buf1,i);
-    //    pthread_mutex_unlock(&mutex_socket);
-
     DEBUG("Save_Socket:%u\n",pthread_self());
     int sockfd, new_fd; /* listen on sock_fd, new connection on new_fd*/
     int numbytes;
@@ -2399,7 +2263,6 @@ void *Save_Socket(void *argc)
     struct sockaddr_in my_addr; /* my address information */
     struct sockaddr_in their_addr; /* connector's address information */
     socklen_t sin_size;
-    //int sin_size;
 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("socket");
@@ -2433,7 +2296,6 @@ void *Save_Socket(void *argc)
 
     while(!exit_loop)
     { /* main accept() loop */
-        //DEBUG("listening!\n");
         timeout.tv_sec = 5;
         timeout.tv_usec = 0;
 
@@ -2470,23 +2332,7 @@ void *Save_Socket(void *argc)
 
 
             int i=0;
-#ifdef _PC
-//            if(strncmp(buf,"refresh",7))
-//            {
-//                char *r_path = get_socket_base_path(buf);
-//                DEBUG("r_path:%s\n",r_path);
-//                for(i=0;i<ftp_config.dir_num;i++)
-//                {
-//                    DEBUG("r_path:%s,base_path=%s\n",r_path,ftp_config.multrule[i]->base_path);
-//                    if(!strcmp(r_path,ftp_config.multrule[i]->base_path))
-//                    {
-//                        free(r_path);
-//                        break;
-//                    }
-//                }
 
-//            }
-#else
             if(strncmp(buf,"refresh",7))
             {
                 char *r_path = get_socket_base_path(buf);
@@ -2501,7 +2347,7 @@ void *Save_Socket(void *argc)
                 }
 
             }
-#endif
+
             pthread_mutex_lock(&mutex_socket);
             if(!strncmp(buf,"rename0",7))
             {
@@ -2547,26 +2393,22 @@ void parseCloudInfo_forsize(char *parentherf)
             switch(i)
             {
             case 0:
-                strcpy(tmp,p);
-                //strcpy(FolderTmp_size->auth,p);
+                snprintf(tmp, 512, "%s", p);
                 FolderTmp_size->isfile=is_file(tmp);
                 break;
             case 4:
                 FolderTmp_size->size=atoll(p);
                 break;
             case 5:
-                //strcpy(FolderTmp_size->month,p);
                 break;
             case 6:
-                //strcpy(FolderTmp_size->day,p);
                 break;
             case 7:
-                //strcpy(FolderTmp_size->lastmodifytime,p);
                 break;
             case 8:
                 if(!strcmp(p,".") || !strcmp(p,".."))
                     fail = 1;
-                strcpy(FolderTmp_size->filename,p);
+                snprintf(FolderTmp_size->filename, MAX_CONTENT, "%s", p);
                 break;
             default:
                 break;
@@ -2579,21 +2421,14 @@ void parseCloudInfo_forsize(char *parentherf)
         }
 
         FolderTmp_size->href = (char *)malloc(sizeof(char)*(strlen(parentherf)+1+1+strlen(FolderTmp_size->filename)));
-        //FolderTmp_size->href = (char *)malloc(sizeof(char)*(strlen(parentherf)+strlen("/")+1+strlen(FolderTmp_size->filename)));
         memset(FolderTmp_size->href,'\0',sizeof(FolderTmp_size->href));
         if(strcmp(parentherf," ")==0)
-            sprintf(FolderTmp_size->href,"%s",FolderTmp_size->filename);
+            snprintf(FolderTmp_size->href, sizeof(char)*(strlen(parentherf)+1+1+strlen(FolderTmp_size->filename)), "%s",FolderTmp_size->filename);
         else
-            sprintf(FolderTmp_size->href,"%s/%s",parentherf,FolderTmp_size->filename);
+            snprintf(FolderTmp_size->href, sizeof(char)*(strlen(parentherf)+1+1+strlen(FolderTmp_size->filename)), "%s/%s",parentherf,FolderTmp_size->filename);
         if(!fail)
         {
-            if(FolderTmp_size->isfile==0)                   //文件夹链表
-            {
-                //FolderTail_size->next = FolderTmp_size;
-                //FolderTail_size = FolderTmp_size;
-                //FolderTail_size->next = NULL;
-            }
-            else if(FolderTmp_size->isfile==1)               //文件链表
+            if(FolderTmp_size->isfile==1)               //文件链表
             {
                 FileTail_size->next = FolderTmp_size;
                 FileTail_size = FolderTmp_size;
@@ -2649,9 +2484,8 @@ mod_time *ftp_MDTM(char *href,int index)
     mod_time *mtime;
 
     char *command = (char *)malloc(sizeof(char)*(strlen(href) + 6));
-    //char *command = (char *)malloc(sizeof(char)*(strlen(href) + strlen("MDTM ")+1));
     memset(command,'\0',sizeof(command));
-    sprintf(command,"MDTM %s",href+1);
+    snprintf(command, sizeof(char)*(strlen(href) + 6), "MDTM %s",href+1);
     DEBUG("%s\n",command);
     char *temp = utf8_to(command,index);
     free(command);
@@ -2659,12 +2493,10 @@ mod_time *ftp_MDTM(char *href,int index)
     CURLcode res;
     curl_t = curl_easy_init();
     FILE *fp = fopen(TIME_DIR,"w+");
-    //fp=fopen("/tmp/ftpclient/time.txt","w+");
     if(curl_t){
         curl_easy_setopt(curl_t, CURLOPT_URL, ftp_config.multrule[index]->server_ip);
         if(strlen(ftp_config.multrule[index]->user_pwd) != 1)
             curl_easy_setopt(curl_t, CURLOPT_USERPWD, ftp_config.multrule[index]->user_pwd);
-        //curl_easy_setopt(curl_t, CURLOPT_FTP_USE_EPSV, 0);
         curl_easy_setopt(curl_t, CURLOPT_WRITEHEADER,fp);
         curl_easy_setopt(curl_t, CURLOPT_CUSTOMREQUEST,temp);
         curl_easy_setopt(curl_t, CURLOPT_LOW_SPEED_LIMIT,1);
@@ -2677,7 +2509,6 @@ mod_time *ftp_MDTM(char *href,int index)
             curl_easy_cleanup(curl_t);
             fclose(fp);
             free(temp);
-            //DEBUG("get %s mtime failed res =%d\n",href,res);
             if(res == CURLE_COULDNT_CONNECT)
             {
                 write_log(S_ERROR,"Could not connect.","",index);
@@ -2725,8 +2556,6 @@ int parseCloudInfo_tree(char *parentherf,int index)
         FolderTmp->next = NULL; //2016.2.25 by tina
         p=strtok(buf,split);
         int i=0;
-        //DEBUG("p:%s\n",p);
-        //string tmpStr;
         if(strlen(p) == 8)
         {
             int flag = 0;
@@ -2735,10 +2564,9 @@ int parseCloudInfo_tree(char *parentherf,int index)
                 switch(i)
                 {
                 case 1:
-                    //strncpy(FolderTmp->lastmodifytime,p,5);
                     break;
                 case 2:
-                    strcpy(tmp,p);
+                    snprintf(tmp, 512, "%s", p);
                     flag = is_folder(tmp);
                     if(flag == 0)
                     {
@@ -2754,14 +2582,12 @@ int parseCloudInfo_tree(char *parentherf,int index)
                     if(p == NULL)
                     {
                         free_CloudFile_item(FolderTmp);
-                        //fclose(fp);
-                        //return UNSUPPORT_ENCODING;
                         break;
                     }
                     str = (char*)malloc(sizeof(char)*(strlen(p) + 1));
-                    strcpy(str,p);
+                    snprintf(str, sizeof(char)*(strlen(p) + 1), "%s", p);
                     temp = to_utf8(str,index);
-                    strcpy(FolderTmp->filename,temp);
+                    snprintf(FolderTmp->filename, MAX_CONTENT, "%s", temp);
                     break;
                 default:
                     break;
@@ -2784,25 +2610,20 @@ int parseCloudInfo_tree(char *parentherf,int index)
         {
             while(i <= 8)//p != NULL &&
             {
-                //DEBUG("p:%s %d\n",p,i);
                 switch(i)
                 {
                 case 0:
-                    strcpy(tmp,p);
-                    //strcpy(FolderTmp->auth,p);
+                    snprintf(tmp, 512, "%s", p);
                     FolderTmp->isfile=is_file(tmp);
                     break;
                 case 4:
                     FolderTmp->size=atoll(p);
                     break;
                 case 5:
-                    //strcpy(FolderTmp->month,p);
                     break;
                 case 6:
-                    //strcpy(FolderTmp->day,p);
                     break;
                 case 7:
-                    //strcpy(FolderTmp->lastmodifytime,p);
                     break;
                 case 8:
                     if(p == NULL || !strcmp(p,".") || !strcmp(p,".."))
@@ -2811,10 +2632,10 @@ int parseCloudInfo_tree(char *parentherf,int index)
                         fail = 1;
                     }
                     str = (char*)malloc(sizeof(char)*(strlen(p) + 1));
-                    strcpy(str,p);
+                    snprintf(str, sizeof(char)*(strlen(p) + 1), "%s", p);
                     temp = to_utf8(str,index);
                     free(str);
-                    strcpy(FolderTmp->filename,temp);
+                    snprintf(FolderTmp->filename, MAX_CONTENT, "%s", temp);
                     break;
                 default:
                     break;
@@ -2823,11 +2644,9 @@ int parseCloudInfo_tree(char *parentherf,int index)
                 if(i<=7)
                 {
                     p=strtok(NULL,split);
-                    //DEBUG("p:%s\n",p);
                 }
                 else
                 {
-                    //DEBUG("p:%s\n",p);
                     p=strtok(NULL,split_2);
                 }
             }
@@ -2837,9 +2656,9 @@ int parseCloudInfo_tree(char *parentherf,int index)
 
         memset(FolderTmp->href,'\0',sizeof(FolderTmp->href));
         if(strcmp(parentherf," ")==0)
-            sprintf(FolderTmp->href,"%s",FolderTmp->filename);
+            snprintf(FolderTmp->href, sizeof(char)*(strlen(parentherf)+1+1+strlen(FolderTmp->filename)), "%s",FolderTmp->filename);
         else
-            sprintf(FolderTmp->href,"%s/%s",parentherf,FolderTmp->filename);
+            snprintf(FolderTmp->href, sizeof(char)*(strlen(parentherf)+1+1+strlen(FolderTmp->filename)), "%s/%s",parentherf,FolderTmp->filename);
         if(!fail)
         {
             if(FolderTmp->isfile==0)                   //文件夹链表
@@ -2857,10 +2676,7 @@ int parseCloudInfo_tree(char *parentherf,int index)
                     fclose(fp);
                     return -1;
                 }
-                //DEBUG("mtime->modtime = %lu,mtime->mtime = %s\n",mtime->modtime,mtime->mtime);
                 FolderTmp->modtime = mtime->modtime;
-                //strcpy(FolderTmp->mtime,mtime->mtime);
-                //DEBUG("FolderTmp->modtime = %lu,FolderTmp->mtime = %s\n",FolderTmp->modtime,FolderTmp->mtime);
                 free(mtime);
                 TreeFileTail->next=FolderTmp;
                 TreeFileTail=FolderTmp;
@@ -2883,7 +2699,7 @@ int getCloudInfo(char *URL,int (* cmd_data)(char *,int),int index)
     int status;
     char *command = (char *)malloc(sizeof(char)*(strlen(URL) + 7));
     memset(command,'\0',sizeof(command));
-    sprintf(command,"LIST %s",URL);
+    snprintf(command, sizeof(char)*(strlen(URL) + 7), "LIST %s",URL);
     DEBUG("command = %s\n",command);
     char *temp = utf8_to(command,index);
     free(command);
@@ -2891,6 +2707,11 @@ int getCloudInfo(char *URL,int (* cmd_data)(char *,int),int index)
     CURL *curl;
     CURLcode res;
     FILE *fp = fopen(LIST_DIR,"wb");
+    if(fp == NULL)
+    {
+        free(temp);
+        return -1;
+    }
     curl = curl_easy_init();
     if(curl)
     {
@@ -3030,7 +2851,7 @@ int browse_to_tree(char *parenthref,Server_TreeNode *node,int index)
 
     DEBUG("parenthref:%s\n",parenthref);
     br = browseFolder(parenthref,index);
-    sprintf(tempnode->parenthref,"%s",parenthref);
+    snprintf(tempnode->parenthref, strlen(parenthref)+1, "%s",parenthref);
     if(NULL == br)
     {
         free_server_tree(tempnode);
@@ -3125,10 +2946,7 @@ Local *Find_Floor_Dir(const char *path)
         size_t len;
         len = strlen(path)+strlen(ent->d_name)+2;
         fullname = my_str_malloc(len);
-        sprintf(fullname,"%s/%s",path,ent->d_name);
-
-        //DEBUG("folder fullname = %s\n",fullname);
-        //DEBUG("ent->d_ino = %d\n",ent->d_ino);
+        snprintf(fullname, sizeof(char)*len, "%s/%s",path,ent->d_name);
 
         if(test_if_dir(fullname) == 1)
         {
@@ -3136,8 +2954,8 @@ Local *Find_Floor_Dir(const char *path)
             memset(localfloorfoldertmp,0,sizeof(localfloorfoldertmp));
             localfloorfoldertmp->path = my_str_malloc((size_t)(strlen(fullname)+1));
 
-            sprintf(localfloorfoldertmp->name,"%s",ent->d_name);
-            sprintf(localfloorfoldertmp->path,"%s",fullname);
+            snprintf(localfloorfoldertmp->name, MAX_CONTENT, "%s",ent->d_name);
+            snprintf(localfloorfoldertmp->path, sizeof(char)*(strlen(fullname)+1), "%s",fullname);
 
             ++foldernum;
 
@@ -3159,19 +2977,13 @@ Local *Find_Floor_Dir(const char *path)
             memset(localfloorfiletmp,0,sizeof(localfloorfiletmp));
             localfloorfiletmp->path = my_str_malloc((size_t)(strlen(fullname)+1));
 
-            //unsigned long asec = buf.st_atime;
             unsigned long msec = buf.st_mtime;
-            //unsigned long csec = buf.st_ctime;
 
-            //sprintf(localfloorfiletmp->creationtime,"%lu",csec);
-            //sprintf(localfloorfiletmp->lastaccesstime,"%lu",asec);
-            //sprintf(localfloorfiletmp->lastwritetime,"%lu",msec);
             localfloorfiletmp->modtime = msec;
 
-            sprintf(localfloorfiletmp->name,"%s",ent->d_name);
-            sprintf(localfloorfiletmp->path,"%s",fullname);
+            snprintf(localfloorfiletmp->name, MAX_CONTENT, "%s",ent->d_name);
+            snprintf(localfloorfiletmp->path, sizeof(char)*(strlen(fullname)+1), "%s",fullname);
 
-            //localfloorfiletmp->size = buf.st_size;
             ++filenum;
 
             localfloorfiletail->next = localfloorfiletmp;
@@ -3261,7 +3073,17 @@ int newer_file(char *localpath,int index,int flag)//比较server和loacal端的�
         }
         else
         {
-            if(modtime2 > modtime1->modtime)
+            if(modtime1->modtime - modtime2 == 1 || modtime2 - modtime1->modtime == 1)
+            {
+                if(ChangeFile_modtime(localpath,modtime1->modtime,index))
+                {
+                    DEBUG("ChangeFile_modtime failed!\n");
+                }
+                free(modtime1);
+                return 2;
+            }
+
+            else if(modtime2 > modtime1->modtime)
             {
                 free(modtime1);
                 return 0;
@@ -3392,7 +3214,6 @@ int the_same_name_compare(LocalFile *localfiletmp,CloudFile *filetmp,int index,i
             }
             char *temp = change_server_same_name(localfiletmp->path,index);
             my_rename_(localfiletmp->path,temp,index);
-            //free(temp);
             status = upload(localfiletmp->path,index);
             if(status == 0)
             {
@@ -3424,7 +3245,6 @@ int the_same_name_compare(LocalFile *localfiletmp,CloudFile *filetmp,int index,i
             {
                 char *temp = change_server_same_name(localfiletmp->path,index);
                 my_rename_(localfiletmp->path,temp,index);
-                //free(temp);
                 status = upload(localfiletmp->path,index);
                 if(status == 0)
                 {
@@ -3507,7 +3327,6 @@ int the_same_name_compare(LocalFile *localfiletmp,CloudFile *filetmp,int index,i
                     char *err_msg = write_error_message("server file %s is renamed to %s",localfiletmp->path,temp);
                     write_conflict_log(localfiletmp->path,3,err_msg); //conflict
                     free(err_msg);
-                    //free(temp);
                 }
                 add_action_item("createfile",localfiletmp->path,g_pSyncList[index]->server_action_list);  //??
                 status = upload(localfiletmp->path,index);
@@ -3544,7 +3363,6 @@ int sync_server_to_local_perform(Browse *perform_br,Local *perform_lo,int index)
     LocalFolder *localfoldertmp;
     LocalFile *localfiletmp;
     int ret = 0;
-    //int wait_ret = 0;
 
     if(perform_br->foldernumber > 0)
         foldertmp = perform_br->folderlist->next;
@@ -3555,7 +3373,6 @@ int sync_server_to_local_perform(Browse *perform_br,Local *perform_lo,int index)
     localfiletmp = perform_lo->filelist->next;
 
     /****************handle files****************/
-    //DEBUG("##########handle files\n");
     if(perform_br->filenumber == 0 && perform_lo->filenumber != 0)
     {
         DEBUG("serverfileNo:%d\t\tlocalfileNo:%d\n",perform_br->filenumber,perform_lo->filenumber);
@@ -3617,20 +3434,7 @@ int sync_server_to_local_perform(Browse *perform_br,Local *perform_lo,int index)
                 add_action_item("createfile",localpath,g_pSyncList[index]->server_action_list);
 
                 int status = download_(filetmp->href,index);
-//                if(status == 0)
-//                {
-//                    DEBUG("do_cmd ok\n");
-//                    mod_time *onefiletime = Getmodtime(filetmp->href,index);
-//                    if(ChangeFile_modtime(localpath,onefiletime->modtime,index))
-//                    {
-//                        DEBUG("ChangeFile_modtime failed!\n");
-//                    }
-//                    free(onefiletime);
-//                }
-//                else
-//                {
-                    //DEBUG("do_cmd failed,try again~~\n");
-                    //status = download_(filetmp->href,index);
+
                 if(status == 0)
                 {
                     DEBUG("do_cmd ok\n");
@@ -3645,7 +3449,6 @@ int sync_server_to_local_perform(Browse *perform_br,Local *perform_lo,int index)
                         del_action_item("download",filetmp->href,g_pSyncList[index]->unfinished_list);
                     }
                 }
-                //}
             }
             else
             {
@@ -3838,7 +3641,7 @@ int sync_server_to_local_perform(Browse *perform_br,Local *perform_lo,int index)
             memset(localpath,'\0',sizeof(char)*(ftp_config.multrule[index]->base_path_len + strlen(foldertmp->href) + 1));
             char *p = foldertmp->href;
             p = p + strlen(ftp_config.multrule[index]->rooturl);
-            sprintf(localpath,"%s%s",ftp_config.multrule[index]->base_path,p);
+            snprintf(localpath, sizeof(char)*(ftp_config.multrule[index]->base_path_len + strlen(foldertmp->href) + 1), "%s%s",ftp_config.multrule[index]->base_path,p);
             DEBUG("%s\n",localpath);
 
             char *prePath = get_prepath(localpath,strlen(localpath));
@@ -3929,7 +3732,7 @@ int sync_server_to_local_perform(Browse *perform_br,Local *perform_lo,int index)
                 }
                 char *localpath = (char *)malloc(sizeof(char)*(ftp_config.multrule[index]->base_path_len + strlen(foldertmp->href) + 1));
                 memset(localpath,'\0',sizeof(char)*(ftp_config.multrule[index]->base_path_len + strlen(foldertmp->href) + 1));
-                sprintf(localpath,"%s%s",ftp_config.multrule[index]->base_path,serverpathtmp);
+                snprintf(localpath, sizeof(char)*(ftp_config.multrule[index]->base_path_len + strlen(foldertmp->href) + 1), "%s%s",ftp_config.multrule[index]->base_path,serverpathtmp);
                 DEBUG("%s\n",localpath);
 
                 char *prePath = get_prepath(localpath,strlen(localpath));
@@ -4056,11 +3859,8 @@ void *SyncServer(void *argc)
 
     while (!exit_loop)
     {
-#ifdef _PC
-        //check_link_internet();
-#else
         check_link_internet();
-#endif
+
         for(i = 0; i < ftp_config.dir_num; i++)
         {
             //2014.10.30 by sherry  Sockect_praser和Sync_server线程都卡着（处于在等待状态）
@@ -4115,11 +3915,6 @@ void *SyncServer(void *argc)
                         write_log(S_ERROR,"Permission Denied.","",ftp_config.multrule[i]->rules);
                         continue;
                 }
-                else if(flag == 0)
-                {
-                        //write_log(S_ERROR,"remote root path lost OR write only.","",ftp_config.multrule[i]->rules);
-                        //continue;
-                }
 
             if(g_pSyncList[i]->sync_disk_exist == 0)
             {
@@ -4141,7 +3936,6 @@ void *SyncServer(void *argc)
             if(status != 0 && status != -1)
             {
                 server_sync = 0;      //server sync finished
-                //sleep(2);
                 usleep(1000*200);
                 break;
             }
@@ -4180,7 +3974,6 @@ void *SyncServer(void *argc)
                     DEBUG("first sync!\n");
                     g_pSyncList[i]->first_sync = 0;
                     g_pSyncList[i]->OrigServerRootNode = g_pSyncList[i]->OldServerRootNode;
-                    //free_server_tree(g_pSyncList[i]->OldServerRootNode);
                     g_pSyncList[i]->OldServerRootNode = g_pSyncList[i]->ServerRootNode;
                     status = compareLocalList(i);
                     free_server_tree(g_pSyncList[i]->OrigServerRootNode);
@@ -4198,7 +3991,6 @@ void *SyncServer(void *argc)
                     if(status == 0 || ftp_config.multrule[i]->rules == 1)
                     {
                         g_pSyncList[i]->OrigServerRootNode = g_pSyncList[i]->OldServerRootNode;
-                        //free_server_tree(g_pSyncList[i]->OldServerRootNode);
                         g_pSyncList[i]->OldServerRootNode = g_pSyncList[i]->ServerRootNode;
                         status = compareLocalList(i);
                         free_server_tree(g_pSyncList[i]->OrigServerRootNode);
@@ -4214,7 +4006,9 @@ void *SyncServer(void *argc)
                     }
                 }
             }
-            write_log(S_SYNC,"","",i);
+            if(!error_flag)
+                write_log(S_SYNC,"","",i);
+            error_flag = 0;
         }
         server_sync = 0;  //server_sync finished!
         pthread_mutex_lock(&mutex);
@@ -4225,7 +4019,6 @@ void *SyncServer(void *argc)
             outtime.tv_nsec = now.tv_usec * 1000;
             pthread_cond_timedwait(&cond, &mutex, &outtime);
         }
-        //DEBUG("server loop\n");
         pthread_mutex_unlock(&mutex);
     }
     DEBUG("stop FtpClient server sync\n");
@@ -4254,7 +4047,6 @@ int cmd_parser(char *cmd,int index)
     }
 
     char cmd_name[64];
-    //char cmd_param[512];
     char *path;
     char *temp;
     char filename[256];
@@ -4268,8 +4060,6 @@ int cmd_parser(char *cmd,int index)
     char *ch;
     int status;
 
-    //Asusconfig asusconfig;
-
     memset(cmd_name, 0, sizeof(cmd_name));
     memset(oldname,'\0',sizeof(oldname));
     memset(newname,'\0',sizeof(newname));
@@ -4277,7 +4067,6 @@ int cmd_parser(char *cmd,int index)
 
     ch = cmd;
     int i = 0;
-    //while(*ch != '@')
     while(*ch != '\n')
     {
         i++;
@@ -4292,8 +4081,7 @@ int cmd_parser(char *cmd,int index)
 
     temp = my_str_malloc((size_t)(strlen(ch)+1));
 
-    strcpy(temp,ch);
-    //p = strchr(temp,'@');
+    snprintf(temp, sizeof(char)*(strlen(ch)+1), "%s", ch);
     p = strchr(temp,'\n');
 
     path = my_str_malloc((size_t)(strlen(temp)- strlen(p)+1));
@@ -4301,14 +4089,11 @@ int cmd_parser(char *cmd,int index)
     if(p!=NULL)
         snprintf(path,strlen(temp)- strlen(p)+1,"%s",temp);
 
-    //free(temp);
-
     p++;
     if(strncmp(cmd_name, "rename",6) == 0)//是否是rename，是rename，strncmp(cmd_name, "rename",6)返回0，是走里面的
     {
         char *p1 = NULL;
 
-        //p1 = strchr(p,'@');
         p1 = strchr(p,'\n');
 
         if(p1 != NULL)
@@ -4316,7 +4101,7 @@ int cmd_parser(char *cmd,int index)
 
         p1++;
 
-        strcpy(newname,p1);
+        snprintf(newname, 256, "%s", p1);
 
         DEBUG("cmd_name: [%s],path: [%s],oldname: [%s],newname: [%s]\n",cmd_name,path,oldname,newname);
         if(newname[0] == '.' || (strstr(path,"/.")) != NULL)
@@ -4330,7 +4115,6 @@ int cmd_parser(char *cmd,int index)
     {
         char *p1 = NULL;
 
-        //p1 = strchr(p,'@');
         p1 = strchr(p,'\n');
 
         oldpath = my_str_malloc((size_t)(strlen(p)- strlen(p1)+1));
@@ -4340,7 +4124,7 @@ int cmd_parser(char *cmd,int index)
 
         p1++;
 
-        strcpy(oldname,p1);
+        snprintf(oldname, 256, "%s", p1);
 
         DEBUG("cmd_name: [%s],path: [%s],oldpath: [%s],oldname: [%s]\n",cmd_name,path,oldpath,oldname);
         if(oldname[0] == '.' || (strstr(path,"/.")) != NULL)
@@ -4353,7 +4137,7 @@ int cmd_parser(char *cmd,int index)
     }
     else
     {
-        strcpy(filename,p);
+        snprintf(filename, 256, "%s", p);
         fullname = my_str_malloc((size_t)(strlen(path)+strlen(filename)+2));
         DEBUG("cmd_name: [%s],path: [%s],filename: [%s]\n",cmd_name,path,filename);
         if(filename[0] == '.' || (strstr(path,"/.")) != NULL)
@@ -4369,35 +4153,35 @@ int cmd_parser(char *cmd,int index)
     if( !strncmp(cmd_name,"rename",6) )//是rename返回1，即：是rename走里面的内容
     {
         cmp_name = my_str_malloc((size_t)(strlen(path)+strlen(newname)+2));
-        sprintf(cmp_name,"%s/%s",path,newname);
+        snprintf(cmp_name, sizeof(char)*(strlen(path)+strlen(newname)+2), "%s/%s",path,newname);
     }
     else
     {
         cmp_name = my_str_malloc((size_t)(strlen(path)+strlen(filename)+2));
-        sprintf(cmp_name,"%s/%s",path,filename);
+        snprintf(cmp_name, sizeof(char)*(strlen(path)+strlen(filename)+2), "%s/%s",path,filename);
     }
 
     if( strcmp(cmd_name, "createfile") == 0 )
     {
-        strcpy(action,"createfile");
+        snprintf(action, 64, "%s", "createfile");
             del_action_item("copyfile",cmp_name,g_pSyncList[index]->copy_file_list);
     }
     else if( strcmp(cmd_name, "remove") == 0  || strcmp(cmd_name, "delete") == 0)
     {
-        strcpy(action,"remove");
+        snprintf(action, 64, "%s", "remove");
     }
     else if( strcmp(cmd_name, "createfolder") == 0 )
     {
-        strcpy(action,"createfolder");
+        snprintf(action, 64, "%s", "createfolder");
         del_action_item("copyfile",cmp_name,g_pSyncList[index]->copy_file_list);
     }
     else if( strncmp(cmd_name, "rename",6) == 0 )
     {
-        strcpy(action,"rename");
+        snprintf(action, 64, "%s", "rename");
     }
     else if( strncmp(cmd_name, "move",4) == 0 )
     {
-        strcpy(action,"move");
+        snprintf(action, 64, "%s", "move");
     }
 
     if(g_pSyncList[index]->server_action_list->next != NULL)
@@ -4445,30 +4229,17 @@ int cmd_parser(char *cmd,int index)
 
     if( strcmp(cmd_name, "createfile") == 0 || strcmp(cmd_name, "dragfile") == 0 )
     {
-        sprintf(fullname,"%s/%s",path,filename);
+        snprintf(fullname, sizeof(char)*(strlen(path)+strlen(filename)+2), "%s/%s",path,filename);
         int exist = is_server_exist(path,fullname,index);
         //2014.11.7 by sherry
-        //if(exist)
-//        if(exist==1)
-//        {
-//            char *temp = change_server_same_name(fullname,index);//名字要改成什么
-//            my_rename_(fullname,temp,index);//改名字
-//            free(temp);
-//            char *err_msg = write_error_message("server file %s is renamed to %s",fullname,temp);
-//            write_conflict_log(fullname,3,err_msg); //conflict
-//            free(err_msg);
-//        }
         if(exist==1)
         {
-//           if((newer_file(fullname,index,1)) != 2 && (newer_file(fullname,index,1)) != -1)
-//           {
                char *temp = change_server_same_name(fullname,index);//名字要改成什么
                my_rename_(fullname,temp,index);//改名字
                char *err_msg = write_error_message("server file %s is renamed to %s",fullname,temp);
                write_conflict_log(fullname,3,err_msg); //conflict
                free(err_msg);
               free(temp);
-//           }
 
         }
         status = upload(fullname,index);
@@ -4494,19 +4265,19 @@ int cmd_parser(char *cmd,int index)
     }
     else if( strcmp(cmd_name, "copyfile") == 0 )
     {
-        sprintf(fullname,"%s/%s",path,filename);
+        snprintf(fullname, sizeof(char)*(strlen(path)+strlen(filename)+2), "%s/%s",path,filename);
         add_action_item("copyfile",fullname,g_pSyncList[index]->copy_file_list);
         free(fullname);
     }
     else if( strncmp(cmd_name, "cancelcopy", 10) == 0)
     {
-            sprintf(fullname,"%s/%s",path,filename);
+        snprintf(fullname, sizeof(char)*(strlen(path)+strlen(filename)+2), "%s/%s",path,filename);
             del_action_item("copyfile",fullname,g_pSyncList[index]->copy_file_list);
             free(fullname);
     }
     else if( strcmp(cmd_name, "modify") == 0 )
     {
-        sprintf(fullname,"%s/%s",path,filename);
+        snprintf(fullname, sizeof(char)*(strlen(path)+strlen(filename)+2), "%s/%s",path,filename);
         char *serverpath = localpath_to_serverpath(fullname,index);
         int exist;
         DEBUG("%s %s\n",path,fullname);
@@ -4536,8 +4307,6 @@ int cmd_parser(char *cmd,int index)
         }
         else
         {
-            //mod_time *onefiletime;
-            //onefiletime = Getmodtime(serverpath,index);
             CloudFile *cloud_file = NULL;
             if(g_pSyncList[index]->init_completed)
                 cloud_file = get_CloudFile_node(g_pSyncList[index]->OldServerRootNode,serverpath,0x2);
@@ -4549,7 +4318,6 @@ int cmd_parser(char *cmd,int index)
                 {
                     char *temp = change_server_same_name(fullname,index);
                     my_rename_(fullname,temp,index);
-                    //free(temp);
                     status = upload(fullname,index);
                     if(status != 0)
                     {
@@ -4706,7 +4474,6 @@ int cmd_parser(char *cmd,int index)
                 {
                     char *temp = change_server_same_name(fullname,index);
                     my_rename_(fullname,temp,index);
-                    //free(temp);
                     status = upload(fullname,index);
                     if(status != 0)
                     {
@@ -4735,7 +4502,7 @@ int cmd_parser(char *cmd,int index)
     }
     else if(strcmp(cmd_name, "delete") == 0  || strcmp(cmd_name, "remove") == 0)
     {
-        sprintf(fullname,"%s/%s",path,filename);
+        snprintf(fullname, sizeof(char)*(strlen(path)+strlen(filename)+2), "%s/%s",path,filename);
         status = Delete(fullname,index);
         free(fullname);
         free(path);
@@ -4748,16 +4515,16 @@ int cmd_parser(char *cmd,int index)
 
             mv_newpath = my_str_malloc((size_t)(strlen(path)+strlen(oldname)+2));
             mv_oldpath = my_str_malloc((size_t)(strlen(oldpath)+strlen(oldname)+2));
-            sprintf(mv_newpath,"%s/%s",path,oldname);
-            sprintf(mv_oldpath,"%s/%s",oldpath,oldname);
+            snprintf(mv_newpath, sizeof(char)*(strlen(path)+strlen(oldname)+2), "%s/%s",path,oldname);
+            snprintf(mv_oldpath, sizeof(char)*(strlen(oldpath)+strlen(oldname)+2), "%s/%s",oldpath,oldname);
             free(oldpath);
         }
         else
         {
             mv_newpath = my_str_malloc((size_t)(strlen(path)+strlen(newname)+2));
             mv_oldpath = my_str_malloc((size_t)(strlen(path)+strlen(oldname)+2));
-            sprintf(mv_newpath,"%s/%s",path,newname);
-            sprintf(mv_oldpath,"%s/%s",path,oldname);
+            snprintf(mv_newpath, sizeof(char)*(strlen(path)+strlen(newname)+2), "%s/%s",path,newname);
+            snprintf(mv_oldpath, sizeof(char)*(strlen(path)+strlen(oldname)+2), "%s/%s",path,oldname);
         }
         if(strncmp(cmd_name,"rename",6) == 0)
         {
@@ -4765,67 +4532,14 @@ int cmd_parser(char *cmd,int index)
             int exist = is_server_exist(path,mv_newpath,index);
             if(!exist)
             {
-                //status = 0;
                 status = my_rename_(mv_oldpath,newname,index);
             }
-//            else
-//            {
-//                char *temp = change_server_same_name(mv_newpath,index);
-//                my_rename_(mv_newpath,temp,index);
-//                //free(temp);
-//                char *err_msg = write_error_message("server file %s is renamed to %s",fullname,temp);
-//                write_conflict_log(fullname,3,err_msg); //conflict
-//                free(err_msg);
-//                status = my_rename_(mv_oldpath,newname,index);
-//            }
         }
         else    //move
         {
             int exist = 0;
             int old_index;
             old_index = get_path_to_index(mv_oldpath);
-//            if(ftp_config.multrule[old_index]->rules == 1)
-//            {
-//                del_download_only_action_item("move",mv_oldpath,g_pSyncList[old_index]->download_only_socket_head);
-//            }
-//
-//            if(test_if_dir(mv_newpath))
-//            {
-//                exist = is_server_exist(path,mv_newpath,index);
-//                if(exist)
-//                {
-//                    char *newname = change_server_same_name(mv_newpath,index);
-//                    status = my_rename_(mv_newpath,newname,index);
-//                    //free(newname);
-//                    status = moveFolder(mv_oldpath,mv_newpath,index);
-//                }
-//                else
-//                {
-//                    status = moveFolder(mv_oldpath,mv_newpath,index);
-//                }
-//            }
-//            else
-//            {
-//                Delete(mv_oldpath,index);
-//                exist = is_server_exist(path,mv_newpath,index);
-//                if(exist)
-//                {
-//                    char *newname = change_server_same_name(mv_newpath,index);
-//                    status = my_rename_(mv_newpath,newname,index);
-//                }
-//                status = upload(mv_newpath,index);
-//                if(status == 0)
-//                {
-//                    char *serverpath = localpath_to_serverpath(mv_newpath,index);
-//                    mod_time *onefiletime = Getmodtime(serverpath,index);
-//                    free(serverpath);
-//                    if(ChangeFile_modtime(mv_newpath,onefiletime->modtime,index))
-//                    {
-//                        DEBUG("ChangeFile_modtime failed!\n");
-//                    }
-//                    free(onefiletime);
-//                }
-//            }
             if(index == old_index)
             {
                 if(test_if_dir(mv_newpath))
@@ -4982,40 +4696,25 @@ int cmd_parser(char *cmd,int index)
 
     else if(strcmp(cmd_name, "dragfolder") == 0)
     {
-        sprintf(fullname,"%s/%s",path,filename);
+        snprintf(fullname, sizeof(char)*(strlen(path)+strlen(filename)+2), "%s/%s",path,filename);
 
         char info[512];
         memset(info,0,sizeof(info));
-        sprintf(info,"createfolder%s%s%s%s","\n",path,"\n",filename);
+        snprintf(info, 512, "createfolder%s%s%s%s","\n",path,"\n",filename);
         pthread_mutex_lock(&mutex_socket);
         add_socket_item(info,index);
         pthread_mutex_unlock(&mutex_socket);
         status = deal_dragfolder_to_socketlist(fullname,index);
         free(fullname);
-//        int exist = is_server_exist(path,fullname,index);
-//        if(exist)
-//        {
-//            my_rename_(fullname,change_server_same_name(fullname,index),index);
-//        }
-//        status = createFolder(fullname,index);
-//        free(fullname);
-//        if(status != 0)
-//        {
-//            DEBUG("createFolder failed status = %d\n",status);
-//            free(path);
-//            return status;
-//        }
     }
 
     else if(strcmp(cmd_name, "createfolder") == 0)
     {
-        sprintf(fullname,"%s/%s",path,filename);
+        snprintf(fullname, sizeof(char)*(strlen(path)+strlen(filename)+2), "%s/%s",path,filename);
         int exist = is_server_exist(path,fullname,index);
         if(exist)
         {
             return 0;
-            //char *temp = change_server_same_name(fullname,index);
-            //my_rename_(fullname,temp,index);
         }
         status = my_mkdir_(fullname,index);
         free(fullname);
@@ -5056,12 +4755,8 @@ int download_only_add_socket_item(char *cmd,int index)
     char oldname[256],newname[256];
     char *oldpath = NULL;
     char action[64];
-    //char *cmp_name = NULL;
-    //char *mv_newpath;
-    //char *mv_oldpath;
     char *ch = NULL;
     char *old_fullname = NULL;
-    //int status;
 
     memset(cmd_name,'\0',sizeof(cmd_name));
     memset(oldname,'\0',sizeof(oldname));
@@ -5070,7 +4765,6 @@ int download_only_add_socket_item(char *cmd,int index)
 
     ch = cmd;
     int i = 0;
-    //while(*ch != '@')
     while(*ch != '\n')
     {
         i++;
@@ -5084,29 +4778,19 @@ int download_only_add_socket_item(char *cmd,int index)
     i++;
     temp = my_str_malloc((size_t)(strlen(ch)+1));
 
-    strcpy(temp,ch);
-    //p = strchr(temp,'@');
+    snprintf(temp, sizeof(char)*(strlen(ch)+1), "%s", ch);
     p = strchr(temp,'\n');
-
-    //DEBUG("temp = %s\n",temp);
-    //DEBUG("p = %s\n",p);
-    //DEBUG("strlen(temp)- strlen(p) = %d\n",strlen(temp)- strlen(p));
 
     path = my_str_malloc((size_t)(strlen(temp)- strlen(p)+1));
 
-    //DEBUG("path = %s\n",path);
-
     if(p!=NULL)
         snprintf(path,strlen(temp)- strlen(p)+1,"%s",temp);
-
-    //free(temp);
 
     p++;
     if(strncmp(cmd_name, "rename",6) == 0)
     {
         char *p1 = NULL;
 
-        //p1 = strchr(p,'@');
         p1 = strchr(p,'\n');
 
         if(p1 != NULL)
@@ -5114,13 +4798,12 @@ int download_only_add_socket_item(char *cmd,int index)
 
         p1++;
 
-        strcpy(newname,p1);
+        snprintf(newname, 256, "%s", p1);
     }
     else if(strncmp(cmd_name, "move",4) == 0)
     {
         char *p1 = NULL;
 
-        //p1 = strchr(p,'@');
         p1 = strchr(p,'\n');
 
         oldpath = my_str_malloc((size_t)(strlen(p)- strlen(p1)+1));
@@ -5130,14 +4813,13 @@ int download_only_add_socket_item(char *cmd,int index)
 
         p1++;
 
-        strcpy(oldname,p1);
+        snprintf(oldname, 256, "%s", p1);
 
         DEBUG("cmd_name: [%s],path: [%s],oldpath: [%s],oldname: [%s]\n",cmd_name,path,oldpath,oldname);
     }
     else
     {
-        strcpy(filename,p);
-        //fullname = my_str_malloc((size_t)(strlen(path)+strlen(filename)+2));
+        snprintf(filename, 256, "%s", p);
         DEBUG("cmd_name: [%s],path: [%s],filename: [%s]\n",cmd_name,path,filename);
     }
 
@@ -5147,23 +4829,23 @@ int download_only_add_socket_item(char *cmd,int index)
     {
         fullname = my_str_malloc((size_t)(strlen(path) + strlen(newname) + 2));
         old_fullname = my_str_malloc((size_t)(strlen(path) + strlen(oldname) + 2));
-        sprintf(fullname,"%s/%s",path,newname);
-        sprintf(old_fullname,"%s/%s",path,oldname);
+        snprintf(fullname, sizeof(char)*(strlen(path) + strlen(newname) + 2), "%s/%s",path,newname);
+        snprintf(old_fullname, sizeof(char)*(strlen(path) + strlen(oldname) + 2), "%s/%s",path,oldname);
         free(path);
     }
     else if( !strncmp(cmd_name,"move",strlen("move")) )
     {
         fullname = my_str_malloc((size_t)(strlen(path) + strlen(oldname) + 2));
         old_fullname = my_str_malloc((size_t)(strlen(oldpath) + strlen(oldname) + 2));
-        sprintf(fullname,"%s/%s",path,oldname);
-        sprintf(old_fullname,"%s/%s",oldpath,oldname);
+        snprintf(fullname, sizeof(char)*(strlen(path) + strlen(oldname) + 2), "%s/%s",path,oldname);
+        snprintf(old_fullname, sizeof(char)*(strlen(oldpath) + strlen(oldname) + 2), "%s/%s",oldpath,oldname);
         free(oldpath);
         free(path);
     }
     else
     {
         fullname = my_str_malloc((size_t)(strlen(path) + strlen(filename) + 2));
-        sprintf(fullname,"%s/%s",path,filename);
+        snprintf(fullname, sizeof(char)*(strlen(path) + strlen(filename) + 2), "%s/%s",path,filename);
         free(path);
     }
 
@@ -5174,37 +4856,35 @@ int download_only_add_socket_item(char *cmd,int index)
     }
     if( !strncmp(cmd_name, "cancelcopy", 10))
     {
-            //sprintf(fullname,"%s/%s",path,filename);
             del_action_item("copyfile",fullname,g_pSyncList[index]->copy_file_list);
             free(fullname);
             return 0;
     }
     if( strcmp(cmd_name, "createfile") == 0 )
     {
-                strcpy(action,"createfile");
+        snprintf(action, 64, "%s", "createfile");
             del_action_item("copyfile",fullname,g_pSyncList[index]->copy_file_list);
     }
     else if( strcmp(cmd_name, "remove") == 0  || strcmp(cmd_name, "delete") == 0)
     {
-        strcpy(action,"remove");
+        snprintf(action, 64, "%s", "remove");
         del_download_only_action_item(action,fullname,g_pSyncList[index]->download_only_socket_head);
     }
     else if( strcmp(cmd_name, "createfolder") == 0 )
     {
-        strcpy(action,"createfolder");
+        snprintf(action, 64, "%s", "createfolder");
         del_action_item("copyfile",fullname,g_pSyncList[index]->copy_file_list);
     }
     else if( strncmp(cmd_name, "rename",6) == 0 )
     {
-        strcpy(action,"rename");
+        snprintf(action, 64, "%s", "rename");
         del_download_only_action_item(action,old_fullname,g_pSyncList[index]->download_only_socket_head);
         free(old_fullname);
     }
     else if( strncmp(cmd_name, "move",4) == 0 )
     {
-        strcpy(action,"move");
+        snprintf(action, 64, "%s", "move");
         del_download_only_action_item(action,old_fullname,g_pSyncList[index]->download_only_socket_head);
-        //free(old_fullname);
     }
 
     if(g_pSyncList[index]->server_action_list->next != NULL)
@@ -5216,7 +4896,6 @@ int download_only_add_socket_item(char *cmd,int index)
         if(item != NULL)
         {
             DEBUG("##### %s %s by FTP Server self ######\n",action,fullname);
-            //pthread_mutex_lock(&mutex);
             del_action_item(action,fullname,g_pSyncList[index]->server_action_list);
             free(fullname);
             return 0;
@@ -5306,8 +4985,6 @@ int download_only_add_socket_item(char *cmd,int index)
 
 int is_server_modify(Server_TreeNode *newNode,Server_TreeNode *oldNode)
 {
-
-    //DEBUG("########is_server_modify\n");
     if(newNode->browse == NULL && oldNode->browse == NULL)
     {
         DEBUG("########Server is no modify1\n");
@@ -5377,32 +5054,18 @@ int is_server_modify(Server_TreeNode *newNode,Server_TreeNode *oldNode)
         }
 
     }
-    //DEBUG("########is_server_modify over\n");
     return 1;
 }
 
 int check_serverlist_modify(int index,Server_TreeNode *newnode)
 {
     int ret;
-    //DEBUG("############check_serverlist_modify %s\n",newnode->parenthref);
     Server_TreeNode *oldnode;
     oldnode = getoldnode(g_pSyncList[index]->OldServerRootNode->Child,newnode->parenthref);
 
-//    if(newnode == NULL)
-//    {
-//        DEBUG("newnode is NULL\n");
-//    }
-
-//    if(oldnode == NULL)
-//    {
-//        DEBUG("oldnode is NULL\n");
-//    }
-
     if(newnode != NULL && oldnode != NULL)
     {
-
         ret = is_server_modify(newnode,oldnode);
-        //return ret;
     }
     else if(newnode == NULL)
     {
@@ -5427,7 +5090,6 @@ void *Socket_Parser(void *argc)
     DEBUG("Socket_Parser:%u\n",pthread_self());//获取线程号
     Node *socket_execute;
     int status = 0;
-    //int mysync = 1;
     int has_socket = 0;
     int i;
     struct timeval now;
@@ -5436,11 +5098,7 @@ void *Socket_Parser(void *argc)
 
     while(!exit_loop)
     {
-#ifdef _PC
-        //check_link_internet();
-#else
         check_link_internet();
-#endif
         for(i = 0;i<ftp_config.dir_num;i++)
         {
                 fail_flag = 0;
@@ -5483,8 +5141,6 @@ void *Socket_Parser(void *argc)
                 else if(flag == 0)//curl_ok (All fine. Proceed as usual)
                 {
                     DEBUG("curl_OK\n");
-                        //write_log(S_ERROR,"remote root path lost OR write only.","",ftp_config.multrule[i]->rules);
-                        //continue;
                 }
 
 
@@ -5518,7 +5174,6 @@ void *Socket_Parser(void *argc)
                                 DEBUG("######## socket item fail########\n");
                                 break;
                             }
-                            //sleep(2);
                             usleep(1000*20);
                         }
                         while(g_pSyncList[i]->SocketActionList->next != NULL)
@@ -5541,7 +5196,6 @@ void *Socket_Parser(void *argc)
                                 DEBUG("######## socket item fail########\n");
                                 break;
                             }
-                            //sleep(2);
                             usleep(1000*20);
 
                             if(g_pSyncList[i]->SocketActionList_Rename->next != NULL)
@@ -5591,10 +5245,6 @@ void *Socket_Parser(void *argc)
                         {
                             has_socket = 1;
                             socket_execute = g_pSyncList[i]->SocketActionList_Rename->next;
-                            //socket_execute->cmdName=rename0
-                            //                   /tmp/mnt/SNK/sync
-                            //                   未命名文件夹
-                            //                    aa
                             status = cmd_parser(socket_execute->cmdName,i);
                             if(status == 0 || status == LOCAL_FILE_LOST)
                             {
@@ -5609,15 +5259,12 @@ void *Socket_Parser(void *argc)
                                 DEBUG("######## socket item fail########\n");
                                 break;
                             }
-                            //pthread_mutex_unlock(&mutex_socket);
-                            //sleep(2);
                             usleep(1000*20);
                         }
                         while(g_pSyncList[i]->SocketActionList->next != NULL && exit_loop == 0)
                         {
                             has_socket = 1;
                             socket_execute = g_pSyncList[i]->SocketActionList->next;
-                            //pthread_mutex_lock(&mutex_socket);
                             status = cmd_parser(socket_execute->cmdName,i);
                             DEBUG("status:%d\n",status);
                             if(status == 0 || status == LOCAL_FILE_LOST || status==SERVER_SPACE_NOT_ENOUGH || status == CURLE_READ_ERROR || status == CURLE_ABORTED_BY_CALLBACK)
@@ -5637,8 +5284,6 @@ void *Socket_Parser(void *argc)
                                 DEBUG("######## socket item fail########\n");
                                 break;
                             }
-                            //pthread_mutex_unlock(&mutex_socket);
-                            //sleep(2);
                             usleep(1000*20);
 
                             if(g_pSyncList[i]->SocketActionList_Rename->next != NULL)
@@ -5648,8 +5293,6 @@ void *Socket_Parser(void *argc)
 
                     if(fail_flag)
                         break;
-
-                    //show_item(g_pSyncList[i]->copy_file_list);
                     if(g_pSyncList[i]->copy_file_list->next == NULL)
                     {
                         break;
@@ -5661,17 +5304,14 @@ void *Socket_Parser(void *argc)
                 }
                 if(g_pSyncList[i]->dragfolder_action_list->next != NULL && g_pSyncList[i]->SocketActionList->next == NULL)
                 {
-                    //DEBUG("################################################ dragfolder_action_list!\n");
                     free_action_item(g_pSyncList[i]->dragfolder_action_list);
                     g_pSyncList[i]->dragfolder_action_list = create_action_item_head();
                 }
                 if(g_pSyncList[i]->server_action_list->next != NULL && g_pSyncList[i]->SocketActionList->next == NULL)
                 {
-                    //DEBUG("################################################ clear server_action_list!\n");
                     free_action_item(g_pSyncList[i]->server_action_list);
                     g_pSyncList[i]->server_action_list = create_action_item_head();
                 }
-                //DEBUG("#### clear server_action_list success!\n");
                 pthread_mutex_lock(&mutex_receve_socket);
                 if(g_pSyncList[i]->SocketActionList->next == NULL)
                     g_pSyncList[i]->receve_socket = 0;
@@ -5688,10 +5328,8 @@ void *Socket_Parser(void *argc)
             pthread_cond_timedwait(&cond_socket, &mutex_socket, &outtime);
         }
         pthread_mutex_unlock(&mutex_socket);
-        //DEBUG("set local_sync %d!\n",local_sync);
     }
 
-    //DEBUG("stop FTP Socket_Parser\n");
     stop_down = 1;
     return NULL;
 }
@@ -5701,9 +5339,6 @@ int send_action(int type, char *content,int port)
     int sockfd, numbytes;
     char buf[MAXDATASIZE];
     char str[1024];
-    //int port;
-    //if(type == 1)
-    //port = INOTIFY_PORT;//3678
 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {             //创建socket套接字
         perror("socket");
@@ -5715,7 +5350,6 @@ int send_action(int type, char *content,int port)
     their_addr.sin_family = AF_INET; /* host byte order */
     their_addr.sin_port = htons(port); /* short, network byte order */
     their_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    //their_addr.sin_addr.s_addr = ((struct in_addr *)(he->h_addr))->s_addr;
     bzero(&(their_addr.sin_zero), sizeof(their_addr.sin_zero)); /* zero the rest of the struct */
 
     if (connect(sockfd, (struct sockaddr *)&their_addr,sizeof(struct sockaddr)) == -1) {
@@ -5725,27 +5359,19 @@ int send_action(int type, char *content,int port)
 
     if(port == 80)
     {
-        sprintf(str,"%s",content);
+        snprintf(str, 1024, "%s",content);
         DEBUG("to 80 port:%s\n",str);
     }
     else
     {
-        sprintf(str,"%d@%s",type,content);
+        snprintf(str, 1024, "%d@%s",type,content);
     }
 
     if (send(sockfd, str, strlen(str), 0) == -1) {
         perror("send");
-        //exit(1);
         return -1;
     }
 
-//    if ((numbytes=recv(sockfd, buf, MAXDATASIZE, 0)) == -1) {
-//        perror("recv");
-//        //exit(1);
-//        return -1;
-//    }
-
-    //buf[numbytes] = '\0';
     close(sockfd);
     DEBUG("send_action finished!\n");
     return 0;
@@ -5779,26 +5405,17 @@ void read_config()
         exit(-1);
     }
 #else
-#ifdef _PC
-//    if(create_ftp_conf_file(&ftp_config) == -1)
-//    {
-//        DEBUG("create_ftp_conf_file fail\n");
-//        exit(-1);
-//    }
-#else
     if(create_ftp_conf_file(&ftp_config) == -1)
     {
         DEBUG("create_ftp_conf_file fail\n");
         exit(-1);
     }
 #endif
-#endif
     DEBUG("#####read_config#####\n");
     parse_config(CONFIG_PATH,&ftp_config);
 #ifdef _PC
     ftp_config.dir_num = 1;
 #else
-    //exit(-1);
     if(ftp_config.dir_num == 0)
     {
         no_config = 1;
@@ -5809,8 +5426,6 @@ void read_config()
     {
         sleep(1);
     }
-
-    //if(!no_config && browse_sev == -1)
     if(!no_config)
     {
         exit_loop = 0;
@@ -5872,15 +5487,13 @@ void init_global_var()
         g_pSyncList[i]->SocketActionList->cmdName = NULL;
         g_pSyncList[i]->SocketActionList->next = NULL;
 
-        sprintf(g_pSyncList[i]->temp_path,"%s/.smartsync/ftpclient",ftp_config.multrule[i]->mount_path);
+        snprintf(g_pSyncList[i]->temp_path, MAX_LENGTH, "%s/.smartsync/ftpclient",ftp_config.multrule[i]->mount_path);
         my_mkdir_r(g_pSyncList[i]->temp_path,i);
 
         char *base_path_tmp = my_str_malloc(sizeof(ftp_config.multrule[i]->base_path));
-        sprintf(base_path_tmp,"%s",ftp_config.multrule[i]->base_path);
+        snprintf(base_path_tmp, sizeof(ftp_config.multrule[i]->base_path), "%s",ftp_config.multrule[i]->base_path);
         replace_char_in_str(base_path_tmp,'_','/');
         snprintf(g_pSyncList[i]->up_item_file,255,"%s/%s_up_item",g_pSyncList[i]->temp_path,base_path_tmp);
-        //snprintf(g_pSyncList[i]->conflict_item,255,"%s/conflict_%s",
-                 //g_pSyncList[i]->temp_path,ftp_config.multrule[i]->base_folder + 1);
         free(base_path_tmp);
 
         g_pSyncList[i]->SocketActionList_Rename = new Node;
@@ -5902,7 +5515,6 @@ void init_global_var()
         {
             DEBUG("tokenfile_info_tmp->mountpath = %s\n",tokenfile_info_tmp->mountpath);
             DEBUG("ftp_config.multrule[i]->mount_path = %s\n",ftp_config.multrule[i]->mount_path);
-            //if(!strcmp(tokenfile_info_tmp->mountpath,ftp_config.multrule[i]->mount_path) && browse_sev == -1)
             if(!strcmp(tokenfile_info_tmp->mountpath,ftp_config.multrule[i]->mount_path))
             {
                 g_pSyncList[i]->sync_disk_exist = 1;
@@ -6028,7 +5640,6 @@ int sync_local_to_server_init(Local *perform_lo,int index)
             if(ret == 0)
             {
                 char *serverpath = localpath_to_serverpath(localfiletmp->path,index);
-                //DEBUG("serverpath = %s\n",serverpath);
                 mod_time *onefiletime = Getmodtime(serverpath,index);
                 if(ChangeFile_modtime(localfiletmp->path,onefiletime->modtime,index))
                 {
@@ -6141,12 +5752,6 @@ int sync_local_to_server(char *path,int index)
 
 int sync_server_to_local_init(Browse *perform_br,Local *perform_lo,int index)
 {
-//    struct stat info1;
-//    if(stat(perform_lo->filelist->next->path,&info1) == -1)
-//        return LOCAL_FILE_LOST;//902
-//    DEBUG("$$$CURLOPT_INFILESIZE= %u\n",info1.st_size);
-//    DEBUG("$$$CURLOPT_INFILESIZE= %d\n",info1.st_size);
-
     if(perform_br == NULL || perform_lo == NULL)
     {
         return 0;
@@ -6179,17 +5784,10 @@ int sync_server_to_local_init(Browse *perform_br,Local *perform_lo,int index)
                 }
 
                 add_action_item("createfile",localfiletmp->path,g_pSyncList[index]->server_action_list);
-
-//                struct stat info1;
-//                if(stat(localfiletmp->path,&info1) == -1)
-//                    return LOCAL_FILE_LOST;//902
-//                DEBUG("$$$CURLOPT_INFILESIZE=%u\n",info1.st_size);
-
                 ret = upload(localfiletmp->path,index);
                 if(ret == 0)
                 {
                     char *serverpath = localpath_to_serverpath(localfiletmp->path,index);
-                    //DEBUG("serverpath = %s\n",serverpath);
                     mod_time *onefiletime = Getmodtime(serverpath,index);
                     free(serverpath);
                     if(ChangeFile_modtime(localfiletmp->path,onefiletime->modtime,index))
@@ -6200,7 +5798,6 @@ int sync_server_to_local_init(Browse *perform_br,Local *perform_lo,int index)
                 }
                 else
                 {
-                    //DEBUG("upload failed!\n");
                     return ret;
                 }
             }
@@ -6238,12 +5835,9 @@ int sync_server_to_local_init(Browse *perform_br,Local *perform_lo,int index)
                     char *localpath = serverpath_to_localpath(filetmp->href,index);
                     add_action_item("createfile",localpath,g_pSyncList[index]->server_action_list);
 
-                    //wait_handle_socket(index);
-
                     ret = download_(filetmp->href,index);
                     if (ret == 0)
                     {
-                        //ChangeFile_modtime(localpath,filetmp->modtime);
                         mod_time *onefiletime = Getmodtime(filetmp->href,index);
                         if(ChangeFile_modtime(localpath,onefiletime->modtime,index))
                         {
@@ -6344,7 +5938,6 @@ int sync_server_to_local_init(Browse *perform_br,Local *perform_lo,int index)
             int cmp = 1;
             char *serverpathtmp;
             serverpathtmp = strstr(filetmp->href,ftp_config.multrule[index]->rooturl) + strlen(ftp_config.multrule[index]->rooturl);
-            //serverpathtmp = oauth_url_unescape(serverpathtmp,NULL);
             while(localfiletmp != NULL)
             {
                 char *localpathtmp;
@@ -6394,7 +5987,6 @@ int sync_server_to_local_init(Browse *perform_br,Local *perform_lo,int index)
                         else
                         {
                             free(localpath);
-                            //free(serverpathtmp);
                             return ret;
                         }
                     }
@@ -6405,7 +5997,6 @@ int sync_server_to_local_init(Browse *perform_br,Local *perform_lo,int index)
                     }
                 }
             }
-            //free(serverpathtmp);
             filetmp = filetmp->next;
             localfiletmp = perform_lo->filelist->next;
         }
@@ -6479,14 +6070,12 @@ int sync_server_to_local_init(Browse *perform_br,Local *perform_lo,int index)
                 DEBUG("%s\t%s\n",localpathtmp,serverpathtmp);
                 if ((cmp = strcmp(localpathtmp,serverpathtmp)) == 0)
                 {
-                    //free(serverpathtmp);
                     break;
                 }
                 else
                 {
                     foldertmp = foldertmp->next;
                 }
-                //free(serverpathtmp);
             }
             if (cmp != 0)
             {
@@ -6555,7 +6144,6 @@ int sync_server_to_local_init(Browse *perform_br,Local *perform_lo,int index)
                     free(localpath);
                 }
             }
-            //free(serverpathtmp);
             foldertmp = foldertmp->next;
             localfoldertmp = perform_lo->folderlist->next;
         }
@@ -6564,9 +6152,11 @@ int sync_server_to_local_init(Browse *perform_br,Local *perform_lo,int index)
     return ret;
 }
 
-int parseCloudInfo_one(char *parentherf,int index)
+int parseCloudInfo_one(char *parentherf,CloudFile * FileTail_one,int index)
 {
     FILE *fp;
+    CloudFile *FolderTmp_one;
+
     fp = fopen(LIST_ONE_DIR,"r");
     char tmp[512]={0};
     char buf[512]={0};
@@ -6578,9 +6168,8 @@ int parseCloudInfo_one(char *parentherf,int index)
     {
         int fail = 0;
         DEBUG("%s\n",buf);
-        FolderTmp_one=(CloudFile *)malloc(sizeof(struct node));
-        //memset(FolderTmp_one,0,sizeof(FolderTmp_one));
-        memset(FolderTmp_one,0,sizeof(struct node));//2014.10.28 by sherry sizeof(指针)=4
+        FolderTmp_one=(CloudFile *)malloc(sizeof(CloudFile));
+        memset(FolderTmp_one,0,sizeof(CloudFile));
         p=strtok(buf,split);
         int i=0;
         while(p != NULL && i <= 8)
@@ -6588,33 +6177,24 @@ int parseCloudInfo_one(char *parentherf,int index)
             switch(i)
             {
             case 0:
-                strcpy(tmp,p);
-                //strcpy(FolderTmp_one->auth,p);
+                snprintf(tmp, 512, "%s", p);
                 FolderTmp_one->isfile=is_file(tmp);
                 break;
             case 4:
                 FolderTmp_one->size=atoll(p);
                 break;
             case 5:
-                //strcpy(FolderTmp_one->month,p);
                 break;
             case 6:
-                //strcpy(FolderTmp_one->day,p);
                 break;
             case 7:
-                //strcpy(FolderTmp_one->lastmodifytime,p);
                 break;
             case 8:
-//                if(p == NULL || !strcmp(p,".") || !strcmp(p,".."))
-//                {
-//                    DEBUG("free iterm\n");
-//                    fail = 1;
-//                }
                 str = (char*)malloc(sizeof(char)*(strlen(p) + 1));
-                strcpy(str,p);
+                snprintf(str, sizeof(char)*(strlen(p) + 1), "%s", p);
                 temp = to_utf8(str,index);
                 free(str);
-                strcpy(FolderTmp_one->filename,temp);
+                snprintf(FolderTmp_one->filename, MAX_CONTENT, "%s", temp);
                 break;
             default:
                 break;
@@ -6627,26 +6207,20 @@ int parseCloudInfo_one(char *parentherf,int index)
         }
         free(temp);
         FolderTmp_one->href = (char *)malloc(sizeof(char)*(strlen(parentherf)+1+1+strlen(FolderTmp_one->filename)));
-        //memset(FolderTmp_one->href,'\0',sizeof(FolderTmp_one->href));//2014.10.28 by sherry sizeof(指针)=4
+        //2014.10.28 by sherry sizeof(指针)=4
         memset(FolderTmp_one->href,'\0',sizeof(char)*(strlen(parentherf)+1+1+strlen(FolderTmp_one->filename)));
         if(strcmp(parentherf," ")==0){
-            sprintf(FolderTmp_one->href,"%s",FolderTmp_one->filename);
+            snprintf(FolderTmp_one->href, sizeof(char)*(strlen(parentherf)+1+1+strlen(FolderTmp_one->filename)), "%s",FolderTmp_one->filename);
         }
         else{
-            sprintf(FolderTmp_one->href,"%s/%s",parentherf,FolderTmp_one->filename);
+            snprintf(FolderTmp_one->href, sizeof(char)*(strlen(parentherf)+1+1+strlen(FolderTmp_one->filename)), "%s/%s",parentherf,FolderTmp_one->filename);
         }
-        //if(!fail)
-        //{
             FileTail_one->next = FolderTmp_one;
             FileTail_one = FolderTmp_one;
             FileTail_one->next = NULL;
-        //}
-        //else
-        //{
-            //free_CloudFile_item(FolderTmp_one);
-        //}
     }
     fclose(fp);
+    return 0;
 }
 
 /*
@@ -6656,6 +6230,8 @@ int parseCloudInfo_one(char *parentherf,int index)
 int is_server_exist(char *parentpath,char *filepath,int index)
 {
     DEBUG("####################is_server_exist...###############\n");
+    CloudFile *FileList_one;
+    CloudFile *FileTail_one;
     char *url = NULL;
     char *file_url = NULL;
     int status;
@@ -6668,26 +6244,11 @@ int is_server_exist(char *parentpath,char *filepath,int index)
 
     //2014.09.18 by sherry
     //未考虑深层目录的情况，出现指针乱指的现象
-//    if(!strcmp(parentpath,ftp_config.multrule[index]->hardware))
-//    {// 如果传进的值就是hardware，那么走这里面的。
-
-//        url = (char *)malloc(sizeof(char)*((strlen(parentpath) + 1)));
-//        sprintf(url,"%s",parentpath);
-//    }
-//    else
-//    {
-//        char *p = parentpath;
-//        p = p + ftp_config.multrule[index]->base_path_len;
-//        url = (char *)malloc(sizeof(char)*((strlen(ftp_config.multrule[index]->rooturl)+strlen(p) + 1)));
-//        sprintf(url,"%s%s",ftp_config.multrule[index]->rooturl,p);
-
-//    }
-
     if(!strcmp(parentpath,ftp_config.multrule[index]->hardware))
     {// 如果传进的值就是hardware，那么走这里面的。
 
         url = (char *)malloc(sizeof(char)*((strlen(parentpath) + 1)));
-        sprintf(url,"%s",parentpath);
+        snprintf(url, sizeof(char)*((strlen(parentpath) + 1)), "%s",parentpath);
     }
     else
     {
@@ -6695,7 +6256,7 @@ int is_server_exist(char *parentpath,char *filepath,int index)
         {
             url = (char *)malloc(sizeof(char)*((strlen(ftp_config.multrule[index]->rooturl) + 1)));
             memset(url,0,sizeof(char)*((strlen(ftp_config.multrule[index]->rooturl) + 1)));
-            sprintf(url,"%s",ftp_config.multrule[index]->rooturl);
+            snprintf(url, sizeof(char)*((strlen(ftp_config.multrule[index]->rooturl) + 1)), "%s",ftp_config.multrule[index]->rooturl);
 
         }
         else
@@ -6704,17 +6265,17 @@ int is_server_exist(char *parentpath,char *filepath,int index)
             p = p + ftp_config.multrule[index]->base_path_len;
             url = (char *)malloc(sizeof(char)*((strlen(ftp_config.multrule[index]->rooturl)+strlen(p) + 1)));
             memset(url,0,sizeof(char)*((strlen(ftp_config.multrule[index]->rooturl)+strlen(p) + 1)));//2014.10.28,by sherry 未初始化
-            sprintf(url,"%s%s",ftp_config.multrule[index]->rooturl,p);
+            snprintf(url, sizeof(char)*((strlen(ftp_config.multrule[index]->rooturl)+strlen(p) + 1)), "%s%s",ftp_config.multrule[index]->rooturl,p);
 
         }
     }
 
     do
     {
-        status = getCloudInfo_one(url,parseCloudInfo_one,index);
+        status = getCloudInfo_one(url,parseCloudInfo_one,FileTail_one,index);
 
     }while(status == CURLE_COULDNT_CONNECT||status==CURLE_OPERATION_TIMEDOUT && exit_loop == 0);
-    //while(status == CURLE_COULDNT_CONNECT && exit_loop == 0); //2014.11.07 by sherry
+ //2014.11.07 by sherry
 
     if(status != 0)
     {
@@ -6722,8 +6283,7 @@ int is_server_exist(char *parentpath,char *filepath,int index)
         free_CloudFile_item(FileList_one);
         FileList_one = NULL;
         DEBUG("get Cloud Info One ERROR! \n");
-        //2014.11.07 by sherry
-        //return status;
+        //2014.11.07 by sherry return status;
         return 0;
     }
 
@@ -6734,9 +6294,8 @@ int is_server_exist(char *parentpath,char *filepath,int index)
     q = q + strlen(parentpath);
     file_url = (char*)malloc(sizeof(char)*(strlen(url) + strlen(q) + 1));
     memset(file_url,'\0',sizeof(char)*(strlen(url) + strlen(q) + 1));
-    sprintf(file_url,"%s%s",url,q);
+    snprintf(file_url, sizeof(char)*(strlen(url) + strlen(q) + 1), "%s%s",url,q);
     DEBUG("file_url:%s\n",file_url);
-    //DEBUG("filepath:%s\n",filepath);
     while(de_filecurrent != NULL)
     {
         if(de_filecurrent->href != NULL)
@@ -6775,8 +6334,6 @@ int check_disk_change()
     if(status == 2 || status == 1)
     {
         exit_loop = 1;
-        //sync_up = 0;
-        //sync_down = 0;
         sync_disk_removed = 1;
     }
     return 0;
@@ -6815,12 +6372,9 @@ void sig_handler (int signum)
         DEBUG("mountflag = %d\n",mountflag);
         if(signum == SIGTERM || mountflag == 0)
         {
-            //sync_up = 0;
-            //sync_down = 0;
             stop_progress = 1;
-            //write_to_lock(stop_progress);
             exit_loop = 1;
-
+            set_iptables(0);
 #ifndef NVRAM_
             system("sh /tmp/smartsync/ftpclient/script/ftpclient_get_nvram");
             sleep(2);
@@ -6842,7 +6396,7 @@ void sig_handler (int signum)
                 char *filename;
                 del_acount = 0;
                 filename = my_str_malloc(strlen(ftp_config.multrule[0]->mount_path) + 21 + 1);
-                sprintf(filename,"%s/.ftpclient_tokenfile",ftp_config.multrule[0]->mount_path);
+                snprintf(filename, sizeof(char)*(strlen(ftp_config.multrule[0]->mount_path) + 21 + 1), "%s/.ftpclient_tokenfile",ftp_config.multrule[0]->mount_path);
                 remove(filename);
                 free(filename);
 #ifdef NVRAM_
@@ -6858,7 +6412,6 @@ void sig_handler (int signum)
                     DEBUG("ftp_config_stop.dir_num = %d\n",ftp_config_stop.dir_num);
                     DEBUG("ftp_config.dir_num = %d\n",ftp_config.dir_num);
                     parse_config(CONFIG_PATH,&ftp_config_stop);
-                    //verify(ftp_config_stop);
                     rewrite_tokenfile_and_nv();
                 }
             }
@@ -6869,9 +6422,7 @@ void sig_handler (int signum)
         }
         else
         {
-            //pthread_mutex_lock(&mutex_checkdisk);
             disk_change = 1;
-            //pthread_mutex_unlock(&mutex_checkdisk);
             sighandler_finished = 1;
         }
         break;
@@ -6914,18 +6465,13 @@ void* sigmgr_thread(void *argc)
 
 long long stat_file(const char *filename)
 {
-    //unsigned long size;
     struct stat filestat;
     if( stat(filename,&filestat) == -1)
     {
         perror("stat:");
         return -1;
-        //exit(1);
     }
     return  filestat.st_size;
-
-    //return size;
-
 }
 
 void handle_quit_upload()//同一帐号，继续上传未上传完的文件
@@ -6958,15 +6504,8 @@ void handle_quit_upload()//同一帐号，继续上传未上传完的文件
                     write_log(S_ERROR,"Permission Denied.","",ftp_config.multrule[i]->rules);
                     continue;
             }
-            else if(flag == 0)
-            {
-                    //write_log(S_ERROR,"remote root path lost OR write only.","",ftp_config.multrule[i]->rules);
-                    //continue;
-            }
-//#ifndef NVRAM_
         if(g_pSyncList[i]->sync_disk_exist == 0)
             continue;
-//#endif
         if(ftp_config.multrule[i]->rules != 1)//不是两条规则时
         {
             FILE *fp;
@@ -6994,10 +6533,6 @@ void handle_quit_upload()//同一帐号，继续上传未上传完的文件
                 DEBUG("buf:%s\n",buf);
                 unlink(g_pSyncList[i]->up_item_file);
 
-                //filepath = my_str_malloc((size_t)(filesize + ftp_config.multrule[i]->base_path_len + strlen(buf) + 1));
-                //sprintf(filepath,"%s%s",ftp_config.multrule[i]->base_path,buf);
-                //free(buf);
-                //DEBUG("buf:%s\n",buf);
                 Delete(buf,i);
                 status = upload(buf,i);
 
@@ -7036,7 +6571,6 @@ int initialization()
                 break;
             if(disk_change)
             {
-                //disk_change = 0;
                 check_disk_change();
             }
 
@@ -7062,11 +6596,6 @@ int initialization()
                     write_log(S_ERROR,"Permission Denied.","",ftp_config.multrule[i]->rules);
                     continue;
             }
-            else if(flag == 0)
-            {
-                    //write_log(S_ERROR,"remote root path lost OR write only.","",ftp_config.multrule[i]->rules);
-                    //continue;
-            }
 
         if(g_pSyncList[i]->sync_disk_exist == 0)
         {
@@ -7079,10 +6608,6 @@ int initialization()
 
         //2104.11.04 by sherry server权限不足,error,finish,initial三种状态交替
         write_log(S_INITIAL,"","",i);
-//        if(!g_pSyncList[i]->IsPermission && !exit_loop)//有权限
-//        {
-//            write_log(S_INITIAL,"","",i);
-//        }
         ret = 1;
         DEBUG("it is %d init \n",i);
 
@@ -7152,7 +6677,9 @@ int initialization()
         }
         if(ret == 0)
         {
-            write_log(S_SYNC,"","",i);
+            if(!error_flag)
+                write_log(S_SYNC,"","",i);
+            error_flag = 0;
         }
     }
     return ret;
@@ -7160,11 +6687,14 @@ int initialization()
 
 void run()
 {
-    //init_global_var();
     send_to_inotify();
     handle_quit_upload();//处理上次上传中断的动作（估计是U盘拔掉啥的,程序挂掉）
 
     int create_thid1 = 0;
+
+    if(set_iptables(1))
+        exit(-1);
+
     if(exit_loop == 0)
     {
         if(pthread_create(&newthid1,NULL,Save_Socket,NULL) != 0)
@@ -7177,7 +6707,6 @@ void run()
     }
 
     int create_thid2 = 0;
-    //if(exit_loop == 0 && browse_sev == -1)
     if(exit_loop == 0)
     {
         if(pthread_create(&newthid2,NULL,Socket_Parser,NULL) != 0)
@@ -7188,14 +6717,10 @@ void run()
         usleep(1000*500);
         create_thid2 = 1;
     }
-    //DEBUG("!!!!!!!!!!!!! start initialization()\n");
-   //by
-    initialization();
-   // DEBUG("!!!!!!!!!!!!! end initialization()\n");
-    int create_thid3 = 0;
-    //if(exit_loop == 0 && browse_sev == -1)
 
-//by
+    initialization();
+    int create_thid3 = 0;
+
     if(exit_loop == 0)
     {
         if(pthread_create(&newthid3,NULL,SyncServer,NULL) != 0)
@@ -7203,7 +6728,6 @@ void run()
             DEBUG("thread creation failed!\n");
             exit(1);
         }
-        //usleep(1000*500);
         create_thid3 = 1;
     }
 
@@ -7226,7 +6750,6 @@ void run()
     }
 
     usleep(1000);
-    //clean_up();
 
     if(stop_progress != 1)
     {
@@ -7261,8 +6784,6 @@ void run()
 
 void stop_process_clean_up()
 {
-    //unlink("/tmp/smartsync_app/ftpclient_start");
-
     unlink("/tmp/notify/usb/ftp_client");
     pthread_cond_destroy(&cond);
     pthread_cond_destroy(&cond_socket);
@@ -7270,88 +6791,15 @@ void stop_process_clean_up()
     unlink(LOG_DIR);
 }
 
-//int create_xml(int status)
-//{
-//    char buf1[512] = {0};
-//    char buf2[512] = {0};
-//    char LOG[512] = {0};
-//
-//    FILE *stream = fopen(SERVERLIST_TD,"a");
-//    if(!access(SERVERLIST_LOG,F_OK))
-//    {
-//        FILE *my_fp = fopen(SERVERLIST_LOG,"r");
-//        if(fgets(LOG,sizeof(LOG),my_fp) != NULL)
-//        {
-//            if(LOG[ strlen(LOG)-1 ] == '\n')
-//                LOG[ strlen(LOG)-1 ] = '\0';
-//        }
-//        fprintf(stream,"<root stat=\"%s\"></root>",LOG);
-//        fclose(stream);
-//        rename(SERVERLIST_TD,SERVERLIST_XML);
-//        return 0;
-//    }
-////    if(status == -1)
-////    {
-////        fprintf(stream,"<root stat=\"Error\"></root>");
-////        fclose(stream);
-////        rename(SERVERLIST_TD,SERVERLIST_XML);
-////        return 0;
-////    }
-//    FILE *fp1 = fopen(SERVERLIST_1,"r");
-//    fprintf(stream,"<root stat=\"OK\">");
-//    while(fgets(buf1,sizeof(buf1),fp1) != NULL)
-//    {
-//        if(buf1[ strlen(buf1)-1 ] == '\n')
-//            buf1[ strlen(buf1)-1 ] = '\0';
-//        char *temp1 = (char*)malloc(sizeof(char)*(strlen(buf1) + 1));
-//        memset(temp1,'\0',sizeof(char)*(strlen(buf1) + 1));
-//        sprintf(temp1,"%s",buf1);
-//        char *p = temp1 + strlen(temp1) - 1;
-//        int i = 0;
-//        while(p[0] != '/' && i < (strlen(temp1)-1))
-//        {
-//            i++;
-//            p--;
-//        }
-//        p = (p[0] == '/') ? (p + 1) : p;
-//        fprintf(stream,"<fold0 name=\"%s\">",p);
-//        FILE *fp2 = fopen(SERVERLIST_2,"r");
-//        while(fgets(buf2,sizeof(buf2),fp2) != NULL)
-//        {
-//            if(buf2[ strlen(buf2)-1 ] == '\n')
-//                buf2[ strlen(buf2)-1 ] = '\0';
-//            char *temp2 = (char*)malloc(sizeof(char)*(strlen(buf2) + 1));
-//            memset(temp2,'\0',sizeof(char)*(strlen(buf2) + 1));
-//            sprintf(temp2,"%s",buf2);
-//            if(strncmp(buf2,buf1,strlen(buf1)) == 0)
-//            {
-//                fprintf(stream,"<fold1 name=\"%s\">",temp2 + strlen(buf1) + 1);
-//                fprintf(stream,"</fold1>");
-//            }
-//            free(temp2);
-//        }
-//        fclose(fp2);
-//        fprintf(stream,"</fold0>");
-//        free(temp1);
-//    }
-//    fprintf(stream,"</root>");
-//    fclose(fp1);
-//    fclose(stream);
-//    rename(SERVERLIST_TD,SERVERLIST_XML);
-//    return 0;
-//}
-
 char *program_name;
 char *login;
 
 int main(int argc,char **argv)
 {
-
     program_name=argv[0];
-
-    //create_start_file();
     no_config = 0;
     exit_loop = 0;
+    error_flag = 0;
     stop_progress = 0;
 
     my_local_mkdir("/tmp/smartsync");
@@ -7398,7 +6846,6 @@ int main(int argc,char **argv)
 #endif
 
     read_config();
-    //DEBUG("browse_sev:%d\n",browse_sev);
     init_global_var();
 
 #ifdef _PC
@@ -7412,25 +6859,6 @@ int main(int argc,char **argv)
     pthread_join(sig_thread,NULL);
     stop_process_clean_up();
 
-
-//    if(detect_process_file())
-//    {
-//        DEBUG("ftpclient did not kill inotify\n");
-//    }
-//    else
-//    {
-//        system("killall  -9 inotify &");
-//        DEBUG("ftpclient kill inotify\n");
-//    }
-//    if(!detect_process("asuswebstorage") && !detect_process("webdav_client") && !detect_process("dropbox_client"))
-//    {
-//        system("killall  -9 inotify &");
-//        DEBUG("ftpclient kill inotify\n");
-//    }
-//    else
-//    {
-//        DEBUG("ftpclient did not kill inotify\n");
-//    }
     DEBUG("FtpClient stop.\n");
     return 0;
 }

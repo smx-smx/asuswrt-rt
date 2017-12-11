@@ -25,7 +25,7 @@
 #define WEBPASSWD_PATH 	"/etc/passwd"
 #define CONSOLE_PATH 	"/etc/usertty"
 #define SLAT "$1$"
-#define ACCOUNT_DEFAULT_STRING "%s:%s:0:0:root:/:/bin/sh\n"
+#define ACCOUNT_DEFAULT_STRING "%s:%s:0:0:root:/root/:/bin/sh\n"
 #define ACCOUNT_WEB_INDEX 0
 #define ACCOUNT_CONSOLE_INDEX 1
 

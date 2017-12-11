@@ -172,6 +172,10 @@ int max_wait_time;
 int max_fb_count;
 int max_fb_wait_time;
 
+static int SW_GUEST_NETWORK_F = 0;
+int Force_off_GuestWL;
+int Resume_GuestWL;
+
 int http_sock, dns_sock, maxfd;
 clients client[MAX_USER];
 fd_set rset, allset;

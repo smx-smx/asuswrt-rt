@@ -26,6 +26,7 @@
 #include "boa.h"
 #include <stdarg.h>
 #include <shared.h>
+#include <tcapi.h>
 
 #define HEX_TO_DECIMAL(char1, char2)	\
     (((char1 >= 'A') ? (((char1 & 0xdf) - 'A') + 10) : (char1 - '0')) * 16) + \
@@ -621,10 +622,8 @@ typedef struct romfile_header_s
 int encryptRomfile(char *src, char *dst, char *productName)
 {
 	FILE *fp = NULL;
-	char cmd[128] = {0};
 	unsigned long count, filelen, i;
 	unsigned int rand = 0;
-	unsigned char temp;
 	char *buffer = NULL;
 	int srcFD = -1;
 	int ret = 0;
@@ -759,18 +758,21 @@ static void _dump_all_token_list()
 *******************************************************************/
 char *generate_token(char *token, int len)
 {
-	int a=0, b=0, c=0, d=0;
+	int i, num;
+	const char token_contain[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+		, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+		, 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 
 	if(!token || len < ASUS_TOKEN_LEN)
 		return NULL;
 	
 	memset(token,0, len);
 	srand (time(NULL));
-	a=rand();
-	b=rand();
-	c=rand();
-	d=rand();
-	snprintf(token, len,"%d%d%d%d", a, b, c, d);
+	for(i = 0; i < ASUS_TOKEN_LEN - 1; ++i)
+	{
+		num = rand() % 62;
+		token[i] = token_contain[num];
+	}
 	dbgprintf("[%s, %d]generate token=%s\n", __FUNCTION__, __LINE__, token);
 	return token;
 }
@@ -784,11 +786,10 @@ char *generate_token(char *token, int len)
 * INPUT: user_agent: the user agent in http header.
 * OUTPUT:
 * RETURN: CLIENT_TYPE
-* NOTE:	
+* NOTE:	2017/2/23. Andy Chiu. Add IFTTT type.
 *******************************************************************/
 CLIENT_TYPE check_client_type(const char *user_agent)
 {
-	//dbgprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
 	if(user_agent && strstr(user_agent, ASUSROUTER_TAG))
 	{
 		if(strstr(user_agent, ASUSROUTER_APP))
@@ -796,7 +797,10 @@ CLIENT_TYPE check_client_type(const char *user_agent)
 		else if(strstr(user_agent, ASUSROUTER_ATE))
 			return CLI_TYPE_ATE;		
 		else if(strstr(user_agent, ASUSROUTER_ASSIA))
-			return CLI_TYPE_ASSIA;		
+			return CLI_TYPE_ASSIA;	
+		else if(strstr(user_agent, ASUSROUTER_IFTTT))
+			return CLI_TYPE_IFTTT;	
+		
 	}
 	return CLI_TYPE_BROWSER;
 }
@@ -951,6 +955,7 @@ asus_token_t* add_asus_token(const CLIENT_TYPE cli_type, const char *token, cons
 	return new_token;
 }
 
+#ifdef USE_RETRY_LIST
 void dump_retry(login_retry_t *retry)
 {
 	if(retry)
@@ -1063,7 +1068,127 @@ login_retry_t* add_login_retry(const char *ipaddr)
 
 	return new_retry;
 }
-
+#endif
 #endif
 
+//return value: 0: LAN,  1: WAN,  -1: ERROR
+int _check_ip_is_lan_or_wan(const char *target_ip, const char *lan_ip, const char *submask)
+{
+	char tmp1[20], tmp2[20];
+
+	if(!target_ip || !lan_ip || !submask)
+		return -1;
+
+	//Convert target ip and lan ip.
+	//ex. target ip is 168.95.10.10, lan ip is 192.168.1.1, subnet mask is 255.255.255.0. 
+	//convert them as 168.95.10.0 and 192.168.1.0. Them compare these 2 values.
+	//If they are different, the target ip would be WAN.
+	if(get_network_addr_by_ip_prefix(target_ip, submask, tmp1, sizeof(tmp1)) == -1)
+		return -1;
+
+	if(get_network_addr_by_ip_prefix(lan_ip, submask, tmp2, sizeof(tmp2)) == -1)
+		return -1;
+
+	return !strcmp(tmp1, tmp2)? 0: 1;
+}
+
+//return value: 0: LAN,  1: WAN,  -1: ERROR
+int check_current_ip_is_lan_or_wan(const char *target_ip)
+{
+	char lan_ip[20], lan_netmask[20];
+	
+	if(!target_ip)
+		return -1;
+
+	if(tcapi_get("Lan_Entry0", "IP", lan_ip) != TCAPI_PROCESS_OK || tcapi_get("Lan_Entry0", "netmask", lan_netmask) != TCAPI_PROCESS_OK)
+		return -1;
+	
+	return _check_ip_is_lan_or_wan(target_ip, lan_ip, lan_netmask);
+}
+
+int check_xss_blacklist(char* para, int check_www)
+{
+	int i = 0;
+	int file_len;
+	char *query, *para_t;
+	char para_str[256];
+	char filename[128];
+	char url_str[128];
+	memset(filename, 0, sizeof(filename));
+	memset(para_str, 0, sizeof(para_str));
+
+	if(para == NULL || !strcmp(para, "")){
+		//_dprintf("check_xss_blacklist: para is NULL\n");
+		return 1;
+	}
+
+	para_t = strdup(para);
+	while(*para) {
+		//if(*para=='<' || *para=='>' || *para=='%' || *para=='/' || *para=='(' || *para==')' || *para=='&') {
+		if(*para=='<' || *para=='>' || *para=='%' || *para=='(' || *para==')' || *para=='&') {
+			//_dprintf("check_xss_blacklist: para is Invalid\n");
+			free(para_t);
+			return 1;
+		}
+		else {
+			para_str[i] = tolower(*para);
+			i++;
+			para++;
+		}
+	}
+
+	if(strstr(para_str, "script") || strstr(para_str, "//") ){
+		//_dprintf("check_xss_blacklist: para include script\n");
+		free(para_t);
+		return 1;
+	}
+
+	if(check_www == 1){
+		memset(url_str, 0, sizeof(url_str));
+		if ((query = index(para_t, '?')) != NULL) {
+			file_len = strlen(para_t)-strlen(query);
+
+			if(file_len > sizeof(url_str))
+				file_len = sizeof(url_str);
+
+			strncpy(url_str, para_t, file_len);
+		}
+		else
+		{
+			strncpy(url_str, para_t, sizeof(url_str)-1);
+		}
+
+		snprintf(filename, sizeof(filename), "/www/%s", url_str);
+		if(!check_if_file_exist(filename)){
+			//dbgprintf("check_xss_blacklist:%s is not in www\n", url_str);
+			free(para_t);
+			return 1;
+		}
+	}
+
+	free(para_t);
+	return 0;
+}
+
+login_retry_t* get_login_retry_by_url(const char* remote_ip)
+{
+	int ip_type;
+	
+	if(!remote_ip)
+		return NULL;
+
+	ip_type = check_current_ip_is_lan_or_wan(remote_ip);
+	if(ip_type == 0)
+	{
+		return  (&retry_flag);
+	}
+	else if(ip_type == 1)
+	{
+		return (&retry_flag_wan);
+	}
+	else
+	{
+		return NULL;
+	}
+}
 

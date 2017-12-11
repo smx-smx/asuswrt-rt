@@ -21,7 +21,7 @@ end if
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="-1">
 
-    <title>ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","Parental_Control","s")%></title>
+    <title id="web_title">ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <%tcWebApi_get("String_Entry","Parental_Control","s")%></title>
     <link rel="shortcut icon" href="/images/favicon.png">
     <link rel="icon" href="/images/favicon.png">
     <link rel="stylesheet" type="text/css" href="/ParentalControl.css">
@@ -233,7 +233,15 @@ function register_event(){
     var StopTimeCount;
     function initial(){
 	show_menu();
-
+	if(bwdpi_support != -1){
+		//show_inner_tab();
+		document.getElementById('guest_image').style.background = "url(images/New_ui/TimeLimits.png)";
+		document.getElementById('content_title').innerHTML = "<% tcWebApi_get("String_Entry","AiProtection_title","s") %> - <% tcWebApi_get("String_Entry","Time_Scheduling","s") %>";
+		document.getElementById('desc_title').innerHTML = "<% tcWebApi_get("String_Entry","ParentalCtrl_Desc_TS","s") %>";
+		document.getElementById('web_title').innerHTML = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <% tcWebApi_get("String_Entry","Time_Scheduling","s") %>";
+		document.getElementById('PC_enable').innerHTML = "<% tcWebApi_get("String_Entry","ParentalCtrl_Enable_TS","s") %>";
+		document.getElementById('switch_menu').style.display = "";
+	}
 	document.getElementById('disable_NAT').href = "Advanced_SwitchCtrl_Content.asp?af=hwnat";   //this id is include in string : #ParentalCtrl_disable_NAT#
 
 	show_footer();
@@ -320,7 +328,7 @@ function showLANIPList(){
 		code +='<td style="border-bottom:2px solid #000;"><input type="text" maxlength="32" style="margin-left:10px;float:left;width:255px;" class="input_20_table" name="PC_devicename" onKeyPress="" onClick="hideClients_Block();" onblur="if(!over_var){hideClients_Block();}">';
 		code +='<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" onclick="pullLANIPList(this);" title="<% tcWebApi_Get("String_Entry", "select_client", "s") %>" onmouseover="over_var=1;" onmouseout="over_var=0;">';
 		code +='<div id="ClientList_Block_PC" style="margin:25 0 0 10px" class="ClientList_Block_PC"></div></td>';
-		code +='<td style="border-bottom:2px solid #000;"><input type="text" maxlength="17" class="input_macaddr_table" name="PC_mac" onKeyPress="return is_hwaddr(this,event)"><\/td>';
+		code +='<td style="border-bottom:2px solid #000;"><input type="text" maxlength="17" class="input_macaddr_table" name="PC_mac" onKeyPress="return validator.isHWAddr(this,event)"><\/td>';
 		code +='<td style="border-bottom:2px solid #000;">--<\/td>';
 		code +='<td style="border-bottom:2px solid #000;"><input class="url_btn" type="button" onClick="addRow_main(35)" value=""><\/td><\/tr>';
 		if(MULTIFILTER_DEVICENAME == "" && MULTIFILTER_MAC == "")
@@ -958,25 +966,38 @@ function saveto_lantowan(client){
                 </td>
 
                 <td valign="top">
-                    <div id="tabMenu" class="submenuBlock" style="*margin-top:-155px;"></div>
+                    <div id="tabMenu" class="submenuBlock"></div>
 
-                    <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0" style="margin-top:5px;">
+                    <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
                         <tr>
                             <td valign="top">
-                                <table width="730px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle" style="-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;">
+                                <table width="730px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
                                     <tbody>
                                         <tr>
                                             <td bgcolor="#4D595D" valign="top">
-                                                <div>
-                                                    &#160;
-                                                </div>
-
-                                                <div class="formfonttitle">
-                                                    <%tcWebApi_get("String_Entry","Parental_Control","s")%>
-                                                </div>
-
-                                                <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div><!--div class="formfontdesc">Parental control allows you to set the time limit for a client's network usage. To use parental control:</div-->
-
+                                            <div>&nbsp;</div>
+                                                <div style="margin-top:-5px;">
+                                                    <table width="730px">
+                                                        <tr>
+                                                            <td align="left" >
+                                                                <div id="content_title" class="formfonttitle" style="width:400px"><%tcWebApi_get("String_Entry","Parental_Control","s")%></div>
+                                                            </td>				
+                                                            <td style="width:300px">
+                                                                <div id="switch_menu" style="margin:-20px 0px 0px -20px;;display:none;">
+                                                                    <a href="AiProtection_WebProtector.asp">
+                                                                        <div style="width:173px;height:30px;border-top-left-radius:8px;border-bottom-left-radius:8px;" class="block_filter">
+                                                                            <table class="block_filter_name_table"><tr><td style="line-height:13px;"><%tcWebApi_get("String_Entry","AiProtection_filter","s")%></td></tr></table>
+                                                                        </div>
+                                                                    </a>
+                                                                    <div style="width:172px;height:30px;margin:-32px 0px 0px 173px;border-top-right-radius:8px;border-bottom-right-radius:8px;" class="block_filter_pressed">
+                                                                        <table class="block_filter_name_table_pressed"><tr><td style="line-height:13px;"><%tcWebApi_get("String_Entry","Time_Scheduling","s")%></td></tr></table>
+                                                                    </div>
+                                                                </div>
+                                                            <td>
+                                                        </tr>
+                                                    </table>
+                                                    <div style="margin:0px 0px 10px 5px;"><img src="/images/New_ui/export/line_export.png"></div>
+		                                   </div>
                                                 <div id="PC_desc">
                                                     <table width="700px" style="margin-left:25px;">
                                                         <tr>

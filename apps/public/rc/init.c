@@ -145,7 +145,7 @@ int init_nvram(void)
 	case MODEL_DSLN10PC1:
 	case MODEL_DSLN12EC1:
 	case MODEL_DSLN10D1:
-		add_rc_support("2.4G rawifi dsl wifi_hw_sw ipv6 PARENTAL2 mssid no5gmssid pwrctrl iptv wds HTTPS");
+		add_rc_support("2.4G rawifi dsl wifi_hw_sw ipv6 PARENTAL2 mssid no5gmssid pwrctrl iptv wds");
 		break;
 	case MODEL_DSLN12UC1:
 	case MODEL_DSLN12UD1:
@@ -173,6 +173,9 @@ int init_nvram(void)
 		break;
 	case MODEL_DSLN16:
 		add_rc_support("2.4G update rawifi dsl wifi_hw_sw ipv6 PARENTAL2 mssid pwrctrl iptv wds HTTPS");
+		break;
+	case MODEL_DSLAC51:
+		add_rc_support("2.4G 5G 11AC update rawifi dsl wifi_hw_sw ipv6 PARENTAL2 mssid pwrctrl iptv wds HTTPS");
 		break;
 
 	}
@@ -254,8 +257,14 @@ int init_nvram(void)
 #ifdef TCSUPPORT_WEBMON
 	add_rc_support("ipt_webmon");
 #endif
+#ifdef TCSUPPORT_ACCESSLOG
+	add_rc_support("access_log");
+#endif
 #ifdef MT7530_SUPPORT //Currently only MT7530 (DSL-AC56U/DSL-AC52U/DSL-AC55U/DSL-N17U) can support jumbo frame
 	add_rc_support("jumbo_frame");
+#endif
+#ifdef RTCONFIG_BWDPI
+	add_rc_support("bwdpi");
 #endif
 
 	if (SupportCountrySelect())
@@ -282,13 +291,13 @@ int init_nvram(void)
 
 #ifdef RTCONFIG_OPENVPN
 	//clear state, could be moved to temp node
-	for (i = 1; i <= MAX_OVPN_SERVER; i++) {
-		sprintf(node, "OpenVPN_Entry%d", i+SERVER_IF_START);
+	for (i = 1; i <= OVPN_SERVER_MAX; i++) {
+		sprintf(node, "OpenVPN_Entry%d", OVPN_SERVER_BASE + i);
 		tcapi_set(node, "state", "0");
 		tcapi_set(node, "errno", "0");
 	}
-	for (i = 1; i <= MAX_OVPN_CLIENT; i++) {
-		sprintf(node, "OpenVPN_Entry%d", i+CLIENT_IF_START);
+	for (i = 1; i <= OVPN_CLIENT_MAX; i++) {
+		sprintf(node, "OpenVPN_Entry%d", OVPN_CLIENT_BASE + i);
 		tcapi_set(node, "state", "0");
 		tcapi_set(node, "errno", "0");
 	}
@@ -367,6 +376,7 @@ static void tweak_kernel_platdep(void)
 		skbmgr_4k_limit = 2048;
 		break;
 	case MODEL_DSLN16:		//64M 2.4G WiFi, No USB
+	case MODEL_DSLAC51:
 		skbmgr_driver_max_skb = 6144;
 		skbmgr_limit = 4096;	
 		skbmgr_4k_limit = 1024;
@@ -422,6 +432,10 @@ static void tweak_kernel(void)
 
 static void sysinit(void)
 {
+#ifdef RTCONFIG_USB
+	mkdir(NOTIFY_DIR, 0755);
+	mkdir(NOTIFY_DIR"/"NOTIFY_TYPE_USB, 0755);
+#endif
 #ifdef TCSUPPORT_USB_PRINTER_SERVER
 	// LPRng support
 	mkdir("/var/state", 0777);

@@ -14,6 +14,12 @@ if [ $Active != "1" ] ; then
 fi
 
 WAN_NUM=`expr substr $1 4 2`
+
+# For PTM Mode interface as ppp80
+if [ $WAN_NUM -eq 80 ]; then
+        WAN_NUM=8
+fi
+
 WanIP=`tcapi get DeviceInfo_PVC$WAN_NUM WanIP`
 ddns_ipaddr=`tcapi get Vram_Entry ddns_ipaddr`
 ddns_updated=`tcapi get Vram_Entry ddns_updated`
@@ -73,10 +79,13 @@ IPUPDATE_CONF=/etc/ipupdate.conf
 /userfs/bin/tcapi set Vram_Entry ddns_check "1"
 
 if [ $SERVERNAME = "WWW.ASUS.COM" ]; then
-/userfs/bin/ez-ipupdate -c $IPUPDATE_CONF -i $WANIF -F $IPUPDATE_PID -e /sbin/ddns_updated -b /tmp/ddns.cache -A 2 -s ns1.asuscomm.com
+	/userfs/bin/ez-ipupdate -c $IPUPDATE_CONF -i $WANIF -F $IPUPDATE_PID -e /sbin/ddns_updated -b /tmp/ddns.cache -A 2 -s ns1.asuscomm.com
+
+elif [ $SERVERNAME = "DOMAINS.GOOGLE.COM" ]; then
+	/etc/script/GoogleDNS_Update.sh $USERNAME $PASSWORD $MYHOST $WanIP
 else
-#/userfs/bin/ez-ipupdate -c $IPUPDATE_CONF -i $WANIF -d -F $IPUPDATE_PID -P 60 -p 1
-/userfs/bin/ez-ipupdate -c $IPUPDATE_CONF -i $WANIF -F $IPUPDATE_PID -e /sbin/ddns_updated -b /tmp/ddns.cache
+	#/userfs/bin/ez-ipupdate -c $IPUPDATE_CONF -i $WANIF -d -F $IPUPDATE_PID -P 60 -p 1
+	/userfs/bin/ez-ipupdate -c $IPUPDATE_CONF -i $WANIF -F $IPUPDATE_PID -e /sbin/ddns_updated -b /tmp/ddns.cache
 fi
 
 # echo $$ >$IPUPDATE_PID

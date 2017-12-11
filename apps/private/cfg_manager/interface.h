@@ -186,17 +186,20 @@ struct port_mask
 };
 
 /* lan device name */
-#define		LAN_DEV			"lan"
+#ifndef LAN_PORT_ITF_PREFIX
+#define		LAN_PORT_ITF_PREFIX	"elan."	//eth0.
+#endif
+#define		LAN_DEV			"eth0"
 #if 0
 #define		LAN1			"eth0.1"
 #define		LAN2			"eth0.2"
 #define		LAN3			"eth0.3"
 #define		LAN4			"eth0.4"
 #else
-#define		LAN1			"lan1"
-#define		LAN2			"lan2"
-#define		LAN3			"lan3"
-#define		LAN4			"lan4"
+#define		LAN1			"elan.1"
+#define		LAN2			"elan.2"
+#define		LAN3			"elan.3"
+#define		LAN4			"elan.4"
 #endif
 #define		SSID1			"ra0"
 #define		SSID2 			"ra1"

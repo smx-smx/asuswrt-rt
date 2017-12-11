@@ -48,7 +48,6 @@ Hb_TreeNode *get_tree_node(const char *filename, Hb_TreeNode *treeRoot)
 
         if(!strcmp(filename,fullname))
         {
-            //printf("find %s file\n",filename);
             return treeRoot;
         }
         else
@@ -94,8 +93,6 @@ Hb_TreeNode *insert_new_node(const char *filename, const char *path,int isfolder
     {
         struct stat buf;
         tempnode->isfolder = 0;
-
-        //printf("fullname is %s\n",fullname);
 
         if( stat(fullname,&buf) == -1)
         {
@@ -218,7 +215,6 @@ int modify_tree_node(char *fullname, Hb_TreeNode *rootnode,int type)
     Hb_TreeNode *insert_node = NULL;
     Hb_TreeNode *tempnode = NULL;
     int isfolder =0;
-    //char pathname[256];
 
     p = strrchr(fullname,'/');
 
@@ -259,7 +255,6 @@ int modify_tree_node(char *fullname, Hb_TreeNode *rootnode,int type)
             }
             else if(type == DEL_TREE_NODE)
             {
-                //del_tree_node(filename,path,isfolder,rootnode);
                 del_new_node(filename,path,isfolder,node);
             }
         }
@@ -277,7 +272,6 @@ void free_tree_node(Hb_TreeNode *node)
 {
     if(node != NULL)
     {
-        //printf("free tree node\n");
         if(node->NextBrother != NULL)
             free_tree_node(node->NextBrother);
         if(node->Child != NULL)
@@ -296,8 +290,6 @@ void free_tree_node(Hb_TreeNode *node)
 void FindDir(Hb_TreeNode *TreeNode,const char *path)
 {
     char fullname[NORMALSIZE];
-    //Hb_TreeNode *p1,*p2;
-    //Hb_TreeNode *temp;
     struct dirent* ent = NULL;
     DIR *pDir;
     int isfolder = 0;
@@ -317,16 +309,11 @@ void FindDir(Hb_TreeNode *TreeNode,const char *path)
 
     while (NULL != (ent=readdir(pDir)))
     {
-
-        //if(ent->d_name[0] == '.')
-            //continue;
         if(!strcmp(ent->d_name,".") || !strcmp(ent->d_name,".."))
             continue;
 
         memset(fullname,0,sizeof(fullname));
         snprintf(fullname,NORMALSIZE,"%s/%s",path,ent->d_name);
-
-        //printf("fullname is %s\n",fullname);
 
         Hb_TreeNode *p1 = NULL,*p2 = NULL;
 
@@ -371,34 +358,19 @@ void FindDir(Hb_TreeNode *TreeNode,const char *path)
 
         if(TreeNode->Child == NULL)
         {
-            //printf("child is blank\n");
             TreeNode->Child = tempnode;
             tempnode->NextBrother = NULL;
         }
         else
         {
-            //printf("have child\n");
             p2 = TreeNode->Child;
             p1 = p2->NextBrother;
 
             while(p1 != NULL)
             {
-               //printf("p1 nextbrother have\n");
                p2 = p1;
                p1 = p1->NextBrother;
             }
-
-            /*
-            p1 = TreeNode->Child;
-            p2 = p1;
-
-            while(p1->NextBrother != NULL)
-            {
-               printf("p1 nextbrother have\n");
-               p2 = p1->NextBrother;
-               p1 = p1->NextBrother;
-            }
-            */
 
             p2->NextBrother = tempnode;
             tempnode->NextBrother = NULL;
@@ -416,7 +388,6 @@ void FindDir(Hb_TreeNode *TreeNode,const char *path)
 
 void update_node_child(Hb_TreeNode *node)
 {
-    //Hb_TreeNode *prenode = NULL;
     char newpath[NORMALSIZE];
     memset(newpath,0,sizeof(newpath));
 
@@ -461,38 +432,27 @@ void SearchTree1(Hb_TreeNode* treeRoot)
 {
     Hb_TreeNode *p1;
     p1 = treeRoot->Child;
-    //p2 = p1;
 
     while(p1 != NULL)
     {
         printf("FilePath:%s,Filename is %s\n",p1->FilePath,p1->FileName);
-        //p2 = p1->NextBrother;
         p1 = p1->NextBrother;
     }
 }
 
 void SearchTree(Hb_TreeNode* treeRoot)
 {
-int i;
-for(i=0;i<treeRoot->level;i++)
-    printf("-");
-//printf("Filename is %s,level is %d\n",treeRoot->FilePath,treeRoot->FileName);
-//printf("Filename is %s,level is %d\n",treeRoot->FileName,treeRoot->level);
+    int i;
+    for(i=0;i<treeRoot->level;i++)
+        printf("-");
 
-printf("%s\n",treeRoot->FileName);
+    printf("%s\n",treeRoot->FileName);
 
-/*
-if(!treeRoot->isfolder)
-{
-    printf("%s,%s,%s\n",treeRoot->pattr->creationtime,treeRoot->pattr->lastaccesstime,treeRoot->pattr->lastwritetime);
-}
-*/
+    if((treeRoot->Child!=NULL))
+    SearchTree(treeRoot->Child);
 
-if((treeRoot->Child!=NULL))
-SearchTree(treeRoot->Child);
-
-if(treeRoot->NextBrother != NULL)
-SearchTree(treeRoot->NextBrother);
+    if(treeRoot->NextBrother != NULL)
+    SearchTree(treeRoot->NextBrother);
 }
 
 void write_tree_to_file(const char *logname,Hb_TreeNode *treeRoot)
@@ -536,7 +496,6 @@ void write_tree_to_file(const char *logname,Hb_TreeNode *treeRoot)
                  have_brother,have_child,
                  treeRoot->pattr->lastaccesstime,treeRoot->pattr->creationtime,treeRoot->pattr->lastwritetime);
 
-
      fclose(fp);
 
      if((treeRoot->Child!=NULL))
@@ -544,7 +503,6 @@ void write_tree_to_file(const char *logname,Hb_TreeNode *treeRoot)
 
      if(treeRoot->NextBrother != NULL)
         write_tree_to_file(logname,treeRoot->NextBrother);
-
 }
 
 
@@ -682,7 +640,6 @@ Hb_TreeNode *read_file_to_tree(const char *logname)
                     if(have_brother == 1 && have_child == 1)
                     {
                         push_stree(tempnode);
-                        //print_stree();
                     }
 
                 }
@@ -707,7 +664,6 @@ void print_stree()
     }
     else
     {
-        //printf("############ print stree start ##########\n");
         while(temp != NULL)
         {
             printf("path is %s,filename is %s\n",temp->point->FilePath,temp->point->FileName);
@@ -756,7 +712,7 @@ Hb_TreeNode *pop_stree()
 }
 
 /*server tree root function*/
-Server_TreeNode *create_server_treeroot(int id)
+Server_TreeNode *create_server_treeroot(long long int id)
 {
     Server_TreeNode *TreeRoot = NULL;
     TreeRoot = (Server_TreeNode *)malloc(sizeof (Server_TreeNode));
@@ -767,22 +723,19 @@ Server_TreeNode *create_server_treeroot(int id)
         return NULL;
     }
     TreeRoot->level=0;
-    //TreeRoot->NextBrother = NULL;
-    //TreeRoot->browse = NULL;
     TreeRoot->id = 0;
 
     return TreeRoot;
 }
 
-int browse_to_tree(char *username,int parentid, char *xmlfilename,Server_TreeNode *node)
+int browse_to_tree(char *username,long long int parentid, char *xmlfilename,Server_TreeNode *node)
 {
     Browse *br = NULL;
-    int id;
+    long long int id;
     int fail_flag = 0;
-    //int loop;
     int i;
 
-    printf("node id is %d,parentid is %d\n",node->id,parentid);
+    printf("node id is %lld,parentid is %lld\n",node->id,parentid);
 
     Server_TreeNode *tempnode = NULL, *p1 = NULL,*p2 = NULL;
     tempnode = (Server_TreeNode *)malloc(sizeof(Server_TreeNode));
@@ -806,13 +759,11 @@ int browse_to_tree(char *username,int parentid, char *xmlfilename,Server_TreeNod
     }
     else
     {
-        //printf("have child\n");
         p2 = node->Child;
         p1 = p2->NextBrother;
 
         while(p1 != NULL)
         {
-           //printf("p1 nextbrother have\n");
            p2 = p1;
            p1 = p1->NextBrother;
         }
@@ -832,11 +783,7 @@ int browse_to_tree(char *username,int parentid, char *xmlfilename,Server_TreeNod
         }
     }
 
-    //free_server_list(br);
-    //my_free(br);
-
     return (fail_flag == 1) ? -1 : 0 ;
-
 }
 
 void SearchServerTree(Server_TreeNode* treeRoot)
@@ -846,14 +793,7 @@ void SearchServerTree(Server_TreeNode* treeRoot)
         printf("-");
 
 
-    printf("%d\n",treeRoot->id);
-
-    /*
-if(!treeRoot->isfolder)
-{
-    printf("%s,%s,%s\n",treeRoot->pattr->creationtime,treeRoot->pattr->lastaccesstime,treeRoot->pattr->lastwritetime);
-}
-*/
+    printf("%lld\n",treeRoot->id);
 
     if((treeRoot->Child!=NULL))
         SearchServerTree(treeRoot->Child);
@@ -866,8 +806,6 @@ void free_server_tree(Server_TreeNode *node)
 {
     if(node != NULL)
     {
-        //printf("free tree node\n");
-
         free_server_list(node->browse);
 
         if(node->NextBrother != NULL)
@@ -878,4 +816,3 @@ void free_server_tree(Server_TreeNode *node)
         free(node);
     }
 }
-

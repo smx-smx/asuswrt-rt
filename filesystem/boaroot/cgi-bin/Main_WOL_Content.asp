@@ -67,6 +67,7 @@ End If
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 <!--[if !IE]>-->
 	jQuery.noConflict();	
@@ -389,7 +390,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 		childsel.setAttribute("id","check_mac");
 		childsel.style.color="#FFCC00";
 		obj.parentNode.appendChild(childsel);
-		$("check_mac").innerHTML="<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>";		
+		$("check_mac").innerHTML="<%tcWebApi_get("String_Entry","LHC_MnlDHCPMacaddr_id","s")%>";
 		$("check_mac").style.display = "";
 		return false;
 	}else if(flag ==2){
@@ -397,7 +398,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 		childsel.setAttribute("id","check_mac");
 		childsel.style.color="#FFCC00";
 		obj.parentNode.appendChild(childsel);
-		$("check_mac").innerHTML="<#IPConnection_x_illegal_mac#>";
+		$("check_mac").innerHTML="<%tcWebApi_get("String_Entry","IPC_x_illegal_mac","s")%>";
 		$("check_mac").style.display = "";
 		return false;		
 	}else{	
@@ -520,7 +521,7 @@ function redirect(){
 										<tr>
 											<th width="20%"><%tcWebApi_get("String_Entry","NetworkTools_target","s")%></th>
 											<td>
-												<input type="text" class="input_20_table" maxlength="17" name="destMac" value="" placeholder="ex: <% tcWebApi_staticGet("WLan_Common","wl0_MacAddress","s") %>" onKeyPress="return is_hwaddr(this,event);">
+												<input type="text" class="input_20_table" maxlength="17" name="destMac" value="" placeholder="ex: <% tcWebApi_staticGet("WLan_Common","wl0_MacAddress","s") %>" onKeyPress="return validator.isHWAddr(this,event);">
 												<input class="button_gen" id="cmdBtn" onClick="onSubmitCtrl(this, ' Refresh ')" type="button" value="<%tcWebApi_get("String_Entry","NetworkTools_WOL_btn","s")%>">
 												<img id="loadingIcon" style="display:none;" src="/images/InternetScan.gif"></span>
 											</td>										
@@ -548,7 +549,7 @@ function redirect(){
 														<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>	
 				            			</td>
 				            			<td width="40%">
-				                		<input type="text" class="input_20_table" maxlength="17" name="wollist_macAddr" style="" onKeyPress="return is_hwaddr(this,event)">
+				                		<input type="text" class="input_20_table" maxlength="17" name="wollist_macAddr" style="" onKeyPress="return validator.isHWAddr(this,event)">
 		                			</td>
 				            			<td width="20%">
 														<div> 

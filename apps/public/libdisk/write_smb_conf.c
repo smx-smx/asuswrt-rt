@@ -152,6 +152,9 @@ int main(int argc, char *argv[]) {
 #else
 	//p_computer_name = nvram_get("computer_name") && is_valid_hostname(nvram_get("computer_name")) ? nvram_get("computer_name") : nvram_safe_get("productid");
 	tcapi_get("Samba_Entry", "NetBiosName", tmp);	//check NetBiosName in web page
+	if(!strlen(tmp)) {
+		snprintf(tmp, sizeof(tmp), "%s", get_productid());
+	}
 	p_computer_name = tmp;
 	if (p_computer_name) {
 		fprintf(fp, "netbios name = %s\n", p_computer_name);
@@ -161,6 +164,9 @@ int main(int argc, char *argv[]) {
 
 	fprintf(fp, "unix charset = UTF8\n");		// ASUS add
 	fprintf(fp, "display charset = UTF8\n");	// ASUS add
+	fprintf(fp, "load printers = no\n");	//Andy Chiu, 2017/1/17. Add for Samba printcap issue.
+	fprintf(fp, "printing = bsd\n");
+	fprintf(fp, "printcap name = /dev/null\n");
 	fprintf(fp, "log file = /var/log.samba\n");
 	fprintf(fp, "log level = 0\n");
 	fprintf(fp, "max log size = 5\n");

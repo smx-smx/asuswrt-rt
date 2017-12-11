@@ -292,6 +292,7 @@ int getTransferMode(void);
 extern int is_wan_connect(int unit);
 extern int get_wan_state(int unit);
 extern int get_wan_unit(char *ifname);
+extern int get_wan_unit_ex(const char *ifname, int *unit, int *subunit);
 extern char *get_wan_ifname(int unit);
 extern int get_wanports_status(int wan_unit);
 extern char *get_usb_ehci_port(int port);
@@ -313,8 +314,12 @@ extern int is_running_as_second_wan(int unit);
 #endif
 int get_pvcunit_by_dualwan(int wans_dualwan_if);
 int get_dualwan_by_pvcunit(int pvcunit);
-#endif
 
 #if (defined(TCSUPPORT_WAN_ETHER) || defined(TCSUPPORT_WAN_PTM)) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
-#define MAX_SERVICE_NUM 	8
+#define MAX_SERVICE_NUM	8
+#else
+#define MAX_SERVICE_NUM	1
+#endif
+int isMultiSerPVC(int pvc);
+
 #endif

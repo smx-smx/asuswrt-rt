@@ -59,6 +59,7 @@ End If
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 function initial(){
 	show_menu();
@@ -262,7 +263,7 @@ function pullLANIPList(obj){
 										<tr id="pingCNT_tr">
 											<th width="20%"><%tcWebApi_get("String_Entry","NetworkTools_Count","s")%></th>
 											<td>
-		              			<input type="text" name="pingCNT" class="input_3_table" maxlength="2" value="" onKeyPress="return is_number(this, event);" placeholder="5">
+		              			<input type="text" name="pingCNT" class="input_3_table" maxlength="2" value="" onKeyPress="return validator.isNumber(this, event);" placeholder="5">
 											</td>
 										</tr>
 									</table>

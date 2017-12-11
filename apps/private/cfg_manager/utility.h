@@ -115,11 +115,11 @@ check_and_set_filter(unsigned int new_filter_state);
 int check_ip_exist(char *interface, int pvc, int isp, int check_flag, int version, int input_serv);
 mxml_node_t * getNodeP(mxml_node_t *top,  char name[][MAX_NODE_NAME]);
 int get_entry_serv_number(char *buffer, char *keyword, int *number, int *serv);
-int isMultiSerPVC(int pvc);
 #else
 int
 check_ip_exist(char *interface, int pvc, int isp, int check_flag, int version);
 #endif
+int isMultiSerPVC(int pvc);
 
 int get_ip_by_interface(char *iface, unsigned int *addr);
 
@@ -270,12 +270,11 @@ extern int EZgetAttrValue(char *node1, char *node2, char *attribute,char *buf);
 extern int EZsetAttrValue(char *node1, char *node2, char *attribute,char *buf);
 extern int EZgetAttrValue2(char *node1, char *node2, char *node3, char *attribute,char *buf);
 extern int EZsetAttrValue2(char *node1, char *node2, char *node3, char *attribute,char *buf);
-extern int tcapi_match(char *node, char *entry, char *attribute, char *valueBuffer, char *matchString); //Ren
-extern int tcapi_match2(char *nodeA, char *nodeB, char *entry, char *attribute, char *valueBuffer, char *matchString); //Ren
-
-extern int tcapi_compare(char *node, char *entry, char *attribute, char *buffer, char *comparedString); //Ren
-extern int tcapi_get_integer(char *node, char *entry, char *attribute); //Ren
-extern char *tcapi_get_value(char *node, char *entry, char *attribute, char *buffer); //Ren
+extern int EZmatch(char *node1, char *node2, char *attribute,char *buf, char *matchString);
+extern int EZmatch2(char *node1, char *node2, char *node3, char *attribute,char *buf, char *matchString);
+extern int EZgetInt(char *node, char *entry, char *attribute);
+extern char* EZgetString(char *node, char *entry, char *attribute, char *buffer);
+extern int EZget_productid(char *buf, int buflen);
 
 #define vstrsep(buf, sep, args...) _vstrsep(buf, sep, args, NULL)
 extern int _vstrsep(char *buf, const char *sep, ...);

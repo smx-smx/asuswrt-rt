@@ -70,7 +70,7 @@ ifeq ($(ORIG_PROFILE), $(filter $(ORIG_PROFILE), dsl-n10-c1 dsl-n12e-c1 dsl-n10-
 FW_SIZE_LIMIT=7995392
 else ifeq ($(ORIG_PROFILE), $(filter $(ORIG_PROFILE), dsl-n12u-c1 dsl-n12u-d1 dsl-n14u dsl-n14u-b1 dsl-n66u))
 FW_SIZE_LIMIT=16384000
-else ifeq ($(ORIG_PROFILE), $(filter $(ORIG_PROFILE), dsl-n16))
+else ifeq ($(ORIG_PROFILE), $(filter $(ORIG_PROFILE), dsl-n16 dsl-ac51))
 FW_SIZE_LIMIT=15335424
 else
 FW_SIZE_LIMIT=67108864
@@ -93,6 +93,9 @@ ifeq ("$(strip $(PROFILE))","dsl-ac55u")
 export KERNEL_2_6_36=1
 endif
 ifeq ("$(strip $(PROFILE))","dsl-n16")
+export KERNEL_2_6_36=1
+endif
+ifeq ("$(strip $(PROFILE))","dsl-ac51")
 export KERNEL_2_6_36=1
 endif
 ifneq ($(strip $(CUSTOM)),)
@@ -2325,7 +2328,7 @@ ifneq ($(strip $(ASUS_PROTECTION_SERVER)),)
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" ac_cv_func_logout=no ac_cv_func_logwtmp=no \
 	./configure --host=mips-linux --disable-zlib --enable-syslog --disable-lastlog --disable-utmp \
 	--disable-utmpx --disable-wtmp --disable-wtmpx --disable-pututline --disable-pututxline --disable-loginfunc --disable-pam --enable-openpty \
-	CFLAGS="-I$(APP_SHARED_DIR)/ -I$(APP_TCAPILIB_DIR) -DRTCONFIG_PROTECTION_SERVER" LDFLAGS="-L$(APP_SHARED_DIR) -L$(APP_TCAPILIB_DIR)" LIBS="-lshared -ltcapi"
+	CFLAGS="-I$(APP_PROTECTION_SERVER_DIR)/include/ -DRTCONFIG_PROTECTION_SERVER" LDFLAGS="-L$(APP_PROTECTION_SERVER_DIR)/lib/" LIBS="-lptcsrv"
 else
 	cd $(APP_SSH_DIR) && CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" ac_cv_func_logout=no ac_cv_func_logwtmp=no \
@@ -3620,7 +3623,7 @@ openvpn/stamp-h1: lzo zlib openpam
 		LIBPAM_LIBS="-L$(APP_OPENPAM_DIR)/lib/libpam/.libs -lpam" \
 		LZO_CFLAGS="-I$(APP_LZO_DIR)/include" \
 		LZO_LIBS="-L$(APP_LZO_DIR)/src/.libs -llzo2" \
-		CFLAGS="-Os -Wall $(TC_CFLAGS) -I$(APP_SHARED_DIR) -I$(APP_TCAPILIB_DIR) -I$(APP_OPENPAM_DIR)/include -I$(APP_OPENSSL_DIR)/include"\
+		CFLAGS="-Os -Wall $(TC_CFLAGS) -I$(APP_SHARED_DIR) -I$(APP_TCAPILIB_DIR) -I$(LIB_UTILS_DIR) -I$(APP_OPENPAM_DIR)/include -I$(APP_OPENSSL_DIR)/include"\
 		LDFLAGS="-L$(APP_SHARED_DIR) -lshared -L$(APP_TCAPILIB_DIR) -ltcapi -L$(APP_ZLIB_DIR) -lz -lpthread -ldl -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 		IPROUTE="/usr/sbin/ip" \
 		./configure -host=mips-linux \
@@ -3644,7 +3647,7 @@ openvpn: openvpn/stamp-h1
 	cp $(APP_ETC_SCRIPT_DIR)/updown.sh $(FILESYSTEM_DIR)/usr/script/updown.sh
 	#crond
 	cp $(APP_ETC_SCRIPT_DIR)/cru $(FILESYSTEM_DIR)/usr/script/cru
-	openssl dhparam -out $(FILESYSTEM_DIR)/rom/dh2048.pem 2048
+	openssl dhparam -dsaparam -out $(FILESYSTEM_DIR)/rom/dh2048.pem 2048
 
 openvpn_clean:
 	-@$(MAKE) -C $(APP_OPENVPN_DIR) clean
@@ -4141,32 +4144,6 @@ endif
 #endif
 
 
-#copy string
-#ifeq ($(strip $(TC_BUILD_RELEASECODE)),)
-ifneq ($(strip $(GUI_STRING_CONFIG_SUPPORT)),)
-	cp $(APP_DIR)/private/etc_script/*.dict $(FILESYSTEM_DIR)/userfs/
-ifeq ($(ORIG_PROFILE),dsl-n10-c1)
-	sed -i 's/ZVMODELVZ/'DSL-N10_C1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
-else ifeq ($(ORIG_PROFILE),dsl-n10p-c1)
-	sed -i 's/ZVMODELVZ/'DSL-N10P_C1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
-else ifeq ($(ORIG_PROFILE),dsl-n12e-c1)
-	sed -i 's/ZVMODELVZ/'DSL-N12E_C1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
-else ifeq ($(ORIG_PROFILE),dsl-n10-d1)
-	sed -i 's/ZVMODELVZ/'DSL-N10_D1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
-else ifeq ($(ORIG_PROFILE),dsl-n12u-c1)
-	sed -i 's/ZVMODELVZ/'DSL-N12U_C1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
-else ifeq ($(ORIG_PROFILE),dsl-n12u-d1)
-	sed -i 's/ZVMODELVZ/'DSL-N12U_D1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
-else ifeq ($(ORIG_PROFILE),dsl-n55u-c1)
-	sed -i 's/ZVMODELVZ/'DSL-N55U_C1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
-else ifeq ($(ORIG_PROFILE),dsl-n55u-d1)
-	sed -i 's/ZVMODELVZ/'DSL-N55U_D1'/g' $(FILESYSTEM_DIR)/userfs/*.dict
-else
-	sed -i 's/ZVMODELVZ/'$(UC_PROFILE)'/g' $(FILESYSTEM_DIR)/userfs/*.dict
-endif
-endif
-#endif
-
 ifneq ($(strip $(TCSUPPORT_MODEL_CHECK)),)
 	cp $(TOOLS_DIR)/trx/trx_config $(FILESYSTEM_DIR)/usr/etc/trx_config
 endif
@@ -4497,8 +4474,10 @@ ifneq ($(strip $(TCSUPPORT_SYSLOG_ENHANCE)),)
 	cp $(APP_PUBLIC_DIR)/boa-asp/LogFileParser/LogFileParser $(FILESYSTEM_DIR)/usr/bin
 endif
 
+ifeq ($(strip $(RTCONFIG_ODMPID)),)
 ifneq ($(strip $(UC_PROFILE)),)
 	ln -s /tmp/var/romfile_encrypt.cfg $(FILESYSTEM_DIR)/boaroot/html/Settings_$(UC_PROFILE).cfg
+endif
 endif
 #for ASUS Router (AiHome) APP
 	ln -s /tmp/var/romfile_encrypt.cfg $(FILESYSTEM_DIR)/boaroot/html/Config.CFG
@@ -4607,3 +4586,5 @@ buildimageAllinone:
 #	rm -rf ../releaseFW/
 #endif
 #endif
+
+Official_Release: All buildimageAllinone

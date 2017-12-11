@@ -197,7 +197,7 @@ h.tx_avg /= updateDiv;
 if (h.rx_max > xx_max) xx_max = h.rx_max;
 if (h.tx_max > xx_max) xx_max = h.tx_max;
 
-if(modelname == "DSL-N66U" || modelname == "DSL-AC56U" || modelname == "DSL-AC52U" || modelname == "DSL-AC55U"){ //dual band + dual wan + PTM
+if(modelname == "DSL-N66U" || modelname == "DSL-AC56U" || modelname == "DSL-AC52U" || modelname == "DSL-AC51" || modelname == "DSL-AC750" || modelname == "DSL-AC55U"){ //dual band + dual wan + PTM
 	if (i == "WIRELESS1")
 	t = 'Wireless(5GHz)';
 	else if (i == "WIRELESS0")
@@ -292,7 +292,7 @@ else //single band + single wan
 	t = i;
 }
 
-if(modelname == "DSL-N66U" || modelname == "DSL-AC56U" || modelname == "DSL-AC52U" || modelname == "DSL-AC55U"){ //dual band + dual wan + PTM
+if(modelname == "DSL-N66U" || modelname == "DSL-AC56U" || modelname == "DSL-AC52U" || modelname == "DSL-AC51" || modelname == "DSL-AC750" || modelname == "DSL-AC55U"){ //dual band + dual wan + PTM
 	if(t != "LAN" && t != "NotUsed"){ // <-- hide these 2 Tabs
 					if(i == "PTM0")
 						tabs[0] = ['speed-tab-' + i, t];

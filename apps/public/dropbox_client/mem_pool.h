@@ -3,8 +3,6 @@
 
 #define NODE_NUM 5000
 #define LIST_NUM 2
-//#define EIGHT_NUM 10000
-//#define EIGHT_NUM 10000
 
 typedef struct _list_node
 {
@@ -22,12 +20,6 @@ typedef struct _manager_node
    int available_num;
 }manager_node;
 
-//manager_node manager_list[LIST_NUM];
-//
-//list_node list_8_node[NODE_NUM];
-//list_node list_64_node[NODE_NUM];
-//list_node list_16_node[NODE_NUM];
-//list_node list_32_node[NODE_NUM];
 
 int mem_pool_init();
 void * mem_alloc(int num);

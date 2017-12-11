@@ -1137,25 +1137,25 @@ function showclock(){
 	<tr>
 			  			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 9);"><%tcWebApi_get("String_Entry","WC11b_x_Frag_in","s")%></a></th>
 		<td>
-			<input type="text" maxlength="4" name="wl_frag" id="wl_frag" class="input_6_table" value="<% If tcWebApi_get("WLan_Common","FragThreshold","h") <> "" then  tcWebApi_get("WLan_Common","FragThreshold","s") else asp_Write("2346") end if %>" onKeyPress="return is_number(this,event)" onChange="page_changed()">
+			<input type="text" maxlength="4" name="wl_frag" id="wl_frag" class="input_6_table" value="<% If tcWebApi_get("WLan_Common","FragThreshold","h") <> "" then  tcWebApi_get("WLan_Common","FragThreshold","s") else asp_Write("2346") end if %>" onKeyPress="return validator.isNumber(this,event)" onChange="page_changed()">
 		</td>
 	</tr>
 	<tr>
 			  			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 10);"><%tcWebApi_get("String_Entry","WC11b_x_RTS_in","s")%></a></th>
 		<td>
-			<input type="text" maxlength="4" name="wl_rts" class="input_6_table" value="<% If tcWebApi_get("WLan_Common","RTSThreshold","h") <> "" then  tcWebApi_get("WLan_Common","RTSThreshold","s") else asp_Write("2347") end if %>" onKeyPress="return is_number(this,event)">
+			<input type="text" maxlength="4" name="wl_rts" class="input_6_table" value="<% If tcWebApi_get("WLan_Common","RTSThreshold","h") <> "" then  tcWebApi_get("WLan_Common","RTSThreshold","s") else asp_Write("2347") end if %>" onKeyPress="return validator.isNumber(this,event)">
 		</td>
 	</tr>
 	<tr>
 			  			<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(3, 11);"><%tcWebApi_get("String_Entry","WC11b_x_DTIM_in","s")%></a></th>
 		<td>
-			<input type="text" maxlength="3" name="wl_dtim" class="input_6_table" value="<% If tcWebApi_get("WLan_Common","DtimPeriod","h") <> "" then  tcWebApi_get("WLan_Common","DtimPeriod","s") else asp_Write("1") end if %>" onKeyPress="return is_number(this,event)">
+			<input type="text" maxlength="3" name="wl_dtim" class="input_6_table" value="<% If tcWebApi_get("WLan_Common","DtimPeriod","h") <> "" then  tcWebApi_get("WLan_Common","DtimPeriod","s") else asp_Write("1") end if %>" onKeyPress="return validator.isNumber(this,event)">
 		</td>
 	</tr>
 	<tr>
 			  			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3, 12);"><%tcWebApi_get("String_Entry","WC11b_x_Beacon_in","s")%></a></th>
 		<td>
-			<input type="text" maxlength="4" name="wl_bcn" class="input_6_table" value="<% If tcWebApi_get("WLan_Common","BeaconPeriod","h") <> "" then  tcWebApi_get("WLan_Common","BeaconPeriod","s") else asp_Write("100") end if %>" onKeyPress="return is_number(this,event)">
+			<input type="text" maxlength="4" name="wl_bcn" class="input_6_table" value="<% If tcWebApi_get("WLan_Common","BeaconPeriod","h") <> "" then  tcWebApi_get("WLan_Common","BeaconPeriod","s") else asp_Write("100") end if %>" onKeyPress="return validator.isNumber(this,event)">
 		</td>
 	</tr>
 	<tr>

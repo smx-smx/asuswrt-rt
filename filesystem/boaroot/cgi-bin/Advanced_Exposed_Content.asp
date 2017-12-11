@@ -23,8 +23,9 @@ end if
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" language="JavaScript" src="/help.js"></script>
-<script type="text/javascript" language="JavaScript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
@@ -109,7 +110,7 @@ addOnlineHelp($("faq"), ["ASUSWRT", "DMZ"]);
 <tr>
 <th><% tcWebApi_Get("String_Entry", "IPC_ExposedIP_in", "s") %></th>
 <td>
-<input type="text" maxlength="15" class="input_15_table" name="dmz_ip" value="<% If tcWebApi_get("Dmz_PVC","DMZ_IP","h") <> "" then  tcWebApi_get("Dmz_PVC","DMZ_IP","s") end if %>" onkeypress="return is_ipaddr(this, event)" onblur="valid_IP_form(this, 0)"/>
+<input type="text" maxlength="15" class="input_15_table" name="dmz_ip" value="<% If tcWebApi_get("Dmz_PVC","DMZ_IP","h") <> "" then  tcWebApi_get("Dmz_PVC","DMZ_IP","s") end if %>" onkeypress="return validator.isIPAddr(this, event)" onblur="valid_IP_form(this, 0)"/>
 </td>
 </tr>
 <!-- Viz 2011.04tr>

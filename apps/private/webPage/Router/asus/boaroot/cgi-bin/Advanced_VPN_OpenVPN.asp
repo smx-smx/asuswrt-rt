@@ -142,6 +142,7 @@ function initial(){
 function formShowAndHide(server_enable, server_type) {
 	if(server_enable == 1 && server_type == "openvpn"){
 		document.getElementById("trVPNServerMode").style.display = "";
+		document.getElementById("trRSAEncryptionBasic").style.display = "";
 		document.getElementById("selSwitchMode").value = "1";
 		document.getElementById('openvpn_export').style.display = "";
 		document.getElementById('OpenVPN_setting').style.display = "";
@@ -165,6 +166,7 @@ function formShowAndHide(server_enable, server_type) {
 	}
 	else{
 		document.getElementById("trVPNServerMode").style.display = "none";
+		document.getElementById("trRSAEncryptionBasic").style.display = "none";
 		document.getElementById("openvpn_export").style.display = "none";
 		document.getElementById("OpenVPN_setting").style.display = "none";
 		document.getElementById("divAdvanced").style.display = "none";
@@ -701,11 +703,13 @@ function switchMode(mode){
 		}
 
 		document.getElementById("divAdvanced").style.display = "none";
+		document.getElementById("trRSAEncryptionBasic").style.display = "";
 	}
 	else{
 		document.getElementById("OpenVPN_setting").style.display = "none";
 		document.getElementById("openvpn_export").style.display = "none";
 		document.getElementById("divAdvanced").style.display = "";
+		document.getElementById("trRSAEncryptionBasic").style.display = "none";
 	}
 }
 
@@ -727,6 +731,7 @@ function update_visibility(){
 	else
 		ccd = getRadioValue(document.form.vpn_server_ccd);
 
+	showhide("server_useronly", (auth == "tls"));
 	showhide("server_authhmac", (auth != "secret"));
 	showhide("server_snnm", ((auth == "tls") && (iface == "tun")));
 	showhide("server_plan", ((auth == "tls") && (iface == "tun")));
@@ -991,6 +996,21 @@ function update_vpn_client_state() {
 		}
 	});
 }
+
+function vpnServerTlsKeysize(_obj) {
+	var settingRadioItemCheck = function(obj, checkValue) {
+		var radioLength = obj.length;
+		for(var i = 0; i < radioLength; i += 1) {
+			if(obj[i].value == checkValue) {
+				obj[i].checked = true;
+			}
+		}
+	};
+
+	document.form.vpn_server_tls_keysize.value = _obj.value;
+	settingRadioItemCheck(document.form.vpn_server_tls_keysize_basic, _obj.value);
+	settingRadioItemCheck(document.form.vpn_server_tls_keysize_adv, _obj.value);
+}
 </script>
 </head>
 <body onload="initial();">
@@ -1155,6 +1175,7 @@ function update_vpn_client_state() {
 <input type="hidden" name="vpn_serverx_eas" value="<%tcWebApi_Get("OpenVPN_Common", "vpn_serverx_eas", "s")%>">
 <input type="hidden" name="vpn_serverx_dns" value="<%tcWebApi_Get("OpenVPN_Common", "vpn_serverx_dns", "s")%>">
 <input type="hidden" name="vpn_server_ccd_val" value="">
+<input type="hidden" name="vpn_server_tls_keysize" value="<% tcWebApi_Get("OpenVPN_Entry", "tls_keysize", "s") %>">
 <input type="hidden" name="formname" value="form">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
@@ -1218,6 +1239,15 @@ function update_vpn_client_state() {
 													<option value="1" selected><%tcWebApi_Get("String_Entry","menu5_1_1","s")%></option>
 													<option value="2"><%tcWebApi_Get("String_Entry","menu5","s")%></option>
 												</select>
+											</td>
+										</tr>
+										<tr id="trRSAEncryptionBasic">
+											<th>RSA Encryption<!--untranslated--></th>
+											<td>
+												<input type="radio" name="vpn_server_tls_keysize_basic" id="vpn_server_tls_keysize_basic_0" class="input" value="0" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "tls_keysize", "0", "checked"); %> onchange="vpnServerTlsKeysize(this);">
+												<label for='vpn_server_tls_keysize_basic_0'>1024 bit<!--untranslated--></label>
+												<input type="radio" name="vpn_server_tls_keysize_basic" id="vpn_server_tls_keysize_basic_1" class="input" value="1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "tls_keysize", "1", "checked"); %> onchange="vpnServerTlsKeysize(this);">
+												<label for='vpn_server_tls_keysize_basic_1'>2048 bit<!--untranslated--></label>
 											</td>
 										</tr>
 										<tr id="openvpn_export" style="display:none;">
@@ -1288,9 +1318,9 @@ function update_vpn_client_state() {
 
 									<div id="divAdvanced" style="display:none;margin-top:8px;">
 										<div class="formfontdesc">
-											<p><%tcWebApi_Get("String_Entry","vpn_openvpn_desc3","s")%></p><br />
-											<p><%tcWebApi_Get("String_Entry","vpn_openvpn_hint1","s")%></p><br />
-											<p><%tcWebApi_Get("String_Entry","vpn_openvpn_hint2","s")%></p><br />
+											<p><%tcWebApi_Get("String_Entry","vpn_openvpn_desc3","s")%></p>
+											<p><%tcWebApi_Get("String_Entry","vpn_openvpn_hint1","s")%></p>
+											<p><%tcWebApi_Get("String_Entry","vpn_openvpn_hint2","s")%></p>
 											<p>Before changing any value in advanced settings, please check the openVPN client software ability.</p>
 										</div>
 										<!-- Advanced setting table start-->
@@ -1369,7 +1399,7 @@ function update_vpn_client_state() {
 													<span style="color:#FC0">(<%tcWebApi_Get("String_Entry","Setting_factorydefault_value","s")%> : 1194)</span>
 												</td>
 											</tr>
-											<tr>
+											<tr style="display:none">
 												<th><%tcWebApi_Get("String_Entry","menu5_5","s")%></th>
 												<td>
 													<select name="vpn_server_firewall" class="input_option">
@@ -1385,7 +1415,7 @@ function update_vpn_client_state() {
 													<select name="vpn_server_crypt" class="input_option" onChange="update_visibility();">
 														<option value="tls" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "crypt","tls","selected"); %> >TLS</option>
 														<option value="secret" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "crypt","secret","selected"); %> >Static Key</option>
-														<option value="custom" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "crypt","custom","selected"); %> >Custom</option>
+														<!--option value="custom" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "crypt","custom","selected"); %> >Custom</option-->
 													</select>
 													<span id="server_tls_crypto_text" onclick="set_Keys('tls');" style="text-decoration:underline;cursor:pointer;"><%tcWebApi_Get("String_Entry","vpn_openvpn_ModifyKeys","s")%></span>
 													<span id="server_static_crypto_text" onclick="set_Keys('secret');" style="text-decoration:underline;cursor:pointer;"><%tcWebApi_Get("String_Entry","vpn_openvpn_ModifyKeys","s")%></span>
@@ -1393,6 +1423,15 @@ function update_vpn_client_state() {
 												</td>
 											</tr>
 											<tr>
+												<th>RSA Encryption<!--untranslated--></th>
+												<td>
+													<input type="radio" name="vpn_server_tls_keysize_adv" id="vpn_server_tls_keysize_adv_0" class="input" value="0" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "tls_keysize", "0", "checked"); %> onchange="vpnServerTlsKeysize(this);">
+													<label for='vpn_server_tls_keysize_adv_0'>1024 bit<!--untranslated--></label>
+													<input type="radio" name="vpn_server_tls_keysize_adv" id="vpn_server_tls_keysize_adv_1" class="input" value="1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "tls_keysize", "1", "checked"); %> onchange="vpnServerTlsKeysize(this);">
+													<label for='vpn_server_tls_keysize_adv_1'>2048 bit<!--untranslated--></label>
+												</td>
+											</tr>
+											<tr id="server_useronly">
 												<th><%tcWebApi_Get("String_Entry","vpn_openvpn_AuthOnly","s")%></th>
 												<td>
 													<input type="radio" name="vpn_server_igncrt" class="input" value="1" <% tcWebApi_MatchThenWrite("OpenVPN_Entry", "igncrt", "1", "checked"); %>><%tcWebApi_Get("String_Entry","checkbox_Yes","s")%>
@@ -1525,7 +1564,7 @@ function update_vpn_client_state() {
 										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" id="openvpn_client_table">
 											<thead>
 											<tr>
-												<td colspan="5">Allowed Clients</td>
+												<td colspan="5">Allowed Clients&nbsp;(<%tcWebApi_Get("String_Entry","List_limit","s")%>&nbsp;16)</td>
 											</tr>
 											</thead>
 											<tr>
@@ -1553,7 +1592,7 @@ function update_vpn_client_state() {
 													</select>
 												</td>
 								 				<td width="12%">
-								 					<input class="add_btn" type="button" onClick="addRow_Group_Advanced(128);" name="vpn_clientlist2" value="">
+													<input class="add_btn" type="button" onClick="addRow_Group_Advanced(16);" name="vpn_clientlist2" value="">
 								 				</td>
 											</tr>
 										</table>
@@ -1570,7 +1609,7 @@ function update_vpn_client_state() {
 
 											<tr>
 												<td>
-													<textarea rows="8" class="textarea_ssh_table" name="vpn_server_custom" cols="55" maxlength="15000"><% tcWebApi_clean_get("OpenVPN_Entry", "custom"); %></textarea>
+													<textarea rows="8" class="textarea_ssh_table" name="vpn_server_custom" cols="55" maxlength="4095"><% tcWebApi_clean_get("OpenVPN_Entry", "custom"); %></textarea>
 												</td>
 											</tr>
 										</table>

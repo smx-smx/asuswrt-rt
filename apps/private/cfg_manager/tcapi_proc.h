@@ -48,6 +48,9 @@ tcapi_read_req(mxml_node_t* tree, tcapi_msg_t *msg);
 
 extern void tcapi_readAll_req(tcapi_msg_t *msg);
 
+void
+tcapi_reset_req(mxml_node_t* tree, tcapi_msg_t *msg);
+
 void 
 tcapi_staticGet_req(mxml_node_t* tree, tcapi_msg_t *msg);
 #if (defined(TCSUPPORT_WAN_ETHER) || defined(TCSUPPORT_WAN_PTM)) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)

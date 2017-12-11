@@ -1,0 +1,4 @@
+#!/bin/sh
+
+#share QDMA IRQ to CPU 0 & 2
+echo 5 > /proc/irq/23/smp_affinity

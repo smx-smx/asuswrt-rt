@@ -533,6 +533,11 @@ void qos_drop_unset_rule();
 int webHistory_init(void);
 int webHistory_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
 #endif
+#ifdef TCSUPPORT_ACCESSLOG
+int accessLog_init(void);
+int accessLog_boot(mxml_node_t *top);
+int accessLog_execute(mxml_node_t *top, char name[][MAX_NODE_NAME]);
+#endif
 
 /**********20080703 racing add************/
 /*autopvc*/

@@ -54,6 +54,7 @@ var dsltmp_cfg_iptv_pvclist = decodeURIComponent('<%tcWebApi_char_to_ascii("GUIT
 var iptv_num_pvc_val = "<% tcWebApi_get("GUITemp_Entry0","dsltmp_cfg_iptv_num_pvc","s") %>";
 var dsltmp_cfg_ispservice = "<% tcWebApi_get("GUITemp_Entry0","dsltmp_cfg_ispservice","s") %>";
 var iptv_with_bridge = false;
+var dsltmp_auto_detect_bng_flag = "<%tcWebApi_get("GUITemp_Entry0","dsltmp_auto_detect_bng_flag","s")%>";
 
 //udpate iptv information
 if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
@@ -287,6 +288,11 @@ function goHome(){
 	
 	document.getElementById('loadingIcon').style.display = '';
 	document.getElementById("nextButton").disabled = true;
+	
+	//Deutsche Telekom IPTV detect
+	if(dsltmp_auto_detect_bng_flag == 1){
+		document.redirectForm.dsltmp_auto_detect_bng.value = 1;
+	}
 	
 	if(isWLclient()){		
 		setTimeout("showWlHint();", 3000);
@@ -559,6 +565,8 @@ else
 <input type="hidden" name="dsltmp_cfg_iptv_num_pvc" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_num_pvc","s") %>">
 <input type="hidden" name="dsltmp_cfg_iptv_pvclist" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_pvclist","s") %>">
 <input type="hidden" name="dsltmp_cfg_iptv_enable" value="<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_enable","s") %>">
+<input type="hidden" name="dsltmp_auto_detect_bng" value="0">
+
 <!-- dsl -->
 <input type="hidden" name="dsltmp_cfg_ginp" value="<%tcWebApi_Get("GUITemp_Entry0","dsltmp_cfg_ginp","s")%>">
 

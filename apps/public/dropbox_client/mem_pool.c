@@ -16,40 +16,34 @@ typedef list_node* (*init_ptr) (list_node **);
 list_node * sixteen_init(list_node **last)
 {
     void *a = malloc(16*NODE_NUM);
-    //printf("the list16 start addr is %x\n",(int)a);
     int i;
     assert_param(a);
     for(i=0;i<NODE_NUM;i++)
     {
         list_16_node[i].addr=a+i*16;
         list_16_node[i].next_node=NULL;
-        //printf("the list %d addr is %x\n",i,(int)(list_16_node[i].addr));
         if(i==NODE_NUM-1)
             break;
         list_16_node[i].next_node=&list_16_node[i+1];
     }
     *last=&(list_16_node[i]);
-    //printf("the list16 node %dend addr is %x\n\n",i,(int)(list_16_node[i].addr));
     return (&list_16_node[0]);
 }
 
 list_node * sixtyfour_init(list_node **last)
 {
     void *a = malloc(64*NODE_NUM);
-    //printf("the list64 start addr is %x\n",(int)a);
     int i;
     assert_param(a);
     for(i=0;i<NODE_NUM;i++)
     {
         list_64_node[i].addr=a+i*64;
         list_64_node[i].next_node=NULL;
-        //printf("the list %d addr is %x\n",i,(int)(list_16_node[i].addr));
         if(i==NODE_NUM-1)
             break;
         list_64_node[i].next_node=&list_64_node[i+1];
     }
     *last=&(list_64_node[i]);
-    //printf("the list64 node %dend addr is %x\n\n",i,(int)(list_64_node[i].addr));
     return (&list_64_node[0]);
 }
 
@@ -72,7 +66,6 @@ int mem_pool_init()
         manager_list[i].last_node=rear[i];
         manager_list[i].addr_start=(unsigned int)(available[i]->addr);
         manager_list[i].addr_end=(unsigned int)(manager_list[i].last_node->addr);
-        //printf("the manager_list[%d] \tstart addr is%x and end addr is %x\n\n",i,(unsigned int)(unsigned int)(manager_list[i].start_node->addr),(unsigned int)(manager_list[i].last_node->addr));
     }
 
     return 0;
@@ -117,14 +110,12 @@ void mem_free(void *addr)
         if(num>=start_addr&&num<=end_addr)
         break;
     }
-//    printf("the free add is %x and the start addr is %x\n",num,start_addr);
     if(i>=LIST_NUM)  //alan  add
     {
         free(addr);
         return;
     }
 
-    //num=(num-start_addr)/(16*(i+1));
     if(i == 0)  //alan add
     {
         num=(num-start_addr)/16;
@@ -140,16 +131,13 @@ void mem_free(void *addr)
         free(addr);
         return;
     }
-//    printf("the free node is %d\tand is nodelist[%d]\n",num,i);
     switch(i)
     {
         case 0:
-//            printf("list_16_node[%d] the next is %x\n",num,list_16_node[num].next_node);
             list_16_node[num].next_node=manager_list[i].start_node;
             manager_list[i].start_node=&(list_16_node[num]);
             break;
         case 1:
-//            printf("list_16_node[%d] the next is %x\n",num,list_16_node[num].next_node);
             list_64_node[num].next_node=manager_list[i].start_node;
             manager_list[i].start_node=&(list_64_node[num]);
             break;

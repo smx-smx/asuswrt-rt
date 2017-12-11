@@ -1,6 +1,4 @@
-﻿var productid = "<%tcWebApi_get("String_Entry","Web_Title2","s")%>";
-
-helpcontent[0] = new Array("",
+﻿helpcontent[0] = new Array("",
 "<%tcWebApi_get("String_Entry","WC11b_SSID_id","s")%>",
 "<%tcWebApi_get("String_Entry","WC11b_x_BlockBCSSID_id","s")%>",
 "<%tcWebApi_get("String_Entry","WC11b_Channel_id","s")%>",
@@ -137,8 +135,7 @@ helpcontent[8] = new Array("",
 "<%tcWebApi_get("String_Entry","FC_x_WanPingEnable_id","s")%>",
 "<%tcWebApi_get("String_Entry","FC_FirewallEnable_id","s")%>",
 "<%tcWebApi_get("String_Entry","FC_DoSEnable_id","s")%>",
-"USB flash drive/HDD can be used as virtual memory by creating swap space, default this feature is enabled and 256MB of virtual memory will be created, the swap file (swap.sys) is located in your USB disk /asus_swap directory. Instead of abruptly running out of memory when the physical RAM is full, a portion will be swapped to the USB disk in order to ensure the applications continue to run normally, however this approach slightly impacts the speed.",
-"This feature allows browser to redirect to failed connection warning page when Internet is down, if disabled warning page would not appear.");
+"USB flash drive/HDD can be used as virtual memory by creating swap space, default this feature is enabled and 256MB of virtual memory will be created, the swap file (swap.sys) is located in your USB disk /asus_swap directory. Instead of abruptly running out of memory when the physical RAM is full, a portion will be swapped to the USB disk in order to ensure the applications continue to run normally, however this approach slightly impacts the speed.");
 
 helpcontent[9] = new Array("",
 "<%tcWebApi_get("String_Entry","FC_URLActiveDate_id","s")%>",
@@ -156,7 +153,12 @@ helpcontent[11] = new Array("",
 "<%tcWebApi_get("String_Entry","LHC_x_ServerLogEnable_id","s")%>",
 "<%tcWebApi_get("String_Entry","LHC_x_TimeZone_id","s")%>",
 "<%tcWebApi_get("String_Entry","LHC_x_NTPServer_id","s")%>",
-"<%tcWebApi_get("String_Entry","QIS_pass_desc2","s")%> <%tcWebApi_get("String_Entry","LHC_x_Password_id","s")%>");
+"<%tcWebApi_get("String_Entry","QIS_pass_desc2","s")%> <%tcWebApi_get("String_Entry","LHC_x_Password_id","s")%>",
+"<%tcWebApi_get("String_Entry","QIS_pass_desc2","s")%> <%tcWebApi_get("String_Entry","File_Pop_content_alert_desc3","s")%>",
+"This feature allows browser to redirect to failed connection warning page when Internet is down, if disabled warning page would not appear.",	/* untranslated */
+"",
+"",
+"This feature allows you to restrict only specified IP address could access the wireless router via SSH / Telnet / Web Access from WAN (if SSH/ Telnet/ Web Access from WAN Enabled) from WAN or LAN side."	/* untranslated */);
 
 helpcontent[12] = new Array("",
 "<%tcWebApi_get("String_Entry","General_x_SystemUpTime_id","s")%>",
@@ -264,7 +266,7 @@ helpcontent[25] = new Array("",
 							"<% tcWebApi_Get("String_Entry", "DSL_PVC_id", "s") %>",
 							"<% tcWebApi_Get("String_Entry", "DSL_Bitswap_id", "s") %>",
 							"<% tcWebApi_Get("String_Entry", "DSL_pwr_saving_id", "s") %>",
-							"This item allows you to tweak the target SNR Margin of VDSL. For instance with a downstream SNR Margin at 8dB, you could set to 7dB or lower value to maximize the downstream performance, 4dB (Max.performance) but please note that the lower the value, DSL modem router will be weaker to defend the line noise, thus sync lost might occur, so please adjust with proper value. However if your VDSL connection is unstable or not able to establish a connection, for this case then set to a higher value such as 9dB ~ 30dB.",
+							"This item allows you to tweak the target SNR Margin of VDSL. For instance with a downstream SNR Margin at 8dB, you could set to 7dB or lower value to maximize the downstream performance, 2dB (Max.performance) but please note that the lower the value, DSL modem router will be weaker to defend the line noise, thus sync lost might occur, so please adjust with proper value. However if your VDSL connection is unstable or not able to establish a connection, for this case then set to a higher value such as 9dB ~ 30dB.",
 							"This item configures Profile to be used for VDSL connection, default is 30a multi mode. However in order to work around the non-standard 30a multi mode VDSL DSLAM sync issue, which deployed by some of Germany ISP, set to 17a multi mode might be needed in order for the VDSL line to sync up. For users of other countries, there is no need to change this setting.",
 							"This item allows you to tweak the Tx Power of VDSL. Reduce Tx Power(-1 dB ~ -7 dB) would increase the downstream performance(reduce more Tx Power leads to higher downstream data rate), but will impact upstream and vice versa.",
 							"This item configures Rx AGC(Auto Gain Control) GAIN for VDSL, if tweak the Stability Adjustment (VDSL) setting still could not get desired downstream speed, then could try to set Rx AGC GAIN Adjustment to High Performance mode. However if your VDSL connection is unstable and has some CRC then could set to Stable mode.",
@@ -282,10 +284,13 @@ helpcontent[25] = new Array("",
 
 //DualWAN
 helpcontent[26] = new Array("",
-							"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_desc", "s") %>",
-							"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_target", "s") %>",
-							"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_interval", "s") %>",
-							"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_delay", "s") %>",
-							"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_upper", "s") %>",
-							"<% tcWebApi_Get("String_Entry", "dualwan_failback_desc", "s") %>");
+			"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_desc", "s") %>",
+			"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_target", "s") %>",
+			"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_interval", "s") %>",
+			"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_delay", "s") %>",
+			"<% tcWebApi_Get("String_Entry", "dualwan_pingtime_upper", "s") %>",
+			"<% tcWebApi_Get("String_Entry", "dualwan_failback_desc", "s") %>",
+			"In the event that Primary WAN connection disconnected, with Enable Guest Network Terminate Switch turned on would block Guest Network clients from access Internet via Secondary WAN.",
+			"Once Primary WAN connection restored, Guest Network clients Internet access could resume."	/* untranslated */
+		);
 

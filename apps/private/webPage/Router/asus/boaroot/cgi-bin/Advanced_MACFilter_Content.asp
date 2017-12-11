@@ -14,10 +14,11 @@
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" language="JavaScript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script type="text/javascript" language="JavaScript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
@@ -221,7 +222,7 @@ $("check_mac").innerHTML="The format for the MAC address is six groups of two he
 </tr>
 <tr>
 <td width="40%">
-<input type="text" maxlength="17" class="input_macaddr_table" name="macfilter_list_x_0" onKeyPress="return is_hwaddr(this,event)" onblur="check_macaddr(this,check_hwaddr_temp(this))">
+<input type="text" maxlength="17" class="input_macaddr_table" name="macfilter_list_x_0" onKeyPress="return validator.isHWAddr(this,event)" onblur="check_macaddr(this,check_hwaddr_temp(this))">
 </td>
 <td width="20%">
 <input class="add_btn" type="button" onclick="addRow(document.form.macfilter_list_x_0, 32);" value="">
