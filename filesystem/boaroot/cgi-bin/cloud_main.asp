@@ -41,10 +41,6 @@ var https_port = '<% tcWebApi_get("AiCloud_Entry", "webdav_https_port", "s") %>'
 
 function initial(){
 	show_menu();
-	addOnlineHelp($("faq0"), ["samba"]);
-	addOnlineHelp($("faq1"), ["ASUSWRT", "port", "forwarding"]);
-	addOnlineHelp($("faq2"), ["ASUSWRT", "DMZ"]);
-	addOnlineHelp($("faq3"), ["WOL", "BIOS"]);
 
 	switch(valid_is_wan_ip(wanlink_ipaddr())){
 		/* private */
@@ -81,6 +77,17 @@ function initial(){
 
 	if(rrsut_support == -1)
 		document.getElementById("rrsLink").style.display = "none";
+
+	setTimeout("update_FAQ();", 300);
+}
+
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){
+		faqURL("faq0", "https://www.asus.com", "/support/FAQ/", "1011279");
+		faqURL("faq1", "https://www.asus.com", "/support/FAQ/", "114093");
+		faqURL("faq2", "https://www.asus.com", "/support/FAQ/", "1001253");
+		faqURL("faq3", "https://www.asus.com", "/support/FAQ/", "1009775");
+	}
 }
 
 function valid_is_wan_ip(ip_obj){

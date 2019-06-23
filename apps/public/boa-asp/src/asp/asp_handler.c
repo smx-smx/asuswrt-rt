@@ -15283,13 +15283,9 @@ static void wl_support_region(asp_reent* reent, const asp_text* params, asp_text
 
 	if(!tcapi_get("SysInfo_Entry", "ProductName", tmp))
 	{
-		if(!strcmp(tmp, "DSL-AC52U") || !strcmp(tmp, "DSL-AC56U"))
+		if(!strcmp(tmp, "DSL-AC52U") || !strcmp(tmp, "DSL-AC56U") || !strcmp(tmp, "DSL-AC55U"))
 		{
-			websWrite(buf, "AA/AU/EU");
-		}
-		else if(!strcmp(tmp, "DSL-AC55U"))
-		{
-			websWrite(buf, "AU/EU");
+			websWrite(buf, "AA/AU/EU");
 		}
 	}
 }

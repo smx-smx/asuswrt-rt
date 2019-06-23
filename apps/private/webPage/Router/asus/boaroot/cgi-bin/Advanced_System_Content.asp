@@ -392,8 +392,14 @@ function initial(){
 		set_shell_timeout = 20;
 	}
 
+	setTimeout("update_FAQ();", 300);
 }
 
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){		
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1034294");
+	}
+}
 function init_reboot_schedule_setting(){
 	document.form.reboot_date_x_Sun.checked = getDateCheck(document.form.reboot_schedule.value, 0);
 	document.form.reboot_date_x_Mon.checked = getDateCheck(document.form.reboot_schedule.value, 1);
@@ -1575,7 +1581,9 @@ function update_rewanDateTime()
 								<td>
 									<input type="radio" value="1" name="misc_http_x" class="input" onClick="hideport(1);enable_wan_access(1);return change_common_radio(this, 'FirewallConfig', 'misc_http_x', '1')" <% if tcWebApi_get("Firewall_Entry","misc_http_x","h") = "1" then asp_Write("checked") end if %>><% tcWebApi_Get("String_Entry", "checkbox_Yes", "s") %>
 									<input type="radio" value="0" name="misc_http_x" class="input" onClick="hideport(0);enable_wan_access(0);return change_common_radio(this, 'FirewallConfig', 'misc_http_x', '0')" <% if tcWebApi_get("Firewall_Entry","misc_http_x","h") = "0" then asp_Write("checked") end if %>><% tcWebApi_Get("String_Entry", "checkbox_No", "s") %>
-									<span class="formfontdesc" id="WAN_access_hint" style="color:#FFCC00; display:none;">Only HTTPS is supported when accessing web from WAN.</span><!--untranslated-->
+									<span class="formfontdesc" id="WAN_access_hint" style="color:#FFCC00; display:none;">Only HTTPS is supported when accessing web from WAN.
+										<a id="faq" href="https://www.asus.com/support/FAQ/1034294" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a>
+									</span><!--untranslated-->
 									<div class="formfontdesc" id="NSlookup_help_for_WAN_access" style="color:#FFCC00; display:none;"><% tcWebApi_Get("String_Entry", "NSlookup_help", "s") %></div>
 								</td>
 							</tr>

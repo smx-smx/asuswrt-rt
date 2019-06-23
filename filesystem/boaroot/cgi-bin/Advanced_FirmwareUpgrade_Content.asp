@@ -714,7 +714,7 @@ function transferTimeFormat(time){
 				<th>Signature Version</th>
 				<td >
 					<div style="height:33px;margin-top:5px;"><span id="sig_ver_word" style="color:#FFFFFF;"></span><span id="sig_update_date"></span></div>
-					<div style="margin-left:200px;margin-top:-38px;">
+					<div style="margin-left:217px;margin-top:-38px;">
 						<input type="button" id="sig_check" name="sig_check" class="button_gen" onclick="sig_version_check();" value='<%tcWebApi_get("String_Entry","liveupdate","s")%>'>
 					</div>
 					<div>

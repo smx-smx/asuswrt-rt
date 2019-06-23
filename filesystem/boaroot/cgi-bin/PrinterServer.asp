@@ -22,6 +22,7 @@
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
 <style type="text/css">
 .printerServer_table{
 	width:740px;
@@ -68,16 +69,21 @@
 }
 </style>
 <script>
+var $j = jQuery.noConflict();
 wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'pppoe';
 function initial(){
 	show_menu();
-	$("option5").innerHTML = '<table><tbody><tr><td><div id="index_img5"></div></td><td><div style="width:120px;"><%tcWebApi_get("String_Entry","Menu_usb_application","s")%></div></td></tr></tbody></table>';
-	$("option5").className = "m5_r";
-	addOnlineHelp($("faq1"), ["ASUSWRT", "ez","printer"]);
-	addOnlineHelp($("faq2"), ["ASUSWRT", "lpr"]);
-	addOnlineHelp($("faq3"), ["mac", "lpr"]);
+	setTimeout("update_FAQ();", 300);
+}
+
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){		
+		faqURL("faq1", "https://www.asus.com", "/support/FAQ/", "114046");
+		faqURL("faq2", "https://www.asus.com", "/support/FAQ/", "114024");
+		faqURL("faq3", "https://www.asus.com", "/support/FAQ/", "113661");
+	}
 }
 function showMethod(flag1, flag2){
 	document.getElementById("method1").style.display = flag1;
@@ -145,14 +151,14 @@ function showMethod(flag1, flag2){
 				<div class="">
 				<ul class="">
 					<li>
-						<a id="faq1" href="#" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","asus_ez_print_share","s")%> FAQ</a>&nbsp;&nbsp;
+						<a id="faq1" href="https://www.asus.com/support/FAQ/114046/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","asus_ez_print_share","s")%> FAQ</a>&nbsp;&nbsp;
 						<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FC0">Download Now!</a>
 					</li>
 					<li style="margin-top:10px;">
-						<a id="faq2" href="#" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","LPR_print_share","s")%> FAQ (Windows)</a>&nbsp;&nbsp;
+						<a id="faq2" href="https://www.asus.com/support/FAQ/114024/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","LPR_print_share","s")%> FAQ (Windows)</a>&nbsp;&nbsp;
 					</li>
 					<li style="margin-top:10px;">
-						<a id="faq3" href="#" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","LPR_print_share","s")%> FAQ (MAC)</a>&nbsp;&nbsp;
+						<a id="faq3" href="https://www.asus.com/support/FAQ/113661/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","LPR_print_share","s")%> FAQ (MAC)</a>&nbsp;&nbsp;
 					</li>
 				</ul>
 				</div>

@@ -115,8 +115,14 @@ window.onresize = function() {
 
 function initial(){
 	show_menu();
+	setTimeout("update_FAQ();", 300);
 }
 
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){		
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1008719");
+	}
+}
 function applyRule(){
 	document.form.editFlag.value = "1";
 	showLoading();
@@ -721,7 +727,7 @@ function eula_confirm(){
 														<tr>
 															<td>
 																<div style="width:430px"><%tcWebApi_get("String_Entry","AiProtection_HomeDesc2","s")%></div>
-																<div style="width:430px"><a style="text-decoration:underline;" href="http://www.asus.com/support/FAQ/1008719/" target="_blank"><%tcWebApi_get("String_Entry","AiProtection_Home","s")%> FAQ</a></div>
+																<div style="width:430px"><a id="faq" style="text-decoration:underline;" href="https://www.asus.com/support/FAQ/1008719/" target="_blank"><%tcWebApi_get("String_Entry","AiProtection_Home","s")%> FAQ</a></div>
 															</td>
 															<td>
 																<div style="width:100px;height:48px;margin-left:-40px;background-image:url('/images/New_ui/tm_logo.png');"></div>

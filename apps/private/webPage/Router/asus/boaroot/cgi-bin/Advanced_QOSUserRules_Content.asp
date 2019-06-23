@@ -25,7 +25,7 @@ End If
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
-
+<script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
 <style>
 .Portrange{
 	font-size: 12px;
@@ -33,6 +33,7 @@ End If
 }
 </style>
 <script>
+var $j = jQuery.noConflict();
 wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'pppoe';
@@ -55,6 +56,7 @@ function key_event(evt){
 
 function initial(){
 	show_menu();
+	setTimeout("update_FAQ();", 300);
 	showqos_rulelist();
 
 	load_QoS_rule();
@@ -62,6 +64,11 @@ function initial(){
 		document.getElementById("is_qos_enable_desc").style.display = "none";
 }
 
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){		
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1010951");
+	}
+}
 function applyRule(){	
 
 		save_table();
@@ -786,7 +793,7 @@ function valid_IPorMAC(obj){
 					</ul>
 					</div>
 					<div class="formfontdesc">
-						<a style="text-decoration:underline;" href="https://www.asus.com/support/FAQ/1010951/" target="_blank">QoS FAQ</a>
+						<a id="faq" style="text-decoration:underline;" href="https://www.asus.com/support/FAQ/1010951/" target="_blank">QoS FAQ</a>
 					</div>
 					</td>
 					</tr>

@@ -129,6 +129,19 @@ if(filter_HwVer)
 	fwVer = fwVer.slice(0, fwVer.indexOf("HwVer")-1);
 
 var dsl_type = "<% tcWebApi_get("Info_Adsl","AdslType","s") %>".replace("_", " ");
+var status_isVDSLmode = "<%tcWebApi_staticGet("Info_Adsl","xDSLmode","s")%>";
+if(status_isVDSLmode == "VDSL"){
+	dsl_type = dsl_type.replace("ANNEX ", "");
+}
+
+function display_vdsl_band_status(){
+	if(status_isVDSLmode == "VDSL") {
+		document.getElementById("th_AdslType").innerHTML = "<%tcWebApi_get("String_Entry","dslsetting_disc2_vdsl","s")%>";	/*untranslated*/
+	}
+	else {
+		document.getElementById("th_AdslType").innerHTML = "<%tcWebApi_get("String_Entry","dslsetting_disc2","s")%>";
+	}
+}
 	
 function tabclickhandler(unit){	
 	location.href = "internet.asp";	
@@ -172,6 +185,7 @@ function initial()
 		document.getElementById("div_AdslState").innerHTML = "";
 		document.getElementById("router_icon").className = "router_logo";
 		document.getElementById("area_Opmode").style.display = "";
+		display_vdsl_band_status();
 		document.getElementById("area_AdslType").style.display = "";
 		document.getElementById("div_AdslType").innerHTML = "<p style=\"padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px;\">"+dsl_type+"</p>";
 		document.getElementById("area_Uptime").style.display = "";
@@ -229,6 +243,9 @@ function update_log(){
 					document.getElementById("div_DataRateDown").innerHTML = log_DataRateDown;
 					document.getElementById("div_AdslState").innerHTML = "";
 					document.getElementById("div_Opmode").innerHTML = "<p style=\"padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px;\">"+log_Opmode+"</p>";
+					if(status_isVDSLmode == "VDSL"){
+						log_AdslType = log_AdslType.replace("ANNEX ", "");
+					}
 					document.getElementById("div_AdslType").innerHTML = "<p style=\"padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px;\">"+log_AdslType+"</p>";
 					document.getElementById("router_icon").className = "router_logo";
 					document.getElementById("area_Opmode").style.display = "";
@@ -258,7 +275,8 @@ function update_log(){
 					document.getElementById("area_Opmode").style.display = "none";
 					document.getElementById("area_AdslType").style.display = "none";
 					document.getElementById("area_Uptime").style.display = "none";
-				}	
+				}
+				display_vdsl_band_status();
 				setTimeout("update_log();", 3000);
 			}	
 	});		
@@ -352,7 +370,7 @@ function update_log(){
 								<tr>
 									<td>
 										<div id="area_AdslType">
-										<p class="formfonttitle_nwm" ><%tcWebApi_get("String_Entry","dslsetting_disc2","s")%></p>
+										<p class="formfonttitle_nwm" id="th_AdslType"><%tcWebApi_get("String_Entry","dslsetting_disc2","s")%></p>
 										<div id="div_AdslType">
 												<p style="padding-left:10px; margin-top:3px; background-color:#444f53; line-height:20px;">
 												<% tcWebApi_get("Info_Adsl","AdslType","s") %>

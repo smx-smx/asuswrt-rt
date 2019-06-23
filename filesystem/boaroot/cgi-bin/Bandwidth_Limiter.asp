@@ -59,14 +59,14 @@ var over_var = 0;
 var isMenuopen = 0;
 
 function initial(){
-	show_menu();
-	genMain_table();
+	show_menu();	
 	if(document.form.qos_enable.value == 1)
 		showhide("list_table",1);
 	else
 		showhide("list_table",1);
-	
-	showLANIPList();	
+	genClientList();
+	genMain_table();
+	showLANIPList();
 }
 
 function pullLANIPList(obj){
@@ -125,11 +125,7 @@ function deleteRow_main(obj){
 }
 
 function addRow_main(obj, length){
-	/*
-	if(document.form.PC_devicename.value == "" || document.getElementById("download_rate").value == "" || document.getElementById("upload_rate").value == ""){
-		return true;
-	}*/
-	
+		
 	var enable_checkbox = $j(obj.parentNode).siblings()[0].children[0];
 	var invalid_char = "";
 	var qos_bw_rulelist_row =  qos_bw_rulelist.split("<");
@@ -230,21 +226,6 @@ function addRow_main(obj, length){
 		}
 	}
 
-	
-	/*  Not Need these.
-	if(document.form.PC_devicename.value.indexOf('-') != -1
-	|| document.form.PC_devicename.value.indexOf('~') != -1
-	||(document.form.PC_devicename.value.indexOf(':') != -1 && document.form.PC_devicename.value.indexOf('.') != -1)){
-		var space_count = 0;
-		space_count = document.form.PC_devicename.value.split(" ").length - 1;
-		for(i=0;i < space_count;i++){		// filter space
-			document.form.PC_devicename.value = document.form.PC_devicename.value.replace(" ", "");
-		}
-		
-		document.form.PC_devicename.value = document.form.PC_devicename.value.replace(":", "-");
-		document.form.PC_devicename.value = document.form.PC_devicename.value.replace("~", "-");
-	}*/
-
 	if(qos_bw_rulelist == ""){
 		qos_bw_rulelist += enable_checkbox.checked ? 1:0;
 	}	
@@ -273,6 +254,7 @@ function addRow_main(obj, length){
 }
 					 
 function genMain_table(){
+	
 	var qos_bw_rulelist_row = qos_bw_rulelist.split("<");
 	var code = "";	
 	code += '<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_table">';
@@ -312,8 +294,8 @@ function genMain_table(){
 			var qos_bw_rulelist_col = qos_bw_rulelist_row[k].split('>');
 			var apps_client_name = "";
 
-			var apps_client_mac = qos_bw_rulelist_col[1];			
-			var clientObj = clientList[apps_client_mac];
+			var apps_client_mac = qos_bw_rulelist_col[1];
+			var clientObj = clientList[apps_client_mac];			
 			if(clientObj == undefined) {
 				apps_client_name = "";
 			}
@@ -369,6 +351,7 @@ function bandwidth_code(o,event){
 }
 
 function showLANIPList(){
+
 	if(clientList.length == 0){
 		setTimeout(function() {
 			genClientList();

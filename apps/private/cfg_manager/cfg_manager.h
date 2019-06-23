@@ -75,6 +75,9 @@
 #define ROMFILE_TAG	"ROMFILE"
 #define ROMFILE_PATH 	"/tmp/var/romfile.cfg"
 #define DEF_ROMFILE_PATH 	"/userfs/romfile.cfg"
+#ifdef TCSUPPORT_ISP_CUSTOMIZE_ROMFILE
+#define DEV_ZERO_PATH	"/dev/zero"
+#endif
 
 //Andy Chiu, 2015/03/09
 #define CFG_RESTORE_DIR	"/tmp/var/cfgrestore"
@@ -85,6 +88,9 @@
 #if 1 //def TCSUPPORT_BACKUPROMFILE
 #define BR_FILE_NAME "/tmp/tc_backupromfile"
 #define DR_FILE_NAME "/tmp/tc_defaultromfile"
+#ifdef TCSUPPORT_ISP_CUSTOMIZE_ROMFILE
+#define USR_FILE_NAME "/tmp/tc_userromfile"
+#endif
 #endif
 
 /* running romfile path used by customer*/
@@ -111,6 +117,9 @@
 #define	DEF_ROMFILE_FLAG	2
 #endif
 #define	DEFFILESYSTEM_ROMFILE_FLAG	3
+#endif
+#ifdef TCSUPPORT_ISP_CUSTOMIZE_ROMFILE
+#define USER_ROMFILE_FLAG 4
 #endif
 
 #define OP_NUM		3

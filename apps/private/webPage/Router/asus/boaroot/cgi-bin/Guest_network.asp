@@ -1514,7 +1514,7 @@ function bandwidth_code(o,event){
 				</tr>
 				</thead>
 				<tr>
-					<th width="80%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);">Client Name (MAC address)<!--untranslated--></a></th> 
+					<th width="80%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><%tcWebApi_get("String_Entry","Client_Name","s")%> (<%tcWebApi_get("String_Entry","PPPC_x_MacAddressForISP_in","s")%>)</a></th> 
 					<th width="20%"><%tcWebApi_get("String_Entry","list_add_delete","s")%></th>
 				</tr>
 				<tr>

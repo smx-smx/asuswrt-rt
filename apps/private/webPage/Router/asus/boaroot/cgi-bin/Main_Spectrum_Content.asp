@@ -7,7 +7,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title>ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - Spectrum</title>
+<title>ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <% tcWebApi_get("String_Entry","Spectrum_title","s") %></title>
 <link rel="stylesheet" type="text/css" href="/index_style.css"> 
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
@@ -124,7 +124,7 @@ function refresh_signals(){
 								<tr>
 								  <td bgcolor="#4D595D" height="100px">
 									  <div>&nbsp;</div>
-									  <div class="formfonttitle"><% tcWebApi_Get("String_Entry", "Menu_TrafficManager", "s") %> - Spectrum</div>
+									  <div class="formfonttitle"><% tcWebApi_Get("String_Entry", "Menu_TrafficManager", "s") %> - <% tcWebApi_get("String_Entry","Spectrum_title","s") %></div>
 									  <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 									  <div class="formfontdesc"><%tcWebApi_get("String_Entry","Spectrum_desc","s")%></div>
 										<span id="signals_update" style="margin-left:5px;margin-top:10px;color:#FFCC00;display:none;"></span>

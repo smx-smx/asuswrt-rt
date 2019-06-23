@@ -334,6 +334,7 @@ enum{
 };
 
 int getMacAddrWithoutColon(const IFID ifid, char *mac);
+int convertMacToRandSeed(const char *mac);
 int is_wan_connect(int unit);
 
 #define eval(cmd, args...) ({ \

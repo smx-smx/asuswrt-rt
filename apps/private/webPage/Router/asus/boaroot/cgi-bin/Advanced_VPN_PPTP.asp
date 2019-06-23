@@ -64,7 +64,7 @@ function initial(){
 	var pptpd_clients = '<% tcWebApi_Get("PPTP_Entry", "pptpd_clients", "s") %>';
 
 	show_menu();
-	addOnlineHelp(document.getElementById("faq"), ["ASUSWRT", "VPN"]);
+	setTimeout("update_FAQ();", 300);
 	//if support pptpd and openvpnd then show switch button
 	if(pptpd_support != -1 && openvpnd_support != -1) {
 		document.getElementById("divSwitchMenu").style.display = "";
@@ -156,6 +156,12 @@ function initial(){
 	/* MPPE end */
 	check_vpn_conflict();
 	/* Advanced Setting end */
+}
+
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){		
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1033906");
+	}
 }
 
 function formShowAndHide(server_enable, server_type) {
@@ -878,7 +884,7 @@ function update_vpn_client_state() {
 										<div class="formfontdesc" style="margin:-10px 0px 0px -15px;">
 											<ul>
 												<li>
-													<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><%tcWebApi_Get("String_Entry","BOP_isp_heart_item","s")%> FAQ</a>
+													<a id="faq" href="https://www.asus.com/US/support/FAQ/1033906" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><%tcWebApi_Get("String_Entry","BOP_isp_heart_item","s")%> FAQ</a>
 												</li>
 											</ul>
 										</div>

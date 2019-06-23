@@ -163,7 +163,10 @@ function genClientList(){
 				clientList[thisClientMacAddr].IP = ClientField[0];
 				clientList[thisClientMacAddr].isLogin = (ClientField[0] == Login_ip_str) ? true : false;		
 				clientList[thisClientMacAddr].MacAddr = ClientField[1];
-				clientList[thisClientMacAddr].Name = ClientField[2];
+				clientList[thisClientMacAddr].Name = ClientField[2].trim();
+				if(clientList[thisClientMacAddr].Name == ""){
+					clientList[thisClientMacAddr].Name = clientList[thisClientMacAddr].MacAddr;
+				}
 				clientList[thisClientMacAddr].type = ClientField[3];
 				clientList[thisClientMacAddr].dpiType = '';//for image_Type title
 				clientList[thisClientMacAddr].isGateway = (ClientField[0] == '<% tcWebApi_get("Lan_Dhcp","IP","s"); %>') ? true : false;

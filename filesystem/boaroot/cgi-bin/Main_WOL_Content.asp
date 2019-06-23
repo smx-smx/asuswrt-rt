@@ -192,10 +192,16 @@ if(wollist_array_4.length > 0)
 
 function initial(){
 	show_menu();
+	setTimeout("update_FAQ();", 300);
 	showwollist();
 	showLANMacList();
 }
 
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){		
+		faqURL("faq3", "https://www.asus.com", "/support/FAQ/", "1009775");	//id in string tag : smart_access3
+	}
+}
 function showwollist(){
         var wollist_row = wollist_array.split('<');
         var code = "";

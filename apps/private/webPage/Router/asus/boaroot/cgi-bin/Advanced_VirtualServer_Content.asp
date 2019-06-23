@@ -45,6 +45,7 @@ end if
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
 <style>
 #ClientList_Block{
 border:1px outset #999;
@@ -86,6 +87,7 @@ cursor:default;
 }
 </style>
 <script>
+var $j = jQuery.noConflict();
 var wItem = new Array(new Array("", "", "TCP"),
 new Array("FTP", "20,21", "TCP"),
 new Array("TELNET", "23", "TCP"),
@@ -242,13 +244,19 @@ function initial(){
 	showLANIPList();
 	loadNewvts_rulelist();
 	showvts_rulelist();
-	addOnlineHelp($("faq"), ["ASUSWRT", "port", "forwarding"]);
+	setTimeout("update_FAQ();", 300);
 
 	if(parent.usb_support == -1){
 		$('FTP_desc').style.display = "none";
 		$('ori_ftpport').style.display = "none";
 	}
 
+}
+
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){		
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "114093");
+	}
 }
 function applyRule(){
 
@@ -809,7 +817,7 @@ function redirect(){
 	</ul>
 </div>
 <div class="formfontdesc" style="margin-top:-10px;">
-<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><%tcWebApi_get("String_Entry","menu5_3_4","s")%> FAQ</a>
+<a id="faq" href="https://www.asus.com/support/FAQ/114093" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><%tcWebApi_get("String_Entry","menu5_3_4","s")%> FAQ</a>
 </div>
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 <thead>

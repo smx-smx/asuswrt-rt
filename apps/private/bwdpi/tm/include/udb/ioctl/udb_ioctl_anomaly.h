@@ -29,6 +29,9 @@
 #include "udb/ioctl/udb_ioctl_common.h"
 
 #define UDB_ANOMALY_LOG_SIZE 500
+#if TMCFG_E_UDB_CORE_DC
+#define ANOMALY_PORT_LOG_SIZE 500
+#endif
 
 enum
 {

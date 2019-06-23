@@ -27,7 +27,9 @@ end if
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script type="text/javascript" language="JavaScript" src="/detect.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
 <script>
+var $j = jQuery.noConflict();
 wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'pppoe';
@@ -41,8 +43,15 @@ var wireless = []; // [[MAC, associated, authorized], ...]
 var autofw_rulelist_array = "<%TCWebApi_get("portTriggering_Entry0","AutoFW_RuleList","s")%>";	//javi
 function initial(){
 show_menu();
+setTimeout("update_FAQ();", 300);
 load_body();
 showautofw_rulelist();
+}
+
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){		
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "114110");
+	}
 }
 function applyRule(){
 	var rule_num = $('autofw_rulelist_table').rows.length;
@@ -243,6 +252,9 @@ return true;
 		<div class="formfonttitle"><%tcWebApi_get("String_Entry","menu5_3","s")%> - <%tcWebApi_get("String_Entry","menu5_3_3","s")%></div>
 <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 		<div class="formfontdesc"><%tcWebApi_get("String_Entry","IPC_porttrigger_sd","s")%></div>
+		<div class="formfontdesc" style="margin-top:-10px;">
+			<a id="faq" href="https://www.asus.com/support/FAQ/114110" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><%tcWebApi_get("String_Entry","menu5_3_3","s")%>&nbsp FAQ</a>
+		</div>
 
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 <thead>

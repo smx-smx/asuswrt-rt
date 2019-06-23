@@ -337,11 +337,11 @@ function showadslbootTime(){
 <div>&nbsp;</div>
 <div class="formfonttitle"><%tcWebApi_get("String_Entry","System_Log","s")%> - <%tcWebApi_get("String_Entry","menu_dsl_log","s")%></div>
 <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
-<div class="formfontdesc">This page shows the detailed DSL status.</div>	<!-- untranslated -->
+<div class="formfontdesc"><%tcWebApi_get("String_Entry","DSL_Log_Desc","s")%></div>
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_log">
 <thead>
 <tr>
-	<th colspan="2">DSL Information</th>
+	<th colspan="2"><%tcWebApi_get("String_Entry","DSL_info","s")%></th>
 </tr>
 </thead>
 <tr>
@@ -381,7 +381,7 @@ function showadslbootTime(){
 </td>
 </tr>
 <tr>
-<th>Current Profile</th>
+<th><%tcWebApi_get("String_Entry","DSL_profile","s")%></th>
 <td colspan="2">
 	<div id="div_VDSL_CurrentProfile"><% if tcWebApi_get("Info_Adsl","CurrentProfiles","h") <> "" then tcWebApi_get("Info_Adsl","CurrentProfiles","s") end if%></div>
 </td>
@@ -435,7 +435,7 @@ function showadslbootTime(){
 </td>
 </tr>
 <tr>
-<th>SNR Margin</th>
+<th><%tcWebApi_get("String_Entry","DSL_SNR_Margin","s")%></th>
 <td>
 	<div id="div_SNRMarginDown"><% if tcWebApi_get("Info_Adsl","SNRMarginDown","h") <> "" then tcWebApi_get("Info_Adsl","SNRMarginDown","s") end if%></div>
 </td>
@@ -444,7 +444,7 @@ function showadslbootTime(){
 </td>
 </tr>
 <tr>
-<th>Line Attenuation</th>
+<th><%tcWebApi_get("String_Entry","DSL_Line_Attenuation","s")%></th>
 <td>
 	<div id="div_AttenDown"><% if tcWebApi_get("Info_Adsl","AttenDown","h") <> "" then tcWebApi_get("Info_Adsl","AttenDown","s") end if%></div>
 </td>
@@ -471,7 +471,7 @@ function showadslbootTime(){
 </td>
 </tr>
 <tr>
-<th>Data Rate</th>
+<th><%tcWebApi_get("String_Entry","DSL_Data_Rate","s")%></th>
 <td>
 	<div id="div_DataRateDown"><% if tcWebApi_get("Info_Adsl","DataRateDown","h") <> "" then tcWebApi_get("Info_Adsl","DataRateDown","s") end if%></div>
 </td>
@@ -480,7 +480,7 @@ function showadslbootTime(){
 </td>
 </tr>
 <tr>
-<th>MAX Rate</th>
+<th><%tcWebApi_get("String_Entry","DSL_Data_Rate_Max","s")%></th>
 <td>
 	<div id="div_AttainDown"><% if tcWebApi_get("Info_Adsl","AttainDown","h") <> "" then tcWebApi_get("Info_Adsl","AttainDown","s") end if%></div>
 </td>
@@ -489,7 +489,7 @@ function showadslbootTime(){
 </td>
 </tr>
 <tr>
-<th>POWER</th>
+<th><%tcWebApi_get("String_Entry","DSL_Power","s")%></th>
 <td>
 	<div id="div_PowerDown"><% if tcWebApi_get("Info_Adsl","PowerDown","h") <> "" then tcWebApi_get("Info_Adsl","PowerDown","s") end if%></div>
 </td>
@@ -545,7 +545,7 @@ function showadslbootTime(){
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_log">
 <thead>
 <tr>
-	<th colspan="10">VDSL Band Status</th>
+	<th colspan="10"><%tcWebApi_get("String_Entry","DSL_VDSL_status","s")%></th>
 </tr>
 
 <tr>
@@ -562,7 +562,7 @@ function showadslbootTime(){
 </tr>
 </thead>
 <tr>
-<th>Line Attenuation (dB)</th>
+<th><%tcWebApi_get("String_Entry","DSL_Line_Attenuation","s")%> (dB)</th>
 <td style="color:#3CF;">
 	<div id="div_VDSLBAND_LATNUp0"></div>
 </td>
@@ -593,7 +593,7 @@ function showadslbootTime(){
 </tr>
 
 <tr>
-<th>Signal Attenuation (dB)</th>
+<th><%tcWebApi_get("String_Entry","DSL_Signal_Attenuation","s")%> (dB)</th>
 <td style="color:#3CF;">
 	<div id="div_VDSLBAND_SATNUp0"></div>
 </td>
@@ -624,7 +624,7 @@ function showadslbootTime(){
 </tr>
 
 <tr>
-<th>SNR Margin (dB)</th>
+<th><%tcWebApi_get("String_Entry","DSL_SNR_Margin","s")%> (dB)</th>
 <td style="color:#3CF;">
 	<div id="div_VDSLBAND_SNRMarginUp0"></div>
 </td>

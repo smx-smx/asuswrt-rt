@@ -329,9 +329,9 @@ int main(int argc, char **argv)
 
     //get lan ip
     memset(lan_ip, 0, sizeof(lan_ip));
-    if(tcapi_get("Lan_Entry0", "IP", lan_ip) != TCAPI_PROCESS_OK)
+    if(tcapi_get("Lan_Entry0", "IP", lan_ip) != TCAPI_PROCESS_OK || !strlen(lan_ip))
     {
-	DIE("can't get lan ip");
+        DIE("can't get lan ip");
     }
 	
 	//get lan netmask

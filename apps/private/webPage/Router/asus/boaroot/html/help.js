@@ -2096,3 +2096,47 @@ function goToWAN(index){
 		document.titleForm.current_page.value = "Advanced_DSL_Content.asp";
 	top.location.href = document.titleForm.current_page.value;
 }
+
+function faqURL(_Objid, _URL1, _URL2, _faqNum){
+	// https://www.asus.com/tw/support/FAQ/1000906
+	var pLang = <%tcWebApi_get("LanguageSwitch_Entry","Type","s")%>;
+	var faqLang = {
+			1 : "",		//EN : "",
+			18 : "/tw",	//TW : "/tw",
+            3 : ".cn",	//CN : ".cn",
+            2 : "/br",	//BR : "/br",
+            4 : "/cz",	//CZ : "/cz",
+            5 : "/dk",	//DA : "/dk",
+            6 : "/de",	//DE : "/de",
+            7 : "/es",	//ES : "/es",
+            8 : "/fi",	//FI : "/fi",
+            9 : "/fr",	//FR : "/fr",
+                        //HU : "/hu",
+            10 : "/it",	//IT : "/it",
+                        //JP : "/jp",
+                        //KR : "/kr",
+            11 : "/my",	//MS : "/my",
+                        //NL : "/nl",
+            12 : "/no",	//NO : "/no",
+            13 : "/pl",	//PL : "/pl",
+                        //RO : "/ro",
+            14 : "/ru",	//RU : "/ru",
+                        //SL : "/sk",
+            15 : "/se",	//SV : "/se",
+            16 : "/th",	//TH : "/th",
+            17 : "/tr",	//TR : "/tr",
+            19 : "/ua"	//UK : "/ua"
+	}
+	var temp_URL_lang = _URL1+faqLang[pLang]+_URL2+_faqNum;
+	//console.log(temp_URL_lang);
+		$j.ajax({
+			url: temp_URL_lang,
+			type: 'GET',
+			timeout: 1500,		
+			success: function(response) {
+				if(response.search("QAPage") >= 0)
+					document.getElementById(_Objid).href =  temp_URL_lang;
+			}
+		});
+}
+

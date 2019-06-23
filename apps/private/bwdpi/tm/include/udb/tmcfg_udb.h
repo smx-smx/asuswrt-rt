@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue Aug 22 16:24:46 2017
+ * Date: Fri Nov 10 18:57:12 2017
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -50,6 +50,7 @@
 #undef TMCFG_APP_U_TC_AR
 #undef TMCFG_APP_U_TC_PFX
 #undef TMCFG_APP_U_TC_CC
+#undef TMCFG_TC_PFX
 #undef TMCFG_APP_U_TC_PFX
 #undef TMCFG_APP_K_TEMPLATE
 #undef TMCFG_APP_K_TDTS_NFFW
@@ -204,7 +205,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "3529123"
+#define TMCFG_E_REL_PKG_LOCAL_VER "3529123_patch"
 
 /*
  * Accompany applications or modules

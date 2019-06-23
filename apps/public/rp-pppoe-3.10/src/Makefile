@@ -12,7 +12,7 @@
 #
 # LIC: GPL
 #
-# $Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/apps/public/rp-pppoe-3.10/src/Makefile#1 $
+# $Id: //BBN_Linux/Branch/Branch_for_MT75xx_ASIC_20130518/tclinux_phoenix/apps/public/rp-pppoe-3.10/src/Makefile#1 $
 #***********************************************************************
 
 # Version is set ONLY IN THE MAKEFILE!  Don't delete this!
@@ -66,7 +66,7 @@ PATHS='-DPPPOE_PATH="$(PPPOE_PATH)"' '-DPPPD_PATH="$(PPPD_PATH)"' \
 	'-DPLUGIN_PATH="$(PLUGIN_PATH)"' \
 	'-DPPPOE_SERVER_OPTIONS="$(PPPOESERVER_PPPD_OPTIONS)"'
 
-CFLAGS= -g -Wall -Wstrict-prototypes $(LIC_INCDIR) $(DEFINES) $(LIC_DEFINE) $(PATHS) -Ilibevent
+CFLAGS= -g -Wall -Wstrict-prototypes $(LIC_INCDIR) $(DEFINES) $(LIC_DEFINE) $(PATHS) -Ilibevent -I../../../../linux-2.6.36/include/
 ifneq ($(strip $(TCSUPPORT_CODE_SHRINK)),)
 CFLAGS += -Os
 else
@@ -79,11 +79,10 @@ TARGETS=pppoe-relay
 endif
 PPPOE_SERVER_LIBS=$(LIC_LIBDIR) $(LIC_LIB)
 
-ifneq ($(TCSUPPORT_CT),)
 ifneq ($(TC_CFLAGS),)
 CFLAGS += $(TC_CFLAGS)
 endif
-endif
+
 all: $(TARGETS)
 	@echo ""
 ifneq ($(TCSUPPORT_CT),)

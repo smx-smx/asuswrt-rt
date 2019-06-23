@@ -142,12 +142,12 @@ function update_current_SNR_margin(){
 				{
 					if(log_xDSLmode == "ADSL"){
 						document.getElementById("id_sta_adj_adsl").style.display = "";
-						document.getElementById("id_sta_adj_adsl").innerHTML = "Current SNR Margin: "+log_SNRMarginDown;
+						document.getElementById("id_sta_adj_adsl").innerHTML = "<%tcWebApi_get("String_Entry","dslsetting_SNR_Margin","s")%>: "+log_SNRMarginDown;
 					}
 				<%if tcWebApi_get("WebCustom_Entry","havePtm","h") = "Yes" then%>
 					else if(log_xDSLmode == "VDSL"){
 						document.getElementById("id_sta_adj_vdsl").style.display = "";
-						document.getElementById("id_sta_adj_vdsl").innerHTML = "Current SNR Margin: "+log_SNRMarginDown;
+						document.getElementById("id_sta_adj_vdsl").innerHTML = "<%tcWebApi_get("String_Entry","dslsetting_SNR_Margin","s")%>: "+log_SNRMarginDown;
 					}
 				<%end if%>
 				}

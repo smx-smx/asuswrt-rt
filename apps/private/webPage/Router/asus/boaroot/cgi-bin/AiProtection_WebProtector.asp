@@ -77,7 +77,7 @@ var curState = '<% tcWebApi_get("AiProtection_Entry","wrs_web_enable","s") %>';
 
 function initial(){
 	show_menu();
-
+	setTimeout("update_FAQ();", 300);
 	translate_category_id();
 	genMain_table();
 	if('<% tcWebApi_get("AiProtection_Entry","wrs_web_enable","s") %>' == 1)
@@ -87,6 +87,11 @@ function initial(){
 
 }
 
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){		
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1008720");
+	}
+}
 function redirect(){
 	document.location.href = "/cgi-bin/AiProtection_WebProtector.asp";
 }
@@ -342,7 +347,7 @@ function genMain_table(){
 	code += '<th width="5%" height="30px" title="<%tcWebApi_get("String_Entry","select_all","s")%>">';
 	code += '<input id="selAll" type="checkbox" onclick="selectAll(this, 0);" value="">';
 	code += '</th>';
-	code += '<th width="40%">Client Name (MAC address)</th>';/*untranslated*/
+	code += '<th width="40%"><%tcWebApi_get("String_Entry","Client_Name","s")%> (<%tcWebApi_get("String_Entry","PPPC_x_MacAddressForISP_in","s")%>)</th>';
 	code += '<th width="40%"><%tcWebApi_get("String_Entry","AiProtection_filter_category","s")%></th>';
 	code += '<th width="10%"><%tcWebApi_get("String_Entry","list_add_delete","s")%></th>';
 	code += '</tr>';
@@ -814,7 +819,7 @@ function eula_confirm(){
 													<li><%tcWebApi_get("String_Entry","AiProtection_filter_desc4","s")%></li>
 												</ol>
 												<span><%tcWebApi_get("String_Entry","AiProtection_filter_note","s")%></span>
-												<div><a style="text-decoration:underline;" href="http://www.asus.com/support/FAQ/1008720/" target="_blank"><%tcWebApi_get("String_Entry","Parental_Control","s")%> FAQ</a></div>
+												<div><a id="faq" style="text-decoration:underline;" href="https://www.asus.com/support/FAQ/1008720/" target="_blank"><%tcWebApi_get("String_Entry","Parental_Control","s")%> FAQ</a></div>
 											</td>
 										</tr>
 									</table>

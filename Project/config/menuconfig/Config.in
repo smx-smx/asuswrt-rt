@@ -1163,6 +1163,11 @@ config TCSUPPORT_CUSTOMIZE
 	help	   
 		Customize for Customer.
 
+config TCSUPPORT_ISP_CUSTOMIZE_ROMFILE
+	bool "ISP customized romfile"	
+	help	   
+		Support ISP set and keep the romfile (asus_config, user_default).
+
 config ASUS_DISK_UTILITY
 	depends TCSUPPORT_USBHOST
 	bool "Disk Utility Support"
@@ -1758,6 +1763,11 @@ config TCSUPPORT_NOTDEFAULTROMFILEAREA
 	depends on TCSUPPORT_BACKUPROMFILE
 	help
 	     not support default romfile function
+
+config TCSUPPORT_USERROMFILE
+	bool "TCSUPPORT_USERROMFILE Support"
+	help
+	     support user romfile function
 
 config TCSUPPORT_CT_2PWIFI
 	bool "TCSUPPORT_CT_2PWIFI Support"

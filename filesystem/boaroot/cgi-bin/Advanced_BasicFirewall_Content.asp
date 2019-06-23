@@ -29,7 +29,9 @@ End If
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script type="text/javascript" language="JavaScript" src="/detect.js"></script>
+<script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
 <script>
+var $j = jQuery.noConflict();
 wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'pppoe';
@@ -42,6 +44,7 @@ function login_mac_str() { return ''; }
 var wireless = []; // [[MAC, associated, authorized], ...]
 function initial(){
 show_menu();
+setTimeout("update_FAQ();", 300);
 load_body();
 change_firewall('<% tcWebApi_get("Firewall_Entry","fw_enable_x","s") %>');
 /* Ren: move to Administration page(Advanced_System_Content.asp)
@@ -51,6 +54,13 @@ $("https_port").style.display = "none";
 $("accessfromwan_port").style.display = (document.form.misc_http_x[0].checked == 1) ? "" : "none";
 */
 }
+
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1031610");
+	}
+}
+
 function applyRule(){
 if(validForm()){
 //inputRCtrl1(document.form.misc_http_x, 1); //Ren: move to Administration page

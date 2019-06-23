@@ -116,6 +116,7 @@ var usb_path2_index;
 
 function initial(){
 	show_menu();
+	setTimeout("update_FAQ();", 300);
 
 	default_apps_array = [["AiDisk", "aidisk.asp", "<% tcWebApi_Get("String_Entry", "AiDiskWelcome_desp1", "s") %>", "Aidisk_png"],
 		["<%tcWebApi_get("String_Entry","Servers_Center","s")%>", tablink[3][1], "<%tcWebApi_get("String_Entry","UPnPMediaServer_Help","s")%>", "server_png"],
@@ -154,6 +155,14 @@ function initial(){
 	}
 	else{
 		setTimeout("update_appstate();", 2000);
+	}
+}
+
+function update_FAQ(){
+	//console.log(document.getElementById("connect_status").className);
+	if(document.getElementById("connect_status").className == "connectstatuson"){
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1009773");
+		faqURL("faq2", "https://www.asus.com", "/support/FAQ/", "1016385");
 	}
 }
 
@@ -524,7 +533,7 @@ function show_apps(){
 		htmlcode += '</td><td class="app_table_radius_right" style="width:350px;">\n';
 		htmlcode += '<div class="app_name"><a style="text-decoration: underline;" href="' + default_apps_array[i][1] + '">' + default_apps_array[i][0] + '</a></div>\n';
 		if(i ==3){
-			htmlcode += '<div class="app_desc">' + default_apps_array[i][2] + ' <a href="http://www.asus.com/event/networks_3G4G_support/" target="_blank" style="text-decoration:underline;">Support</a></div>\n';
+			htmlcode += '<div class="app_desc">' + default_apps_array[i][2] + ' <a href="http://www.asus.com/event/networks_3G4G_support/" target="_blank" style="text-decoration:underline;"><%tcWebApi_get("String_Entry","Support","s")%></a></div>\n';
 		}
 		else{
 			htmlcode += '<div class="app_desc">' + default_apps_array[i][2] + '</div>\n';
@@ -666,9 +675,9 @@ function show_apps(){
 		}
 		else{
 			if(apps_array[i][0] == "downloadmaster" || apps_array[i][0] == "mediaserver" || apps_array[i][0] == "aicloud" || apps_array[i][0] == "mediaserver2")
-				htmlcode += '<span class="app_action" onclick="_appname=\''+apps_array[i][0]+'\';divdisplayctrl(\'none\', \'\', \'none\', \'none\');location.href=\'#\';">Install</span>\n';
+				htmlcode += '<span class="app_action" onclick="_appname=\''+apps_array[i][0]+'\';divdisplayctrl(\'none\', \'\', \'none\', \'none\');location.href=\'#\';"><%tcWebApi_get("String_Entry","Excute","s")%></span>\n';
 			else
-				htmlcode += '<span class="app_action" onclick="apps_form(\'install\',\''+ apps_array[i][0] +'\',\''+ partitions_array[i] +'\');">Install</span>\n';
+				htmlcode += '<span class="app_action" onclick="apps_form(\'install\',\''+ apps_array[i][0] +'\',\''+ partitions_array[i] +'\');"><%tcWebApi_get("String_Entry","Excute","s")%></span>\n';
 		}		
 
 		htmlcode += '</div><br/><br/></td></tr>\n';

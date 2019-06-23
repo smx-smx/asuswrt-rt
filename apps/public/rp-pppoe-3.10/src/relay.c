@@ -15,7 +15,7 @@
 *
 ***********************************************************************/
 static char const RCSID[] =
-"$Id: //BBN_Linux/Branch/Branch_for_SDK_Release_MultiChip_20111013/tclinux_phoenix/apps/public/rp-pppoe-3.10/src/relay.c#1 $";
+"$Id: //BBN_Linux/Branch/Branch_for_MT75xx_ASIC_20130518/tclinux_phoenix/apps/public/rp-pppoe-3.10/src/relay.c#1 $";
 
 #define _GNU_SOURCE 1 /* For SA_RESTART */
 
@@ -47,6 +47,12 @@ static char const RCSID[] =
 #include <unistd.h>
 #endif
 
+#ifdef TCSUPPORT_MULTICAST_SPEED
+#include <linux/foe_hook.h>
+
+#define PACKET_SKB_FOE_INFO 18
+struct SkbFoeInfo skbfoeinfo;
+#endif
 
 /* Interfaces (max MAX_INTERFACES) */
 PPPoEInterface Interfaces[MAX_INTERFACES];
@@ -892,10 +898,22 @@ relayGotSessionPacket(PPPoEInterface const *iface)
     int size;
     SessionHash *sh;
     PPPoESession *ses;
+#ifdef TCSUPPORT_MULTICAST_SPEED
+	int foelen ;
+#endif
 
     if (receivePacket(iface->sessionSock, &packet, &size) < 0) {
 	return;
     }
+
+#ifdef TCSUPPORT_MULTICAST_SPEED
+	foelen = sizeof(struct SkbFoeInfo);
+	memset(&skbfoeinfo,0,sizeof(struct SkbFoeInfo));
+	if (getsockopt(iface->sessionSock, SOL_PACKET, PACKET_SKB_FOE_INFO, &skbfoeinfo, &foelen)) {
+		/* dbg_info */
+		syslog(LOG_ERR, "getsockopt error");
+	}
+#endif
 
     /* Ignore unknown code/version */
     if (packet.ver != 1 || packet.type != 1) {
@@ -949,6 +967,15 @@ relayGotSessionPacket(PPPoEInterface const *iface)
 	    sh->peerMac[3], sh->peerMac[4], sh->peerMac[5],
 	    sh->interface->name, ntohs(sh->sesNum));
 #endif
+
+#ifdef TCSUPPORT_MULTICAST_SPEED
+	foelen = sizeof(struct SkbFoeInfo);
+	if (setsockopt(sh->interface->sessionSock, SOL_PACKET, PACKET_SKB_FOE_INFO, &skbfoeinfo, &foelen)) {
+		/* dbg_info */
+		syslog(LOG_ERR, "setsockopt error");
+	}
+#endif
+
     sendPacket(NULL, sh->interface->sessionSock, &packet, size);
 }
 

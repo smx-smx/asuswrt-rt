@@ -217,49 +217,49 @@ function go_next_page(){
 									var preferLang = "<%tcWebApi_get("LanguageSwitch_Entry","Type","s")%>";
 									
 									if(preferLang == "1")
-										document.getElementById("tosLink2").href = "http://www.asus.com/us";
+										document.getElementById("tosLink2").href = "https://www.asus.com/us";
 									else if(preferLang == "2")
-										document.getElementById("tosLink2").href = "http://www.asus.com/br";
+										document.getElementById("tosLink2").href = "https://www.asus.com/br";
 									else if(preferLang == "3")
-										document.getElementById("tosLink2").href = "http://www.asus.com.cn";
+										document.getElementById("tosLink2").href = "https://www.asus.com.cn";
 									else if(preferLang == "4")
-										document.getElementById("tosLink2").href = "http://www.asus.com/cz";
+										document.getElementById("tosLink2").href = "https://www.asus.com/cz";
 									else if(preferLang == "5")
-										document.getElementById("tosLink2").href = "http://www.asus.com/dk";
+										document.getElementById("tosLink2").href = "https://www.asus.com/dk";
 									else if(preferLang == "6")
-										document.getElementById("tosLink2").href = "http://www.asus.com/de";
+										document.getElementById("tosLink2").href = "https://www.asus.com/de";
 									else if(preferLang == "7")	
-										document.getElementById("tosLink2").href = "http://www.asus.com/es";
+										document.getElementById("tosLink2").href = "https://www.asus.com/es";
 									else if(preferLang == "8")
-										document.getElementById("tosLink2").href = "http://www.asus.com/fi";
+										document.getElementById("tosLink2").href = "https://www.asus.com/fi";
 									else if(preferLang == "9")
-										document.getElementById("tosLink2").href = "http://www.asus.com/fr";
+										document.getElementById("tosLink2").href = "https://www.asus.com/fr";
 									else if(preferLang == "10")
-										document.getElementById("tosLink2").href = "http://www.asus.com/it";
+										document.getElementById("tosLink2").href = "https://www.asus.com/it";
 									else if(preferLang == "11")
-										document.getElementById("tosLink2").href = "http://www.asus.com/my";
+										document.getElementById("tosLink2").href = "https://www.asus.com/my";
 									else if(preferLang == "12")
-										document.getElementById("tosLink2").href = "http://www.asus.com/no";
+										document.getElementById("tosLink2").href = "https://www.asus.com/no";
 									else if(preferLang == "13")
-										document.getElementById("tosLink2").href = "http://www.asus.com/pl";
+										document.getElementById("tosLink2").href = "https://www.asus.com/pl";
 									else if(preferLang == "14")
-										document.getElementById("tosLink2").href = "http://www.asus.com/ru";
+										document.getElementById("tosLink2").href = "https://www.asus.com/ru";
 									else if(preferLang == "15")
-										document.getElementById("tosLink2").href = "http://www.asus.com/se";
+										document.getElementById("tosLink2").href = "https://www.asus.com/se";
 									else if(preferLang == "16")
-										document.getElementById("tosLink2").href = "http://www.asus.com/th";	
+										document.getElementById("tosLink2").href = "https://www.asus.com/th";	
 									else if(preferLang == "17")
-										document.getElementById("tosLink2").href = "http://www.asus.com/tr";
+										document.getElementById("tosLink2").href = "https://www.asus.com/tr";
 									else if(preferLang == "18")
-										document.getElementById("tosLink2").href = "http://www.asus.com/tw";
+										document.getElementById("tosLink2").href = "https://www.asus.com/tw";
 									else if(preferLang == "19")
-										document.getElementById("tosLink2").href = "http://www.asus.com/ua";
+										document.getElementById("tosLink2").href = "https://www.asus.com/ua";
 									else if(
 									 preferLang == "ro" || preferLang == "hu"  || preferLang == "jp"
 									)
-										document.getElementById("tosLink2").href = "http://www.asus.com/" + preferLang;
+										document.getElementById("tosLink2").href = "https://www.asus.com/" + preferLang;
 									else
-										document.getElementById("tosLink2").href = "http://www.asus.com/us";
+										document.getElementById("tosLink2").href = "https://www.asus.com/us";
 
 									document.getElementById("tosLink2").href += "/Terms_of_Use_Notice_Privacy_Policy/Official-Site";
 								})()

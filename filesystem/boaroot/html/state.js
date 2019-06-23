@@ -611,7 +611,7 @@ tabtitle[6] = new Array("", "<%tcWebApi_get("String_Entry","menu5_1_1","s")%>", 
 tabtitle[7] = new Array("", "<%tcWebApi_get("String_Entry","menu5_6_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_6_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_6_4","s")%>", "Performance tuning", "<%tcWebApi_get("String_Entry","menu_dsl_setting","s")%>", "<%tcWebApi_get("String_Entry","menu_dsl_feedback","s")%>", "CWMP", "TR069");
 tabtitle[8] = new Array("", "<%tcWebApi_get("String_Entry","menu5_7_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_4","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_6","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_5","s")%>", "<%tcWebApi_get("String_Entry","menu_dsl_log","s")%>", "<%tcWebApi_get("String_Entry","Connections","s")%>", "Access Log");
 tabtitle[9] = new Array("", "<%tcWebApi_get("String_Entry","Network_Analysis","s")%>", "Netstat", "<%tcWebApi_get("String_Entry","NetworkTools_WOL","s")%>");
-tabtitle[10] = new Array("", "QoS", "<%tcWebApi_get("String_Entry","traffic_monitor","s")%>", "<% tcWebApi_get("String_Entry","Adaptive_History","s") %>", "Spectrum");
+tabtitle[10] = new Array("", "QoS", "<%tcWebApi_get("String_Entry","traffic_monitor","s")%>", "<% tcWebApi_get("String_Entry","Adaptive_History","s") %>", "<% tcWebApi_get("String_Entry","Spectrum_title","s") %>");
 tabtitle[11] = new Array("");
 
 if(bwdpi_support != -1){
@@ -1333,47 +1333,8 @@ cal_height();
 function get_helplink(){
 	var model_name_supportsite = supportsite_model(country_code, odm_productid);	// @ /js/support_site.js
 
-	var getlink="http://www.asus.com/Networking/" +model_name_supportsite+ "/HelpDesk_Download/";	
+	var getlink="https://www.asus.com/Networking/" +model_name_supportsite+ "/HelpDesk_Download/";	
 	return getlink;
-}
-
-function addOnlineHelp(obj, keywordArray){
-var faqLang = {
-EN : "en",
-TW : "en",
-CN : "en",
-CZ : "en",
-PL : "en",
-RU : "en",
-DE : "en",
-FR : "en",
-TR : "en",
-TH : "en",
-MS : "en",
-NO : "en",
-FI : "en",
-DA : "en",
-SV : "en",
-BR : "en",
-JP : "en"
-}
-if(keywordArray[1] == "ez" || keywordArray[1] == "lpr" || keywordArray[1] == "VPN"){
-faqLang.TW = "zh-tw";
-faqLang.CN = "zh-cn";
-}
-if(keywordArray[1] == "ez" || (keywordArray[1] == "lpr" && keywordArray[0] == "ASUSWRT")){
-faqLang.FR = "fr-fr";
-}
-if(obj){
-//obj.href = "http://support.asus.com/search.aspx?SLanguage=";
-obj.href = "http://www.asus.com/support/Knowledge-searchV2/?";
-//obj.href += faqLang.EN;
-obj.href += "keyword=";
-for(var i=0; i<keywordArray.length; i++){
-obj.href += keywordArray[i];
-obj.href += "%20";
-}
-}
 }
 
 function Block_chars(obj, keywordArray){
@@ -1508,8 +1469,8 @@ function show_footer(){
 	var tracing_path_Manual = "/HelpDesk_Manual/?utm_source=asus-product&utm_medium=referral&utm_campaign=router";
 	var tracing_path_Utility = "/HelpDesk_Download/?utm_source=asus-product&utm_medium=referral&utm_campaign=router";		
 	
-	footer_code += "<td width=\"335\" id=\"bottom_help_link\" align=\"left\">&nbsp&nbsp<a style=\"font-weight: bolder;text-decoration:underline;cursor:pointer;\" href=\"http://www.asus.com/Networking/" + model_name_supportsite + tracing_path_Manual + "\" target=\"_blank\"><%tcWebApi_get("String_Entry","Manual","s")%></a>&nbsp";
-	footer_code += '|&nbsp<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com/Networking/' + model_name_supportsite + tracing_path_Utility + '" target="_blank"><%tcWebApi_get("String_Entry","Utility","s")%></a>';	
+	footer_code += "<td width=\"335\" id=\"bottom_help_link\" align=\"left\">&nbsp&nbsp<a style=\"font-weight: bolder;text-decoration:underline;cursor:pointer;\" href=\"https://www.asus.com/Networking/" + model_name_supportsite + tracing_path_Manual + "\" target=\"_blank\"><%tcWebApi_get("String_Entry","Manual","s")%></a>&nbsp";
+	footer_code += '|&nbsp<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/Networking/' + model_name_supportsite + tracing_path_Utility + '" target="_blank"><%tcWebApi_get("String_Entry","Utility","s")%></a>';	
 	if(feedback_support != -1)
 		footer_code += '&nbsp|&nbsp<a href="/Advanced_Feedback.asp" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_self"><%tcWebApi_get("String_Entry","menu_dsl_feedback","s")%></a>';
 
@@ -1536,18 +1497,12 @@ function search_supportsite(obj){
 	var faqLang = {
 		selectedLang : get_selected_language()		
 	}
-		var keywordArray = $("FAQ_input").value.split(" ");
-		var faq_href;
-		//faq_href = "http://support.asus.com/search.aspx?SLanguage=";
-		//faq_href += faqLang.selectedLang;
-		faq_href = "http://www.asus.com";
+		//      https://www.asus.com/search/results.aspx?SearchKey=%s&SearchType=FAQ&PDLineFilter=1849
+		var faq_href = "https://www.asus.com";
 		faq_href += faqLang.selectedLang;
-		faq_href += "support/Knowledge-searchV2/?utm_source=asus-product&utm_medium=referral&utm_campaign=router&";
-		faq_href += "keyword=";
-		for(var i=0; i<keywordArray.length; i++){
-			faq_href += keywordArray[i];
-			faq_href += "%20";
-		}
+		faq_href += "search/results.aspx?SearchKey=";
+		faq_href += (document.getElementById("FAQ_input")) ? document.getElementById("FAQ_input").value : '';
+		faq_href += "&SearchType=FAQ&PDLineFilter=1849";
 		window.open(faq_href);
 }
 

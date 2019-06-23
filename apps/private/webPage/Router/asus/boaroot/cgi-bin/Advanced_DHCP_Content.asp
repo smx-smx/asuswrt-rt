@@ -69,11 +69,12 @@ End If
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
 <script language="JavaScript" type='text/javascript' src="/js/ip_new.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script language="JavaScript" type="text/javascript" src="/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <style>
 #ClientList_Block_PC{
 border:1px outset #999;
@@ -113,6 +114,7 @@ cursor:default;
 }
 </style>
 <script>
+var $j = jQuery.noConflict();
 wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'pppoe';
@@ -231,8 +233,14 @@ var tableData = [
 
 function initial(){
 	show_menu();
-	showLANIPList();
-	addOnlineHelp($("faq"), ["set", "up", "specific", "IP", "address"]);
+	showLANIPList();	
+	setTimeout("update_FAQ();", 300);
+}
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){
+		//id="faq" href="https://www.asus.com/US/support/FAQ/1000906"
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1000906");
+	}
 }
 
 function doValidateRange(startIP,endIP) {
@@ -694,8 +702,8 @@ $("check_mac").innerHTML="The format for the MAC address is six groups of two he
 <div class="formfontdesc"><%tcWebApi_get("String_Entry","LHC_DHCPServerConfigurable_sd","s")%></div>
 <div id="router_in_pool" class="formfontdesc" style="color:#FFCC00;display:none;">#LHC_DHCPServerConfigurable_sd2","s")%>  <span id="LANIP"></span></div>
 <div id="VPN_conflict" class="formfontdesc" style="color:#FFCC00;display:none;"><span id="VPN_conflict_span"></span></div>
-<div class="formfontdesc" style="margin-top:-10px;display:none;">
-<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><% tcWebApi_Get("String_Entry", "LHC_MnlDHCPList_groupitemdesc", "s") %> FAQ</a>
+<div class="formfontdesc" style="margin-top:-10px;">
+<a id="faq" href="https://www.asus.com/support/FAQ/1000906" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><% tcWebApi_Get("String_Entry", "LHC_MnlDHCPList_groupitemdesc", "s") %> FAQ</a>
 </div>
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 <thead>

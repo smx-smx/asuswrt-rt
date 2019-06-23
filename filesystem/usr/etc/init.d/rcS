@@ -302,6 +302,12 @@ insmod /lib/modules/tc3162_udc20.ko
 insmod /lib/modules/g_ether.ko
 fi
 
+#mount writable filesystem if any
+if [ "$TCSUPPORT_ISP_CUSTOMIZE_ROMFILE" != "" ] ;then
+echo "TCSUPPORT_ISP_CUSTOMIZE_ROMFILE"
+/usr/bin/mount_fs
+fi
+
 if [ "$TCSUPPORT_VOIP" != "" ] ;then
 echo "TCSUPPORT_VOIP"
 userfs/bin/tcVoIPApiServer &

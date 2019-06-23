@@ -160,28 +160,17 @@ function initial(){
 
 	/*Advanced Setting end */
 
-	//set FAQ URL
-	set_FAQ("faq_windows", "1004469");
-	set_FAQ("faq_macOS", "1004472");
-	set_FAQ("faq_iPhone", "1004471");
-	set_FAQ("faq_android", "1004466");
-
 	updateVpnServerClientAccess();
+	setTimeout("update_FAQ();", 300);
 }
 
-
-function set_FAQ(_objID, _faqNum) {	
-	var preferredLang = "";
-
-	preferredLang = show_selected_language_path();	
-	if(preferredLang == undefined)
-		preferredLang = "/";
-
-	var faqURL = "";
-	faqURL = "https://www.asus.com" + preferredLang;
-	faqURL += "support/FAQ/";
-	faqURL += _faqNum;
-	$j("#" + _objID + "").attr("href", faqURL);
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){		
+		faqURL("faq_windows", "https://www.asus.com", "/support/FAQ/", "1004469");
+		faqURL("faq_macOS", "https://www.asus.com", "/support/FAQ/", "1033575");
+		faqURL("faq_iPhone", "https://www.asus.com", "/support/FAQ/", "1033574");
+		faqURL("faq_android", "https://www.asus.com", "/support/FAQ/", "1033572");
+	}
 }
 
 function show_selected_language_path(){
@@ -1496,9 +1485,9 @@ function updateVpnServerClientAccess() {
 											<br />
 											<ol>
 												<li><a id="faq_windows" href="https://www.asus.com/support/FAQ/1004469/" target="_blank" style="text-decoration:underline;">Windows</a></li>
-												<li><a id="faq_macOS" href="https://www.asus.com/support/FAQ/1004472/" target="_blank" style="text-decoration:underline;">Mac OS</a></li>
-												<li><a id="faq_iPhone" href="https://www.asus.com/support/FAQ/1004471/" target="_blank" style="text-decoration:underline;">iPhone/iPad</a></li>
-												<li><a id="faq_android" href="https://www.asus.com/support/FAQ/1004466/" target="_blank" style="text-decoration:underline;">Android</a></li>
+												<li><a id="faq_macOS" href="https://www.asus.com/support/FAQ/1033575/" target="_blank" style="text-decoration:underline;">Mac OS</a></li>
+												<li><a id="faq_iPhone" href="https://www.asus.com/support/FAQ/1033574/" target="_blank" style="text-decoration:underline;">iPhone/iPad</a></li>
+												<li><a id="faq_android" href="https://www.asus.com/support/FAQ/1033572/" target="_blank" style="text-decoration:underline;">Android</a></li>
 											</ol>
 										</div>
 										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">

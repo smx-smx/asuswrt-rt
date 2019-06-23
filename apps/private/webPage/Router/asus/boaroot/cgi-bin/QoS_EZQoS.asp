@@ -163,9 +163,14 @@ function initial(){
 	//}
 	
 	init_changeScale();
-	addOnlineHelp($("faq"), ["ASUSWRT", "QoS"]);
+	setTimeout("update_FAQ();", 300);
 }
 
+function update_FAQ(){
+	if(document.getElementById("connect_status").className == "connectstatuson"){		
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1008718");
+	}
+}
 function init_changeScale(){
 	
 	//if((WebCurSet_dev_pvc == "0" || WebCurSet_dev_pvc == "8") && ((!upload || upload == "0") && (!download || download == "0"))){
@@ -399,7 +404,7 @@ function change_qos_type(value){
 														<%tcWebApi_get("String_Entry","EzQoS_desc_note","s")%>
 														</div>
 														<div class="formfontdesc">
-															<a id="faq" href="" target="_blank" style="text-decoration:underline;">QoS FAQ</a>
+															<a id="faq" href="https://www.asus.com/support/FAQ/1008718" target="_blank" style="text-decoration:underline;">QoS FAQ</a>
 														</div>
 													</td>
 												</tr>
