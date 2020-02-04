@@ -219,7 +219,7 @@ if(modelname == "DSL-N66U" || modelname == "DSL-AC56U" || modelname == "DSL-AC52
 	else
 	t = i;
 }
-else if(modelname == "DSL-N17U" || modelname == "DSL-N16"){ //single band + dual wan + PTM
+else if(modelname == "DSL-N17U" || modelname == "DSL-N16" || modelname == "DSL-N16P"){ //single band + dual wan + PTM
         if (i == "WIRELESS0")
         t = 'Wireless';
         else if (i == "WIRED")
@@ -313,7 +313,7 @@ if(modelname == "DSL-N66U" || modelname == "DSL-AC56U" || modelname == "DSL-AC52
 	//tabs.push(['speed-tab-' + i, t]);
 	}
 }
-else if(modelname == "DSL-N17U" || modelname == "DSL-N16"){ //single band + dual wan + PTM
+else if(modelname == "DSL-N17U" || modelname == "DSL-N16" || modelname == "DSL-N16P"){ //single band + dual wan + PTM
         if(t != "LAN" && t != "NotUsed"){ // <-- hide these 2 Tabs
                                         if(i == "PTM0")
                                                 tabs[0] = ['speed-tab-' + i, t];

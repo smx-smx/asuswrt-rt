@@ -1288,6 +1288,7 @@ logoutmessage=คุณออกจากระบบสำเร็จแล้
 Low=ต่ำ
 Lowest=ต่ำที่สุด
 LPR_print_share=ใช้โปรโตคอล LPR เพื่อแชร์เครื่องพิมพ์
+lyra_TrendMicro_agreement=Trend Micro End User License Agreement
 MAC_Address=MAC แอดเดรส
 mac_filter_dsbld_dlt_entries=ถ้ามีรายการในรายการตัวกรอง MAC, คลิก Apply (นำไปใช้) เพื่อลบรายการเหล่านั้น, จากนั้นคลิก Apply (นำไปใช้) อีกครั้ง เพื่อปิดทำงานฟังก์ชั่นตัวกรอง MAC ถ้าไม่มีรายการ, คลิก Apply (นำไปใช้) หนึ่งครั้ง เพื่อปิดทำงานฟังก์ชั่นตัวกรอง MAC
 Manual=คู่มือ

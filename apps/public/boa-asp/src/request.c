@@ -2235,11 +2235,36 @@ int process_header_end(request * req)
 	/* get method function */
 	if(req->method == M_GET)
 	{
+		//dbgprintf("[%s, %d]request_uri=<%s>\n", __FUNCTION__, __LINE__, req->request_uri);
+		//_dump_request(req);
 		if(check_xss_blacklist(req->request_uri, 0))
 		{
 			send_r_not_found(req);
 			return 0;
 		}
+
+		//check white list
+		if(req->query_string)
+		{
+			int len = strlen(req->query_string);
+			//dbgprintf("[%s, %d]len=%d, query_string=<%s>\n", __FUNCTION__, __LINE__, len, req->query_string);
+			
+			int i;
+			for(i = 0; i < len; ++i)
+			{
+				//dbgprintf("[%s, %d]req->query_string[i]=%c\n", __FUNCTION__, __LINE__, req->query_string[i]);
+				if (!(isalnum(req->query_string[i]) != 0 || req->query_string[i] == ':' || req->query_string[i] == '-'
+					|| req->query_string[i] == '_' || req->query_string[i] == '.' || isspace(req->query_string[i]) != 0
+					|| req->query_string[i] == '&' || req->query_string[i] == '=' || req->query_string[i] == '/'
+					|| req->query_string[i] == '+'))
+				{
+					dbgprintf("[%s, %d] Invalid system command.<%s>error char<%c>\n", __FUNCTION__, __LINE__, req->query_string, req->query_string[i]);
+					send_r_bad_request(req);
+					return 0;
+				}
+			}
+		}
+
 		//Ren.B
 		/*for ASUS Router (AiHome) APP: DUT_RT_Config_Download*/
 		if( strstr(req->request_uri, "Settings_") || (strstr(req->request_uri, ".CFG") && fromapp) )

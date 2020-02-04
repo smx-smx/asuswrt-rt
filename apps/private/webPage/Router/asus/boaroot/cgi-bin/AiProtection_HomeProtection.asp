@@ -478,16 +478,13 @@ function check_TM_feature(){
 }
 
 function show_tm_eula(){
-	if(document.form.preferred_lang.value == "JP"){
-			$j.get("/JP_tm_eula.asp", function(data){
-				document.getElementById('agreement_panel').innerHTML= data;
-			});
-	}
-	else{
-			$j.get("/tm_eula.asp", function(data){
-				document.getElementById('agreement_panel').innerHTML= data;
-			});
-	}
+	$j.get("/tm_eula.asp", function(data){
+		document.getElementById('agreement_panel').innerHTML= data;
+		adjust_TM_eula_height("agreement_panel");
+		var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/";
+        $j("#eula_url").attr("href",url);
+
+	});
 	dr_advise();
 	cal_panel_block("agreement_panel", 0.25);
 	$j("#agreement_panel").fadeIn(300);

@@ -1288,6 +1288,7 @@ logoutmessage=You have Logged out successfully.
 Low=Low
 Lowest=Lowest
 LPR_print_share=Use LPR protocol to sharing printing
+lyra_TrendMicro_agreement=Trend Micro End User License Agreement
 MAC_Address=MAC address
 mac_filter_dsbld_dlt_entries=If there are entries in the MAC filter list, click Apply to delete those entries, then click Apply again to disable the MAC Filter function. If there are no entries, click Apply once to disable the MAC Filter function.
 Manual=Manual

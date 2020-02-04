@@ -30,6 +30,7 @@ int get_model(void)
 	else if(!strcmp(ProductName, "DSL-AC52U")) return MODEL_DSLAC52U;
 	else if(!strcmp(ProductName, "DSL-N16")) return MODEL_DSLN16;
 	else if(!strcmp(ProductName, "DSL-AC51")) return MODEL_DSLAC51;
+	else if(!strcmp(ProductName, "DSL-N16P")) return MODEL_DSLN16P;
 	else if(!strcmp(ProductName, "DSL-AC55U")) return MODEL_DSLAC55U;
 	else return MODEL_UNKNOWN;
 }

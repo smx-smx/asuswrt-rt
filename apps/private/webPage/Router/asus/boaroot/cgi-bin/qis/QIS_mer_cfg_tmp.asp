@@ -42,6 +42,8 @@ var iptv_num_pvc_val = "<% tcWebApi_staticGet("GUITemp_Entry0","dsltmp_cfg_iptv_
 var mac_addr_2g = "<%tcWebApi_get("WLan_Common","wl0_MacAddress","s")%>";
 var mac_addr_last_3bytes = "\"" + mac_addr_2g.substring(9, 11) + mac_addr_2g.substring(12, 14) + mac_addr_2g.substring(15, 17) + "\"";
 var model_name = "<%tcWebApi_get("SysInfo_Entry","ProductName","s")%>";
+//var ISP_DHCP_OPT_List =[["0", "Switzerland", "Swisscom", "100008","0001","ASUS"], ["1", "Taiwan", "HiNet (0, 33, PPPoE)", "100009","0002","ASUS"], ["2", "USA", "AT&T (8, 35, MER)", "100010","0003","ASUS"]];
+var ISP_DHCP_OPT_List =[<% get_isp_dhcp_opt_list() %>];
 
 //udpate iptv information
 if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
@@ -113,6 +115,7 @@ function QKfinish_load_body(){
 	document.form.wan_dnsenable_x[0].checked = 0;
 	document.form.wan_dnsenable_x[1].checked = 1;
 	show_dhcpenable(1);
+	match_ISP_DHCP_opt();
 
 	/* Renjie: Remove this field, we will use Option 61 and 12 for UK Sky.
 	if (country_str == "United Kingdom" && (ispname_str == "SKY (MER)" || ispname_str == "Sky - Fibre Broadband"))
@@ -133,6 +136,48 @@ function QKfinish_load_body(){
 		document.form.prev_page.value = "/cgi-bin/qis/QIS_PTM_manual_setting.asp";
 		document.form.x_DHCPClient[0].disabled = true;
 		document.form.x_DHCPClient[1].disabled = true;
+	}
+}
+
+function match_ISP_DHCP_opt(){
+	for(var a=0;a<ISP_DHCP_OPT_List.length;a++){
+		if( country_str == ISP_DHCP_OPT_List[a][1] && ispname_str == ISP_DHCP_OPT_List[a][2]){
+			document.getElementById("DHCP_opt").style.display = "";
+			document.form.dhcp_opt_enable.checked = true;
+			showHideDHCPoptList(document.form.dhcp_opt_enable);
+			//<dhcp opt 60 vendorid>, <dhcp opt 61 clientid>, <dhcp opt 61 clientid type>
+			document.form.dsltmp_dhcp_vendorid.value = ISP_DHCP_OPT_List[a][3];
+			if(ISP_DHCP_OPT_List[a][5] == 1){
+				document.form.dsltmp_dhcp_clientid_type_tmp.checked = true;
+				showDiableDHCPclientID(document.form.dsltmp_dhcp_clientid_type_tmp);
+			}
+			else{
+				document.form.dsltmp_dhcp_clientid_type_tmp.checked = false;
+				showDiableDHCPclientID(document.form.dsltmp_dhcp_clientid_type_tmp);
+				document.form.text_dsltmp_dhcp_clientid.value = ISP_DHCP_OPT_List[a][4];
+			}			
+		}
+	}
+}
+
+function showHideDHCPoptList(dhcp_opt_enable) {
+	if(dhcp_opt_enable.checked) {
+		document.getElementById("dhcp_opt_table").style.visibility = "visible";		
+	}
+	else {
+		document.getElementById("dhcp_opt_table").style.visibility = "hidden";
+	}
+}
+
+function showDiableDHCPclientID(clientid_enable){
+	if(clientid_enable.checked) {
+		document.form.dsltmp_dhcp_clientid_type.value = "1";
+		document.form.text_dsltmp_dhcp_clientid.value = "";
+		document.form.text_dsltmp_dhcp_clientid.disabled = true;
+	}
+	else {
+		document.form.dsltmp_dhcp_clientid_type.value = "0";
+		document.form.text_dsltmp_dhcp_clientid.disabled = false;
 	}
 }
 
@@ -281,10 +326,13 @@ function submitForm(){
 <input type="hidden" name="dsltmp_cfg_dnsenable" id="dsltmp_cfg_dnsenable" value="1">
 <input type="hidden" name="dsltmp_cfg_dns1" id="dsltmp_cfg_dns1" value="">
 <input type="hidden" name="dsltmp_cfg_dns2" id="dsltmp_cfg_dns2" value="">
-<input type="hidden" name="dsltmp_dhcp_clientid" value="">
 <input type="hidden" name="dsltmp_dhcp_hostname" value="">
 <input type="hidden" name="dsltmp_wanTypeOption" value="">
 <input type="hidden" name="with_wan_setting" value="1">
+
+<input type="hidden" name="dsltmp_dhcp_vendorid" value="">
+<input type="hidden" name="dsltmp_dhcp_clientid_type" value="">
+<input type="hidden" name="dsltmp_dhcp_clientid" value="">
 <div class="QISmain">
 <div>
 <table width="730px">
@@ -325,7 +373,9 @@ function submitForm(){
 	</tr>
 </table>
 <br>
-<table id="tblsetting_2" class="QISform" width="400" border="0" align="center" cellpadding="3" cellspacing="0"><tr><td>
+<table id="tblsetting_2" class="QISform" width="400" border="0" align="center" cellpadding="3" cellspacing="0">
+<tr><td>
+<div>
 <fieldset>
 <legend>
 <%tcWebApi_get("String_Entry","L3F_x_DHCPClient_in","s")%>
@@ -452,6 +502,7 @@ autocomplete="off" />
 </table>
 </fieldset>
 </div>
+
 <div id="dns_sec">
 <fieldset>
 <legend>
@@ -541,7 +592,41 @@ autocomplete="off" />
 </tr>
 </table>
 </fieldset>
+</div>
 <br>
+
+<div id="DHCP_opt" style="display:none;">
+<table id="dhcp_opt_setting" width="80%" border="0" align="left" cellpadding="3" cellspacing="0" style="margin-left:8%;">
+		<tr>
+			<td>
+				<input type="checkbox" id="dhcp_opt_enable" name="dhcp_opt_enable" onclick="showHideDHCPoptList(this);">
+				<label for="dhcp_opt_enable">
+					<span class="QISGeneralFont" style="margin-left:0px;font-style:normal;color:#66CCFF;font-size:12px;font-weight:bolder;">DHCP option</span>
+				</label>				
+			</td>
+		</tr>	
+</table>	
+</div>
+
+<div style="margin-left:-90px;">
+<table id="dhcp_opt_table" class="FormTable" width="475px" border="0" align="center" cellpadding="3" cellspacing="0">
+	<tbody>		
+		<tr id="Country_tr">
+			<th width="40%">Class-identifier (option 60):</th>
+			<td>
+				<input type="text" name="dsltmp_dhcp_vendorid" class="input_25_table" value="" maxlength="126" autocapitalization="off" autocomplete="off">
+			</td>
+		</tr>
+		<tr id="ISP_tr">
+			<th width="40%">Class-identifier (option 61):</th>
+			<td>
+				<input type="checkbox" name="dsltmp_dhcp_clientid_type_tmp" onclick="showDiableDHCPclientID(this);">IAID/DUID<br>
+				<input type="text" name="text_dsltmp_dhcp_clientid" class="input_25_table" value="" maxlength="126" autocapitalization="off" autocomplete="off">
+			</td>
+		</tr>
+	</tbody>
+</table>
+</div>
 <!-- Renjie: Remove this field, we will use Option 61 and 12 for UK Sky.
 <table id="tblsetting_2" class="QISform" width="400" border="0" align="center" cellpadding="3" cellspacing="0">
   <tr>

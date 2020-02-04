@@ -453,6 +453,11 @@ function btnNext() {
 	if(document.form.dsltmp_cfg_ispname.value.search("Deutsche Telekom") >= 0 && document.form.dsltmp_cfg_iptv_idx.value > 0){
 		document.form.dsltmp_auto_detect_bng_flag.value = 1;
 	}
+	if( document.form.dsltmp_cfg_country.value=='Turkey'
+		&& document.form.dsltmp_cfg_ispname.value.search("Turk Telekom") >= 0
+	){
+		document.form.dsltmp_cfg_trtt.value = "1";
+	}
 
 	if (connection_type==0 || connection_type==1) //PPPoE, PPPoA
 	{
@@ -517,6 +522,7 @@ function submit_detect(){
 <input type="hidden" name="dsltmp_cfg_th3bb" value="">
 <input type="hidden" name="dsltmp_cfg_modulation" value="">
 <input type="hidden" name="dsltmp_cfg_annex" value="">
+<input type="hidden" name="dsltmp_cfg_trtt" value="0">
 <div class="QISmain">
 <div class="formfonttitle" style="padding:6 0 0 10;">
 	<div>

@@ -1288,6 +1288,7 @@ logoutmessage=Você se desconectou com sucesso.
 Low=Baixo
 Lowest=Mais baixo
 LPR_print_share=Use o protocolo LPR para compartilhamento da impressora
+lyra_TrendMicro_agreement=Trend Micro End User License Agreement
 MAC_Address=Endereço MAC
 mac_filter_dsbld_dlt_entries=Caso haja entradas na lista de filtro MAC, clique em Aplicar para excluir essas entradas, então clique em Aplicar novamente para desabilitar a função filtro MAC. Se não houver entradas, clique em Aplicar uma vez para desabilitar a função Filtro MAC.
 Manual=Manual

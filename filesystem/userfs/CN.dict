@@ -1288,6 +1288,7 @@ logoutmessage=您已成功注销。
 Low=低
 Lowest=最低
 LPR_print_share=使用 LPR 协议共享打印
+lyra_TrendMicro_agreement=趋势科技（中国）有限公司最终用户许可协议
 MAC_Address=MAC 地址
 mac_filter_dsbld_dlt_entries=若 MAC 地址过滤列表中有项目存在，点击 应用 以删除这些项目，然后再次点击 应用 以关闭 MAC 地址过滤功能。若列表中没有项目，则点击 应用 一次以关闭 MAC 地址过滤功能。
 Manual=使用手册

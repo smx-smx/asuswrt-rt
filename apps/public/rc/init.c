@@ -177,7 +177,11 @@ int init_nvram(void)
 	case MODEL_DSLAC51:
 		add_rc_support("2.4G 5G 11AC update rawifi dsl wifi_hw_sw ipv6 PARENTAL2 mssid pwrctrl iptv wds HTTPS");
 		break;
-
+	case MODEL_DSLN16P:
+		nvram_set("ehci_ports", "1-1");
+		nvram_set("ohci_ports", "2-1");
+		add_rc_support("2.4G update usbX1 modem rawifi dsl wifi_hw_sw ipv6 PARENTAL2 printer mssid appnet pwrctrl iptv wds HTTPS");
+		break;
 	}
 
 	add_rc_support("switchctrl"); //LAN -> Switch Control
@@ -377,6 +381,7 @@ static void tweak_kernel_platdep(void)
 		break;
 	case MODEL_DSLN16:		//64M 2.4G WiFi, No USB
 	case MODEL_DSLAC51:
+	case MODEL_DSLN16P:		//64M 2.4G WiFi, USB
 		skbmgr_driver_max_skb = 6144;
 		skbmgr_limit = 4096;	
 		skbmgr_4k_limit = 1024;

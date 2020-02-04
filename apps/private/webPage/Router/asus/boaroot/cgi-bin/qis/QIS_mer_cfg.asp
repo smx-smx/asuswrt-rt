@@ -65,7 +65,8 @@ function QKfinish_load_body(){
 		ISP_List_IPTV = RAW_ISP_List_IPTV;
 	}	
 		
-	showHideIPTVList(false);	
+	showHideDHCPoptList(false);	
+	showHideIPTVList(false);
 	if(haveIPTVService()) {
 		showhide("iptv_manual_setting", 1);		
 	}
@@ -83,6 +84,10 @@ function submitForm(){
 		return false;
 	}
 	<%end if%>
+
+	if(document.form.text_dsltmp_dhcp_clientid.value != ""){
+		document.form.dsltmp_dhcp_clientid.value = document.form.text_dsltmp_dhcp_clientid.value;
+	}
 
 	if (vpi_val == "0" && vci_val == "40" && encap_val == "vc")
 	{
@@ -140,6 +145,27 @@ function haveIPTVService() {
 	}
 
 	return false;
+}
+
+function showHideDHCPoptList(dhcp_opt_enable) {
+	if(dhcp_opt_enable.checked) {
+		document.getElementById("dhcp_opt_table").style.visibility = "visible";
+	}
+	else {
+		document.getElementById("dhcp_opt_table").style.visibility = "hidden";
+	}
+}
+
+function showDisableDHCPclientID(clientid_enable){
+	if(clientid_enable.checked) {
+		document.form.dsltmp_dhcp_clientid_type.value = "1";
+		document.form.text_dsltmp_dhcp_clientid.value = "";
+		document.form.text_dsltmp_dhcp_clientid.disabled = true;
+	}
+	else {
+		document.form.dsltmp_dhcp_clientid_type.value = "0";
+		document.form.text_dsltmp_dhcp_clientid.disabled = false;
+	}
 }
 
 function showHideIPTVList(iptv_enable) {
@@ -301,8 +327,11 @@ function setIptvNumPvc() {
 <input type="hidden" name="dsltmp_cfg_dnsenable" id="dsltmp_cfg_dnsenable" value="1">
 <input type="hidden" name="dsltmp_wanTypeOption" value="0">
 <input type="hidden" name="with_wan_setting" value="1">
-<input type="hidden" name="dsltmp_dhcp_clientid" value="">
 <input type="hidden" name="dsltmp_dhcp_hostname" value="">
+
+<input type="hidden" name="dsltmp_dhcp_vendorid" value="">
+<input type="hidden" name="dsltmp_dhcp_clientid_type" value="">
+<input type="hidden" name="dsltmp_dhcp_clientid" value="">
 <div class="QISmain">
 <div>
 <table width="730px">
@@ -374,6 +403,40 @@ function setIptvNumPvc() {
 </table>
 </div>
 <%end if%>
+
+<br/>
+<div>
+<table id="dhcp_opt_setting" width="80%" border="0" align="left" cellpadding="3" cellspacing="0" style="margin-left:8%;">
+		<tr>
+			<td>
+				<input type="checkbox" id="dhcp_opt_enable" name="dhcp_opt_enable" onclick="showHideDHCPoptList(this);">
+				<label for="dhcp_opt_enable">
+					<span class="QISGeneralFont" style="margin-left:0px;font-style:normal;color:#66CCFF;font-size:12px;font-weight:bolder;">DHCP option</span>
+				</label>				
+			</td>
+		</tr>	
+</table>	
+</div>
+
+<div style="margin-left:-90px;">
+<table id="dhcp_opt_table" class="FormTable" width="475px" border="0" align="center" cellpadding="3" cellspacing="0">
+	<tbody>		
+		<tr id="Country_tr">
+			<th width="40%">Class-identifier (option 60):</th>
+			<td>
+				<input type="text" name="dsltmp_dhcp_vendorid" class="input_25_table" value="" maxlength="126" autocapitalization="off" autocomplete="off">
+			</td>
+		</tr>
+		<tr id="ISP_tr">
+			<th width="40%">Class-identifier (option 61):</th>
+			<td>
+				<input type="checkbox" name="dsltmp_dhcp_clientid_type_tmp" onclick="showDiableDHCPclientID(this);">IAID/DUID<br>
+				<input type="text" name="text_dsltmp_dhcp_clientid" class="input_25_table" value="" maxlength="126" autocapitalization="off" autocomplete="off">
+			</td>
+		</tr>
+	</tbody>
+</table>
+</div>
 
 <br/>
 <div>

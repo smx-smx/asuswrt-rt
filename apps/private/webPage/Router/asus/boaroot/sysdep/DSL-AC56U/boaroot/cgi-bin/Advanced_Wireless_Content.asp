@@ -391,7 +391,7 @@ function change_wl_nmode(obj){
 	}
 	else {
 		bws = [1, 0, 2, 3];
-		bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80MHz"];
+		bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
 		add_options_x2(document.form.wl_bw, bwsDesc, bws, cur);
 		handle_11ac_80MHz();
 	}

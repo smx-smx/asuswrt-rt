@@ -1288,6 +1288,7 @@ logoutmessage=您已成功登出。
 Low=低
 Lowest=最低
 LPR_print_share=使用 LPR 協定分享列印
+lyra_TrendMicro_agreement=趨勢科技終端用戶授權合約
 MAC_Address=MAC 位址
 mac_filter_dsbld_dlt_entries=若 MAC 位址過濾清單中有項目存在，點選 套用 以刪除這些項目，然後再次點選 套用 以關閉 MAC 位址過濾功能。若清單中沒有項目，則點選 套用 一次以關閉 MAC 位址過濾功能。
 Manual=使用手冊

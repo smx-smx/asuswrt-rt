@@ -68,7 +68,7 @@ endif
 # FIRMWARE SIZE LIMITATION
 ifeq ($(ORIG_PROFILE), $(filter $(ORIG_PROFILE), dsl-n10-c1 dsl-n12e-c1 dsl-n10-d1))
 FW_SIZE_LIMIT=7995392
-else ifeq ($(ORIG_PROFILE), $(filter $(ORIG_PROFILE), dsl-n12u-c1 dsl-n12u-d1 dsl-n14u dsl-n14u-b1 dsl-n66u))
+else ifeq ($(ORIG_PROFILE), $(filter $(ORIG_PROFILE), dsl-n12u-c1 dsl-n12u-d1 dsl-n14u dsl-n14u-b1 dsl-n66u dsl-n16p))
 FW_SIZE_LIMIT=16384000
 else ifeq ($(ORIG_PROFILE), $(filter $(ORIG_PROFILE), dsl-n16 dsl-ac51))
 FW_SIZE_LIMIT=15335424
@@ -96,6 +96,9 @@ ifeq ("$(strip $(PROFILE))","dsl-n16")
 export KERNEL_2_6_36=1
 endif
 ifeq ("$(strip $(PROFILE))","dsl-ac51")
+export KERNEL_2_6_36=1
+endif
+ifeq ("$(strip $(PROFILE))","dsl-n16p")
 export KERNEL_2_6_36=1
 endif
 ifneq ($(strip $(CUSTOM)),)

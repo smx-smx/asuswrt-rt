@@ -1019,6 +1019,29 @@ qis_dsl_early_restart  (asp_reent* reent, const asp_text* params,  asp_text* ret
 		tcapi_set("Adsl_Entry", "dslx_ginp_try_enable_disp", "0");
 		tcapi_set("Adsl_Entry", "dslx_ginp_try_enable", "0");
 	}
+	//Turkey Turk Telekom
+	if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_trtt", "1")) {
+		tcapi_set("GUITemp_Entry0", "dsltmp_cfg_trtt", "");
+		//testlab
+		if(!tcapi_match("Adsl_Entry", "dslx_testlab", "TR_TT")) {
+			tcapi_set("Adsl_Entry", "dslx_testlab", "TR_TT");
+			do_restart = 1;
+		}
+		//disable dla
+		if(!tcapi_match("Adsl_Entry", "dslx_dla_enable", "0")) {
+			tcapi_set("Adsl_Entry", "dslx_dla_enable", "0");
+			do_restart = 1;
+		}
+	}
+	else if(tcapi_match("GUITemp_Entry0", "dsltmp_cfg_trtt", "0")) {	//not Turk Telekom
+		//testlab
+		if(tcapi_match("Adsl_Entry", "dslx_testlab", "TR_TT")) {
+			tcapi_set("Adsl_Entry", "dslx_testlab", "disable");
+			do_restart = 1;
+		}
+	}
+	else {	//uncertain, do nothing
+	}
 
 	if (do_restart == 1)
 	{
@@ -13062,6 +13085,8 @@ static void disable_other_wan (asp_reent* reent, const asp_text* params, asp_tex
 						snprintf(prefix, sizeof(prefix), "Wan_PVC%d", i);
 						snprintf(cmd, sizeof(cmd)-1, "/usr/script/wan_stop.sh %d %d", i, 0);
 						if(tcapi_match(prefix, "Active", "Yes")) {
+							system(cmd);
+							tcapi_set(prefix, "Active", "No");
 
 							if(tcapi_match(prefix, "ISP", "3"))	//reset bridge
 							{
@@ -13074,8 +13099,6 @@ static void disable_other_wan (asp_reent* reent, const asp_text* params, asp_tex
 								system(cmd);									
 							}
 							
-							system(cmd);
-							tcapi_set(prefix, "Active", "No");
 						#if RTCONFIG_USB_MODEM
 							if(i == WAN_UNIT_USB)
 							{
@@ -14477,6 +14500,21 @@ static void dump_fb_fail_content( void )
 	asp_send_response(NULL, buf, strlen(buf));
 
 	memset(tmp_val, 0, sizeof(tmp_val));
+	tcapi_get_string("WLan_Common", "wl0_CountryCode", tmp_val);
+	snprintf(buf, sizeof(buf), "CC(2.4G)/CC(5G)/TC: %s/", tmp_val);
+#ifdef TCSUPPORT_DUAL_WLAN
+	memset(tmp_val, 0, sizeof(tmp_val));
+	tcapi_get_string("WLan_Common", "wl1_CountryCode", tmp_val);
+	snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), "%s/", tmp_val);
+#else
+	snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), "/");
+#endif /* TCSUPPORT_DUAL_WLAN */
+	memset(tmp_val, 0, sizeof(tmp_val));
+	tcapi_get_string("SysInfo_Entry", "TerritoryCode", tmp_val);
+	snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf), "%s\n", tmp_val);
+	asp_send_response(NULL, buf, strlen(buf));
+
+	memset(tmp_val, 0, sizeof(tmp_val));
 	tcapi_get_string("Timezone_Entry", "TZ", tmp_val);
 	snprintf(buf, sizeof(buf), "Time Zone: %s\n", tmp_val);
 	asp_send_response(NULL, buf, strlen(buf));
@@ -14630,8 +14668,10 @@ static void ej_dump(asp_reent* reent, const asp_text* params, asp_text* ret) {
 		if(f_exists(filename))
 		{
 			char cmd[128] = {0};
+#if 0 //Per meeting, remove PIN Code, so we don't this slice anymore.
 			snprintf(cmd, sizeof(cmd), "sed -i '/PIN Code:/d' %s", filename);
 			system(cmd);
+#endif
 			snprintf(cmd, sizeof(cmd), "sed -i '/MAC Address:/d' %s", filename);
 			system(cmd);
 			snprintf(cmd, sizeof(cmd), "sed -i '/E-mail:/d' %s", filename);
@@ -16135,7 +16175,7 @@ static void get_isp_dhcp_opt_list(asp_reent* reent, const asp_text* params, asp_
 	FILE* fpIsp;
 	char bufIsp[512], wp[1024];
 
-	fpIsp = fopen("/tmp/etc/ISP_DHCP_Opt_List.txt","r");
+	fpIsp = fopen("/boaroot/cgi-bin/ISP_DHCP_Opt_List.txt","r");
 	if (fpIsp != NULL)
 	{
 	  // read out UTF-8 3 bytes header
@@ -16146,8 +16186,10 @@ static void get_isp_dhcp_opt_list(asp_reent* reent, const asp_text* params, asp_
 			ret_fgets = fgets(bufIsp,sizeof(bufIsp),fpIsp);
 			if (ret_fgets != NULL)
 			{
+				if(bufIsp[strlen(bufIsp) - 1] == '\n')
+					bufIsp[strlen(bufIsp) - 1] = '\0';
 				websWrite(wp, bufIsp);
-				websWrite(wp, "\n");
+				//websWrite(wp, "\n");
 			}
 		}
 		fclose(fpIsp);
@@ -16878,7 +16920,7 @@ static void get_iptv_wan_list_eth(asp_reent* reent, const asp_text* params, asp_
 
 #ifdef TCSUPPORT_WAN_ETHER_LAN
 
-#if defined(DSL_AC51)
+#if defined(DSL_AC51) || defined (DSL_N16P)
 #define LAN_PORT_NUM 2
 #else
 #define LAN_PORT_NUM 4

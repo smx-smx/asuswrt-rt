@@ -418,6 +418,11 @@ function btnNext() {
 	){
 		document.form.dsltmp_cfg_uksky.value = "1";	//flag
 	}
+	if( document.form.dsltmp_cfg_country.value=='Turkey'
+		&& document.form.dsltmp_cfg_ispname.value.search("Turk Telekom") >= 0
+	){
+		document.form.dsltmp_cfg_trtt.value = "1";
+	}
 
 	if (connection_type==0) //PPPoE
 	{
@@ -525,6 +530,7 @@ function showSpecificSetting(idx) {
 <input type="hidden" name="dsltmp_cfg_vdslprofile" value="<%tcWebApi_Get("Adsl_Entry","vdsl_profile","s")%>">
 <input type="hidden" name="dsltmp_cfg_uksky" value="">
 <input type="hidden" name="dsltmp_cfg_ginp_try_enable" value="0">
+<input type="hidden" name="dsltmp_cfg_trtt" value="0">
 
 <div class="QISmain">
 <div class="formfonttitle" style="padding:6 0 0 10;">

@@ -5,6 +5,8 @@ If Request_Form("saveFlag") = "1" Then
 	end if
 	if tcWebApi_get("WebCustom_Entry","ADSLChip","h") = "Yes" then
 		tcWebApi_set("Adsl_Entry","dslx_testlab","dslx_testlab")
+	elseif tcWebApi_get("WebCustom_Entry", "isMT7510", "h") = "Yes" then
+		tcWebApi_set("Adsl_Entry","dslx_testlab","dslx_testlab")
 	end if
 tcWebApi_set("Adsl_Entry","dslx_snrm_offset","dslx_snrm_offset")
 tcWebApi_set("Adsl_Entry","adsl_rx_agc","adsl_rx_agc")
@@ -89,9 +91,13 @@ function initial(){
 	remove_rx_agc_option();
 	change_help_desc();
 	autoFocus("<% get_parameter("af"); %>");
+
 	<%if tcWebApi_get("WebCustom_Entry","ADSLChip","h") = "Yes" then%>
 		hideXDSLSetting(document.form.dslx_testlab.value);
+	<%elseif tcWebApi_get("WebCustom_Entry","isMT7510","h") = "Yes" then%>
+		hideXDSLSetting(document.form.dslx_testlab.value);
 	<%end if%>
+
 	change_dla(init_dla_enable);
 	<%if tcWebApi_get("WebCustom_Entry", "isGVectorSupport", "h") = "Yes" then%>
 	hide_nonstd_vectoring(<% tcWebApi_get("Adsl_Entry","dslx_vdsl_vectoring","s") %>);
@@ -219,6 +225,22 @@ function hideXDSLSetting(_value){
 
 		//enable DLA		
 		inputHideCtrl(document.form.dslx_dla_enable, 1);
+	}
+}
+<%elseif tcWebApi_get("WebCustom_Entry","isMT7510","h") = "Yes" then%>
+function hideXDSLSetting(_value)
+{
+	if( _value == "disable" )
+	{
+		//display DLA
+		inputHideCtrl(document.form.dslx_dla_enable, 1);
+	}
+	else
+	{
+		//disable DLA, then hidden
+		document.form.dslx_dla_enable.options[1].selected = 1;
+		change_dla('0')
+		inputHideCtrl(document.form.dslx_dla_enable, 0);
 	}
 }
 <%end if%>
@@ -527,6 +549,8 @@ function check_ginp_try(obj){
 					<option value="ANNEX B/J" <% if tcWebApi_get("Adsl_Entry","ANNEXTYPEA","h") = "ANNEX B/J" then asp_Write("selected") end if %>>ANNEX B/J</option>
 				<%elseif tcWebApi_get("SysInfo_Entry","ProductName","h") = "DSL-AC51" then%>
 					<option value="ANNEX B/J" <% if tcWebApi_get("Adsl_Entry","ANNEXTYPEA","h") = "ANNEX B/J" then asp_Write("selected") end if %>>ANNEX B/J</option>
+				<%elseif tcWebApi_get("SysInfo_Entry","ProductName","h") = "DSL-N16P" then%>
+					<option value="ANNEX B/J" <% if tcWebApi_get("Adsl_Entry","ANNEXTYPEA","h") = "ANNEX B/J" then asp_Write("selected") end if %>>ANNEX B/J</option>
 				<%elseif tcWebApi_get("SysInfo_Entry","ProductName","h") = "DSL-AC56U" then%>
 					<option value="ANNEX B/J" <% if tcWebApi_get("Adsl_Entry","ANNEXTYPEA","h") = "ANNEX B/J" then asp_Write("selected") end if %>>ANNEX B/J</option>
 				<%elseif tcWebApi_get("SysInfo_Entry","ProductName","h") = "DSL-AC52U" then%>
@@ -541,6 +565,18 @@ function check_ginp_try(obj){
 	</SELECT>
 </td>
 </tr>
+
+<%if tcWebApi_get("WebCustom_Entry", "isMT7510", "h") = "Yes" then%>
+<tr>
+	<th>Country / ISP - Specific Setting</th>
+	<td>
+		<select name="dslx_testlab" class="input_option" onchange="hideXDSLSetting(this.value);">
+			<option value="disable" <% tcWebApi_MatchThenWrite("Adsl_Entry","dslx_testlab","disable","selected") %>><%tcWebApi_get("String_Entry","btn_Disabled","s")%></option>
+			<option value="TR_TT" <% tcWebApi_MatchThenWrite("Adsl_Entry","dslx_testlab","TR_TT","selected") %>>Türk Telekom</option>
+		</select>
+	</td>
+</tr>
+<%end if%>
 
 <tr>
 	<th>

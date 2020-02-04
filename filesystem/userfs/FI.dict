@@ -1288,6 +1288,7 @@ logoutmessage=Kirjautuminen ulos onnistui.
 Low=Matala
 Lowest=Matalin
 LPR_print_share=Käytä LPR-protokollaa tulostimen jakamiseen
+lyra_TrendMicro_agreement=Trend Micro End User License Agreement
 MAC_Address=MAC-osoite
 mac_filter_dsbld_dlt_entries=Jos MACin suodatinluettelossa on merkintöjä, poista merkinnät napsauttamalla Käytä ja poista MACin suodatintoiminto käytöstä napsauttamalla uudestaan Käytä. Jos merkintöjä ei ole, poista MACin suodatintoiminto käytöstä napsauttamalla kerran Käytä.
 Manual=Manuaalinen

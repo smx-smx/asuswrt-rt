@@ -1288,6 +1288,7 @@ logoutmessage=Du er logget korrekt af.
 Low=Lav
 Lowest=Lavest
 LPR_print_share=Brug LPR-protokol til printerdeling
+lyra_TrendMicro_agreement=Trend Micro End User License Agreement
 MAC_Address=MAC-adresse
 mac_filter_dsbld_dlt_entries=Hvis der står noget på MAC-filterlisten, skal du klikke på Anvend for at slette dette, og klik på Anvend igen for at deaktivere MAC-filterfunktionen. Hvis der ikke står noget, skal du kun klikke på Anvend én gang for at deaktivere MAC-filterfunktionen.
 Manual=Vejledning

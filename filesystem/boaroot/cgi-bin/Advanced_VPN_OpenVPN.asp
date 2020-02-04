@@ -167,9 +167,9 @@ function initial(){
 function update_FAQ(){
 	if(document.getElementById("connect_status").className == "connectstatuson"){		
 		faqURL("faq_windows", "https://www.asus.com", "/support/FAQ/", "1004469");
-		faqURL("faq_macOS", "https://www.asus.com", "/support/FAQ/", "1033575");
-		faqURL("faq_iPhone", "https://www.asus.com", "/support/FAQ/", "1033574");
-		faqURL("faq_android", "https://www.asus.com", "/support/FAQ/", "1033572");
+		faqURL("faq_macOS", "https://www.asus.com", "/support/FAQ/", "1004472");
+		faqURL("faq_iPhone", "https://www.asus.com", "/support/FAQ/", "1004471");
+		faqURL("faq_android", "https://www.asus.com", "/support/FAQ/", "1004466");
 	}
 }
 

@@ -1288,6 +1288,7 @@ logoutmessage=Ha cerrado sesión correctamente.
 Low=Baja
 Lowest=Inferior
 LPR_print_share=Use el protocolo LPR para compartir impresora
+lyra_TrendMicro_agreement=Trend Micro End User License Agreement
 MAC_Address=Dirección MAC
 mac_filter_dsbld_dlt_entries=Si hay entradas en la lista MAC Filter (Filtro de direcciones MAC), haga clic en Aplicar para eliminar dichas entradas y, a continuación, vuelva a hacer clic en Aplicar para deshabilitar la función Filtro de direcciones MAC. Si no hay ninguna entrada, haga clic en Apply (Aplicar) una vez para deshabilitar la función MAC Filter (Filtro de direcciones MAC).
 Manual=Manual

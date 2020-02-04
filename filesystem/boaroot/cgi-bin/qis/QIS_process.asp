@@ -48,6 +48,7 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_manual_setting.asp" Then
 		tcWebApi_set("Adsl_Entry","ANNEXTYPEA","dsltmp_cfg_annex")
 	end if
 	tcWebApi_set("GUITemp_Entry0","dsltmp_auto_detect_bng_flag","dsltmp_auto_detect_bng_flag")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_trtt","dsltmp_cfg_trtt")
 	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_PTM_manual_setting.asp" Then
@@ -77,6 +78,7 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_PTM_manual_setting.asp" 
 	end if	
 	tcWebApi_set("GUITemp_Entry0","dsltmp_auto_detect_bng_flag","dsltmp_auto_detect_bng_flag")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_uksky","dsltmp_cfg_uksky")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_trtt","dsltmp_cfg_trtt")
 	qis_dsl_early_restart()
 
 elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_ppp_cfg.asp" Then
@@ -121,7 +123,11 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_mer_cfg.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_DHCPClient","dsltmp_cfg_DHCPClient")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_dnsenable","dsltmp_cfg_dnsenable")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_vlanid","dsltmp_cfg_vlanid")
+
+	tcWebApi_set("GUITemp_Entry0","dsltmp_dhcp_vendorid","dsltmp_dhcp_vendorid")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_dhcp_clientid_type","dsltmp_dhcp_clientid_type")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_dhcp_clientid","dsltmp_dhcp_clientid")
+
 	tcWebApi_set("GUITemp_Entry0","dsltmp_wanTypeOption","dsltmp_wanTypeOption")
 	tcWebApi_set("GUITemp_Entry0","with_wan_setting","with_wan_setting")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_dhcp_hostname","dsltmp_dhcp_hostname")
@@ -135,7 +141,11 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_mer_cfg_tmp.asp" Then
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_dnsenable","dsltmp_cfg_dnsenable")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_dns1","dsltmp_cfg_dns1")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_cfg_dns2","dsltmp_cfg_dns2")
+
+	tcWebApi_set("GUITemp_Entry0","dsltmp_dhcp_vendorid","dsltmp_dhcp_vendorid")
+	tcWebApi_set("GUITemp_Entry0","dsltmp_dhcp_clientid_type","dsltmp_dhcp_clientid_type")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_dhcp_clientid","dsltmp_dhcp_clientid")
+
 	tcWebApi_set("GUITemp_Entry0","dsltmp_wanTypeOption","dsltmp_wanTypeOption")
 	tcWebApi_set("GUITemp_Entry0","with_wan_setting","with_wan_setting")
 	tcWebApi_set("GUITemp_Entry0","dsltmp_dhcp_hostname","dsltmp_dhcp_hostname")
@@ -233,7 +243,10 @@ elseif Request_Form("current_page") = "/cgi-bin/qis/QIS_finish.asp" Then
 				end if
 			end if
 
+			tcWebApi_set("Wan_PVC","dhcp_vendorid","dsltmp_dhcp_vendorid")
+			tcWebApi_set("Wan_PVC","dhcp_clientid_type","dsltmp_dhcp_clientid_type")
 			tcWebApi_set("Wan_PVC","dhcp_clientid","dsltmp_dhcp_clientid")
+
 			tcWebApi_set("Wan_PVC","BridgeInterface","value_no")
 			tcWebApi_set("Wan_PVC","wan_hostname","dsltmp_dhcp_hostname")
 

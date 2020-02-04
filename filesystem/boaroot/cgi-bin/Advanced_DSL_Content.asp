@@ -125,6 +125,10 @@ If request_Form("wanVCFlag") = "3" Then
 		tcWebApi_set("Wan_PVC","wan_hostname", "wan_hostname")
 		tcWebApi_set("Wan_PVC","WAN_MAC", "wan_hwaddr_x")
 
+		tcWebApi_set("Wan_PVC","dhcp_vendorid", "dhcp_vendorid")
+		tcWebApi_set("Wan_PVC","dhcp_clientid_type", "dhcp_clientid_type")
+		tcWebApi_set("Wan_PVC","dhcp_clientid", "dhcp_clientid")		
+
 	elseif request_Form("wanTypeOption") = "1" Then	/*Static IP*/
 		if tcWebApi_get("Wan_Common","TransMode","h") = "ATM" then
 			tcWebApi_set("Wan_PVC","ENCAP","wan_Encap1")
@@ -652,7 +656,7 @@ function initial(){
 			<%if tcWebApi_get("Wan_Common","TransMode","h") = "LAN" then%>
 				showhide("MultiServiceTable", 0);
 				showhide("SummaryTable", 0);
-				if(productid == "DSL-AC51"){	//-- MODELDEP:DSL-AC51 (odmpid:DSL-AC750) LAN port 1,2 only
+				if(productid == "DSL-AC51" || productid == "DSL-N16P"){	//-- MODELDEP:DSL-AC51 (odmpid:DSL-AC750)/DSL-N16P LAN port 1,2 only
 					document.form.wans_lanport.remove(3);
 					document.form.wans_lanport.remove(2);
 				}
@@ -687,7 +691,7 @@ function initial(){
 			if(document.form.wan_TransMode.value == "Ethernet" || document.form.wan_TransMode.value == "LAN")
 				document.form.wanTypeOption.remove(3);	//remove BRIDGE
 			if(document.form.wan_TransMode.value == "LAN"){
-				if(productid == "DSL-AC51"){	//-- MODELDEP:DSL-AC51 (odmpid:DSL-AC750) LAN port 1,2 only
+				if(productid == "DSL-AC51" || productid == "DSL-N16P"){	//-- MODELDEP:DSL-AC51 (odmpid:DSL-AC750)/DSL-N16P LAN port 1,2 only
 					document.form.wans_lanport.remove(3);
 					document.form.wans_lanport.remove(2);
 				}	
@@ -815,7 +819,7 @@ function applyRule(){
 				else if(pvc==2) //ETHER_LAN
 					pvc = 12;
 				break;
-			case 26:	//ATM + PTM + USB + ETHER_LAN
+			case 27:	//ATM + PTM + USB + ETHER_LAN
 				if(pvc==1) //PTM
 					pvc = 8;
 				else if(pvc==2) //USB
@@ -1401,7 +1405,7 @@ function doTransChange() {
 				else if(pvc==2) //ETHER_LAN
 					pvc = 12;
 				break;
-			case 26:	//ATM + PTM + USB + ETHER_LAN
+			case 27:	//ATM + PTM + USB + ETHER_LAN
 				if(pvc==1) //PTM
 					pvc = 8;
 				else if(pvc==2) //USB
@@ -1589,7 +1593,7 @@ function doConTypeChange() {
 				showhide("wan_TCPMTU", 1);
 
 				//IPTV
-				showhide("IPTV_LANPort_Option", 0);
+				showhide("IPTV_LANPort_Option", 0);				
 				
 				showhide("div_isipv6sup", 1);
 				
@@ -1624,6 +1628,10 @@ function doConTypeChange() {
 
 				//ppp setting
 				showhide("wan_PPPSetting", 0);
+
+				//DHCP option
+				showhide("wan_DHCP_opt", 1);
+				showDisableDHCPclientID(document.form.tmp_dhcp_clientid_type);
 
 				// ISP Requirement
 				showhide("wan_ISPRequirement", 1);
@@ -1712,6 +1720,9 @@ function doConTypeChange() {
 				//ppp setting
 				showhide("wan_PPPSetting", 0);
 
+				//DHCP option
+				showhide("wan_DHCP_opt", 0);
+
 				// ISP Requirement
 				<%if tcWebApi_get("Wan_Common","sharepvc","h") <> "1" then%>
 				showhide("wan_ISPRequirement", 1);
@@ -1797,6 +1808,9 @@ function doConTypeChange() {
 				document.form.lcpEchoFailure.value = (original_lcpEchoFailure >= 0)?original_lcpEchoFailure:10;
 				ppp_echo_control();
 
+				//DHCP option
+				showhide("wan_DHCP_opt", 0);
+
 				// ISP Requirement
 				<%if tcWebApi_get("Wan_Common","sharepvc","h") <> "1" then%>
 				showhide("wan_ISPRequirement", 1);
@@ -1839,6 +1853,9 @@ function doConTypeChange() {
 				showhide("IPv6Setting", 0);
 				showhide("wan_PPPSetting", 0);
 
+				//DHCP option
+				showhide("wan_DHCP_opt", 0);
+
 				// ISP Requirement
 				showhide("wan_ISPRequirement", 0);
 
@@ -1858,7 +1875,7 @@ function doConTypeChange() {
 
 function rm_IPTV_LANPort(){	//remove wans_lanport if dual wan with Ethernet LAN
 	
-	if(productid == "DSL-AC51"){	//-- MODELDEP:DSL-AC51 (odmpid:DSL-AC750) LAN port 1,2 only
+	if(productid == "DSL-AC51" || productid == "DSL-N16P"){	//-- MODELDEP:DSL-AC51 (odmpid:DSL-AC750)/DSL-N16P LAN port 1,2 only
 		document.getElementById("IPTV_LANPort_Option").options.remove(3);
 		document.getElementById("IPTV_LANPort_Option").options.remove(2);
 	}
@@ -2056,6 +2073,18 @@ function ppp_echo_control(flag){
 	inputCtrl(document.form.lcpEchoFailure, enable);	
 }
 
+function showDisableDHCPclientID(clientid_enable){
+	if(clientid_enable.checked) {
+		document.form.dhcp_clientid_type.value = "1";
+		document.form.dhcp_clientid.value = "";
+		document.form.dhcp_clientid.disabled = true;
+	}
+	else {
+		document.form.dhcp_clientid_type.value = "0";
+		document.form.dhcp_clientid.disabled = false;
+	}
+}
+
 </script>
 </head>
 <body onload="initial();" onunLoad="return unload_body();">
@@ -2111,6 +2140,7 @@ function ppp_echo_control(flag){
 <INPUT TYPE="HIDDEN" NAME="wan_HiddenBiDirectionalAuth" value="<%tcWebApi_get("Wan_PVC","BIDIRECTIONALAUTHENTICATION","s")%>" >
 <INPUT TYPE="HIDDEN" NAME="IPv6PrivacyAddrsSupportedFlag" value="<%tcWebApi_get("WebCustom_Entry","isIPv6PrivacyAddrsSupported","s")%>" >
 <input type="hidden" name="DvInfo_PVC" value="">
+<input type="hidden" name="dhcp_clientid_type" value="<% tcWebApi_get("Wan_PVC","dhcp_clientid_type","s") %>">
 <%if tcWebApi_get("WebCustom_Entry","isMultiSerSupported","h") = "Yes" then%>
 <input type="hidden" name="rmvlan" value='<% tcWebApi_get("IPTV_Entry","rmvlan","s"); %>'>
 <%end if%>
@@ -2812,6 +2842,31 @@ function ppp_echo_control(flag){
 						</table>
 					</td>
 				</tr>
+
+				<tr id="wan_DHCP_opt">
+					<td bgcolor="#4D595D">
+						<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+						<thead>
+						<tr>
+							<td colspan="2">DHCP option</td>
+						</tr>
+						</thead>
+						<tr id="Country_tr">
+							<th width="40%">Class-identifier (option 60):</th>
+							<td>
+								<input type="text" name="dhcp_vendorid" class="input_25_table" value="<% tcWebApi_get("Wan_PVC","dhcp_vendorid","s") %>" maxlength="126" autocapitalization="off" autocomplete="off">
+							</td>
+						</tr>
+						<tr id="ISP_tr">
+							<th width="40%">Class-identifier (option 61):</th>
+							<td>
+								<input type="checkbox" id="tmp_dhcp_clientid_type" name="tmp_dhcp_clientid_type" onclick="showDisableDHCPclientID(this);" <%if tcWebApi_get("Wan_PVC","dhcp_clientid_type","h") = "Yes" then asp_Write("checked") end if%> >IAID/DUID<br>
+								<input type="text" name="dhcp_clientid" class="input_25_table" value="<% tcWebApi_get("Wan_PVC","dhcp_clientid","s") %>" maxlength="126" autocapitalization="off" autocomplete="off">
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>		
 
 				<tr id="wan_ISPRequirement">
 					<td bgcolor="#4D595D">
