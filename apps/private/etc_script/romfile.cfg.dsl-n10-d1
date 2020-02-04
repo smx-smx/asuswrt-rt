@@ -317,7 +317,7 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	<Miniupnpd secure_mode="yes" upnp_port="2869" natpmp="yes" sys_uptime="yes" notify_interval="30" clean="yes" clean_interval="600" clean_threshold="100" uuid="a7f97b59-31a2-4d21-8b49-6f36d1ba9ef2"  lease_file="/tmp/upnp.lease" upnp_min_port_int="1024" upnp_max_port_int="65535" upnp_min_port_ext="1" upnp_max_port_ext="65535" />
 </Upnpd>
 <Ddns>
-	<Entry Active="0" SERVERNAME="WWW.ASUS.COM" MYHOST="" USERNAME="" PASSWORD="" WILDCARD="0" />
+	<Entry Active="0" SERVERNAME="WWW.ASUS.COM" MYHOST="" USERNAME="" PASSWORD="" WILDCARD="0" ddns_wan_unit="-1" ddns_serverhost_x="" />
 </Ddns>
 <Account>
 	<Entry0 username="admin" web_passwd="admin" console_passwd="admin" default_username="admin" default_passwd="admin" display_mask="DF FF F7 BF DF DF FF FF FF" />
@@ -353,7 +353,9 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	ct_timeout=""
 	ct_max="16384"
 	ct_hashsize="16384"
-	http_autologout="30"	/>
+	http_autologout="30"
+	ASUS_EULA="0"
+	ASUS_EULA_time="" />
 </SysInfo>
 <Autoexec />
 <ACL>

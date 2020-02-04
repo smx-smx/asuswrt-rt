@@ -2205,7 +2205,7 @@ function showDisableDHCPclientID(clientid_enable){
 					<%end if%>
 					</td>
 				</tr>
-				<tr id="" height="10px">
+				<tr height="10px">
 					<td bgcolor="#4D595D" valign="top">
 						<table  width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 						<thead>
@@ -2334,7 +2334,7 @@ function showDisableDHCPclientID(clientid_enable){
 						<tr>
 							<th><%tcWebApi_get("String_Entry","Wan_Service_Category","s")%></th>
 							<td align="left">
-								<select id="" class="input_option" name="Alwan_QoS" onchange="doQos(this.selectedIndex)">
+								<select class="input_option" name="Alwan_QoS" onchange="doQos(this.selectedIndex)">
 									<option value="ubr" <% if tcWebApi_get("Wan_PVC","QOS","h") = "ubr" then asp_Write("selected") end if %>>UBR
 									<option value="cbr" <% if tcWebApi_get("Wan_PVC","QOS","h") = "cbr" then asp_Write("selected") end if %>>CBR
 									<option value="rt-vbr" <% if tcWebApi_get("Wan_PVC","QOS","h") = "rt-vbr" then asp_Write("selected") end if %>>RT-VBR
@@ -2781,7 +2781,7 @@ function showDisableDHCPclientID(clientid_enable){
 						<tr>
 							<th><%tcWebApi_get("String_Entry","WANPPPAuthText","s")%></th>
 							<td align="left">
-								<select id="" class="input_option" name="PPPAuthen">
+								<select class="input_option" name="PPPAuthen">
 									<option value="AUTO" <% if tcWebApi_get("Wan_PVC","AUTHEN","h") = "AUTO" then asp_Write("selected") elseif tcWebApi_get("Wan_PVC","AUTHEN","h") = "" then asp_Write("selected") end if %>>AUTO
 									<option value="PAP" <% if tcWebApi_get("Wan_PVC","AUTHEN","h") = "PAP" then asp_Write("selected") end if %>>PAP
 									<option value="CHAP" <% if tcWebApi_get("Wan_PVC","AUTHEN","h") = "CHAP" then asp_Write("selected") end if %>>CHAP

@@ -62,7 +62,7 @@
   height: 66px;
 }
 #TimeMachine_png{
-  background: url(/images/New_ui/USBExt/TimeMachine.png);
+  /*background: url(/images/New_ui/USBExt/TimeMachine.png);*/
   width: 66px;
   height: 66px;
 }
@@ -879,7 +879,6 @@ function reloadAPP(){
 
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0" scrolling="no"></iframe>
 <form method="post" name="app_form" action="/cgi-bin/APP_Installation.asp">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="EN" disabled>
 <input type="hidden" name="firmver" value="<% tcWebApi_staticGet("DeviceInfo","FwVer","s") %>" disabled>
 <input type="hidden" name="apps_action" value="">
 <input type="hidden" name="apps_path" value="">

@@ -339,138 +339,6 @@ static int handle_encrypt(buffer *buf, uint8_t *key, int keylen) {
     return 0;
 }
 
-#if 0
-static int open_close_streaming_port(server* srv, int toOpen){
-	char cmd[BUFSIZ]="\0";
-	int rc = -1;
-	
-#if EMBEDDED_EANBLE
-	char* webdav_http_port = nvram_get_webdav_http_port();
-#else
-	char* webdav_http_port = "8082";
-#endif
-    #if (defined APP_IPKG) && (defined I686)
-    int i = 0;
-    char *p = NULL;
-    char* actual_s_system = nvram_get_second_system();
-    char* actual_f_system = nvram_get_first_system();
-    char* lan_ip = nvram_get_lan_ip();
-    char* lan_ip_s = nvram_get_lan_ip_s();
-    int length = strlen(lan_ip_s);
-    char *lan_ip_s_tmp = (char *)malloc(strlen(lan_ip_s)+3);
-    char lan_ip_s_bak[length + 1];
-    memset(lan_ip_s_tmp, 0, sizeof(lan_ip_s_tmp));
-    memset(lan_ip_s_bak, 0, sizeof(lan_ip_s_bak));
-    sprintf(lan_ip_s_bak, "%s",lan_ip_s);
-    free(lan_ip_s);
-    p = strtok(lan_ip_s_bak,".");
-    sprintf(lan_ip_s_tmp,"%s",p);
-    while(p != NULL && i < 2)
-    {
-        p = strtok(NULL, ".");
-        sprintf(lan_ip_s_tmp,"%s.%s", lan_ip_s_tmp,p);
-        i++;
-    }
-    sprintf(lan_ip_s_tmp,"%s.0/24", lan_ip_s_tmp);
-
-    if(toOpen==1 && srv->is_streaming_port_opend == 0){
-        //- open streaming port
-
-        //- delete accept rule
-       
-        sprintf(cmd, "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j ACCEPT", actual_s_system, lan_ip, webdav_http_port);
-        rc = system(cmd);
-        sprintf(cmd, "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j ACCEPT", actual_s_system, lan_ip_s_tmp, lan_ip, webdav_http_port);
-        rc = system(cmd);
-        //- delete drop rule
-        sprintf(cmd, "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j DROP", actual_s_system, lan_ip, webdav_http_port);
-        rc = system(cmd);
-        sprintf(cmd, "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j DROP", actual_s_system, lan_ip_s_tmp, lan_ip, webdav_http_port);
-        rc = system(cmd);
-
-        //- add accept rule        
-        sprintf(cmd, "%siptables -I BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j ACCEPT", actual_s_system, lan_ip, webdav_http_port);
-        rc = system(cmd);
-        sprintf(cmd, "%siptables -I BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j ACCEPT", actual_s_system, lan_ip_s_tmp, lan_ip, webdav_http_port);
-        rc = system(cmd);
-    }
-    else if(toOpen==0 && srv->is_streaming_port_opend == 1){
-        //- close streaming port
-
-        //- check rule is existed?
-        //sprintf(cmd, "iptables -C INPUT -p tcp -m tcp --dport %s -j DROP", webdav_http_port);
-        //Cdbg(DBE, "%s", cmd);
-
-        //- delete accept rule
-        sprintf(cmd, "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j ACCEPT", actual_s_system, lan_ip, webdav_http_port);     
-        rc = system(cmd);
-        sprintf(cmd, "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j ACCEPT", actual_s_system, lan_ip_s_tmp, lan_ip, webdav_http_port);     
-        rc = system(cmd);
-
-        //- delete drop rule      
-        sprintf(cmd, "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j DROP", actual_s_system, lan_ip, webdav_http_port);
-        rc = system(cmd);
-        sprintf(cmd, "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j DROP", actual_s_system, lan_ip_s_tmp, lan_ip, webdav_http_port);       
-        rc = system(cmd);
-
-        //- add drop rule        
-        sprintf(cmd, "%siptables -I BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j DROP", actual_s_system, lan_ip, webdav_http_port);       
-        rc = system(cmd);
-        sprintf(cmd, "%siptables -I BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j DROP", actual_s_system, lan_ip_s_tmp, lan_ip, webdav_http_port);
-
-        rc = system(cmd);
-    }
-    free(actual_s_system);
-    free(actual_f_system);
-    free(lan_ip);
-    free(lan_ip_s_tmp);
-    #else
-	if(toOpen==1 && srv->is_streaming_port_opend == 0){
-		//- open streaming port
-
-		//- delete accept rule
-		sprintf(cmd, "iptables -D INPUT -p tcp -m tcp --dport %s -j ACCEPT", webdav_http_port);
-		rc = system(cmd);
-
-		//- delete drop rule
-		sprintf(cmd, "iptables -D INPUT -p tcp -m tcp --dport %s -j DROP", webdav_http_port);
-		rc = system(cmd);
-
-		//- add accept rule
-		sprintf(cmd, "iptables -I INPUT 1 -p tcp -m tcp --dport %s -j ACCEPT", webdav_http_port);
-		rc = system(cmd);
-	}
-	else if(toOpen==0 && srv->is_streaming_port_opend == 1){
-		//- close streaming port
-		
-		//- check rule is existed?
-		//sprintf(cmd, "iptables -C INPUT -p tcp -m tcp --dport %s -j DROP", webdav_http_port);
-		//Cdbg(DBE, "%s", cmd);
-
-		//- delete accept rule
-		sprintf(cmd, "iptables -D INPUT -p tcp -m tcp --dport %s -j ACCEPT", webdav_http_port);
-		rc = system(cmd);
-		
-		//- delete drop rule
-		sprintf(cmd, "iptables -D INPUT -p tcp -m tcp --dport %s -j DROP", webdav_http_port);
-		rc = system(cmd);
-		
-		//- add drop rule
-		sprintf(cmd, "iptables -I INPUT 1 -p tcp -m tcp --dport %s -j DROP", webdav_http_port);
-		rc = system(cmd);
-	}
-    #endif
-	if(rc!=0){
-		return 0;
-	}
-
-	srv->last_no_ssl_connection_ts = srv->cur_ts;
-	srv->is_streaming_port_opend = toOpen;
-	
-	return 1;
-}
-#endif
-
 /* init the plugin data */
 INIT_FUNC(mod_smbdav_init) {
 
@@ -579,7 +447,7 @@ FREE_FUNC(mod_smbdav_free) {
 #ifdef EMBEDDED_EANBLE
 	//- close streaming port
 	open_close_streaming_port(srv, 0);
-	
+
 	//- close network access port
 	open_close_network_access_port(srv, 0);
 #endif
@@ -1341,7 +1209,7 @@ static int smbdav_copy_file(server *srv, connection *con, plugin_data *p, physic
 
 static int smbdav_create_dir(server *srv, connection *con, physical *src){
 	int result=-1;
-	
+
 	UNUSED(srv);
 	
 #if EMBEDDED_EANBLE
@@ -2167,7 +2035,6 @@ int smbc_list_directory(server *srv, connection *con, plugin_data *p, buffer *di
 				"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\" />"
 				"<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n"
 				"<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black\">\n"
-				"<meta http-equiv=\"X-Frame-Options\" content=\"sameorigin\">\n"
 				"<link rel=\"apple-touch-icon\" href=\"/smb/css/appicon.png\">\n"
 				"<link rel=\"apple-touch-startup-image\" href=\"/smb/css/startup.png\">\n"
 				"<title>AiCloud</title>\n"
@@ -2238,7 +2105,6 @@ int smbc_list_directory(server *srv, connection *con, plugin_data *p, buffer *di
 			"<meta charset=\"utf-8\"/>\n"
 			"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n"
                         "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n"
-			"<meta http-equiv=\"X-Frame-Options\" content=\"sameorigin\">\n"
 			//"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />"
 			//"<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n"
 			//"<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black\">\n"
@@ -5072,7 +4938,7 @@ propmatch_cleanup:
 		char* webdav_http_port = nvram_get_webdav_http_port();
 		char* webdav_https_port = nvram_get_webdav_https_port();
 		char* http_enable = nvram_get_http_enable();
-		char* lan_http_port = "80";
+		char* lan_http_port = nvram_get_lan_http_port();
 		char* lan_https_port = nvram_get_lan_https_port();
 		char* misc_http_x = nvram_get_misc_http_x();
 		char* misc_http_port = nvram_get_misc_http_port();
@@ -5503,9 +5369,9 @@ propmatch_cleanup:
 			}
 			
 			int len = fread( log_content, fileLen, sizeof(unsigned char), fp );
-			
+
 			if(len>0)
-			buffer_append_string_len(b, log_content, fileLen);
+				buffer_append_string_len(b, log_content, fileLen);
 
 			Cdbg(DBE, "log_content=%s", log_content);
 			
@@ -5933,17 +5799,17 @@ propmatch_cleanup:
 		#endif
 		
 		FILE* fp = fopen(product_icon_file, "rb");
-		
+	
 		if(fp==NULL){
-                        strcpy(product_icon_file, "/www/images/Model_product.png");
-                        fp = fopen(product_icon_file, "rb");
-                }
+			strcpy(product_icon_file, "/www/images/Model_product.png");
+			fp = fopen(product_icon_file, "rb");
+		}
 	
 		if(fp!=NULL){
-			//Get file length
-        		fseek(fp, 0, SEEK_END);
-        		int fileLen = ftell(fp);
-        		fseek(fp, 0, SEEK_SET);
+			 //Get file length
+        	fseek(fp, 0, SEEK_END);
+        	int fileLen = ftell(fp);
+        	fseek(fp, 0, SEEK_SET);
 
 			char* buffer_x = (char *)malloc(fileLen+1);
 			if(!buffer_x){
@@ -5986,7 +5852,7 @@ propmatch_cleanup:
 			buffer_append_string_len(b,CONST_STR_LEN("<product_icon>"));
 
 			if(base64_image!=NULL)
-			buffer_append_string(b,base64_image);
+				buffer_append_string(b, base64_image);
 			
 			buffer_append_string_len(b,CONST_STR_LEN("</product_icon>"));
 			buffer_append_string_len(b,CONST_STR_LEN("</result>"));
@@ -8349,6 +8215,7 @@ propmatch_cleanup:
 		return HANDLER_FINISHED;
 	}
 
+#if MULTIACCOUNT_EANBLE
 	case HTTP_METHOD_GETACCOUNTINFO:{
 		Cdbg(DBE, "do HTTP_METHOD_GETACCOUNTINFO");
 
@@ -9103,6 +8970,8 @@ propmatch_cleanup:
 	}
 #endif
 
+#endif //- end MULTIACCOUNT_EANBLE
+
 	case HTTP_METHOD_OPENSTREAMINGPORT:{
 		Cdbg(DBE, "do HTTP_METHOD_OPENSTREAMINGPORT");
 		
@@ -9147,13 +9016,13 @@ URIHANDLER_FUNC(mod_smbdav_trigger_handler){
 		//- close streaming port
 		open_close_streaming_port(srv, 0);
 	}
-
+	
 	if( srv->last_ts_of_network_access_connection == 0 ||
 		(srv->is_network_access_port_opend == 1 && srv->cur_ts - srv->last_ts_of_network_access_connection >= 3600/*1 hour*/ )){		
 		//- close network access port
 		open_close_network_access_port(srv, 0);
 	}
-		
+	
 #else
 	start_arpping_process(srv->srvconf.arpping_interface->ptr);
 #endif

@@ -1630,7 +1630,8 @@ function change_common_radio(o, s, v, r){
 			document.form.ddns_wildcard_x[0].disabled= 1;
 			document.form.ddns_wildcard_x[1].disabled= 1;
 			showhide("wildcard_field",0);
-		}	
+		}
+		update_ddns_wan_unit_option();
 	}
 	else if(v == "wan_dnsenable_x"){
 	if(r == 1){
@@ -3215,3 +3216,47 @@ function GN_limit_auth_method(){
         authentication_method_change(document.form.wl_auth_mode_x);
 }
 
+function getDDNSState(ddns_return_code, ddns_hostname, ddns_old_hostname)
+{
+	var ddnsStateHint = "";
+	if(ddns_return_code == 'register,-1')
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2","s")%>";
+	else if(ddns_return_code.indexOf('200')!=-1)
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_3","s")%>";
+	else if(ddns_return_code.indexOf('203')!=-1)
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_hostname","s")%> '"+ddns_hostname+"' <%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_registered","s")%>";
+	else if(ddns_return_code.indexOf('220')!=-1)
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_4","s")%>";
+	else if(ddns_return_code == 'register,230')
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_5","s")%>";
+	else if(ddns_return_code.indexOf('233')!=-1)
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_hostname","s")%> '"+ddns_hostname+"' <%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_registered_2","s")%> '"+ddns_old_name+"'";
+	else if(ddns_return_code.indexOf('296')!=-1)
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_6","s")%>";
+	else if(ddns_return_code.indexOf('297')!=-1)
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_7","s")%>";
+	else if(ddns_return_code.indexOf('298')!=-1)
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_8","s")%>";
+	else if(ddns_return_code.indexOf('299')!=-1)
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_9","s")%>";
+	else if(ddns_return_code.indexOf('401')!=-1)
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_10","s")%>";
+	else if(ddns_return_code.indexOf('407')!=-1)
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_11","s")%>";
+	else if(ddns_return_code == 'Time-out')
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_1","s")%>";
+	else if(ddns_return_code =='unknown_error')
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2","s")%>";
+	else if(ddns_return_code =='connect_fail')
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","qis_fail_desc7","s")%>";
+	else if(ddns_return_code =='no_change')
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_nochange","s")%>";
+	else if(ddns_return_code =='auth_fail')
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","qis_fail_desc1","s")%>";
+	else if(ddns_return_code =='Updating' || ddns_return_code =='ddns_query')
+		ddnsStateHint = "Still query ASUS DDNS registration status. Please wait.";
+	else if(ddns_return_code != '')
+		ddnsStateHint = "<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2","s")%>";
+
+	return ddnsStateHint;
+}

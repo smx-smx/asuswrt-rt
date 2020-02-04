@@ -357,7 +357,9 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	ct_timeout=""
 	ct_max="65536"
 	ct_hashsize="65536"
-	http_autologout="30"	/>
+	http_autologout="30"
+	ASUS_EULA="0"
+	ASUS_EULA_time="" />
 </SysInfo>
 <Autoexec />
 <ACL>

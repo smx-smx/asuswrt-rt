@@ -142,20 +142,23 @@ function QKfinish_load_body(){
 function match_ISP_DHCP_opt(){
 	for(var a=0;a<ISP_DHCP_OPT_List.length;a++){
 		if( country_str == ISP_DHCP_OPT_List[a][1] && ispname_str == ISP_DHCP_OPT_List[a][2]){
-			document.getElementById("DHCP_opt").style.display = "";
 			document.form.dhcp_opt_enable.checked = true;
 			showHideDHCPoptList(document.form.dhcp_opt_enable);
 			//<dhcp opt 60 vendorid>, <dhcp opt 61 clientid>, <dhcp opt 61 clientid type>
 			document.form.dsltmp_dhcp_vendorid.value = ISP_DHCP_OPT_List[a][3];
 			if(ISP_DHCP_OPT_List[a][5] == 1){
 				document.form.dsltmp_dhcp_clientid_type_tmp.checked = true;
-				showDiableDHCPclientID(document.form.dsltmp_dhcp_clientid_type_tmp);
+				showDisableDHCPclientID(document.form.dsltmp_dhcp_clientid_type_tmp);
 			}
 			else{
 				document.form.dsltmp_dhcp_clientid_type_tmp.checked = false;
-				showDiableDHCPclientID(document.form.dsltmp_dhcp_clientid_type_tmp);
+				showDisableDHCPclientID(document.form.dsltmp_dhcp_clientid_type_tmp);
 				document.form.text_dsltmp_dhcp_clientid.value = ISP_DHCP_OPT_List[a][4];
 			}			
+		}
+		else{
+			document.form.dhcp_opt_enable.checked = false;
+			showHideDHCPoptList(document.form.dhcp_opt_enable);
 		}
 	}
 }
@@ -169,7 +172,7 @@ function showHideDHCPoptList(dhcp_opt_enable) {
 	}
 }
 
-function showDiableDHCPclientID(clientid_enable){
+function showDisableDHCPclientID(clientid_enable){
 	if(clientid_enable.checked) {
 		document.form.dsltmp_dhcp_clientid_type.value = "1";
 		document.form.text_dsltmp_dhcp_clientid.value = "";
@@ -295,8 +298,13 @@ function submitForm(){
 	}
 	else
 	{
-		document.form.dsltmp_dhcp_clientid.value = "";
-		document.form.dsltmp_dhcp_hostname.value = "";
+		if(document.form.text_dsltmp_dhcp_clientid.value != ""){
+            document.form.dsltmp_dhcp_clientid.value = document.form.text_dsltmp_dhcp_clientid.value;
+        }
+        else{
+			document.form.dsltmp_dhcp_clientid.value = "";
+			document.form.dsltmp_dhcp_hostname.value = "";
+		}
 	}
 
 	document.form.dsl_ipaddr.disabled = true;
@@ -330,7 +338,6 @@ function submitForm(){
 <input type="hidden" name="dsltmp_wanTypeOption" value="">
 <input type="hidden" name="with_wan_setting" value="1">
 
-<input type="hidden" name="dsltmp_dhcp_vendorid" value="">
 <input type="hidden" name="dsltmp_dhcp_clientid_type" value="">
 <input type="hidden" name="dsltmp_dhcp_clientid" value="">
 <div class="QISmain">
@@ -595,7 +602,7 @@ autocomplete="off" />
 </div>
 <br>
 
-<div id="DHCP_opt" style="display:none;">
+<div id="DHCP_opt">
 <table id="dhcp_opt_setting" width="80%" border="0" align="left" cellpadding="3" cellspacing="0" style="margin-left:8%;">
 		<tr>
 			<td>
@@ -620,7 +627,7 @@ autocomplete="off" />
 		<tr id="ISP_tr">
 			<th width="40%">Class-identifier (option 61):</th>
 			<td>
-				<input type="checkbox" name="dsltmp_dhcp_clientid_type_tmp" onclick="showDiableDHCPclientID(this);">IAID/DUID<br>
+				<input type="checkbox" name="dsltmp_dhcp_clientid_type_tmp" onclick="showDisableDHCPclientID(this);">IAID/DUID<br>
 				<input type="text" name="text_dsltmp_dhcp_clientid" class="input_25_table" value="" maxlength="126" autocapitalization="off" autocomplete="off">
 			</td>
 		</tr>

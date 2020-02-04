@@ -1071,7 +1071,7 @@ int option_handler(int id, char *optarg)
 #ifdef ASUS_DDNS
         case CMD_asus:
                 i = atoi (optarg);
-                if (i >= 0 && i <= 2)   {
+                if (i >= 0 && i <= 3)   {
                         g_asus_ddns_mode = i;
                         dprintf((stderr, "register domain mode %d\n", g_asus_ddns_mode));
                 }
@@ -4897,27 +4897,32 @@ show_message("ez-ipupdate: starting...\n");
 
 //2007.03.14 Yau add
 #ifdef ASUS_DDNS
-        if (g_asus_ddns_mode != 0)      {
-                // nvram_unset ("ddns_suggest_name");
-                // nvram_unset ("ddns_old_name");
+	if (g_asus_ddns_mode != 0)      {
+		// nvram_unset ("ddns_suggest_name");
+		// nvram_unset ("ddns_old_name");
 		tcapi_set(DDNS_INFO, "ddns_suggest_name", "");
 		tcapi_set(DDNS_INFO, "ddns_old_name", "");
-                if (asus_private() == -1) {
+		if (asus_private() == -1) {
 			// nvram_set ("ddns_return_code", "connect_fail");
 			// nvram_set ("ddns_return_code_chk", "connect_fail");
 			tcapi_set(DDNS_INFO, "ddns_return_code", "connect_fail");
 			tcapi_set(DDNS_INFO, "ddns_return_code_chk", "connect_fail");
-                        goto exit_main;
+			goto exit_main;
 		}
-        }
-        if (g_asus_ddns_mode == 1)      {
-              retval = asus_reg_domain ();
-show_message("asus_reg_domain retval= %d\n", retval);
-              goto asusddns_update;
-        } else if (g_asus_ddns_mode == 2)       {
-                // override update_entry() method
-                service->update_entry = asus_update_entry;
-        }
+	}
+	if (g_asus_ddns_mode == 1)      {
+		retval = asus_reg_domain (1);
+		show_message("asus_reg_domain retval= %d\n", retval);
+		goto asusddns_update;
+	} else if (g_asus_ddns_mode == 2)       {
+		show_message("g_asus_ddns_mode == 2\n");
+		// override update_entry() method
+		service->update_entry = asus_update_entry;
+	} else if(g_asus_ddns_mode == 3){
+		retval = asus_reg_domain (0);
+		show_message("ez-ipupdate: g_asus_ddns_mode == 3 retval = %d\n", retval);
+		goto exit_main;
+	}
 #endif  // ASUS_DDNS
 
   if(options & OPT_DAEMON)
@@ -5355,6 +5360,7 @@ show_message("asusddns_update: %d\n", retval);
 //2007.03.14 Yau add
 #ifdef ASUS_DDNS
   exit_main:
+  show_message("exit_main\n");
 #endif
 
 #ifdef IF_LOOKUP

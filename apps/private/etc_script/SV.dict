@@ -12,6 +12,44 @@ APS_msg_connect_open_wlan=Du försöker ansluta till ett osäkert nätverk.\n De
 APS_msg_connected=Du är redan ansluten till denna AP.
 APS_msg_waiting_to_connect=Vänta lite, ZVMODELVZ ansluter till
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
+ASUS_Notice=ASUS MEDDELANDE
+ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk) and AiProtection. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
+ASUS_eula_desc0=Välkommen att använda DDNS/ Fjärranslutning (ASUS Router APP/Lyra APP/AiCloud/AiDisk). Läs noga igenom följande instruktioner:
+ASUS_eula_desc1=För att utvärdera och förbättra ASUS produkttjänster och stabilitet, baserat på din användning, kan ASUS samla in din information genom ovanstående funktioner:
+ASUS_eula_desc1_1=När du börjar använda ovanstående funktioner, kan ASUS anonymt samla in din information som inte kan karakterisera eller identifiera dig:
+ASUS_eula_desc1_1_1=Logginformation: logginformation som är associerad med din produkt, inklusive modellnamn, version på inbyggd programvara, Internetstatus och automatiskt genererad aktiveringskod (tillämpas endast på Alexa™-/IFTTT™-funktioner).
+ASUS_eula_desc1_1_12=Logginformation: logginformation som är associerad med din produkt, inklusive modellnamn, version på inbyggd programvara, Internetstatus och automatiskt genererad aktiveringskod (tillämpas endast på Alexa™-funktioner).
+ASUS_eula_desc1_1_13=Logginformation: logginformation som är associerad med din produkt, inklusive modellnamn, version på inbyggd programvara och Internetstatus.
+ASUS_eula_desc1_2_s1=Genom att klicka på [Jag accepterar] nedan, betraktas det som att du samtycker till att dela följande information med ASUS.
+ASUS_eula_desc1_2_s2=För att skydda barns integritet kommer vi inte att samla in följande information från barn.
+ASUS_eula_desc1_2_1=Produktinformation: information associerad med din produkt, inklusive produktens serienummer, IP-adress, MAC-adress och DDNS-namn.
+ASUS_eula_desc1_3=Dessutom kan ASUS, för att aktivera fjärrkontrollen för Alexa™ via din produkt, dela automatiskt genererad aktiveringskod till Amazon för ovanstående ändamål.
+ASUS_eula_desc1_4=Dessutom kan ASUS, för att aktivera fjärrkontrollen för IFTTT™ via din produkt, dela automatiskt genererad aktiveringskod till IFTTT™ för ovanstående ändamål.
+ASUS_eula_desc2=ASUS värnar om att skydda och respektera din integritet;Du kan alltid gå in på Advanced Settings (Avancerade inställningar) > Administration (Administration) > Privacy (Sekretess) för att aktivera/inaktivera din produktinformation med ASUS. För att lära dig mer om hur ASUS skyddar din integritet, besök <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS sekretesspolicy</a>.
+ASUS_eula_age=Jag är äldre än 16 år.
+ASUS_eula_age_confirm=Bekräfta att du är äldre än 16 år.
+ASUS_eula_withdraw0_AlexaIFTTT=För DDNS, Alexa™, IFTTT™ och fjärranslutning (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw0_Alexa=För DDNS, Alexa™ och fjärranslutning  (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw0=För DDNS och fjärranslutning  (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw_desc1=Observera att din information, inklusive produktens modellnamn, version på inbyggda programvara, Internetstatus, IP-adress, MAC-adress och DDNS-namn, kommer att samlas in av ASUS genom ovanstående funktioner.
+ASUS_eula_withdraw_desc1_2=Om du vill inaktivera delningen av din information med ASUS genom ovanstående funktioner, klicka på <span style="font-weight: bold;">[Withdraw] (Återkalla)</span>. Observera emellertid att sådana egenskaper/funktioner kanske inte fungerar för att stoppa delningen av din information med ASUS.
+ASUS_eula_withdraw_desc2=När du har klickap på <span style="font-weight: bold;">[Withdraw] (Återkalla)</span>, kommer det att bli några ändringar som i listan nedan:
+ASUS_eula_withdraw_desc2_1=DDNS-namnet du använder kommer inte att sparas i din router.
+ASUS_eula_withdraw_desc2_2=Du kan använda ASUS Router APP, Lyra APP, AiCloud, AiDisk under LAN-anslutning, men inte under fjärranslutningsläget.
+ASUS_eula_withdraw_desc2_Alexa=I framtiden måste du, om du avser att aktivera funktionerna i Alexa™, tillhandahålla ny aktiveringskod till webbplatsen för Alexa™.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=I framtiden måste du, om du avser att aktivera funktionerna i Alexa™ och IFTTT™, tillhandahålla ny aktiveringskod till webbplatsen för Alexa™ och IFTTT™.
+ASUS_eula_withdraw_note=Du kan inte att kunna slutföra återkallander utan Internet-anslutning. Återkalla när du är ansluten till Internet.
+ASUS_eula_withdraw_unstable=Du kan inte slutföra återkallander eftersom Internetstatusen inte är stabil. Återkalla igen senare.
+TM_eula_desc1=Genom att använda AiProtection, accepterar du <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro Licensavtal (EULA)</a>.
+TM_eula_desc2=Observera att din information kommer att samlas in av Trend Micro genom AiProtection. Du accepterar också att ASUS inte är ansvariga för avtalet mellan dig och Trend Micro eller någon av tjänsterna som Trend Micro tillhandahåller. Om du har frågor om hur Trend Micro samlar in, bearbetar och använder din ovanstående information, se sekretessrelaterat uttalande av Trend Micro eller kontakta Trend Micro för mer information.
+TM_eula_desc3=Om du vill inaktivera delningen av din information med Trend Micro genom ovanstående funktioner, gå till:  Router web GUI (Webbgränssnitt för router) > Advanced settings (Avancerade inställningar) > Administration (Administration) > Privacy (Sekretess).
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
+TM_eula_withdraw0=För AiProtection :
+TM_eula_withdraw_desc1=Observera att din information kommer att samlas in av Trend Micro genom ovanstående funktioner.
+TM_eula_withdraw_desc2=Om du vill inaktivera delningen av din information med Trend Micro genom följande funktioner, klicka på <span style="font-weight: bold;">[Withdraw] (Återkalla)</span> nedan. Observera emellertid att sådana egenskaper/funktioner kanske inte fungerar för att stoppa delningen av din information med Trend Micro.
+withdraw_confirm=Vill du verkligen återkalla?
+withdraw_str=Återkalla
 asusddns_inputhint=Ange namnet
 Auto=Automatiskt
 BM_alert_IP2=är en ogiltig IP-adress.
@@ -321,8 +359,8 @@ QIS_welcome_feature1=Simultan 450+450 dualbandanslutning.
 [###MODEL_DEP###][DSL-N55U-D1]QIS_welcome_feature1=Samverkande dubbelband N600. (300 Mbps/ 2.4 GHz + 300 Mbps/ 5 GHz)
 [###MODEL_DEP###][DSL-N17U]QIS_welcome_feature1=Enkelband N300. (300 Mbps/ 2.4 GHz)
 [###MODEL_DEP###][DSL-N16]QIS_welcome_feature1=Enkelband N300. (300 Mbps/ 2.4 GHz)
-[###MODEL_DEP###][DSL-N16P]QIS_welcome_feature1=Enkelband N300. (300 Mbps/ 2.4 GHz)
 [###MODEL_DEP###][DSL-N16U]QIS_welcome_feature1=Enkelband N300. (300 Mbps/ 2.4 GHz)
+[###MODEL_DEP###][DSL-N16P]QIS_welcome_feature1=Enkelband N300. (300 Mbps/ 2.4 GHz)
 [###MODEL_DEP###][DSL-N14U]QIS_welcome_feature1=Enkelband N300. (300 Mbps/ 2.4 GHz)
 [###MODEL_DEP###][DSL-N14U-B1]QIS_welcome_feature1=Enkelband N300. (300 Mbps/ 2.4 GHz)
 [###MODEL_DEP###][DSL-N12E-C1]QIS_welcome_feature1=Enkelband N300. (300 Mbps/ 2.4 GHz)
@@ -429,13 +467,13 @@ web_redirect_case2_suggestion1=Your PPPoE account or password is not accepted, p
 web_redirect_case2_title1=PPPoE Authentication Failure
 web_redirect_case3_button=Change WAN type
 web_redirect_case3_suggestion1=Please check the <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>connection settings</a> is correct.
-web_redirect_case5_suggestion1=We suggest you turn on the <a style='color:#FFF' href='/index.asp'>WAN connection button</a>.
+web_redirect_case5_suggestion1=We suggest you turn on the <a style='color:#FFF' href='/'>WAN connection button</a>.
 web_redirect_case5_suggestion2=Please check USB modem is power on.
 web_redirect_case5_suggestion3=Change <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB modem setting</a>.
 web_redirect_case5_title1=The WAN cnnection is turned off
 web_redirect_case5_title2=USB modem is not ready
-web_redirect_case6_desc1=Klicka på (Nästa) för att routern automatiskt ska få en ny IP-adress. Den nya IP-adressen är:
-web_redirect_case6_desc2=Varje tjänst, som portvidarebefordran eller DMZ, måste konfigureras till den nya IP-adressen.
+web_redirect_case6_desc1=Click (Next) to get a new IP address. The new IP address is:
+web_redirect_case6_desc2=Please confirm that related services using the new IP address, such as Port Forwarding or DMZ.
 web_redirect_case8_suggestion1=Please confirm Parent AP can connect to Internet.
 web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Change the connection setting</a>.
 web_redirect_case8_title=Unable to connect to Parent AP
@@ -449,24 +487,28 @@ w_r_r3_2=Vi har upptäckt att din WAN-anslutningstyp är PPPoE men dina PPPoE-in
 w_r_r4=Internet-anslutningen misslyckades. Routerns IP-adress är densamma som gatewayens IP-adress.
 w_r_r5_1=Du har förmodligen avbrutit WAN-anslutningen manuellt.
 w_r_r5_2=Inställningarna för routerns dynamiska eller statiska IP-adress är felaktiga.
-w_r_r6=IP-konflikt upptäcktes. Klicka på Nästa för att få en ny IP-address.
-w_r_suggestion_etc=Klicka för att gå till konfigurationssidan.
+w_r_r6=IP-konflikt identifierad.
+w_r_suggestion_etc=Klicka för att gå till konfigurationssidan
 w_r_suggestion_etc_desc=Du kan kontrollera och konfigurera inställningarna.
 w_r_suggestion_final=Om problem fortfarande kvarstår, ändra anslutningsinställningarna manuellt.
 w_r_suggestion_mnl_start_wan=Uppdatera WAN.
 w_r_suggestion0=Vi föreslår att du
 w_r_suggestion0_1=Behöver administratörens konto och lösenord.
-w_r_suggestion1=Kontrollera att kabeln är riktigt ansluten mellan routerns och modemets WAN-port.
+w_r_suggestion1=Kontrollera att kabeln är riktigt ansluten mellan routerns WAN-port och modemet.
 w_r_suggestion2_1=Gå till sedan för kontoinställningar
-w_r_suggestion2_1_desc= och kontrollera konto och lösenord igen.
-w_r_suggestion2_2=Gå till sedan för identifiering av WAN-typ
-w_r_suggestion2_2_desc= så identifierar ZVMODELVZ WAN-typ automatiskt.
+w_r_suggestion2_1_desc=och kontrollera konto och lösenord igen.
+w_r_suggestion2_2=Gå till sidan Snabb Internetinställning för att automatiskt identifiera anslutningstypen.
+w_r_suggestion2_2_desc=så identifierar ZVMODELVZ WAN-typ automatiskt.
 w_r_suggestion3=Kontakta din ISP (Internetleverantör) för att ta reda på grundorsaken till DHCP-felet.
 w_r_suggestion4=Konfigurera om routerns IP-adress och se till att den skiljer sig från gatewayens IP-adress.
 w_r_suggestion5_1=Bygg WAN-anslutningen manuellt.
 w_r_suggestion5_2=Kontrollera att IP- och DNS-inställningarna är korrekta.
 w_r_suggestion6=Konfigurera om IP-adressen för din ZVMODELVZ och se till att den skiljer sig från WAN-nätbryggan. Exempel: I 192.168.X.X är X ett nummer mellan 2 och 254.
+w_r_suggestion7=När routern har anslutits till modemet, klicka på "GÅ" för att starta snabbinstallationsguiden.
+w_r_suggestion8=För att konfigurera WAN-anslutning i offlineläge eller för att ändra driftsläget till åtkomstpunkten, klicka på Man. inställn.
+w_r_suggestion9=I nästa steg, ställ in inloggningsnamn och lösenord för extra säkerhet.
 Web_Title2=ZVMODELVZ
+wireless_configured=Konfigurerad
 Wireless_name=Trådlöst namn
 wireless_router=Trådlös router
 wl_securitylevel_0=Ingen
@@ -537,6 +579,9 @@ aicloud_for_privateIP2=Använd ports 8082 och 443 för AiCloud. Du kan ändra po
 aicloud_for_privateIP3=För ytterligare detaljer kan du också se <a id="faq1" href="https://www.asus.com/support/FAQ/114093" target="_blank" style="font-weight: bolder;text-decoration:underline;">Portvidarebefordran FAQ</a> och <a id="faq2" href="https://www.asus.com/support/FAQ/1001253" target="_blank" style="font-weight: bolder;text-decoration:underline;">DMZ FAQ</a>.
 aicloud_invitation_invalid=Ogiltig inbjudningskod!
 AiCloud_Log_desc=Denna sida visas en logg över AiClouds aktiviteter.
+AiCloud_maintext_note=ASUS AiCloud 2.0 håller dig ansluten till dina data oavsett var och när du har en internetanslutning. Den länkar ditt hemnätverk och onlinelagringstjänst, och ger dig möjlighet att få åtkomst till dina data genom AiCloud mobil-app på din iOS eller Android mobil-enhet, eller genom en anpassad webblänk i en webbläsare. Nu kan alla dina data följa med dig var som helst.
+AiCloud_maintext_note0=IP-adressen är ogiltig. Du kan ställa in WAN IP-adressen <a href=\"Advanced_WAN_Content.asp\" style=\"text-decoration:underline\">här</a>, eller gå till <a href=\"https://
+AiCloud_maintext_note1=\" style=\"text-decoration:underline\">AiCloud</a>.
 aicloud_no_record=Det finns inga poster.
 AiCloud_PWD_enable=Aktivera lösenordsskyddsfunktionen.
 AiCloud_PWD_Mechanism=Lösenordsskyddsfunktion:
@@ -751,6 +796,7 @@ btn_Export=Exportera
 btn_go=GÅ
 btn_pre=Föregående
 btn_remove=Ta bort
+btn_send=Skicka
 btn_to_WAN=WAN-inställning
 ButtonResetOOBText=Återställ till OOB
 Captcha=Captcha
@@ -1017,6 +1063,12 @@ feedback_fail_WAN_connected=<span style="color:#FC0;">Systemet kunde inte anslut
 feedback_fail_WAN_disconnected=However, <span style="color:#FC0;">due to WAN connection not established.</span> 
 feedback_Frequent_interrupt=Upprepade avbrott
 feedback_isp=Din Internetleverantör/Internettjänstleverantör
+feedback_max_counts=Högst 2000 tecken - tecken kvar
+feedback_note0=Now this function can't work, because your ASUS Router isn't connected to the Internet. Please send your Feedback to this email address :
+feedback_note1=Programvaru- och DSL-versionerna kommer att skickas med din information och feedback.
+feedback_note2=Feedback kommer att användas för att diagnostisera problem och förbättra ZVMODELVZ-programvaran. All personlig information som du anger, uttryckligt eller oavsiktligt, kommer att skyddas i enlighet med vår <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy/" target="_blank">privacy policy</a>.
+feedback_note3=Genom att skicka din feedback, samtycker du till att ASUS får använda din feedback för att förbättra sina xDSL-modemrouterprodukter.
+feedback_note4=Om du har brådskande ärende, fråga din lokala tekniska support.
 feedback_Occasion_interrupt=Tillfälliga avbrott
 feedback_optional=* Valfritt
 feedback_stable=Stabil anslutning
@@ -1081,6 +1133,8 @@ FC_x_WanWebEnable_id=Med den här egenskapen kan du konfigurera den trådlösa r
 FC_x_WanWebEnable_in=Aktivera webbåtkomst från WAN
 FC_x_WanWebPort_id=För specificering av den port som används för konfiguration av ZVMODELVZ via Internet. Standardporten är 8080.
 FC_x_WanWebPort_in=Port för webbåtkomst från WAN
+feedback_eula=Jag accepterar att tillhandahålla ovanstående information, modellnamn, version på min ASUS-routers inbyggda programvara, webbläsarversion, MAC-adress, IP-adress, Internetstatus, information om routersystem, tiden jag skickar detta feedback-formulär till ASUS för att diagnostisera och förbättra problem med min ASUS-router, och analysera användarupplevelse för att utveckla och utvärdera nya ASUS-produkter och tjänster, och samtycker också til <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank"> ASUS sekretesspolicy</a>.
+feedback_eula_notice=Innan du klickar på "Send" (Skicka) måste du acceptera följande information.
 File_Pop_content_alert_desc8=Lösenordet får inte innehålla mellanslag.
 File_Pop_content_alert_desc9=Lösenord får bara innehålla alfanumeriska tecken.
 FolderName=Mappnamn
@@ -1202,7 +1256,7 @@ IPv6_wan_addr=WAN IPv6-adress
 IPv6_wan_gateway=WAN IPv6 Nätbrygga
 IPv6_wan_Prefix_len=WAN Prefixlängd
 IPv6_WAN_Setting=IPv6 WAN inställning
-isp_br_gvt_note=If you are GVT users, please key in the user name <b>turbonet@turbonet</b> and password <b>gvt25</b>. Otherwise, please key in the user name and password provided by your ISP.
+isp_br_gvt_note=If you are GVT users, please key in the username <b>turbonet@turbonet</b> and password <b>gvt25</b>. Otherwise, please key in the username and password provided by your ISP.
 isp_profile=Välj ISP-profilen för att konfigurera särskilda ISP-inställningar.
 JS_badconnection=Anslutningen till ZVMODELVZ har misslyckats. Klicka på OK för att skicka en begäran eller avbryta.
 JS_basiconfig1=Detta fält låter dig aktivera eller inaktivera nedladdningshanteraren.
@@ -1230,7 +1284,7 @@ JSVCIInvalid=VCI-värde ska vara inom 32-65535
 JSVPIInvalid=VPI-värde ska vara inom 0-255
 JSSCRInvalid=SCR-värde ska vara ett heltal.
 JSSCRSizeInvalid=SCR måste vara mindre eller lika med PCR
-jumbo_frame=Aktivera Jumbo Frame
+jumbo_frame=Jumbo Frame
 LAN_IP=LAN-IP
 LAN_IP_client=LAN-IP
 LANG_select=Välj språk
@@ -1532,7 +1586,7 @@ PPPC_x_PPPoEMRU_in=MRU
 PPPC_x_PPPoEMTU_id=PPPoE-paketets MTU (Maximum Transmission Unit). Standardvärdet är 1492. Ändra bara på det värdet om din internetleverantör kräver det.
 PPPC_x_PPPoEMTU_in=MTU
 PPPC_x_PPPoERelay_id=Aktivering av PPPoE-relä låter LAN-enheter ställa in individuella PPPoE-anslutningar som passerar igenom NAT.
-PPPC_x_PPPoERelay_in=Aktivera PPPoE-relä
+PPPC_x_PPPoERelay_in=PPPoE-relä
 PPPC_x_PPTPOptions_id=Detta alternativ kan specificeras av vissa ISP:er. Kontrollera med din ISP och fyll i om så krävs.
 PPPC_x_PPTPOptions_in=PPTP-alternativ
 PPPC_x_ServiceName_id=Detta är ett tillvalsfält som kan specificeras av vissa ISP:er. Kontrollera med din ISP och fyll i om så krävs.
@@ -1704,10 +1758,23 @@ Spectrum_gathering=Data samlas in, spektrumdiagrammet kommer att visas om (sekun
 Spectrum_refresh=Dessa diagram kommer att uppdateras om (sekunder):
 Spectrum_title=Spectrum
 SReboot_btn=Spara/Starta om
+Standby_str_cold=Passivt vänteläge
+Standby_str=Aktiv vänteläge
+Standby_hint1=När Hot-Standby (Snabbväxling) -läget är aktiverat, växlar system snabbt anslutning till ett annat gränssnitt när det primära gränssnittet ligger nere eller inte är åtkomligt.
+Standby_hint2=Systemet håller reserv-WAN-enheten i anslutet tillstånd och minskar identifieringsintervallet till
+Statistic=Statistik
+Statistic_display_type=Visa för
+Statistic_last_date=Senaste datum
+Statistic_show_type=Visa efter
+Retry_interval=Återförsöksintervall
+Retry_interval2=Identifieringsintervall
+Retry_count=Antal nya försök
 statusTitle_Client=Klientstatus
 statusTitle_Internet=Internetstatus
 statusTitle_Printer=Skrivarstatus
 statusTitle_USB_Disk=Extern USB-diskstatus
+statusTitle_Primary_WAN=Primär WAN-status
+statusTitle_Secondary_WAN=Sekundär WAN-status
 step_use_aicloud=Använda AiCloud :
 Step1_desp=bestämma hur du vill dela dina mappar.
 Step2_desp=skapa ditt domännamn via ASUS DDNS-tjänster.
@@ -2169,3 +2236,5 @@ wsc_mode_hint2=för att modifiera och aktivera sedan WPS.
 yoursharesetting=Inställningen för din delade mapp är
 zero_disable=Inaktivera : 0
 FreeWiFi_Idle=Idle Timeout
+menu_privacy=Privacy
+ASUS_Notice_Privacy=ASUS NOTICE( for privacy )

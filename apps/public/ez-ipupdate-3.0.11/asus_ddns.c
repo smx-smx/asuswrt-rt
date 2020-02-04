@@ -219,7 +219,41 @@ int main(void)
 	return 0;
 }
 #else	// !TEST_HMAC_MD5
-int asus_reg_domain (void)
+
+#define MULTICAST_BIT  0x0001
+#define UNIQUE_OUI_BIT 0x0002
+int TransferMacAddr(const char* mac, char* transfer_mac)
+{
+	int sec_byte;
+	int i = 0, s = 0;
+	char *p_mac;
+	p_mac = transfer_mac;
+
+	if( strlen(mac)!=17 || !strcmp("00:00:00:00:00:00", mac) )
+		return 0;
+
+	while( *mac && i<12 ) {
+		if( isxdigit(*mac) ) {
+			if(i==1) {
+				sec_byte= strtol(mac, NULL, 16);
+				if((sec_byte & MULTICAST_BIT)||(sec_byte & UNIQUE_OUI_BIT))
+					break;
+			}
+			i++;
+			memcpy(p_mac, mac, 1);
+			p_mac++;
+		}
+		else if( *mac==':') {
+			if( i==0 || i/2-1!=s )
+				break;
+			++s;
+		}
+		++mac;
+	}
+	return( i==12 && s==5 );
+}
+
+int asus_reg_domain (int regType)
 {
 	char buf[BUFFER_SIZE + 1];
 	char *p, *bp = buf;
@@ -231,7 +265,6 @@ int asus_reg_domain (void)
 	int retval = REGISTERES_OK;
 
 	buf[BUFFER_SIZE] = '\0';
-
 	if (do_connect((int *) &client_sockfd, server, port) != 0) {
 		PRINT ("error connecting to %s:%s\n", server, port);
 		show_message("error connecting to %s:%s\n", server, port);
@@ -242,7 +275,23 @@ int asus_reg_domain (void)
 		return (REGISTERES_ERROR);
 	}
 
-	snprintf(buf, BUFFER_SIZE, "GET /ddns/register.jsp?hostname=%s&myip=%s", host, address);
+	char old_mac[13];
+	memset(old_mac, 0, 13);
+	if(!regType){
+		snprintf(buf, BUFFER_SIZE, "GET /ddns/register.jsp?hostname=%s&action=unregister",
+			 host);
+	}
+	else{
+		memset(ret_buf, 0, sizeof(ret_buf));
+		tcapi_get (DDNS_INFO, "ddns_transfer", ret_buf);
+		if(TransferMacAddr(ret_buf, old_mac)) {
+			snprintf(buf, BUFFER_SIZE, "GET /ddns/register.jsp?hostname=%s&myip=%s&oldmac=%s",
+				 host, address, old_mac);
+		}
+		else {
+			snprintf(buf, BUFFER_SIZE, "GET /ddns/register.jsp?hostname=%s&myip=%s", host, address);
+		}
+	}
 	output(buf);
 #ifdef RTCONFIG_LETSENCRYPT
 	char acme_txt[64] = {0};
@@ -287,13 +336,23 @@ int asus_reg_domain (void)
 		if (p == NULL)	{
 			p = "";
 		}
-		snprintf (ret_buf, sizeof (ret_buf), "%s,%d", "register", ret);
+		memset(ret_buf, 0, sizeof(ret_buf));
+		snprintf (ret_buf, sizeof (ret_buf), "%s,%d", (regType == 1)? "register": "unregister", ret);
 	}
 
-	// nvram_set ("ddns_return_code", ret_buf);
-	// nvram_set ("ddns_return_code_chk", ret_buf);
-	tcapi_set(DDNS_INFO, "ddns_return_code", ret_buf);
-	tcapi_set(DDNS_INFO, "ddns_return_code_chk", ret_buf);
+
+	if(regType == 0){
+		// nvram_set ("asusddns_reg_result", ret_buf);
+		tcapi_set(DDNS_INFO, "asusddns_reg_result", ret_buf);
+	}
+	else{
+		// nvram_set ("ddns_return_code", ret_buf);
+		// nvram_set ("ddns_return_code_chk", ret_buf);
+		tcapi_set(DDNS_INFO, "ddns_return_code", ret_buf);
+		tcapi_set(DDNS_INFO, "ddns_return_code_chk", ret_buf);
+	}
+
+
 	switch (ret) {
 	case -1:
 		PRINT ("strange server response, are you connecting to the right server?\n");
@@ -408,7 +467,17 @@ int asus_update_entry(void)
 		return (UPDATERES_ERROR);
 	}
 
-	snprintf(buf, BUFFER_SIZE, "GET /ddns/update.jsp?hostname=%s&myip=%s", host, address);
+	char old_mac[13];
+	memset(old_mac, 0, 13);
+	memset(ret_buf, 0, sizeof(ret_buf));
+	tcapi_get (DDNS_INFO, "ddns_transfer", ret_buf);
+	if(TransferMacAddr(ret_buf, old_mac)) {
+		snprintf(buf, BUFFER_SIZE, "GET /ddns/update.jsp?hostname=%s&myip=%s&oldmac=%s",
+			 host, address, old_mac);
+	}
+	else {
+		snprintf(buf, BUFFER_SIZE, "GET /ddns/update.jsp?hostname=%s&myip=%s", host, address);
+	}
 	output(buf);
 #ifdef RTCONFIG_LETSENCRYPT
 	char acme_txt[64] = {0};
@@ -624,6 +693,7 @@ int asus_private(void)
 	// p = nvram_get ("et0macaddr");
 	// if (p == NULL)	{
 	if (tcapi_get("Info_Ether", "mac", hwaddr_str)){
+		show_message("ERROR: %s() can not take MAC address from Info_Ether\n", __FUNCTION__);
 		PRINT ("ERROR: %s() can not take MAC address from Info_Ether\n", __FUNCTION__);
 		// PRINT ("ERROR: %s() can not take MAC address from et0macaddr\n");
 		return -1;
@@ -633,6 +703,7 @@ int asus_private(void)
 	strtok (hwaddr_str, ":");
 	for (i = 0; i < 6; ++i)	{
 		if (p == NULL)	{
+			show_message("ERROR: %s() can not convert MAC address\n", __FUNCTION__);
 			PRINT ("ERROR: %s() can not convert MAC address\n", __FUNCTION__);
 			return -1;
 		}
@@ -644,14 +715,17 @@ int asus_private(void)
 	// p = nvram_get ("secret_code");
 	// if (p == NULL)	{
 	if (tcapi_get("WLan_Entry0", "WscVendorPinCode", key)){
+		show_message("ERROR: secret_code not found.\n");
 		PRINT ("ERROR: secret_code not found.\n");
 		return -1;
 	}
 	// strncpy (key, p, sizeof (key));
 	c = wl_wscPincheck (key);
 	//DBG ("secret code (%s) is %s\n", key, (c == 0)?"valid":"INVALID");
-	if (c)
+	if (c){
+		show_message("WARNING: invalid secret code (%s)?\n", key);
 		PRINT ("WARNING: invalid secret code (%s)?\n", key);
+	}
 
 	DUMP (key);
 
@@ -662,12 +736,14 @@ int asus_private(void)
 		int sock;
 
 		if (interface == NULL)	{
+			show_message("ERROR: %s() invalid address and interface\n", __FUNCTION__);
 			PRINT ("ERROR: %s() invalid address and interface\n", __FUNCTION__);
 			return -1;
 		}
 
 		sock = socket(AF_INET, SOCK_STREAM, 0);
 		if (get_if_addr(sock, interface, &sin) != 0) {
+			show_message("ERROR: %s() get IP address of interface fail\n", __FUNCTION__);
 			PRINT ("ERROR: %s() get IP address of interface fail\n", __FUNCTION__);
 			return -1;
 		}

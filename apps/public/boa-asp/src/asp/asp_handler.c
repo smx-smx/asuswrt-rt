@@ -167,7 +167,8 @@ static void app_call(char *func, char *stream);
 static void do_appGet_cgi (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void do_appGet_image_path_cgi (asp_reent* reent, const asp_text* params, asp_text* ret);
 static void do_upload_cgi (asp_reent* reent, const asp_text* params, asp_text* ret);
-
+static void do_set_ASUS_EULA_cgi(asp_reent* reent, const asp_text* params, asp_text* ret);
+static void do_set_TM_EULA_cgi(asp_reent* reent, const asp_text* params, asp_text* ret);
 
 static void get_post_multipart(request *req);
 static void get_post(request *req);
@@ -272,6 +273,9 @@ static void stop_service (asp_reent* reent, const asp_text* params, asp_text* re
 static void sysinfo(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void ej_dump(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void ej_nvram_get_ddns(asp_reent* reent, const asp_text* params, asp_text* ret);
+static void do_unreg_ASUSDDNS_cgi(asp_reent* reent, const asp_text* params, asp_text* ret);
+static void do_set_TM_EULA_cgi(asp_reent* reent, const asp_text* params, asp_text* ret);
+static void do_set_ASUS_EULA_cgi(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void NetworkToolsNetstat(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void NetworkToolsAnalysis(asp_reent* reent, const asp_text* params, asp_text* ret);
 static void WOL_Invoke(asp_reent* reent, const asp_text* params, asp_text* ret);	//andy chiu, 2014/10/13
@@ -1301,6 +1305,8 @@ void init_asp_funcs(void)
 	append_asp_func("do_appGet_cgi", do_appGet_cgi);
 	append_asp_func("do_appGet_image_path_cgi", do_appGet_image_path_cgi);
 	append_asp_func("do_upload_cgi", do_upload_cgi);
+	append_asp_func("do_set_ASUS_EULA_cgi", do_set_ASUS_EULA_cgi);
+	append_asp_func("do_set_TM_EULA_cgi", do_set_TM_EULA_cgi);
 	append_asp_func("wanstate", wanstate);
 	append_asp_func("set_current_active_wan", set_current_active_wan);
 	append_asp_func("wl_nband_info", wl_nband_info);
@@ -1320,6 +1326,9 @@ void init_asp_funcs(void)
 	append_asp_func("sysinfo", sysinfo);
 	append_asp_func("nvram_dump", ej_dump);
 	append_asp_func("nvram_get_ddns", ej_nvram_get_ddns);
+	append_asp_func("unreg_ASUSDDNS_cgi", do_unreg_ASUSDDNS_cgi);
+	append_asp_func("set_TM_EULA_cgi", do_set_TM_EULA_cgi);
+	append_asp_func("set_ASUS_EULA_cgi", do_set_ASUS_EULA_cgi);
 	append_asp_func ("tcWebApi_get_arp_list", tcWebApi_get_arp_list); /* Paul add 2013/6/17 */
 	append_asp_func ("NetworkToolsNetstat", NetworkToolsNetstat);
 	append_asp_func ("NetworkToolsAnalysis", NetworkToolsAnalysis);
@@ -8325,8 +8334,11 @@ static int appSet_attribute(char *wp, json_object *root)
 	char *misc_http_x = get_cgi_json(g_var_post, "misc_http_x", root);
 	char *misc_ping_x = get_cgi_json(g_var_post, "misc_ping_x", root);
 	/* DUT_RT_SetHttpWANAccess */
+#ifndef TCSUPPORT_WEBSERVER_SSL
 	char *misc_httpport_x = get_cgi_json(g_var_post, "misc_httpport_x", root);
+#else
 	char *misc_httpsport_x = get_cgi_json(g_var_post, "misc_httpsport_x", root);
+#endif
 	if(misc_http_x)
 		tcapi_set("Firewall_Entry", "misc_http_x", misc_http_x);
 	if(misc_ping_x)
@@ -8478,9 +8490,6 @@ static int appSet_attribute(char *wp, json_object *root)
 	char *wl1_3_expire = get_cgi_json(g_var_post, "wl1.3_expire", root);
 	char *wl1_3_expire_tmp = get_cgi_json(g_var_post, "wl1.3_expire_tmp", root);
 	/* [SET] [Wireless] General Setting */
-	char *wl_closed = get_cgi_json(g_var_post, "wl_closed", root);
-	char *wl_radio = get_cgi_json(g_var_post, "wl_radio", root);
-	char *wl_ssid = get_cgi_json(g_var_post, "wl_ssid", root);
 	char *wl0_ssid = get_cgi_json(g_var_post, "wl0_ssid", root);
 	char *wl0_closed = get_cgi_json(g_var_post, "wl0_closed", root);
 	char *wl0_auth_mode_x = get_cgi_json(g_var_post, "wl0_auth_mode_x", root);
@@ -8705,12 +8714,6 @@ static int appSet_attribute(char *wp, json_object *root)
 		tcapi_set("WLan_Entry0", "wl1.3_expire", wl1_3_expire);
 	if(wl1_3_expire_tmp)
 		tcapi_set("WLan_Entry0", "wl1.3_expire_tmp", wl1_3_expire_tmp);
-	if(wl_closed)
-		tcapi_set("WLan_Entry0","HideSSID",wl_closed);
-	if(wl_radio)
-		tcapi_set("WLan_Entry0","radio_on",wl_radio);
-	if(wl_ssid)
-		tcapi_set("WLan_Entry0","ssid",wl_ssid);
 	if(wl0_ssid)
 		tcapi_set("WLan_Entry0", "wl0_ssid", wl0_ssid);
 	if(wl0_closed)
@@ -9265,13 +9268,11 @@ static int appDo_rc_service(char *rc_service, char *wp, json_object *root)
 			app_method_hit = 2;
 		}
 		else if(!strcmp(rc_service, "restart_wireless")) {
-			if (fork() == 0) {
-				//child process
-				char *execvp_str[] = {"tcapi", "commit", "WLan",NULL};
-				tcapi_set("WLan_Common", "fromAPP", "1");
-				execvp("tcapi", execvp_str);
-				exit(0);
-			}
+			char *argv[] = { "/userfs/bin/tcapi", "commit", "WLan", NULL };
+			pid_t pid;
+			tcapi_set("WLan_Common", "editFlag", "0");
+			tcapi_set("WLan_Common", "fromAPP", "1");
+			_eval(argv, NULL, 0, &pid);
 			app_method_hit = 2;
 		}
 		/* [SET] [General] Firmware Upgrade */
@@ -11599,6 +11600,42 @@ appGet_attribute(char *stream, char *name)
 			}
 		}
 	}
+	else if (strcmp(name, "ASUS_EULA") == 0) {
+		if(!tcapi_get("SysInfo_Entry", "ASUS_EULA", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "ASUS_EULA_time") == 0) {
+		if(!tcapi_get("SysInfo_Entry", "ASUS_EULA_time", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "TM_EULA") == 0) {
+		if(!tcapi_get("AiProtection_Entry", "tm_eula", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
+	else if (strcmp(name, "TM_EULA_time") == 0) {
+		if(!tcapi_get("AiProtection_Entry", "TM_EULA_time", value)) {
+			websWrite(stream, value);
+			app_method_hit = 1;
+		}
+		else {
+			app_method_hit = 2;
+		}
+	}
 
 	return app_method_hit;
 }
@@ -12890,6 +12927,87 @@ static void do_upload_cgi (asp_reent* reent, const asp_text* params, asp_text* r
 	//dbgprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
 	eval("/usr/script/upload_config.sh");
 	system("reboot");
+}
+
+static void do_set_ASUS_EULA_cgi (asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char *pattern = NULL;
+	time_t now;
+	char timebuf[100];
+	char ddns_server_x[64] = {0};
+
+	pattern = get_param(g_var_post, "ASUS_EULA");
+	_dprintf("[%s]pattern=[%s]\n", __FUNCTION__, pattern);
+
+	if(pattern)
+	{
+		if(!strcmp(pattern, "0") || !strcmp(pattern, "1"))
+		{
+			tcapi_set("SysInfo_Entry", "ASUS_EULA", pattern);
+			now = time( (time_t*) 0 );
+			sprintf(timebuf, rfctime(&now));
+			_dprintf("ASUS_EULA_time=[%s]\n", timebuf);
+			tcapi_set("SysInfo_Entry", "ASUS_EULA_time", timebuf);
+
+			if(!strncmp(pattern, "0", 1))
+			{
+				tcapi_get("Ddns_Entry", "SERVERNAME", ddns_server_x);
+				if(strcmp(ddns_server_x, "WWW.ASUS.COM") == 0)
+				{
+					tcapi_set("Ddns_Entry", "Active", "0");
+					tcapi_set("Ddns_Entry", "SERVERNAME", "");
+					tcapi_set("Ddns_Entry", "MYHOST", "");
+				}
+			}
+			tcapi_save();
+		}
+	}
+}
+
+static void do_set_TM_EULA_cgi (asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	char *pattern = NULL;
+	time_t now;
+	char timebuf[100];
+	char qos_enable[2] = {0};
+	char qos_type[2] = {0};
+
+	pattern = get_param(g_var_post, "TM_EULA");
+	_dprintf("[%s]pattern=[%s]\n", __FUNCTION__, pattern);
+
+	if(pattern)
+	{
+		if(!strcmp(pattern, "0") || !strcmp(pattern, "1"))
+		{
+			tcapi_set("AiProtection_Entry", "tm_eula", pattern);
+			now = time( (time_t*) 0 );
+			sprintf(timebuf, rfctime(&now));
+			_dprintf("TM_EULA_time=[%s]\n", timebuf);
+			tcapi_set("AiProtection_Entry", "TM_EULA_time", timebuf);
+
+			if(!strncmp(pattern, "0", 1))
+			{
+				tcapi_set("AiProtection_Entry", "wrs_mals_enable", "0");
+				tcapi_set("AiProtection_Entry", "wrs_vp_enable", "0");
+				tcapi_set("AiProtection_Entry", "wrs_cc_enable", "0");
+				tcapi_set("AiProtection_Entry", "wrs_web_enable", "0");
+				tcapi_set("AiProtection_Entry", "wrs_app_enable", "0");
+
+				tcapi_get("Qos_Entry0", "qos_enable", qos_enable);
+				tcapi_get("Qos_Entry0", "qos_type", qos_type);
+				if((strcmp("qos_enable", "1") == 0) && (strcmp("qos_type", "1") == 0))
+				{
+					tcapi_set("Qos_Entry0", "qos_enable", "0");
+				}
+
+				//notify_rc("restart_wrs;restart_qos;restart_firewall");
+				eval("/sbin/bwdpi", "service", "restart");
+				tcapi_commit("QoS_Entry0");
+				tcapi_commit("Firewall_Entry");
+			}
+			tcapi_save();
+		}
+	}
 }
 
 static void wanstate (asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -14346,9 +14464,28 @@ static void dump_fb_fail_content( void )
 	snprintf(buf, sizeof(buf), " / %s\n", tmp_val);
 	asp_send_response(NULL, buf, strlen(buf));
 
+#ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
 	memset(tmp_val, 0, sizeof(tmp_val));
 	tcapi_get_string("DslDiag_Entry", "dslx_diag_enable", tmp_val);
-	snprintf(buf, sizeof(buf), "DSL Line Diagnostic: %s\n", tmp_val);
+	snprintf(buf, sizeof(buf), "DSL Line / Wifi Diagnostic: ");
+	switch(atoi(tmp_val))
+	{
+		case 0: /* DIAG_DISABLE_MODE */
+			snprintf(buf, sizeof(buf), "0(disable)\n");
+			break;
+		case 1: /* DIAG_DSL_MODE */
+			snprintf(buf, sizeof(buf), "1(xDSL Line)\n");
+			break;
+		case 2: /* DIAG_WIFI24G_MODE */
+			snprintf(buf, sizeof(buf), "2(Wi-Fi 2.4GHz)\n");
+			break;
+		case 3: /* DIAG_WIFI5G_MODE */
+			snprintf(buf, sizeof(buf), "3(Wi-Fi 5GHz)\n");
+			break;
+		default:
+			snprintf(buf, sizeof(buf), "(unknown mode)\n");
+			break;
+	}
 	asp_send_response(NULL, buf, strlen(buf));
 
 	memset(tmp_val, 0, sizeof(tmp_val));
@@ -14372,6 +14509,7 @@ static void dump_fb_fail_content( void )
 	}
 	snprintf(buf, sizeof(buf), "Diagnostic Duration: %s\n", tmp_val);
 	asp_send_response(NULL, buf, strlen(buf));
+#endif /* TCSUPPORT_DSL_LINE_DIAGNOSTIC */
 
 	snprintf(buf, sizeof(buf), "System Up time: %s\n", up_time);
 	asp_send_response(NULL, buf, strlen(buf));
@@ -14898,6 +15036,16 @@ static void ej_nvram_get_ddns(asp_reent* reent, const asp_text* params, asp_text
 	}
 
 	return;
+}
+
+static void do_unreg_ASUSDDNS_cgi(asp_reent* reent, const asp_text* params, asp_text* ret)
+{
+	_dprintf("[%s] notify_rc(stop_ddns;start_asusddns_unregister)\n", __FUNCTION__);
+	tcapi_set("Vram_Entry", "asusddns_reg_result", "");
+
+	//notify_rc("stop_ddns;start_asusddns_unregister");
+	eval("/sbin/service", "stop_ddns");
+	eval("/sbin/service", "start_asusddns_unregister");
 }
 
 static void modify_admin_account(asp_reent* reent, const asp_text* params, asp_text* ret)
@@ -16162,8 +16310,8 @@ static void disk_scan_result(asp_reent* reent, const asp_text* params, asp_text*
 static void stop_dsl_diag(asp_reent* reent, const asp_text* params, asp_text* ret)
 {
 	if(tcapi_match("DslDiag_Entry", "dslx_diag_enable", "1") || tcapi_match("DslDiag_Entry", "dslx_diag_state", "1")) {
-		tcapi_set("DslDiag_Entry", "dslx_diag_enable", "0");
-		tcapi_set("DslDiag_Entry", "dslx_diag_state", "5");
+		tcapi_set("DslDiag_Entry", "dslx_diag_enable", "0"); /* DIAG_DISABLE_MODE */
+		tcapi_set("DslDiag_Entry", "dslx_diag_state", "5"); /* DSL_DIAG_UI_CANCEL_DEBUG_CAPTURE */
 		tcapi_commit("DslDiag");
 	}
 }
@@ -16178,8 +16326,8 @@ static void get_isp_dhcp_opt_list(asp_reent* reent, const asp_text* params, asp_
 	fpIsp = fopen("/boaroot/cgi-bin/ISP_DHCP_Opt_List.txt","r");
 	if (fpIsp != NULL)
 	{
-	  // read out UTF-8 3 bytes header
-	        fread(bufIsp,3,1,fpIsp);
+	  	// read out UTF-8 3 bytes header
+	       // fread(bufIsp,3,1,fpIsp);
 		while(!feof(fpIsp))
 		{
 			char* ret_fgets;
@@ -16443,16 +16591,15 @@ static void do_login(asp_reent* reent, const asp_text* params, asp_text* ret)
 	tcapi_get("Account_Entry0", "username", username);
 	tcapi_get("Account_Entry0", "web_passwd", password);
 	
-	
 	//decode login_auth by base64
 	decode_uri(login_auth);
 	decode_buf = rfc822_base64((unsigned char*)login_auth, strlen(login_auth), &len);
-	
+
 	//parser the decoded string.
 	auth = param_line (decode_buf, ':', ';');
 
 	retry_tmp = get_login_retry_by_url(req->remote_ip_addr);
-	
+
 	if(auth)
 	{
 		if(!strcmp(auth[0]->name, username) && !strcmp(auth[0]->value, password))
@@ -16541,7 +16688,10 @@ static void do_login(asp_reent* reent, const asp_text* params, asp_text* ret)
 		
 		free_param(auth);
 	}
+	else
+		err_code = ACCOUNTFAIL;
 	free(decode_buf);
+	//dbgprintf("[%s, %d]err_code=%d\n", __FUNCTION__, __LINE__, err_code);
 	send_login_packet(reent->server_env, err_code, get_param(g_var_post, "current_page"), get_param(g_var_post, "next_page"));
 }
 

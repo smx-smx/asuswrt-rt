@@ -17,6 +17,12 @@ ifneq ($(TCSUPPORT_WEBSERVER_SSL), )
 CFLAGS += -I../../../matrixssl-1-8
 endif
 
+ifneq ($(strip $(TCSUPPORT_ACCESSLOG)),)
+CFLAGS += -I$(APP_ACCESSLOG_DIR)
+endif
+
+CFLAGS += -I$(APP_NETWORKMAP_DIR)
+
 #LDFLAGS = -mips1 -G0 -msoft-float -O2 -fshort-wchar
 LDFLAGS = -mips32r2 -G0 -msoft-float -O2 -fshort-wchar
 

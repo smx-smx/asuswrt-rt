@@ -28,6 +28,7 @@ end if
     <script type="text/javascript" src="/js/jquery.js"></script>
     <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
     <script type="text/javascript" src="/form.js"></script>
+	<script type="text/javascript" src="/js/asus_eula.js"></script>
 <style>
 .weakness{
 	width:650px;
@@ -108,14 +109,12 @@ window.onresize = function() {
 //	if(document.getElementById("alert_preference").style.display == "block") {
 //		cal_panel_block("alert_preference", 0.25);
 //	}
-	if(document.getElementById("agreement_panel").style.display == "block") {
-		cal_panel_block("agreement_panel", 0.25);
-	}
 } 
 
 function initial(){
 	show_menu();
 	setTimeout("update_FAQ();", 300);
+	$j("#all_security_btn").hide();
 }
 
 function update_FAQ(){
@@ -477,19 +476,6 @@ function check_TM_feature(){
 	}
 }
 
-function show_tm_eula(){
-	$j.get("/tm_eula.asp", function(data){
-		document.getElementById('agreement_panel').innerHTML= data;
-		adjust_TM_eula_height("agreement_panel");
-		var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/";
-        $j("#eula_url").attr("href",url);
-
-	});
-	dr_advise();
-	cal_panel_block("agreement_panel", 0.25);
-	$j("#agreement_panel").fadeIn(300);
-}
-
 function cancel(){
 	button_flag = 0;
 	refreshpage();
@@ -634,7 +620,7 @@ function eula_confirm(){
 							<input class="button_gen" type="button" onclick="close_weakness_status();" value="<%tcWebApi_get("String_Entry","CTL_close","s")%>">
 						</td>
 						<td>
-							<input class="button_gen_long" type="button" onclick="enable_whole_security();" value="<%tcWebApi_get("String_Entry","CTL_secure","s")%>">
+							<input id="all_security_btn" class="button_gen_long" type="button" onclick="enable_whole_security();" value="<%tcWebApi_get("String_Entry","CTL_secure","s")%>">
 						</td>
 					</tr>
 				</table>
@@ -804,15 +790,19 @@ function eula_confirm(){
 																	<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
 																		<script type="text/javascript">
 																			$j('#radio_mals_enable').iphoneSwitch('<% tcWebApi_get("AiProtection_Entry","wrs_mals_enable","s") %>',
-																				function(){																					
+																				function(){
 																					if(document.form.TM_EULA.value == 0){
 																						button_flag = 1;
-																						show_tm_eula();
-																						return;
+																						ASUS_EULA.config(eula_confirm, cancel);
+																						if(ASUS_EULA.check("tm")){
+																							document.form.wrs_mals_enable.value = 1;
+																							applyRule();
+																						}
 																					}
-																				
-																					document.form.wrs_mals_enable.value = 1;
-																					applyRule();																				
+																					else{
+																						document.form.wrs_mals_enable.value = 1;
+																						applyRule();
+																					}
 																				},
 																				function(){
 																					document.form.wrs_mals_enable.value = 0;
@@ -832,19 +822,23 @@ function eula_confirm(){
 																	<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
 																		<script type="text/javascript">
 																			$j('#radio_vp_enable').iphoneSwitch('<% tcWebApi_get("AiProtection_Entry","wrs_vp_enable","s") %>',
-																				function(){																				
+																				function(){
 																					if(document.form.TM_EULA.value == 0){
 																						button_flag = 2;
-																						show_tm_eula();
-																						return;
+																						ASUS_EULA.config(eula_confirm, cancel);
+																						if(ASUS_EULA.check("tm")){
+																							document.form.wrs_vp_enable.value = 1;
+																							applyRule();
+																						}
 																					}
-																				
-																					document.form.wrs_vp_enable.value = 1;	
-																					applyRule();	
+																					else{
+																						document.form.wrs_vp_enable.value = 1;
+																						applyRule();
+																					}
 																				},
 																				function(){
 																					document.form.wrs_vp_enable.value = 0;	
-																					applyRule();	
+																					applyRule();
 																				},
 																				{
 																					switch_on_container_path: '/switcherplugin/iphone_switch_container_off.png'
@@ -878,15 +872,19 @@ function eula_confirm(){
 													<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
 														<script type="text/javascript">
 															$j('#radio_cc_enable').iphoneSwitch('<% tcWebApi_get("AiProtection_Entry","wrs_cc_enable","s") %>',
-																function(){																
+																function(){
 																	if(document.form.TM_EULA.value == 0){
 																		button_flag = 3;
-																		show_tm_eula();
-																		return;
+																		ASUS_EULA.config(eula_confirm, cancel);
+																		if(ASUS_EULA.check("tm")){
+																			document.form.wrs_cc_enable.value = 1;
+																			applyRule();
+																		}
 																	}
-																
-																	document.form.wrs_cc_enable.value = 1;	
-																	applyRule();	
+																	else{
+																		document.form.wrs_cc_enable.value = 1;
+																		applyRule();
+																	}
 																},
 																function(){
 																	document.form.wrs_cc_enable.value = 0;

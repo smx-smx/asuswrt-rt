@@ -268,9 +268,9 @@ ddns_updated_main(int argc, char *argv[])
 	if (!(ip=strchr(buf, ','))) return 0;
 
 	//~ nvram_set("ddns_cache", buf);
-	tcapi_set(DDNS_INFO, "ddns_cache", buf);
+	tcapi_set(DDNS_INFO, "ddns_cache", trim_r(buf));
 	//~ nvram_set("ddns_ipaddr", ip+1);
-	tcapi_set(DDNS_INFO, "ddns_ipaddr", ip+1);
+	tcapi_set(DDNS_INFO, "ddns_ipaddr", trim_r(ip+1));
 	//~ nvram_set("ddns_status", "1");
 	tcapi_set(DDNS_INFO, "ddns_status", "1");
 	//~ nvram_set("ddns_server_x_old", nvram_safe_get("ddns_server_x"));
@@ -400,6 +400,7 @@ int
 stop_ptcsrv(void)
 {
 	killall_tk("protect_srv");
+	return 0;
 }
 #endif
 
@@ -514,6 +515,241 @@ void start_script(int argc, char *argv[])
 
 }
 
+int start_ddns(void)
+{
+	int ret = -1;
+	ret = tcapi_commit("Ddns");
+
+	if(ret != TCAPI_PROCESS_OK)
+	{
+		_dprintf("start_ddns(), failed to commit Ddns, ret=[%d]\n", ret);
+	}
+	return ret;
+}
+
+void stop_ddns(void)
+{
+	if (pids("ez-ipupdate"))
+	{
+		killall_tk("ez-ipupdate");
+	}
+
+	tcapi_set("Vram_Entry", "ddns_return_code", "");
+	tcapi_set("Vram_Entry", "ddns_return_code_chk", "");
+	unlink("/etc/ddns.conf");
+	_dprintf("stop_ddns(), remove /etc/ddns.conf.\n");
+}
+
+int asusddns_reg_domain(int reg)
+{
+	char value[32] = {0};
+	char wan_ifname[256];
+	char wan_ip[16] = {0};
+	char ddns_ipaddr[16] = {0};
+	char ddns_server_x[64] = {0};
+	char ddns_server_x_old[64] = {0};
+	char ddns_hostname_x[128] = {0};
+	char ddns_hostname_old[128] = {0};
+	char ddns_cache[32] = {0};
+	char nserver[64] = {0};
+	int unit = -1;
+	FILE *fp = NULL;
+	char ddns_cmd[300] = {0};
+
+	tcapi_get("Ddns_Entry", "Active", value);
+	syslog(LOG_DEBUG, "[%s]Begin...\n", __FUNCTION__);
+	if (reg) { //0:Aidisk, 1:Advanced Setting
+		if (strcmp(value, "1") != 0)
+		{
+			syslog(LOG_ERR, "[%s]DDNS is not enabled.\n", __FUNCTION__);
+			return -1;
+		}
+	}
+
+	if(!find_default_route_ifname(wan_ifname, sizeof(wan_ifname)))
+	{
+		syslog(LOG_ERR, "[%s] Cannot find_default_route_ifname().\n", __FUNCTION__);
+		return -1;
+	}
+
+#ifdef RTCONFIG_DUALWAN
+		memset(value, 0 , sizeof(value));
+		if(tcapi_match("Dualwan_Entry", "wans_mode", "lb"))
+		{
+			memset(value, 0 , sizeof(value));
+			tcapi_get("Ddns_Entry", "ddns_wan_unit", value);
+			syslog(LOG_INFO, "[%s], ddns_wan_unit[%s]\n", __FUNCTION__, value);
+			if(strcmp(value, "0") == 0)
+			{
+				//for interface = Primary WAN
+				get_wan_primary_ifname(wan_ifname);
+			}
+			else if(strcmp(value, "1") == 0)
+			{
+				//for interface = Secondary WAN
+				get_wan_secondary_ifname(wan_ifname);
+			}
+			else
+			{
+				//for interface = Auto
+				get_first_connected_public_wan_ifname(wan_ifname);
+			}
+		}
+#endif /* RTCONFIG_DUALWAN */
+	unit = wan_ifunit(wan_ifname);
+	if(unit == -1)
+	{
+		syslog(LOG_ERR, "[%s] Cannot find correct ifunit.\n", __FUNCTION__);
+		return -1;
+	}
+	syslog(LOG_INFO, "[%s]Interface[%s], ifunit[%d]\n", __FUNCTION__, wan_ifname, unit);
+
+	memset(value, 0 , sizeof(value));
+	snprintf(value, sizeof(value), "wan%d_ipaddr", unit);
+	tcapi_get("Wanduck_Common", value, wan_ip);
+	if (strcmp(wan_ip, "") == 0 || !inet_addr(wan_ip)) {
+		syslog(LOG_ERR, "[%s] WAN IP is empty.\n", __FUNCTION__);
+		return -1;
+	}
+
+	_dprintf("wan_ip=[%s]\n", wan_ip);
+
+	// TODO : Check /tmp/ddns.cache to see current IP in DDNS,
+	// update when ipaddr!= ipaddr in cache.
+	// nvram ddns_cache, the same with /tmp/ddns.cache
+
+	tcapi_get("Vram_Entry", "ddns_ipaddr", ddns_ipaddr);
+
+	tcapi_get("Ddns_Entry", "MYHOST", ddns_hostname_x);
+	tcapi_get("Vram_Entry", "ddns_hostname_old", ddns_hostname_old);
+
+	tcapi_get("Ddns_Entry", "SERVERNAME", ddns_server_x);
+	tcapi_get("Vram_Entry", "ddns_server_x_old", ddns_server_x_old);
+
+	_dprintf("ddns_ipaddr=[%s]\n", ddns_ipaddr);
+	_dprintf("ddns_hostname_x=[%s]\n", ddns_hostname_x);
+	_dprintf("ddns_hostname_old=[%s]\n", ddns_hostname_old);
+	_dprintf("ddns_server_x=[%s]\n", ddns_server_x);
+	_dprintf("ddns_server_x_old=[%s]\n", ddns_server_x_old);
+
+	if ((inet_addr(wan_ip) == inet_addr(ddns_ipaddr)) &&
+		(strcmp(ddns_server_x, ddns_server_x_old) == 0) &&
+		(strcmp(ddns_hostname_x, ddns_hostname_old) == 0)) {
+		tcapi_set("Vram_Entry", "ddns_return_code", "no_change");
+		syslog(LOG_INFO, "[%s]IP address, server and hostname have not changed since the last update.", __FUNCTION__);
+		return -1;
+	}
+
+	tcapi_get("Vram_Entry", "ddns_cache", ddns_cache);
+
+	if (	(strcmp("ddns_server_x_old", "") != 0 &&
+		strcmp(ddns_server_x, ddns_server_x_old)) ||
+		(strcmp("ddns_hostname_x_old", "") != 0 &&
+		strcmp(ddns_hostname_x, ddns_hostname_old))
+	) {
+		syslog(LOG_INFO, "[%s]clear ddns cache file for server/hostname change", __FUNCTION__);
+		unlink("/tmp/ddns.cache");
+	}
+	else if (!(fp = fopen("/tmp/ddns.cache", "r")) && (strcmp(ddns_cache, "") != 0)) {
+		if ((fp = fopen("/tmp/ddns.cache", "w+"))) {
+			fprintf(fp, "%s", ddns_cache);
+			fclose(fp);
+		}
+	}
+	else {
+		if (fp) {
+			fclose(fp);
+		}
+	}
+
+	tcapi_set("Vram_Entry", "ddns_return_code", "ddns_query");
+
+	if (pids("ez-ipupdate"))
+	{
+		killall("ez-ipupdate", SIGINT);
+		sleep(1);
+	}
+
+	tcapi_get("Ddns_Entry", "ddns_serverhost_x", nserver);
+	if(strlen(nserver) == 0)
+	{
+		snprintf(nserver, sizeof(nserver), "nwsrv-ns1.asus.com");
+	}
+
+	snprintf(ddns_cmd, sizeof(ddns_cmd), "/userfs/bin/ez-ipupdate -S dyndns -i %s -h %s -A 1 -s %s -e /sbin/ddns_updated -b /tmp/ddns.cache", wan_ifname, ddns_hostname_x, nserver);
+	system(ddns_cmd);
+
+	syslog(LOG_DEBUG, "[%s]End...\n", __FUNCTION__);
+	return 0;
+}
+
+int asusddns_unregister(void)
+{
+	char wan_ifname[256];
+	char nserver[64] = {0};
+	char value[32] = {0};
+	char ddns_cmd[300] = {0};
+	char ddns_hostname_x[128] = {0};
+
+	syslog(LOG_DEBUG, "[%s]Begin...\n", __FUNCTION__);
+	if(!find_default_route_ifname(wan_ifname, sizeof(wan_ifname)))
+	{
+		syslog(LOG_ERR, "[%s] Cannot find_default_route_ifname().\n", __FUNCTION__);
+		return -1;
+	}
+
+#ifdef RTCONFIG_DUALWAN
+		memset(value, 0 , sizeof(value));
+		if(tcapi_match("Dualwan_Entry", "wans_mode", "lb"))
+		{
+			memset(value, 0 , sizeof(value));
+			tcapi_get("Ddns_Entry", "ddns_wan_unit", value);
+			syslog(LOG_INFO, "[%s], ddns_wan_unit[%s]\n", __FUNCTION__, value);
+			if(strcmp(value, "0") == 0)
+			{
+				//for interface = Primary WAN
+				get_wan_primary_ifname(wan_ifname);
+			}
+			else if(strcmp(value, "1") == 0)
+			{
+				//for interface = Secondary WAN
+				get_wan_secondary_ifname(wan_ifname);
+			}
+			else
+			{
+				//for interface = Auto
+				get_first_connected_public_wan_ifname(wan_ifname);
+			}
+		}
+#endif /* RTCONFIG_DUALWAN */
+	syslog(LOG_INFO, "[%s]Interface[%s]\n", __FUNCTION__, wan_ifname);
+
+	tcapi_set("Vram_Entry", "ddns_return_code", "ddns_unregister");
+	tcapi_set("Vram_Entry", "asusddns_reg_result", "");
+
+	if (pids("ez-ipupdate"))
+	{
+		killall("ez-ipupdate", SIGINT);
+		sleep(1);
+	}
+
+	tcapi_get("Ddns_Entry", "ddns_serverhost_x", nserver);
+	if(strlen(nserver) == 0)
+	{
+		snprintf(nserver, sizeof(nserver), "nwsrv-ns1.asus.com");
+	}
+
+	tcapi_get("Ddns_Entry", "MYHOST", ddns_hostname_x);
+	_dprintf("%s: do ez-ipupdate to unregister!\n", __FUNCTION__);
+	_dprintf("wan_ifname = %s, nserver = %s, hostname = %s\n", wan_ifname, nserver, ddns_hostname_x);
+
+	snprintf(ddns_cmd, sizeof(ddns_cmd), "/userfs/bin/ez-ipupdate -S dyndns -i %s -h %s -A 3 -s %s", wan_ifname, ddns_hostname_x, nserver);
+	system(ddns_cmd);
+
+	syslog(LOG_DEBUG, "[%s]End...\n", __FUNCTION__);
+	return 0;
+}
+
 // -----------------------------------------------------------------------------
 
 /* -1 = Don't check for this program, it is not expected to be running.
@@ -619,6 +855,23 @@ again:
 		}
 	}
 #endif
+	else if (strcmp(script, "ddns") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_ddns();
+		if(action & RC_SERVICE_START) start_ddns();
+	}
+	else if (strcmp(script, "aidisk_asusddns_register") == 0)
+	{
+		asusddns_reg_domain(0);
+	}
+	else if (strcmp(script, "adm_asusddns_register") == 0)
+	{
+		asusddns_reg_domain(1);
+	}
+	else if (strcmp(script, "asusddns_unregister") == 0)
+	{
+		asusddns_unregister();
+	}
 	else if (strcmp(script, "httpd") == 0 || strcmp(script, "boa") == 0)
 	{
 		if(action & RC_SERVICE_STOP) stop_httpd();

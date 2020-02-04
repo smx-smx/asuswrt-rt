@@ -47,17 +47,7 @@ function showdisklink(){
 	}
 }
 function show_share_link(){
-/*if(NN_status == 1 && nav == false)
-$("ie_link").style.display = "block";
-if(FTP_status == 1 && FTP_mode == 1)
-$("notie_link").style.display = "block";
-else{
-$("noLAN_link").style.display = "block";
-if(NN_status != 1)
-			showtext($("noLAN_link"), "<%tcWebApi_get("String_Entry","linktodisk_no_1","s")%>");
-else
-			showtext($("noLAN_link"), "<%tcWebApi_get("String_Entry","linktodisk_no_2","s")%>");
-}*/
+
 	if(FTP_status == 1 && ddns_enable == 1 && ddns_server.length > 0 && ddns_hostname.length > 0){
 		if(FTP_mode == 1 || dummyShareway == 0){
 			$("ddnslink1").style.display = "";
@@ -127,63 +117,6 @@ function go_next_page(){
 			  		<li><%tcWebApi_get("String_Entry","AiDiskWelcome_desp1","s")%></li>
 			  		<li><%tcWebApi_get("String_Entry","AiDiskWelcome_desp2","s")%></li>
 					<li><%tcWebApi_get("String_Entry","AiDisk_moreconfig","s")%></li>
-					<li>
-							<a id="tosLink" style="cursor:pointer;font-family:Lucida Console;text-decoration:underline;" target="_blank" href="">
-								<%tcWebApi_get("String_Entry","DDNS_termofservice_Title","s")%>
-							</a>
-							<script>
-								(function(){
-									var preferLang = "<%tcWebApi_get("LanguageSwitch_Entry","Type","s")%>";
-									
-									if(preferLang == "1")
-										document.getElementById("tosLink").href = "http://www.asus.com/us";
-									else if(preferLang == "2")
-										document.getElementById("tosLink").href = "http://www.asus.com/br";
-									else if(preferLang == "3")
-										document.getElementById("tosLink").href = "http://www.asus.com.cn";
-									else if(preferLang == "4")
-										document.getElementById("tosLink").href = "http://www.asus.com/cz";
-									else if(preferLang == "5")
-										document.getElementById("tosLink").href = "http://www.asus.com/dk";
-									else if(preferLang == "6")
-										document.getElementById("tosLink").href = "http://www.asus.com/de";
-									else if(preferLang == "7")
-										document.getElementById("tosLink").href = "http://www.asus.com/es";
-									else if(preferLang == "8")
-										document.getElementById("tosLink").href = "http://www.asus.com/fi";
-									else if(preferLang == "9")
-										document.getElementById("tosLink").href = "http://www.asus.com/fr";
-									else if(preferLang == "10")
-										document.getElementById("tosLink").href = "http://www.asus.com/it";
-									else if(preferLang == "11")
-										document.getElementById("tosLink").href = "http://www.asus.com/my";
-									else if(preferLang == "12")
-										document.getElementById("tosLink").href = "http://www.asus.com/no";
-									else if(preferLang == "13")
-										document.getElementById("tosLink").href = "http://www.asus.com/pl";
-									else if(preferLang == "14")
-										document.getElementById("tosLink").href = "http://www.asus.com/ru";
-									else if(preferLang == "15")
-										document.getElementById("tosLink").href = "http://www.asus.com/se";
-									else if(preferLang == "16")
-										document.getElementById("tosLink").href = "http://www.asus.com/th";	
-									else if(preferLang == "17")
-										document.getElementById("tosLink").href = "http://www.asus.com/tr";
-									else if(preferLang == "18")
-										document.getElementById("tosLink").href = "http://www.asus.com/tw";
-									else if(preferLang == "19")
-										document.getElementById("tosLink").href = "http://www.asus.com/ua";
-									else if(
-									 preferLang == "ro" || preferLang == "hu"  || preferLang == "jp"
-									)
-										document.getElementById("tosLink").href = "http://www.asus.com/" + preferLang;
-									else
-										document.getElementById("tosLink").href = "http://www.asus.com/us";
-
-									document.getElementById("tosLink").href += "/Terms_of_Use_Notice_Privacy_Policy/Official-Site";
-								})()
-							</script>
-						</li>						
 				</ul>
 			</div>
 			<div id="linkdiskbox" >
@@ -208,63 +141,6 @@ function go_next_page(){
 					</li>
 					<li><%tcWebApi_get("String_Entry","AiDisk_moreconfig","s")%></li>
 					<li><%tcWebApi_get("String_Entry","Aidisk_authority_hint","s")%></li>
-					<li>
-							<a id="tosLink2" style="cursor:pointer;font-family:Lucida Console;text-decoration:underline;" target="_blank" href="">
-								<%tcWebApi_get("String_Entry","DDNS_termofservice_Title","s")%>
-							</a>
-							<script>
-								(function(){
-									var preferLang = "<%tcWebApi_get("LanguageSwitch_Entry","Type","s")%>";
-									
-									if(preferLang == "1")
-										document.getElementById("tosLink2").href = "https://www.asus.com/us";
-									else if(preferLang == "2")
-										document.getElementById("tosLink2").href = "https://www.asus.com/br";
-									else if(preferLang == "3")
-										document.getElementById("tosLink2").href = "https://www.asus.com.cn";
-									else if(preferLang == "4")
-										document.getElementById("tosLink2").href = "https://www.asus.com/cz";
-									else if(preferLang == "5")
-										document.getElementById("tosLink2").href = "https://www.asus.com/dk";
-									else if(preferLang == "6")
-										document.getElementById("tosLink2").href = "https://www.asus.com/de";
-									else if(preferLang == "7")	
-										document.getElementById("tosLink2").href = "https://www.asus.com/es";
-									else if(preferLang == "8")
-										document.getElementById("tosLink2").href = "https://www.asus.com/fi";
-									else if(preferLang == "9")
-										document.getElementById("tosLink2").href = "https://www.asus.com/fr";
-									else if(preferLang == "10")
-										document.getElementById("tosLink2").href = "https://www.asus.com/it";
-									else if(preferLang == "11")
-										document.getElementById("tosLink2").href = "https://www.asus.com/my";
-									else if(preferLang == "12")
-										document.getElementById("tosLink2").href = "https://www.asus.com/no";
-									else if(preferLang == "13")
-										document.getElementById("tosLink2").href = "https://www.asus.com/pl";
-									else if(preferLang == "14")
-										document.getElementById("tosLink2").href = "https://www.asus.com/ru";
-									else if(preferLang == "15")
-										document.getElementById("tosLink2").href = "https://www.asus.com/se";
-									else if(preferLang == "16")
-										document.getElementById("tosLink2").href = "https://www.asus.com/th";	
-									else if(preferLang == "17")
-										document.getElementById("tosLink2").href = "https://www.asus.com/tr";
-									else if(preferLang == "18")
-										document.getElementById("tosLink2").href = "https://www.asus.com/tw";
-									else if(preferLang == "19")
-										document.getElementById("tosLink2").href = "https://www.asus.com/ua";
-									else if(
-									 preferLang == "ro" || preferLang == "hu"  || preferLang == "jp"
-									)
-										document.getElementById("tosLink2").href = "https://www.asus.com/" + preferLang;
-									else
-										document.getElementById("tosLink2").href = "https://www.asus.com/us";
-
-									document.getElementById("tosLink2").href += "/Terms_of_Use_Notice_Privacy_Policy/Official-Site";
-								})()
-							</script>
-						</li>					
 				</ul>
 			</div>
 			</div>
@@ -273,7 +149,7 @@ function go_next_page(){
 	<tr>
 		<td align="center" width="740px" height="60px">
 			<div id="gotonext">
-			<a href="javascript:go_next_page();"><div class="titlebtn" style="margin-left:300px;_margin-left:150px;" align="center"><span id="settingBtn" style="*width:190px;"><%tcWebApi_get("String_Entry","btn_go","s")%></span></div></a>
+				<div class="titlebtn" style="margin-left:300px;_margin-left:150px;" align="center"><span id="settingBtn" style="*width:190px;" onclick="go_next_page();"><%tcWebApi_get("String_Entry","btn_go","s")%></span></div>
 			</div>
 		</td>
 	</tr>

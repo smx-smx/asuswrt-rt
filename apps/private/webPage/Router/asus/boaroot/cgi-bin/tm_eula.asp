@@ -1,14 +1,45 @@
 ﻿
 <div style="background:#232E32;height:40px;border-top-left-radius: 4px;border-top-right-radius: 4px;">
-	<div style="font: 16px bolder Microsoft JhengHei;padding: 12px 0 0 10px;"><%tcWebApi_get("String_Entry","lyra_TrendMicro_agreement","s")%></div>
+	<div style="font: 16px bolder monospace;padding: 12px 0 0 10px;"><%tcWebApi_get("String_Entry","lyra_TrendMicro_agreement","s")%></div>
 </div>
 
-<div id="tm_eula_content" style="background:#293438;height:340px;border-top:1px solid #3B474B;border-bottom: 1px solid #3B474B;overflow-y: auto;font-size:14px;padding:15px 12px 0 12px;">
-	<div>By using AiProtection, Traffic analyzer, Apps analyzer and Adaptive QoS, you agree to the <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro End User License Agreement.</a></div>
-	<div style="margin: 18px 0;">Disclaimer : AiProtection, Traffic analyzer, Apps analyzer and Adaptive QoS contains services provided by Trend Micro, please be aware that ASUS shall bear no responsibility for any and all information security, the privacy practices and the services provided or implemented by Trend Micro. ASUS encourage you to read and be aware of the privacy statements or terms and conditions of Trend Micro before your use of these service.</div>
+<div id="tm_eula_content" style="background:#293438;border-top:1px solid #3B474B;border-bottom: 1px solid #3B474B;overflow-y: auto;font-size:14px;padding:15px 12px 0 12px;">
+	<div><%tcWebApi_get("String_Entry","TM_eula_desc1","s")%></div>
+	<div style="margin: 18px 0;"><%tcWebApi_get("String_Entry","TM_eula_desc2","s")%></div>
+	<div style="margin-top: -10px;"><%tcWebApi_get("String_Entry","TM_privacy_policy","s")%></div>
+	<div style="margin-top: 5px;"><%tcWebApi_get("String_Entry","TM_data_collection","s")%></div>
+	<div style="margin: 18px 0;"><%tcWebApi_get("String_Entry","TM_eula_desc3","s")%></div>
 </div>
 
-<div style="background:#232E32;height:60px;border-bottom-left-radius: 4px;border-bottom-right-radius: 4px;">
-	<input class="button_gen" type="button" style="margin-left:27%;margin-top:15px;" onclick="cancel();" value="<%tcWebApi_get("String_Entry","CTL_Disagree","s")%>">
-	<input class="button_gen" type="button"  onclick="eula_confirm();" value="<%tcWebApi_get("String_Entry","CTL_Agree","s")%>">
+<div style="text-align: center;background:#232E32;height:60px;border-bottom-left-radius: 4px;border-bottom-right-radius: 4px;">
+	<input id="cancelBtn" class="button_gen" type="button" style="margin-top:15px;" value="<%tcWebApi_get("String_Entry","CTL_Disagree","s")%>">	<!-- onclick="cancel();"-->
+	<input id="applyBtn" class="button_gen" type="button" value="<%tcWebApi_get("String_Entry","CTL_Agree","s")%>">	<!-- onclick="eula_confirm();"-->
 </div>
+
+<script>
+	var href_lang = get_supportsite_lang();
+	var $j = jQuery.noConflict();
+	$j("#tm_eula_content").html($j("#tm_eula_content").html().replace(/\\'/g, "'"))
+	if(href_lang != "/" && href_lang != "/my/" && href_lang != "/fi/" && href_lang != "/ua/"){
+		if(href_lang == ".cn/"){
+			$j("#eula_url").attr("href", "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/cn");
+		}
+		else if(href_lang == "/dk/"){
+			$j("#eula_url").attr("href", "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/da");
+		}
+		else if(href_lang == "/se/"){
+			$j("#eula_url").attr("href", "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/sv");
+		}
+		else if(href_lang == "/br/"){
+			$j("#eula_url").attr("href", "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/pt");
+		}
+		else{
+			$j("#eula_url").attr("href", "https://www.asus.com/Microsite/networks/Trend_Micro_EULA"+href_lang);
+		}
+	}
+	else{
+		$j("#eula_url").attr("href", "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/");
+	}	
+	$j("#tm_eula_url").attr("href", "https://www.trendmicro.com/en_us/about/legal/privacy-policy-product.html");
+	$j("#tm_disclosure_url").attr("href", "https://success.trendmicro.com/data-collection-disclosure");
+</script>

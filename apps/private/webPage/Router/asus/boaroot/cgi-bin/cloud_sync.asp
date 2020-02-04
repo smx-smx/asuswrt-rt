@@ -1637,7 +1637,7 @@ function change_service(obj){
 	}
 
 
-	var ss_support = '<% tcWebApi_Get("AiCloud_Entry","ss_support","s") %>';
+	
 
 	$j("#povider_tr").hover(
 		function(){     // for mouse enter event
@@ -1818,7 +1818,7 @@ function onDropBoxLogin(token, uid){
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0" scrolling="no"></iframe>
 <form method="post" name="form" action="/cloud_apply.asp" target="hidden_frame">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<%tcWebApi_Get("SysInfo_Entry", "preferred_lang", "s")%>">
+<input type="hidden" name="preferred_lang" value="<%tcWebApi_Get("SysInfo_Entry", "preferred_lang", "s")%>">
 <input type="hidden" name="firmver" value="<% tcWebApi_Get("DeviceInfo", "FwVer", "s") %>">
 <input type="hidden" name="current_page" value="cloud_sync.asp">
 <input type="hidden" name="next_page" value="cloud_sync.asp">

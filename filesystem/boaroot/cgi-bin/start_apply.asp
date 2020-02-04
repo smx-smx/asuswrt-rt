@@ -23,6 +23,7 @@ elseif Request_Form("action_script") = "restart_ddns" then
 	tcWebApi_Set("Ddns_Entry", "USERNAME", "ddns_username_x")
 	tcWebApi_Set("Ddns_Entry", "PASSWORD", "ddns_passwd_x")
 	tcWebApi_Set("Ddns_Entry", "WILDCARD", "ddns_wildcard_x")
+	tcWebApi_Set("Ddns_Entry", "ddns_wan_unit", "ddns_wan_unit")
 	tcWebApi_Commit("Ddns_Entry")
 elseif Request_Form("action_script") = "notif_hint" then
 	tcWebApi_Set("WebCustom_Entry", "webs_notif_flag", "noti_notif_Flag")

@@ -27,11 +27,7 @@
 #ifdef USE_MD5
 
 #include <stdlib.h>
-#ifdef HAVE_STRING_H
-# include <string.h>
-#else
-# include <strings.h>
-#endif
+#include <string.h>
 
 #include "md5.h"
 

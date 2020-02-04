@@ -114,7 +114,7 @@ wl0_ifnames="ra0 ra1 ra2 ra3"
 wl0_session_timeout_interval="" wl0_CountryRegion="0"
 wl0_CountryRegionABand="3" wl0_CountryCode="DB" wl0_BssidNum="1"
 wl0_WirelessMode="9" wl0_Channel="0" wl0_BasicRate="15"
-wl0_BeaconPeriod="100" wl0_DtimPeriod="1" wl0_TxPower="100"
+wl0_BeaconPeriod="100" wl0_DtimPeriod="1" wl0_EfuseBufferMode="1" wl0_TxPower="100"
 wl0_BGProtection="0" wl0_MaxStaNum="0" wl0_TxPreamble="1" wl0_RTSThreshold="2347"
 wl0_FragThreshold="2346" wl0_TxBurst="1" wl0_PktAggregate="1"
 wl0_TurboRate="0" wl0_APSDCapable="0" wl0_DLSCapable="0" wl0_APAifsn="3;7;1;1"
@@ -318,7 +318,7 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	<Miniupnpd secure_mode="yes" upnp_port="2869" natpmp="yes" sys_uptime="yes" notify_interval="30" clean="yes" clean_interval="600" clean_threshold="100" uuid="de92cf00-6979-11e4-9803-0800200c9a66" lease_file="/tmp/upnp.lease" upnp_min_port_int="1024" upnp_max_port_int="65535" upnp_min_port_ext="1" upnp_max_port_ext="65535" />
 </Upnpd>
 <Ddns>
-	<Entry Active="0" SERVERNAME="WWW.ASUS.COM" MYHOST="" USERNAME="" PASSWORD="" WILDCARD="0" />
+	<Entry Active="0" SERVERNAME="WWW.ASUS.COM" MYHOST="" USERNAME="" PASSWORD="" WILDCARD="0" ddns_wan_unit="-1" ddns_serverhost_x="" />
 </Ddns>
 <Account>
 	<Entry0 username="admin" web_passwd="admin" console_passwd="admin" default_username="admin" default_passwd="admin" display_mask="DF FF F7 BF DF DF FF FF FF" />
@@ -362,7 +362,9 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	http_autologout="30"
 	SystemVendorID=""
 	SystemVendorModelID=""
-	ModemVendorID="26005443434E5A01" />
+	ModemVendorID="26005443434E5A01"
+	ASUS_EULA="0"
+	ASUS_EULA_time="" />
 </SysInfo>
 <Autoexec />
 <ACL>

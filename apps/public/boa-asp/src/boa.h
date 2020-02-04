@@ -171,6 +171,8 @@ extern time_t login_dt;
 #define ASUSROUTER_ASSIA "ASSIA"
 #define ASUSROUTER_IFTTT "IFTTT"
 
+//#define BOA_DEBUG	1
+
 #define APP_LOGOUT_TIME 6000
 
 char *generate_token(char *token, int len);

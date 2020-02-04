@@ -1200,7 +1200,7 @@ function bandwidth_code(o,event){
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="restart_wireless">
 <input type="hidden" name="action_wait" value="8">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="EN">
+<input type="hidden" name="preferred_lang" value="EN">
 <input type="hidden" name="wl_country_code" value="TW" disabled>
 <input type="hidden" name="firmver" value="<% tcWebApi_staticGet("DeviceInfo","FwVer","s") %>">
 <input type="hidden" name="wl_ssid_org" value="ASUS%5FGuest1">

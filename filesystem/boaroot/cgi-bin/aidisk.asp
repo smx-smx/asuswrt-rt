@@ -17,6 +17,8 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/detect.js"></script>
+<script type="text/javaScript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/asus_eula.js"></script>
 <script>
 <% login_state_hook(); %>
 <% disk_pool_mapping_info(); %>

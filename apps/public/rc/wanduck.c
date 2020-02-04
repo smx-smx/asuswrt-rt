@@ -151,7 +151,10 @@ void get_related_nvram(){
 		if((!strcmp(dualwan_mode, "fo") || !strcmp(dualwan_mode, "fb"))
 				&& wandog_enable == 1
 				){
-			strcpy(wandog_target, nvram_safe_get("wandog_target"));
+			strcpy(wandog_target,
+				nvram_invmatch("wandog_target", "") ?
+				nvram_safe_get("wandog_target") :
+				"8.8.8.8");
 		}
 
 		if(!strcmp(dualwan_mode, "fb")){

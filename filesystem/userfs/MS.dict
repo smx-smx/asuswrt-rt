@@ -12,6 +12,44 @@ APS_msg_connect_open_wlan=Anda sedang menyambung kepada rangkaian yang tidak sel
 APS_msg_connected=Anda sudah bersambung kepada titik akses ini.
 APS_msg_waiting_to_connect=Sila tunggu, DSL-N55U_D1 sedang menyambung kepada
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
+ASUS_Notice=NOTIS ASUS
+ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk) and AiProtection. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
+ASUS_eula_desc0=Selamat datang untuk menggunakan sambungan DDNS/ Jauh  (APLIKASI Penghala ASUS/APLIKASI Lyra/AiCloud/AiDisk). Sila baca maklumat berikut dengan teliti:
+ASUS_eula_desc1=Untuk menilai dan meningkatkan perkhidmatan dan kestabilan produk ASUS, berdasarkan penggunaan anda, ASUS mungkin mengumpulkan maklumat anda menerusi fungsi di atas:
+ASUS_eula_desc1_1=Apabila anda mula menggunakan fungsi di atas, ASUS mungkin mengumpulkan maklumat tanpa nama anda yang tidak boleh menggambarkan ciri mahupun mengenal pasti anda:
+ASUS_eula_desc1_1_1=Maklumat log: maklumat log yang berkaitan dengan produk anda, termasuk nama model, versi perisian tegar, status Internet dan kod pengaktifan yang dijana secara automatik (hanya terpakai pada fungsi Alexa™/IFTTT™).
+ASUS_eula_desc1_1_12=Maklumat log: maklumat log yang berkaitan dengan produk anda, termasuk nama model, versi perisian tegar, status Internet dan kod pengaktifan yang dijana secara automatik (hanya terpakai pada fungsi Alexa™).
+ASUS_eula_desc1_1_13=Maklumat log: maklumat log yang berkaitan dengan produk anda, termasuk nama model, versi perisian tegar dan status Internet.
+ASUS_eula_desc1_2_s1=Dengan mengklik [Saya bersetuju] di bawah, ia akan dianggap bahawa anda bersetuju untuk berkongsi maklumat berikut dengan ASUS.
+ASUS_eula_desc1_2_s2=Untuk melindungi privasi kanak-kanak, kami tidak akan mengumpul maklumat kanak-kanak berikut.
+ASUS_eula_desc1_2_1=Maklumat produk: maklumat yang berkaitan dengan produk anda, termasuk nombor siri produk, Alamat IP, Alamat MAC dan nama DDNS.
+ASUS_eula_desc1_3=Selain itu, ASUS mungkin berkongsi kod pengaktifan yang dijana secara automatik dengan Amazon bagi tujuan di atas untuk mendayakan fungsi kawalan jauh Alexa™ anda melalui produk anda.
+ASUS_eula_desc1_4=Selain itu, ASUS mungkin berkongsi kod pengaktifan yang dijana secara automatik dengan IFTTT™ bagi tujuan di atas untuk mendayakan fungsi kawalan jauh IFTTT™ anda melalui produk anda.
+ASUS_eula_desc2=ASUS komited untuk melindungi dan menghormati privasi anda. Anda boleh melawat Tetapan Lanjutan > Pentadbiran > Privasi untuk mendayakan/menyahdayakan perkongsian maklumat produk anda dengan ASUS sepanjang masa. Untuk mengetahui lebih lanjut tentang cara ASUS melindungi privasi anda, sila lawati <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Dasar Privasi ASUS</a>.
+ASUS_eula_age=Saya berumur lebih 16 tahun.
+ASUS_eula_age_confirm=Sila sahkan umur anda lebih 16 tahun.
+ASUS_eula_withdraw0_AlexaIFTTT=Untuk sambungan DDNS, Alexa™, IFTTT™ dan Jauh (APLIKASI Penghala ASUS/APLIKASI Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw0_Alexa=Untuk sambungan DDNS, Alexa™ dan Jauh (APLIKASI Penghala ASUS/APLIKASI Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw0=Untuk sambungan DDNS dan Jauh (APLIKASI Penghala ASUS/APLIKASI Lyra/AiCloud/AiDisk):
+ASUS_eula_withdraw_desc1=Sila ambil perhatian bahawa maklumat anda, termasuk nama model produk anda, versi perisian tegar, status Internet, Alamat IP, Alamat MAC dan nama DDNS, akan dikumpulkan oleh ASUS menerusi fungsi di atas.
+ASUS_eula_withdraw_desc1_2=Jika anda mahu menyahdayakan perkongsian maklumat anda dengan ASUS menerusi fungsi di atas, sila klik <span style="font-weight: bold;">[Tarik Balik]</span> di bawah. Walau bagaimanapun, sila ambil perhatian bahawa ciri/fungsi tersebut mungkin tidak berfungsi jika anda berhenti berkongsi maklumat anda dengan ASUS.
+ASUS_eula_withdraw_desc2=Selepas anda mengklik <span style="font-weight: bold;">[Tarik Balik]</span>, akan terdapat beberapa perubahan seperti yang disenaraikan di bawah:
+ASUS_eula_withdraw_desc2_1=Nama DDNS yang sedang anda guna tidak akan disimpan dalam penghala anda.
+ASUS_eula_withdraw_desc2_2=Anda dapat menggunakan APLIKASI Penghala ASUS, APLIKASI Lyra, AiCloud, AiDisk di bawah sambungan LAN, tetapi bukan di bawah mod sambungan jauh.
+ASUS_eula_withdraw_desc2_Alexa=Pada masa hadapan, jika anda bercadang untuk mendayakan fungsi Alexa™, anda perlu menyediakan kod pengaktifan baharu ke halaman web Alexa™.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=Pada masa hadapan, jika anda bercadang untuk mendayakan fungsi Alexa™ dan IFTTT™, anda perlu menyediakan kod pengaktifan baharu ke halaman web Alexa™ dan IFTTT™.
+ASUS_eula_withdraw_note=Anda tidak dapat melengkapkan prosedur tarik balik tanpa sambungan Internet. Sila tarik balik apabila bersambung dengan Internet.
+ASUS_eula_withdraw_unstable=Anda tidak dapat melengkapkan prosedur tarik balik kerana status Internet tidak stabil. Sila tarik balik sekali lagi kemudian.
+TM_eula_desc1=Dengan menggunakan AiProtection, anda bersetuju dengan<a id="eula_url" style="text-decoration:underline;" target="_blank">Perjanjian Lesen Pengguna Akhir Trend Micro</a>.
+TM_eula_desc2=Sila ambil perhatian bahawa maklumat anda akan dikumpulkan oleh Trend Micro menerusi AiProtection. Anda juga mengakui dan bersetuju bahawa ASUS tidak bertanggungjawab sama ada atas perjanjian antara anda dan Trend Micro mahupun sebarang kandungan perkhidmatan yang disediakan oleh Trend Micro. Jika anda mempunyai sebarang pertanyaan tentang cara Trend Micro mengumpul, memproses dan menggunakan maklumat anda di atas, sila rujuk pernyataan berkaitan privasi yang dikeluarkan oleh Trend Micro atau hubungi Trend Micro untuk butiran lanjut.
+TM_eula_desc3=Jika anda mahu menyahdayakan maklumat anda dengan Trend Micro menerusi fungsi di atas, sila pergi ke:  GUI web penghala > Tetapan lanjutan > Pentadbiran > Privasi.
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
+TM_eula_withdraw0=Untuk AiProtection :
+TM_eula_withdraw_desc1=Sila ambil perhatian bahawa maklumat anda akan dikumpulkan oleh Trend Micro menerusi fungsi di atas.
+TM_eula_withdraw_desc2=Jika anda mahu menyahdayakan perkongsian maklumat anda dengan Trend Micro menerusi fungsi berikut, sila klik <span style="font-weight: bold;">[Tarik Balik]</span>di bawah. Walau bagaimanapun, sila ambil perhatian bahawa ciri/fungsi tersebut mungkin tidak berfungsi jika anda berhenti berkongsi maklumat anda dengan Trend Micro.
+withdraw_confirm=Adakah anda pasti mahu menarik balik?
+withdraw_str=Tarik Balik
 asusddns_inputhint=Masukkan nama
 Auto=Auto
 BM_alert_IP2=adalah alamat IP yang tidak sah.
@@ -385,13 +423,13 @@ web_redirect_case2_suggestion1=Your PPPoE account or password is not accepted, p
 web_redirect_case2_title1=PPPoE Authentication Failure
 web_redirect_case3_button=Change WAN type
 web_redirect_case3_suggestion1=Please check the <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>connection settings</a> is correct.
-web_redirect_case5_suggestion1=We suggest you turn on the <a style='color:#FFF' href='/index.asp'>WAN connection button</a>.
+web_redirect_case5_suggestion1=We suggest you turn on the <a style='color:#FFF' href='/'>WAN connection button</a>.
 web_redirect_case5_suggestion2=Please check USB modem is power on.
 web_redirect_case5_suggestion3=Change <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB modem setting</a>.
 web_redirect_case5_title1=The WAN cnnection is turned off
 web_redirect_case5_title2=USB modem is not ready
-web_redirect_case6_desc1=Klik (Seterusnya) untuk penghala secara automatik mendapat alamat IP baru. Alamat IP baru ialah:
-web_redirect_case6_desc2=Sila pastikan anda mengkonfigurasi setiap perkhidmatan, seperti Mengemukakan Port atau DMZ, alamat IP baru.
+web_redirect_case6_desc1=Click (Next) to get a new IP address. The new IP address is:
+web_redirect_case6_desc2=Please confirm that related services using the new IP address, such as Port Forwarding or DMZ.
 web_redirect_case8_suggestion1=Please confirm Parent AP can connect to Internet.
 web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Change the connection setting</a>.
 web_redirect_case8_title=Unable to connect to Parent AP
@@ -405,24 +443,28 @@ w_r_r3_2=Kami telah mengesan bahawa Jenis Sambungan WAN anda adalah PPPoE. Tetap
 w_r_r4=Sambungan Internet gagal. Alamat IP penghala sama seperti alamat IP get laluan.
 w_r_r5_1=Anda berkemungkinan telah menghentikan sambungan WAN secara manual.
 w_r_r5_2=Tetapan alamat IP dinamik atau statik penghala salah.
-w_r_r6=Percanggahan IP dikesan. Klik Next (seterusnya) untuk mendapatkan alamat IP baru.
-w_r_suggestion_etc=Klik di sini untuk pergi ke halaman persediaan.
+w_r_r6=Konflik IP dikesan.
+w_r_suggestion_etc=Klik di sini untuk pergi ke halaman persediaan
 w_r_suggestion_etc_desc=Anda boleh memeriksa dan mengkonfigurasi seting anda dengan sendiri.
 w_r_suggestion_final=Jika masalah masih terus berlaku, tukar tetapan sambungan secara manual.
 w_r_suggestion_mnl_start_wan=Perbaharui semula WAN.
 w_r_suggestion0=Kami mengesyorkan anda
 w_r_suggestion0_1=Memerlukan akaun dan kata laluan bagi pentadbir.
-w_r_suggestion1=Sila pastikan kabel disambungan dengan betul antara penghala dan port WAN modem.
+w_r_suggestion1=Sila pastikan kabel disambungan dengan betul antara penghala port WAN dan modem.
 w_r_suggestion2_1=Pergi ke halaman \"Seting Akaun\"
-w_r_suggestion2_1_desc= dan periksa akaun dan kata laluan anda semula.
-w_r_suggestion2_2=Pergi ke halaman pengesanan jenis WAN
-w_r_suggestion2_2_desc= dan DSL-N55U_D1 akan mengesan jenis WAN anda secara automatik.
+w_r_suggestion2_1_desc=dan periksa akaun dan kata laluan anda semula.
+w_r_suggestion2_2=Pergi ke halaman Persediaan Internet Pantas untuk secara automatik mengesan jenis sambungan.
+w_r_suggestion2_2_desc=dan DSL-N55U_D1 akan mengesan jenis WAN anda secara automatik.
 w_r_suggestion3=Sila hubungi ISP anda(Pembekal Khidmat Internet) untuk mengetahui punca penyebab kegagalan DHCP.
 w_r_suggestion4=Sila konfigurasi semula alamat IP penghala dan pastikan ia berbeza daripada alamat IP get laluan.
 w_r_suggestion5_1=Sila bentuk sambungan WAN secara manual.
 w_r_suggestion5_2=Sila semak bahawa tetapan IP dan DNS betul.
 w_r_suggestion6=Sila konfigurasi semula alamat IP tempatan untuk DSL-N55U_D1 anda dan pastikan ia berbeza daripada get laluan WAN anda. Cth: 192.168.X.X, X adalah nombor di antara 2 hingga 254.
+w_r_suggestion7=Selepas menyambungkan penghala ke modem, tekan "PERGI" untuk melancarkan Bestari Persediaan Pantas.
+w_r_suggestion8=Untuk menetapkan sambungan WAN luar talian atau mengubah mod operasi kepada Titik Capaian, tekan Tetapan Manual.
+w_r_suggestion9=Dalam langkah seterusnya, tetapkan nama dan kata laluan log masuk untuk keselamatan.
 Web_Title2=DSL-N55U_D1
+wireless_configured=Dikonfigurasikan
 Wireless_name=Nama wayarles
 wireless_router=Penghala Wayales
 wl_securitylevel_0=Tiada
@@ -493,6 +535,9 @@ aicloud_for_privateIP2=Gunakan port 8082 dan 443 untuk AiCloud. Anda boleh mengu
 aicloud_for_privateIP3=Untuk mendapatkan butiran lanjut, anda juga boleh merujuk kepada <a id="faq1" href="https://www.asus.com/support/FAQ/114093" target="_blank" style="font-weight: bolder;text-decoration:underline;">Pemajuan Port FAQ</a> dan Soalan Lazim <a id="faq2" href="https://www.asus.com/support/FAQ/1001253" target="_blank" style="font-weight: bolder;text-decoration:underline;">DMZ FAQ</a>.
 aicloud_invitation_invalid=Kod jemputan tidak sah!
 AiCloud_Log_desc=Halaman ini memaparkan log aktiviti AiCloud.
+AiCloud_maintext_note=ASUS AiCloud 2.0 mengekalkan anda bersambung dengan data anda di mana sahaja dan pada bila-bila masa sahaja anda mempunyai sambungan Internet. Ia memaut rangkaian rumah anda dan perkhidmatan storan dalam talian dan membenarkan anda mengakses data anda melalui aplikasi mudah alih AiCloud pada peranti mudah alih iOS dan Android anda atau melalui pautan web yang diperibadikan dalam penyemak imbas web. Kini semua data anda boleh pergi ke mana sahaja anda pergi.
+AiCloud_maintext_note0=Alamat IP tidak sah. Anda boleh menetapkan alamat IP WAN <a href=\"Advanced_WAN_Content.asp\" style=\"text-decoration:underline\">di sini</a>, atau pergi ke <a href=\"https://
+AiCloud_maintext_note1=\" style=\"text-decoration:underline\">AiCloud</a>.
 aicloud_no_record=Tiada rekod.
 AiCloud_PWD_enable=Dayakan Ciri Perlindungan Kata Laluan.
 AiCloud_PWD_Mechanism=Ciri Perlindungan Kata Laluan:
@@ -707,6 +752,7 @@ btn_Export=Eksport
 btn_go=PERGI
 btn_pre=Sebelumnya
 btn_remove=Keluar
+btn_send=Menghantar
 btn_to_WAN=tetapan WAN
 ButtonResetOOBText=Tetap semula kepada OOB
 Captcha=Captcha
@@ -973,6 +1019,12 @@ feedback_fail_WAN_connected=<span style="color:#FC0;">Sistem gagal untuk menyamb
 feedback_fail_WAN_disconnected=However, <span style="color:#FC0;">due to WAN connection not established.</span> 
 feedback_Frequent_interrupt=Gangguan yang kerap
 feedback_isp=ISP / Pembekal Khidmat Internet Anda
+feedback_max_counts=Maksimum 2000 aksara - baki aksara
+feedback_note0=Now this function can't work, because your ASUS Router isn't connected to the Internet. Please send your Feedback to this email address :
+feedback_note1=Versi perisian tegar dan DSL akan diserahkan dengan maklumat dan maklum balas anda.
+feedback_note2=Maklum balas akan digunakan untuk mendiagnosis masalah dan membantu meningkatkan perisian tegar DSL-N55U_D1. Sebarang maklumat peribadi yang anda serahkan, sama ada secara jelas atau tidak sengaja, akan dilindungi menurut <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy/" target="_blank">dasar privasi</a> kami.
+feedback_note3=Dengan menyerahkan maklum balas anda, anda bersetuju bahawa ASUS boleh menggunakan maklum balas anda bagi meningkatkan produk penghala model xDSLnya.
+feedback_note4=Jika anda mempunyai sebarang perkara mustahak, sila bertanya kepada sokongan teknikal tempatan.
 feedback_Occasion_interrupt=Gangguan sekali-sekala
 feedback_optional=* Tidak wajib
 feedback_stable=sambungan stabil
@@ -1037,6 +1089,8 @@ FC_x_WanWebEnable_id=Ciri ini membenarkan anda untuk menata rajah penghala wayar
 FC_x_WanWebEnable_in=Dayakan Akses Web daripada WAN
 FC_x_WanWebPort_id=Untuk menentukan port yang digunakan untuk mengkonfigurasikan DSL-N55U_D1 daripada Internet. Port lalai adalah 8080.
 FC_x_WanWebPort_in=Port Akses Web daripada WAN
+feedback_eula=Saya bersetuju untuk memberikan maklumat di atas, nama model, versi perisian tegar bagi penghala ASUS saya, versi pelayar, alamat MAC, alamat IP, status Internet, maklumat sistem penghala, semasa saya menyerahkan borang Maklum Balas ini kepada ASUS untuk mendiagnosis dan membaiki masalah penghala ASUS saya dan untuk menganalisis pengalaman pengguna bagi tujuan pembangunan dan penilaian produk dan perkhidmatan ASUS yang baharu, dan juga bersetuju dengan <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">Dasar Privasi ASUS</a>.
+feedback_eula_notice=Sebelum anda mengklik [Hantar], sila bersetuju dengan maklumat berikut.
 File_Pop_content_alert_desc8=Tidak boleh ada sebarang jarak dalam kata laluan.
 File_Pop_content_alert_desc9=Kata laluan hanya boleh mengandungi aksara abjad angka.
 FolderName=Nama Folder
@@ -1186,7 +1240,7 @@ JSVCIInvalid=Nilai VCI hendaklah dalam julat 32-65535
 JSVPIInvalid=Nilai VPI hendaklah dalam julat 0-255
 JSSCRInvalid=Nilai SCR hendaklah integer.
 JSSCRSizeInvalid=SCR mestilah kurang daripada atau bersamaan dengan PCR
-jumbo_frame=Mendayakan Jumbo Frame
+jumbo_frame=Jumbo Frame
 LAN_IP=IP LAN
 LAN_IP_client=IP LAN
 LANG_select=Pilih bahasa
@@ -1488,7 +1542,7 @@ PPPC_x_PPPoEMRU_in=MRU
 PPPC_x_PPPoEMTU_id=Unit Penghantaran Maksimum (MTU) bagi bingkisan PPPoE. Nilai lalai adalah 1492. Ubah nilai ini hanya jika ISP anda memerlukannya.
 PPPC_x_PPPoEMTU_in=MTU
 PPPC_x_PPPoERelay_id=Dayakan geganti PPPoE membenarkan peranti dalam LAN untuk mengukuhkan sambungan PPPoE individu yang melalui NAT.
-PPPC_x_PPPoERelay_in=Mendayakan Penyampaian PPPoE
+PPPC_x_PPPoERelay_in=Penyampaian PPPoE
 PPPC_x_PPTPOptions_id=Item ini mungkin ditentukan oleh beberapa ISP. Semak dengan ISP anda dan isikannya jika diperlukan.
 PPPC_x_PPTPOptions_in=Pilihan PPTP
 PPPC_x_ServiceName_id=Medan ini adalah pilihan dan mungkin ditentukan oleh beberapa ISP. Semak dengan ISP anda dan isikannya jika diperlukan.
@@ -1660,10 +1714,23 @@ Spectrum_gathering=Mengumpulkan data, graf Spektrum akan dipaparkan dalam (saat)
 Spectrum_refresh=Graf ini akan dikemas kini dalam (saat):
 Spectrum_title=Spectrum
 SReboot_btn=Save (Simpan)/Reboot (But Semula)
+Standby_str_cold=Cold-Standby
+Standby_str=Hot-Standby
+Standby_hint1=Apabila mod Hot-Standby (Tunggu Sedia) Panas didayakan, sistem menukar sambungan dengan cepat ke antara muka lain apabila antara muka utama tiada atau tidak boleh diakses.
+Standby_hint2=Sistem akan mengekalkan WAN tunggu sedia dalam keadaan bersambung dan mengurangkan selang pengesanan kepada
+Statistic=Statistik
+Statistic_display_type=Paparan untuk
+Statistic_last_date=Tarikh terakhir
+Statistic_show_type=Tunjuk mengikut
+Retry_interval=Selang Cuba Semula
+Retry_interval2=Kesan Selang Masa
+Retry_count=Kiraan Cuba Semula
 statusTitle_Client=Status klien
 statusTitle_Internet=Status Internet
 statusTitle_Printer=Status pencetak
 statusTitle_USB_Disk=Status cakera USB luaran
+statusTitle_Primary_WAN=Status WAN primer
+statusTitle_Secondary_WAN=Status WAN sekunder
 step_use_aicloud=Untuk menggunakan AiCloud :
 Step1_desp=Tentukan cara untuk berkongsi folder anda.
 Step2_desp=Buat nama domain anda melalui perkhidmatan ASUS DDNS.
@@ -2125,3 +2192,5 @@ wsc_mode_hint2=untuk mengubah suainya kemudian, dayakan WPS.
 yoursharesetting=Seting folder perkongsian adalah adalah
 zero_disable=Nyahdaya : 0
 FreeWiFi_Idle=Idle Timeout
+menu_privacy=Privacy
+ASUS_Notice_Privacy=ASUS NOTICE( for privacy )

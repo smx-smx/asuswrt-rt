@@ -1099,17 +1099,19 @@ done:
 
 #ifdef TCSUPPORT_DSL_LINE_DIAGNOSTIC
 		if(ret == MOUNT_VAL_RW) {
+			int DiagMdoe = tcapi_get_int("DslDiag_Entry", "dslx_diag_enable");
 			tcapi_set("DslDiag_Entry", "dslx_diag_log_path", mountpoint);
-			if(tcapi_match("DslDiag_Entry", "dslx_diag_enable", "1") ||
+			/* DIAG enable || (DIAG disable && DSL_DIAG_STATE_SENDMAIL_FAIL_SMTP) */
+			if(DiagMdoe ||
 				(tcapi_match("DslDiag_Entry", "dslx_diag_enable", "0") && tcapi_match("DslDiag_Entry", "dslx_diag_state", "4"))) {
-				_dprintf("%s: trigger DSL line diagnostic.\n", __FUNCTION__);
+				_dprintf("%s: trigger DSL line / Wi-Fi diagnostic.\n", __FUNCTION__);
 				tcapi_commit("DslDiag_Entry");
 			}
 		}
 		else {
-			logmessage("DSL Diagnostic", "USB start failed");
+			logmessage("DSL / Wi-Fi Diagnostic", "USB start failed");
 		}
-#endif
+#endif /* TCSUPPORT_DSL_LINE_DIAGNOSTIC */
 
 		// check the permission files.
 		if(ret == MOUNT_VAL_RW) {

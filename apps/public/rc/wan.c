@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <netdb.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include "libtcapi.h"
@@ -1447,4 +1448,46 @@ found_default_route(int wan_unit)
 
 	_dprintf("\nNO default route!!!\n");
 	return 0;
+}
+
+int find_default_route_ifname(char *ifname, size_t size)
+{
+	FILE *f = NULL;
+	int n = 0;
+	int i = 0;
+	unsigned int dest = 0;
+	unsigned int mask = 0;
+	char buf[512] = {0};
+	char device[256] = {0};
+
+	f = fopen("/proc/net/route", "r");
+	if ( f )
+	{
+		while (fgets(buf, sizeof(buf), f) != NULL)
+		{
+			if (++n == 1 && strncmp(buf, "Iface", 5) == 0)
+				continue;
+
+			i = sscanf(buf, "%255s %x %*s %*s %*s %*s %*s %x",
+						device, &dest, &mask);
+
+			if (i != 3)
+			{
+				//fprintf(stderr, "junk in buffer");
+				break;
+			}
+
+			if (device[0] != '\0' && dest == 0 && mask == 0)
+			{
+				//fprintf(stderr, "default route dev: %s\n", device);
+				break;
+			}
+		}
+		fclose(f);
+	}
+
+	n = 0;
+	n = snprintf(ifname, size, "%s", device);
+
+	return (n > 0);
 }

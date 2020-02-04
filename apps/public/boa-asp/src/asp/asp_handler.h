@@ -595,7 +595,7 @@ struct tcapi_tuple wlan_configuration_router_defaults[] = {
 #if defined(MT7612E) || defined(MT7610E) || defined(DSL_N55U_D1) || defined (DSL_N10_C1)  || defined (DSL_N10P_C1) || defined (DSL_N12E_C1) || defined (DSL_N10_D1) || defined (DSL_N14U) || defined (DSL_N14U_B1)
 	{"WLan_Common", "ED_MODE", "2"},
 #endif
-#ifdef MT7610E
+#if defined(MT7612E) || defined(MT7610E) || defined(MT7592)
 	{"WLan_Common", "EfuseBufferMode", "1"},
 #endif
 	{"WLan_Common", "EDCCA_AP_STA_TH", "255"},

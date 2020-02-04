@@ -9,6 +9,7 @@
 #include <string.h>
 #include <dlinklist.h>
 #include "md5.h"
+#include <signal.h>
 
 #if EMBEDDED_EANBLE
 #ifndef APP_IPKG
@@ -655,7 +656,7 @@ static int check_aicloud_auth_url(server *srv, connection *con, plugin_data *p){
 static void get_aicloud_connection_auth_type(server *srv, connection *con)
 {
 	data_string *ds;
-		
+			
 	aicloud_check_direct_file(srv, con);
 
 	if(con->mode==DIRECT)
@@ -736,7 +737,7 @@ static void aicloud_connection_smb_info_url_patch(server *srv, connection *con)
 			else if(con->mode == SMB_NTLM){
 				snprintf(strr, sizeof(strr), "smb://%s", uri+1);		
 			}
-			}
+		} 
 		else {
 			snprintf(strr, sizeof(strr), "smb://");
 		}		
@@ -753,7 +754,7 @@ static void aicloud_connection_smb_info_url_patch(server *srv, connection *con)
 static smb_info_t *smbdav_get_smb_info_from_pool(server *srv, connection *con, plugin_data *p)
 {
 	smb_info_t *c;
-	
+
 	UNUSED(p);
 	
 	if(srv->smb_srv_info_list==NULL||con->mode==DIRECT)
@@ -1026,7 +1027,7 @@ void sambaname2ip(server *srv, connection *con){
 
 		free(str_smbdav_list);
 	}
-#else
+#else	
 	char* g_temp_file = "/tmp/arpping_list";
 	FILE* fp = fopen(g_temp_file, "r");
 	if(fp!=NULL){		
@@ -1099,11 +1100,12 @@ URIHANDLER_FUNC(mod_aicloud_auth_physical_handler){
 	
 	if (con->uri.path->used == 0) return HANDLER_GO_ON;
 
+	data_string *ds_useragent = (data_string *)array_get_element(con->request.headers, "user-Agent");
+        
+        int isBrowser = ( ds_useragent && (strstr( ds_useragent->value->ptr, "Mozilla" ) || strstr( ds_useragent->value->ptr, "Opera" ))) ? 1 : 0;
+
 #if EMBEDDED_EANBLE
 #if 0
-	data_string *ds_useragent = (data_string *)array_get_element(con->request.headers, "user-Agent");
-	
-	int isBrowser = ( ds_useragent && (strstr( ds_useragent->value->ptr, "Mozilla" ) || strstr( ds_useragent->value->ptr, "Opera" ))) ? 1 : 0;
 	if( isBrowser && 
 		con->srv_socket->is_ssl==0 && 
 		buffer_is_equal_string(con->request.uri, CONST_STR_LEN("/")) ){
@@ -1128,6 +1130,13 @@ URIHANDLER_FUNC(mod_aicloud_auth_physical_handler){
 	get_aicloud_connection_auth_type(srv, con);
 
 	if( con->mode == DIRECT ){
+		
+		if (strstr(con->uri.path->ptr, "<") || 			
+		    strstr(con->uri.path->ptr, ">")) {			
+			smbc_wrapper_response_404(srv, con);			
+			return HANDLER_FINISHED;		
+		}
+
 		if( !check_aicloud_auth_url(srv, con, p) ){
 			smbc_wrapper_response_401(srv, con);
 			return HANDLER_FINISHED;
@@ -1235,6 +1244,20 @@ URIHANDLER_FUNC(mod_aicloud_auth_physical_handler){
 	if(res != HANDLER_UNSET){
 		return HANDLER_FINISHED;
 	}
+
+#if 0
+	int isAPP = ( ds_useragent && (strstr( ds_useragent->value->ptr, "asus_aicloud_android" ) || strstr( ds_useragent->value->ptr, "asus_aicloud_ios" ))) ? 1 : 0;
+	if(isAPP==1){	
+		char* asus_eula = nvram_get_value("ASUS_EULA");
+		//Cdbg(1, "user agent: %s, asus_eula=%s", ds_useragent->value->ptr, asus_eula);
+		if(strcmp(asus_eula, "0")==0){
+			//Cdbg(1, "set asus eula=1");
+			nvram_set_value("ASUS_EULA", "1");
+			nvram_commit();
+			kill_pidfile_s("/tmp/mastiff.pid", SIGUSR2);
+		}
+	}
+#endif
 
 	/* not found */
 	return HANDLER_GO_ON;

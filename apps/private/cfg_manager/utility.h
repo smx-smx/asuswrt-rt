@@ -369,4 +369,8 @@ extern char* get_mailserver(char *buffer, size_t buffer_size);
 extern char* get_email(char *buffer, size_t buffer_size);
 extern char* get_pwd(char *buffer, size_t buffer_size);
 extern int get_auth_data(email_auth_data_t* authdata);
+extern char *get_wan_primary_ifname(char *ifname);
+extern char *get_wan_secondary_ifname(char *ifname);
+extern char *get_first_connected_public_wan_ifname(char * ifname);
+extern int is_private_subnet(const char * ip);
 #endif

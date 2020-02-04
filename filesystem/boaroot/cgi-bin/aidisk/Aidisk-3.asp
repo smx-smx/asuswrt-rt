@@ -35,6 +35,7 @@ function initial(){
 		document.getElementById("DDNSName").value = "<%tcWebApi_get("String_Entry","asusddns_inputhint","s")%>";
 	}
 	switch_ddns();
+	top.ASUS_EULA.config(go_next_page, function(){});
 }
 
 function switch_ddns(){
@@ -248,12 +249,17 @@ function checkDDNSReturnCode(){
 		}
 	});
 }
+
+function apply_eula_check(){
+    if(top.ASUS_EULA.check('asus'))
+        go_next_page();
+}
 </script>
 </head>
 
 <body onload="initial();">
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
-<form method="post" name="form" action="/cgi-bin/start_apply.asp" target="hidden_frame" onsubmit="return go_next_page();">
+<form method="post" name="form" action="/cgi-bin/start_apply.asp" target="hidden_frame">
 <input type="hidden" name="current_page" value="">
 <input type="hidden" name="next_page" value="">
 <input type="hidden" name="group_id" value="">
@@ -314,9 +320,11 @@ function checkDDNSReturnCode(){
 	</tr>
 	<tr valign="bottom">
 		<td width="20%">
-	    	<a href="javascript:go_pre_page();"><div class="titlebtn" align="center" style="margin-left:275px;_margin-left:137px;width:80px;"><span><%tcWebApi_get("String_Entry","btn_pre","s")%></span></div></a>
-	    	<a href="javascript:go_next_page();"><div class="titlebtn" align="center" style="width:80px;"><span><%tcWebApi_get("String_Entry","btn_next","s")%></span></div></a>
-			<img id="loadingIcon" style="display:none;margin-top:7px" src="/images/InternetScan.gif"></span>
+			<div class="apply_gen" style="margin-top:30px">
+				<input type="button" id="prevButton" value="<%tcWebApi_get("String_Entry","btn_pre","s")%>" onclick="go_pre_page();" class="button_gen">
+				<input type="button" id="nextButton" value="<%tcWebApi_get("String_Entry","btn_next","s")%>" onclick="apply_eula_check();"class="button_gen">
+				<img id="loadingIcon" style="display:none;margin-top:7px" src="/images/InternetScan.gif"></span>
+			</div>
 		</td>
 	</tr>
 </table>

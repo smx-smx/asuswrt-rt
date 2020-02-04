@@ -3645,6 +3645,7 @@ lzo_clean:
 	@rm -f $(FILESYSTEM_DIR)/usr/lib/liblzo2.so*
 
 openpam/Makefile:
+	cd $(APP_OPENPAM_DIR) && mkdir -p m4 && ./autogen.sh
 	if test ! -e $(APP_OPENPAM_DIR)/stamp-h1; then \
 		cd $(APP_OPENPAM_DIR) && mkdir -p m4 && ./autogen.sh && \
 		LDFLAGS=-ldl \
@@ -3671,6 +3672,7 @@ openpam_clean:
 	@rm -f $(FILESYSTEM_DIR)/usr/lib/pam_unix.so
 
 openvpn/stamp-h1: lzo zlib openpam
+	cd $(APP_OPENVPN_DIR) && ./autogen.sh
 	if test ! -e $(APP_OPENVPN_DIR)/stamp-h1; then \
 		cd $(APP_OPENVPN_DIR) && ./autogen.sh && \
 		OPENSSL_CRYPTO_CFLAGS="-I$(APP_OPENSSL_DIR)/include" \

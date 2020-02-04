@@ -1364,7 +1364,7 @@ function pptpOptionChange() {
 						<input type="hidden" name="action_mode" value="apply">
 						<input type="hidden" name="action_script" value="saveNvram">
 						<input type="hidden" name="action_wait" value="1">
-						<input type="hidden" name="preferred_lang" id="preferred_lang" value="EN">
+						<input type="hidden" name="preferred_lang" value="EN">
 						<input type="hidden" name="firmver" value="">
 						<input type="hidden" name="connFlag" value="0">
 						<input type="hidden" name="listFlag" value="0">
@@ -1423,7 +1423,7 @@ function pptpOptionChange() {
 						<input type="hidden" name="action_mode" value="apply">
 						<input type="hidden" name="action_script" value="saveNvram">
 						<input type="hidden" name="action_wait" value="1">
-						<input type="hidden" name="preferred_lang" id="preferred_lang" value="EN">
+						<input type="hidden" name="preferred_lang" value="EN">
 						<input type="hidden" name="firmver" value="">
 						<input type="hidden" name="vpn_upload_type" value="ca">
 						<input type="hidden" name="vpn_upload_unit" value="1">
@@ -1447,7 +1447,7 @@ function pptpOptionChange() {
 						<input type="hidden" name="action_mode" value="apply">
 						<input type="hidden" name="action_script" value="saveNvram">
 						<input type="hidden" name="action_wait" value="1">
-						<input type="hidden" name="preferred_lang" id="preferred_lang" value="EN">
+						<input type="hidden" name="preferred_lang" value="EN">
 						<input type="hidden" name="firmver" value="">
 						<input type="hidden" name="vpn_upload_type" value="cert">
 						<input type="hidden" name="vpn_upload_unit" value="1">
@@ -1470,7 +1470,7 @@ function pptpOptionChange() {
 						<input type="hidden" name="action_mode" value="apply">
 						<input type="hidden" name="action_script" value="saveNvram">
 						<input type="hidden" name="action_wait" value="1">
-						<input type="hidden" name="preferred_lang" id="preferred_lang" value="EN">
+						<input type="hidden" name="preferred_lang" value="EN">
 						<input type="hidden" name="firmver" value="">
 						<input type="hidden" name="vpn_upload_type" value="key">
 						<input type="hidden" name="vpn_upload_unit" value="1">
@@ -1493,7 +1493,7 @@ function pptpOptionChange() {
 						<input type="hidden" name="action_mode" value="apply">
 						<input type="hidden" name="action_script" value="saveNvram">
 						<input type="hidden" name="action_wait" value="1">
-						<input type="hidden" name="preferred_lang" id="preferred_lang" value="EN">
+						<input type="hidden" name="preferred_lang" value="EN">
 						<input type="hidden" name="firmver" value="">
 						<input type="hidden" name="vpn_upload_type" value="static">
 						<input type="hidden" name="vpn_upload_unit" value="1">
@@ -1526,7 +1526,7 @@ function pptpOptionChange() {
 							<input type="hidden" name="action_mode" value="apply">
 							<input type="hidden" name="action_script" value="saveNvram">
 							<input type="hidden" name="action_wait" value="1">
-							<input type="hidden" name="preferred_lang" id="preferred_lang" value="EN">
+							<input type="hidden" name="preferred_lang" value="EN">
 							<input type="hidden" name="firmver" value="">
 							<input type="hidden" name="vpn_client_unit" value="1">
 							<input type="hidden" name="vpn_crt_client_ca" value="" disabled>

@@ -18,6 +18,7 @@ typedef enum skip_type {
 	SKIP_TYPE_SGAU_BW4080 = 0x10,
 	SKIP_TYPE_2G_LOWPOWER = 0x20,
 	SKIP_TYPE_5G_LOWPOWER = 0x40,
+	SKIP_TYPE_SKIP_5G_BAND3 = 0x80,
 }skip_type_t;
 
 typedef enum bwonly_type {

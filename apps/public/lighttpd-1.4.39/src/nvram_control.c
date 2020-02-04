@@ -116,6 +116,7 @@
 #define WEBDAV_HTTP_PORT "webdav_http_port"
 #define WEBDAV_HTTPS_PORT "webdav_https_port"
 #define HTTP_ENABLE "http_enable"
+#define LAN_HTTP_PORT "http_lanport"
 #define LAN_HTTPS_PORT "https_lanport"
 #define MISC_HTTP_X "misc_http_x"
 #define MISC_HTTP_PORT "misc_httpport_x"
@@ -1033,7 +1034,7 @@ char* nvram_get_http_username(void)
 	tcapi_get(ACCOUNT, HTTP_USERNAME, http_username);
 	return http_username;
 #else
-	return nvram_get(HTTP_USERNAME);
+	return nvram_get(HTTP_USERNAME) ? : "";
 #endif
 }
 
@@ -1044,7 +1045,7 @@ char* nvram_get_http_passwd(void)
 	tcapi_get(ACCOUNT, HTTP_PASSWD, http_passwd);
 	return http_passwd;
 #else
-	return nvram_get(HTTP_PASSWD);
+	return nvram_get(HTTP_PASSWD) ? : "";
 #endif
 }
 
@@ -1162,6 +1163,14 @@ char* nvram_get_http_enable(void)
 	return 0;
 #else
 	return nvram_get(HTTP_ENABLE);
+#endif
+}
+
+char* nvram_get_lan_http_port(void){
+#ifdef USE_TCAPI
+	return "80";
+#else
+	return nvram_get(LAN_HTTP_PORT);
 #endif
 }
 

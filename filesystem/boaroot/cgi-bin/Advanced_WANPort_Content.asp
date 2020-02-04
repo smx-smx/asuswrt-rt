@@ -219,6 +219,13 @@ function applyRule(){
 			else
 				document.form.wandog_enable.value = "0";
 
+			if(document.form.wandog_enable_radio[0].checked && document.form.wandog_target.value == ""){
+				alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
+				document.form.wandog_target.focus();
+				document.form.wandog_target.select();
+				return false;
+			}
+
 			if(!validator.range(document.form.wandog_interval, 1, 9))
 					return false;
 			if(!validator.range(document.form.wandog_delay, 0, 99))

@@ -137,7 +137,7 @@ function checkPasswdValid(passwd){
 </script>
 </head>
 <body onload="initial();">
-<form method="GET" name="smartForm" id="smartForm" action="aidisk/Aidisk-3.asp">
+<form method="GET" name="smartForm" id="smartForm" action="Aidisk-3.asp">
 <input type="hidden" name="accountNum" id="accountNum" value="">
 <input type="hidden" name="account0" id="account0" value="">
 <input type="hidden" name="passwd0" id="passwd0" value="">
@@ -216,8 +216,10 @@ function checkPasswdValid(passwd){
 	</tr>
 	<tr valign="bottom" align="center">
 		<td width="20%">
-        	 <a href="javascript:go_pre_page();"><div class="titlebtn" align="center" style="margin-left:275px;_margin-left:137px;width:80px;"><span><%tcWebApi_get("String_Entry","btn_pre","s")%></span></div></a>
-        	 <a href="javascript:passTheResult();"><div class="titlebtn" align="center" style=" width:80px;"><span><%tcWebApi_get("String_Entry","btn_next","s")%></span></div></a>
+			<div class="apply_gen" style="margin-top:30px">
+				<input type="button" id="prevButton" value="<%tcWebApi_get("String_Entry","btn_pre","s")%>" onclick="go_pre_page();" class="button_gen">
+				<input type="submit" id="nextButton" value="<%tcWebApi_get("String_Entry","btn_next","s")%>" onclick="passTheResult();" class="button_gen">
+			</div>
 		</td>
 	</tr>
 </table>

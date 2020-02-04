@@ -585,7 +585,7 @@ function redirect(){
 
 <form method="post" name="wolform" action="/cgi-bin/Main_WOL_Content.asp" target="hidden_frame">
 <input type="hidden" name="wollistFlag" value="0">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="EN">
+<input type="hidden" name="preferred_lang" value="EN">
 <input type="hidden" name="firmver" value="<% tcWebApi_staticGet("DeviceInfo","FwVer","s") %>">
 <input type="hidden" name="wollist1" value="<%tcWebApi_staticGet("Wol_Entry", "List_1","s")%>">
 <input type="hidden" name="wollist2" value="<%tcWebApi_staticGet("Wol_Entry", "List_2","s")%>">

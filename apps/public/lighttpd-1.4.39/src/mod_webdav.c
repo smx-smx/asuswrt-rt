@@ -726,7 +726,7 @@ static int get_minidlna_db_path(plugin_data *p){
 	//Cdbg(DBE, ".............................minidlna_db_dir=%s", p->minidlna_db_dir->ptr);
 	//Cdbg(DBE, ".............................minidlna_db_file=%s", p->minidlna_db_file->ptr);
 	//Cdbg(DBE, ".............................minidlna_media_dir=%s", p->minidlna_media_dir->ptr);
-	
+
 	return 1;
 
 }
@@ -807,15 +807,15 @@ static int get_thumb_image(char* path, plugin_data *p, char **out){
 		char* buffer_x = (char *)malloc(fileLen+1);
 		if(buffer_x){		
 			int len = fread( buffer_x, fileLen, sizeof(unsigned char), fp );
-			
+
 			if(len>0){
 				char* tmp = (char *)ldb_base64_encode(buffer_x, fileLen);			
-			uint32 olen = strlen(tmp) + 1;
-			*out = (char*)malloc(olen);
-			memcpy(*out, tmp, olen);
+				uint32 olen = strlen(tmp) + 1;
+				*out = (char*)malloc(olen);
+				memcpy(*out, tmp, olen);
 				free(tmp);
 			}
-				
+						
 			free(buffer_x);
 				
 			fclose(fp);
@@ -869,15 +869,15 @@ static int get_album_cover_image(sqlite3 *sql_minidlna, sqlite_int64 plAlbumArt,
 				file_ext[i] = tolower(file_ext[i]);
 										
 			len = fread( buffer_x, fileLen, sizeof(unsigned char), fp );
-			
+
 			if(len>0){
 				char* tmp = (char *)ldb_base64_encode(buffer_x, fileLen);			
-			uint32 olen = strlen(tmp) + 1;
-			*out = (char*)malloc(olen);
-			memcpy(*out, tmp, olen);
+				uint32 olen = strlen(tmp) + 1;
+				*out = (char*)malloc(olen);
+				memcpy(*out, tmp, olen);
 				free(tmp);
 			}
-			
+					
 			free(file_ext);
 			free(buffer_x);
 			
@@ -3734,7 +3734,7 @@ propmatch_cleanup:
 		char* webdav_http_port = nvram_get_webdav_http_port();
 		char* webdav_https_port = nvram_get_webdav_https_port();
 		char* http_enable = nvram_get_http_enable();
-		char* lan_http_port = "80";
+		char* lan_http_port = nvram_get_lan_http_port();
 		char* lan_https_port = nvram_get_lan_https_port();
 		char* misc_http_x = nvram_get_misc_http_x();
 		char* misc_http_port = nvram_get_misc_http_port();
@@ -4833,7 +4833,7 @@ propmatch_cleanup:
 				char* object_id = result[j+4];
 
 				buffer* id = buffer_init();
-				buffer_copy_string(id,object_id);
+				buffer_copy_string(id, object_id);
 				if(buffer_is_equal_string(classify, CONST_STR_LEN("artist")))
 					buffer_append_string(id,"$0");
 				
@@ -4882,7 +4882,7 @@ propmatch_cleanup:
 				snprintf(sql_query, sizeof(sql_query), "%s AND PATH LIKE '%s%s/%s'", sql_query, "%", partion_path, "%");
 				partion_count = 1;
 #endif
-				if(partion_count>1){
+				if(partion_count>1){					
 					int count = 0;
 					if( sql_get_table(sql_minidlna, sql_query, &result2, &rows2, NULL) == SQLITE_OK ){
 						

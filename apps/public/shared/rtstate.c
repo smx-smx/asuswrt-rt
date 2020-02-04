@@ -516,6 +516,133 @@ get_wan_primary_ifunit(void)
 	return 0;
 }
 
+char *get_wan_ifname_ex(int unit, char *wan_ifname)
+{
+	char wan_proto[16];
+	char attribute[64];
+
+	if(!wan_ifname)
+		return NULL;
+
+	snprintf(attribute, sizeof(attribute), "wan%d_proto", unit);
+	if(tcapi_get("Wanduck_Common", attribute, wan_proto) != TCAPI_PROCESS_OK)
+		return NULL;
+
+#ifdef RTCONFIG_USB_MODEM
+	if (unit == 11) {
+		if(!strcmp(wan_proto, "dhcp"))
+		{
+			snprintf(attribute, sizeof(attribute), "wan%d_ifname", unit);
+		}
+		else
+		{
+			snprintf(attribute, sizeof(attribute), "wan%d_pppoe_ifname", unit);
+		}
+	}
+	else
+#endif
+	if(strcmp(wan_proto, "pppoe") == 0 ||
+		strcmp(wan_proto, "pptp") == 0 ||
+		strcmp(wan_proto, "l2tp") == 0)
+	{
+		snprintf(attribute, sizeof(attribute), "wan%d_pppoe_ifname", unit);
+	}
+	else
+	{
+		snprintf(attribute, sizeof(attribute), "wan%d_ifname", unit);
+	}
+
+	if(tcapi_get("Wanduck_Common", attribute, wan_ifname) != TCAPI_PROCESS_OK)
+		return NULL;
+
+	//_dprintf("wan_ifname: %s\n", wan_ifname);
+
+	if(!strlen(wan_ifname))
+		return NULL;
+
+	return wan_ifname;
+}
+
+char *get_wan_primary_ifname(char *ifname)
+{
+	char wan_primary[4] = {0};
+	int unit = -1;
+
+	if(tcapi_get("Wanduck_Common", "wan_primary", wan_primary) == TCAPI_PROCESS_OK)
+	{
+		if(strlen(wan_primary))
+		{
+			unit = atoi(wan_primary);
+			return get_wan_ifname_ex(unit, ifname);
+		}
+	}
+	return NULL;
+}
+
+char *get_wan_secondary_ifname(char *ifname)
+{
+	char wan_secondary[4] = {0};
+	int unit = -1;
+
+	if(tcapi_get("Wanduck_Common", "wan_secondary", wan_secondary) == TCAPI_PROCESS_OK)
+	{
+		if(strlen(wan_secondary))
+		{
+			unit = atoi(wan_secondary);
+			return get_wan_ifname_ex(unit, ifname);
+		}
+	}
+	return NULL;
+}
+
+char *get_first_connected_public_wan_ifname(char *ifname)
+{
+	char wan_unit[4] = {0};
+	char wan_ip_address[16] = {0};
+	char wan_ip_attribute[16] = {0};
+	int unit = -1;
+
+	if(tcapi_get("Wanduck_Common", "wan_primary", wan_unit) == TCAPI_PROCESS_OK)
+	{
+		if(strlen(wan_unit))
+		{
+			unit = atoi(wan_unit);
+			snprintf(wan_ip_attribute, sizeof(wan_ip_attribute), "wan%d_ipaddr", unit);
+			if(tcapi_get("Wanduck_Common", wan_ip_attribute, wan_ip_address) == TCAPI_PROCESS_OK)
+			{
+				if(!is_private_subnet(wan_ip_address))
+				{
+					return get_wan_ifname_ex(unit, ifname);
+				}
+			}
+		}
+	}
+
+	memset(wan_unit, 0, sizeof(wan_unit));
+	memset(wan_ip_address, 0, sizeof(wan_ip_address));
+	memset(wan_ip_attribute, 0, sizeof(wan_ip_attribute));
+	unit = -1;
+
+	if(tcapi_get("Wanduck_Common", "wan_secondary", wan_unit) == TCAPI_PROCESS_OK)
+	{
+		if(strlen(wan_unit))
+		{
+			unit = atoi(wan_unit);
+			snprintf(wan_ip_attribute, sizeof(wan_ip_attribute), "wan%d_ipaddr", unit);
+			if(tcapi_get("Wanduck_Common", wan_ip_attribute, wan_ip_address) == TCAPI_PROCESS_OK)
+			{
+				if(!is_private_subnet(wan_ip_address))
+				{
+					return get_wan_ifname_ex(unit, ifname);
+				}
+			}
+		}
+	}
+
+	return NULL;
+}
+
+
 int getTransferMode(void)
 {
 	int activePVC = 0;

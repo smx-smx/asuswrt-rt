@@ -12,6 +12,44 @@ APS_msg_connect_open_wlan=Pokoušíte se připojit k nezabezpečené síti.\n In
 APS_msg_connected=Již jste připojeni k tomuto přístupovému bodu.
 APS_msg_waiting_to_connect=Počkejte prosím, ZVMODELVZ se připojuje k
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
+ASUS_Notice=UPOZORNĚNÍ ASUS
+ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk) and AiProtection. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
+ASUS_eula_desc0=Vítejte u DDNS/ vzdáleného připojení (ASUS Router APP/Lyra APP/AiCloud/AiDisk). Pečlivě si přečtěte následující pokyny:
+ASUS_eula_desc1=Aby bylo možné mít přístup a zlepšovat produktové služby ASUS a stabilitu, ASUS může na základě vašeho používání shromažďovat vaše údaje přes výše uvedené funkce:
+ASUS_eula_desc1_1=Když začnete používat výše uvedené funkce, ASUS může shromažďovat vaše anonymní informace, jejich prostřednictvím vás nelze charakterizovat ani identifikovat:
+ASUS_eula_desc1_1_1=Protokolované informace: protokolované informace spojené s vaším produktem, včetně názvu modelu, verze firmwaru, stavu internetu a automaticky generovaného aktivačního kódu (pouze u funkcí Alexa™/IFTTT™).
+ASUS_eula_desc1_1_12=Protokolované informace: protokolované informace spojené s vaším produktem, včetně názvu modelu, verze firmwaru, stavu internetu a automaticky generovaného aktivačního kódu (pouze u funkcí Alexa™).
+ASUS_eula_desc1_1_13=Protokolované informace: protokolované informace spojené s vaším produktem, včetně názvu modelu, verze firmwaru a stavu internetu.
+ASUS_eula_desc1_2_s1=Kliknutím na [Souhlasí s tím] níže dáváte souhlas se sdílením následujících informací společnosti ASUS.
+ASUS_eula_desc1_2_s2=Na ochranu soukromí dětí nebudeme shromažďovat následující údaje o dětech.
+ASUS_eula_desc1_2_1=Informace o produktu: informace spojené s vaším produktem, včetně sériového čísla produktu, IP adresy, adresy MAC a názvu DDNS.
+ASUS_eula_desc1_3=Navíc pro zajištění vaší vzdáleně ovládané funkce Alexa™ přes váš produkt ASUS může sdílet automaticky generovaný aktivační kód s Amazon pro výše uvedené účely.
+ASUS_eula_desc1_4=Navíc pro zajištění vaší vzdáleně ovládané funkce IFTTT™ přes váš produkt ASUS může sdílet automaticky generovaný aktivační kód s IFTTT™ pro výše uvedené účely.
+ASUS_eula_desc2=Společnost ASUS se zavazuje chránit a respektovat vaše soukromí. Můžete kdykoli navštívit Advancend Settings (Pokročilá nastavení) > Administration (Správa) > Privacy (Soukromí) pro zapnutí/vypnutí sdílení informací o vašem produktu se společností ASUS. Pro podrobnosti o tom, jak společnost ASUS chrání vaše soukromí prosím navštivte <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Zásady ochrany soukromí ASUS</a>.
+ASUS_eula_age=Jsem starší 16 let.
+ASUS_eula_age_confirm=Prosím potvrďte, že jste starší 16 let.
+ASUS_eula_withdraw0_AlexaIFTTT=Pro DDNS, Alexa™, IFTTT™ a vzdálené připojení (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw0_Alexa=Pro DDNS, Alexa™ a vzdálené připojení (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw0=Pro DDNS a vzdálené připojení (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw_desc1=Upozorňujeme vás, že vaše informace, včetně názvu modelu vašeho produktu, verze firmwaru, stavu internetu, IP adresy, adresy MAC a názvu DDNS, budou shromažďovány společností ASUS přes výše uvedené funkce.
+ASUS_eula_withdraw_desc1_2=Chcete-li zakázat sdílení vašich informací se společností ASUS přes výše uvedené funkce, klikněte prosím na <span style="font-weight: bold;">[[Odvolat]</span> níže. Nicméně vás upozorňujeme, že pokud zastavíte sdílení vašich informací se společností ASUS, tyto funkce nemusí fungovat.
+ASUS_eula_withdraw_desc2=Po kliknutí na <span style="font-weight: bold;">[(Odvolat]</span> dojde k některým níže uvedeným změnám:
+ASUS_eula_withdraw_desc2_1=Název DDNS, který momentálně používáte, nebude uchováván na vašem směrovači.
+ASUS_eula_withdraw_desc2_2=Pokud jste schopni používat ASUS Router APP, Lyra APP, AiCloud, AiDisk s připojením LAN, ale nikoli v režimu vzdáleného připojení.
+ASUS_eula_withdraw_desc2_Alexa=Pokud budete chtít v budoucnu povolit funkce Alexa™, budete muset poskytnout nový aktivační kód webové stránce Alexa™.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=Pokud budete chtít v budoucnu povolit funkce Alexa™ a IFTTT™, budete muset poskytnout nový aktivační kód webové stránce Alexa™ a  IFTTT™.
+ASUS_eula_withdraw_note=Proces odvolání nelze dokončit bez připojení k internetu. Odvolání prosím proveďte, když jste připojeni k internetu.
+ASUS_eula_withdraw_unstable=Proces odvolání nemůžete dokončit, protože stav internetu je nestabilní. Zkuste to prosím později.
+TM_eula_desc1=Použitím AiProtection, souhlasíte s <a id="eula_url" style="text-decoration:underline;" target="_blank">Licenční smlouvou společnosti Trend Micro s koncovým uživatelem</a>.
+TM_eula_desc2=Upozorňujeme, že vaše údaje budou shromažďovány Trend Micro přes AiProtection. Také berete na vědomí a souhlasíte s tím, že společnost ASUS není zodpovědná za smlouvu mezi vámi a společností Trend Micro ani za žádný obsah služby poskytované společností Trend Micro. Máte-li nějaké dotazy ohledně toho, jak společnost Trend Micro shromažďuje, zpracovává a používá výše uvedené informace, přečtěte si prosím prohlášení ohledně soukromí vydané společností Trend Micro nebo kontaktujte společnost Trend Micro pro více informací.
+TM_eula_desc3=Chcete-li zakázat sdílení vašich údajů se společností Trend Micro přes výše uvedené funkce přejděte prosím na:  Router web GUI (Web GUI směrovače) > Advanced settings (Pokročilá nastavení) > Administration (Správa) > Privacy (Soukromí).
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
+TM_eula_withdraw0=Pro AiProtection :
+TM_eula_withdraw_desc1=Upozorňujeme vás, že vaše informace budou shromažďovány společností Trend Micro přes výše uvedené funkce.
+TM_eula_withdraw_desc2=Chcete-li zakázat sdílení vašich informací se společností Trend Micro přes následující funkce, klikněte prosím na <span style="font-weight: bold;">[(Odvolat]</span> níže. Nicméně vás upozorňujeme, že pokud zastavíte sdílení vašich informací se společností Trend Micro, tyto funkce nemusí fungovat.
+withdraw_confirm=Určitě chcete odvolat?
+withdraw_str=Odvolat
 asusddns_inputhint=Klíč v názvu
 Auto=Automaticky
 BM_alert_IP2=je neplatná IP adresa.
@@ -321,8 +359,8 @@ QIS_welcome_feature1=Simultánní 450+450 dvojpásmové připojení.
 [###MODEL_DEP###][DSL-N55U-D1]QIS_welcome_feature1=Dvoupásmový N600. (300 Mbps/ 2.4 GHz + 300 Mbps/ 5 GHz)
 [###MODEL_DEP###][DSL-N17U]QIS_welcome_feature1=Jednopásmový N300 (300 Mbps/ 2.4 GHz)
 [###MODEL_DEP###][DSL-N16]QIS_welcome_feature1=Jednopásmový N300 (300 Mbps/ 2.4 GHz)
-[###MODEL_DEP###][DSL-N16P]QIS_welcome_feature1=Jednopásmový N300 (300 Mbps/ 2.4 GHz)
 [###MODEL_DEP###][DSL-N16U]QIS_welcome_feature1=Jednopásmový N300 (300 Mbps/ 2.4 GHz)
+[###MODEL_DEP###][DSL-N16P]QIS_welcome_feature1=Jednopásmový N300 (300 Mbps/ 2.4 GHz)
 [###MODEL_DEP###][DSL-N14U]QIS_welcome_feature1=Jednopásmový N300 (300 Mbps/ 2.4 GHz)
 [###MODEL_DEP###][DSL-N14U-B1]QIS_welcome_feature1=Jednopásmový N300 (300 Mbps/ 2.4 GHz)
 [###MODEL_DEP###][DSL-N12E-C1]QIS_welcome_feature1=Jednopásmový N300 (300 Mbps/ 2.4 GHz)
@@ -429,13 +467,13 @@ web_redirect_case2_suggestion1=Your PPPoE account or password is not accepted, p
 web_redirect_case2_title1=PPPoE Authentication Failure
 web_redirect_case3_button=Change WAN type
 web_redirect_case3_suggestion1=Please check the <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>connection settings</a> is correct.
-web_redirect_case5_suggestion1=We suggest you turn on the <a style='color:#FFF' href='/index.asp'>WAN connection button</a>.
+web_redirect_case5_suggestion1=We suggest you turn on the <a style='color:#FFF' href='/'>WAN connection button</a>.
 web_redirect_case5_suggestion2=Please check USB modem is power on.
 web_redirect_case5_suggestion3=Change <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB modem setting</a>.
 web_redirect_case5_title1=The WAN cnnection is turned off
 web_redirect_case5_title2=USB modem is not ready
-web_redirect_case6_desc1=Klepnutím na tlačítko (Další) získá směrovač automaticky novou adresu IP. Nová adresa IP je:
-web_redirect_case6_desc2=Nakonfigurujte všechna zařízení, například Předávání portů nebo DMZ, na novou adresu IP.
+web_redirect_case6_desc1=Click (Next) to get a new IP address. The new IP address is:
+web_redirect_case6_desc2=Please confirm that related services using the new IP address, such as Port Forwarding or DMZ.
 web_redirect_case8_suggestion1=Please confirm Parent AP can connect to Internet.
 web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Change the connection setting</a>.
 web_redirect_case8_title=Unable to connect to Parent AP
@@ -449,8 +487,8 @@ w_r_r3_2=Bylo zjištěno, že typ vašeho připojení WAN je PPPoE, ale nastaven
 w_r_r4=Připojení k Internetu se nezdařilo. Adresa IP serveru je stejná jako adresa IP brány.
 w_r_r5_1=Pravděpodobně jste zastavili činnost WAN připojení manuálně.
 w_r_r5_2=Dynamická nebo statická adresa IP směrovače nejsou správné.
-w_r_r6=Byl rozpoznán konflikt IP. Klepnutím na tlačítko Next (Další) získáte novou adresu IP.
-w_r_suggestion_etc=Klepnutím zde přejdete na stránku nastavení.
+w_r_r6=Došlo ke konfliktu adresy IP.
+w_r_suggestion_etc=Klepnutím zde přejdete na stránku nastavení
 w_r_suggestion_etc_desc=Kde můžete zkontrolovat a nakonfigurovat svá nastavení sami.
 w_r_suggestion_final=Pokud problém přetrvává, ručně změňte nastavení připojení.
 w_r_suggestion_mnl_start_wan=Obnovte WAN.
@@ -458,15 +496,19 @@ w_r_suggestion0=Doporučujeme vám
 w_r_suggestion0_1=Je zapotřebí účet a heslo administrátora.
 w_r_suggestion1=Zkontrolujte, zda je řádně připojen kabel mezi portem WAN směrovače a modemu.
 w_r_suggestion2_1=Přejděte na stránku „Nastavení účtu“
-w_r_suggestion2_1_desc= a překontrolujte správnost svého účtu a hesla.
-w_r_suggestion2_2=Přejděte na stránku detekce typu WAN
-w_r_suggestion2_2_desc= a ZVMODELVZ zjistí váš typ WAN automaticky.
+w_r_suggestion2_1_desc=a překontrolujte správnost svého účtu a hesla.
+w_r_suggestion2_2=Přechodem na stránku Rychlé nastavení internetu bude automaticky rozpoznán typ připojení.
+w_r_suggestion2_2_desc=a ZVMODELVZ zjistí váš typ WAN automaticky.
 w_r_suggestion3=Prosím kontaktujte svého poskytovatele internetu (ISP) a zjistěte důvod selhání DHCP.
 w_r_suggestion4=Znovu nakonfigurujte adresu IP smerovače tak, aby byla odlišná od adresy IP brány.
 w_r_suggestion5_1=Prosím vytvořte připojení WAN manuálně.
 w_r_suggestion5_2=Zkontrolujte, zda jsou nastavení IP a DNS správná.
 w_r_suggestion6=Prosím překonfigurujte vaši lokální IP adresu pro ZVMODELVZ a ujistěte se, že je jiná než IP adresa brány. Například: 192.168.X.X，X je číslo mezi 2 a 254.
+w_r_suggestion7=Po připojení směrovače k modemu spusťte kliknutím na "Přejít" průvodce Quick Setup Wizard.
+w_r_suggestion8=Pokud chcete nastavit  připojení WAN offline nebo změnit provozní režim na Přístupový bod, klikněte na Ruční nastavení.
+w_r_suggestion9=V dalším kroku vytvořte přihlašovací jméno a heslo za účelem zabezpečení.
 Web_Title2=ZVMODELVZ
+wireless_configured=Nakonfigurováno
 Wireless_name=Název bezdrátového připojení
 wireless_router=Bezdrátový směrovač
 wl_securitylevel_0=Žádné
@@ -537,6 +579,9 @@ aicloud_for_privateIP2=Pro AiCloud použijte porty 8082 a 443. Nastavení portů
 aicloud_for_privateIP3=Další podrobnosti rovněž viz <a id="faq1" href="https://www.asus.com/support/FAQ/114093" target="_blank" style="font-weight: bolder;text-decoration:underline;">Předávání portů FAQ</a> a <a id="faq2" href="https://www.asus.com/support/FAQ/1001253" target="_blank" style="font-weight: bolder;text-decoration:underline;">DMZ FAQ</a>.
 aicloud_invitation_invalid=Neplatný kód pozvánky!
 AiCloud_Log_desc=Na stránce je zobrazen záznam činností služby AiCloud.
+AiCloud_maintext_note=ASUS AiCloud 2.0 udržuje připojení k vašim datům nezávisle na tom, kde jste, pokud máte připojení k Internetu. Propojuje vaši domácí síť a online úložiště a umožňuje vám přistupovat k vašim datům prostřednictvím mobilní aplikace AiCloud ve vašem mobilním přístroji iOS nebo Android nebo prostřednictvím personalizovaného webového odkazu ve webovém prohlížeči. Nyní s vámi mohou vaše data cestovat kamkoli.
+AiCloud_maintext_note0=Adresa IP není platná. Můžete nastavit adresu IP sítě WAN <a href=\"Advanced_WAN_Content.asp\" style=\"text-decoration:underline\">zde</a> nebo přejděte na <a href=\"https://
+AiCloud_maintext_note1=\" style=\"text-decoration:underline\">AiCloud</a>.
 aicloud_no_record=Žádný záznam.
 AiCloud_PWD_enable=Povolit funkci ochrany heslem.
 AiCloud_PWD_Mechanism=Funkce ochrany heslem:
@@ -751,6 +796,7 @@ btn_Export=Exportovat
 btn_go=Přejít
 btn_pre=Předchozí
 btn_remove=Odpojit
+btn_send=Poslat
 btn_to_WAN=nastavení WAN
 ButtonResetOOBText=Obnovit na OOB
 Captcha=Captcha
@@ -1017,6 +1063,12 @@ feedback_fail_WAN_connected=<span style="color:#FC0;">Systém se nemohl připoji
 feedback_fail_WAN_disconnected=However, <span style="color:#FC0;">due to WAN connection not established.</span> 
 feedback_Frequent_interrupt=Častá přerušení
 feedback_isp=Váš poskytovatel internetových služeb (ISP)
+feedback_max_counts=Maximálně 2000 znaků- zbývá
+feedback_note0=Now this function can't work, because your ASUS Router isn't connected to the Internet. Please send your Feedback to this email address :
+feedback_note1=Verze firmwaru a DSL budou odeslány s vašimi údaji a zpětnou vazbou.
+feedback_note2=Zpětná vazba bude využita k diagnostikování problémů a k vylepšování firmwaru ZVMODELVZ. Veškeré osobní údaje, poskytnuté výslovně nebo náhodně, budou chráněny v souladu s našimi <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy/" target="_blank">zásadami ochrany osobních údajů</a>.
+feedback_note3=Odesláním vaší zpětné vazby souhlasíte s tím, aby ji společnost ASUS používala svých modemových směrovačů xDSL.
+feedback_note4=Pokud máte nějaké neodkladnéproblémy, požádejte o místní technickou podporu.
 feedback_Occasion_interrupt=Občasná přerušení
 feedback_optional=* Volitelné
 feedback_stable=Stabilní připojení
@@ -1081,6 +1133,8 @@ FC_x_WanWebEnable_id=Tato funkce umožňuje konfigurovat bezdrátový směrovač
 FC_x_WanWebEnable_in=Povolit webovou správu přes WAN
 FC_x_WanWebPort_id=Pro specifikaci portu použitého ke konfiguraci ZVMODELVZ z internetu. Původní port je 8080.
 FC_x_WanWebPort_in=Port pro webovou správu přes WAN
+feedback_eula=Souhlasím s poskytnutím výše uvedených informací, názvu modelu, verze firmwaru mého směrovače ASUS, verze prohlížeče, adresy MAC, IP adres, stavu internetu, informací o systému směrovače podáním tohoto formuláře pro zpětnou vazbu ASUS pro diagnostiku a řešení problémů s mým směrovačem ASUS a pro analýzu uživatelské zkušenosti pro účely vývoje a hodnocení nových produktů a služeb ASUS, a také souhlasím se <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">Zásadami ochrany soukromí ASUS</a>.
+feedback_eula_notice=Než kliknete na [Odeslat], musíte souhlasit s následujícími informacemi.
 File_Pop_content_alert_desc8=Heslo nesmí obsahovat žádné mezery.
 File_Pop_content_alert_desc9=Heslo může obsahovat pouze alfanumerické znaky.
 FolderName=Název složky
@@ -1230,7 +1284,7 @@ JSVCIInvalid=Hodnota VCI musí být v rozsahu 32 - 65535
 JSVPIInvalid=Hodnota VPI musí být v rozsahu 0 - 255
 JSSCRInvalid=Hodnota SCR musí být celé číslo.
 JSSCRSizeInvalid=SCR musí být menší nebo rovno PCR
-jumbo_frame=Povolit Jumbo Frame
+jumbo_frame=Jumbo Frame
 LAN_IP=LAN IP
 LAN_IP_client=LAN IP
 LANG_select=Zvolte Jazyk:
@@ -1327,7 +1381,7 @@ List_limit=Max. limit :
 liveupdate=Zkontrolovat
 Log=Protokol
 login_hint1=Login user IP:
-login_hint2=You cannot Login unless logout another user first..
+login_hint2=Nemůžete se přihlásit, pokud nejprve odhlásit jiného uživatele.
 logoutmessage=Odhlášení proběhlo úspěšně.
 Low=Nízké
 Lowest=Nejnižší
@@ -1532,7 +1586,7 @@ PPPC_x_PPPoEMRU_in=MRU
 PPPC_x_PPPoEMTU_id=Největší přenosová jednotka (MTU) paketu PPPoE. Výchozí hodnota je 1492. Tuto hodnotu měňte pouze, pokud to vyžaduje váš ISP.
 PPPC_x_PPPoEMTU_in=MTU
 PPPC_x_PPPoERelay_id=Povolení přenášení PPPoE umožňuje zařízením v místní síti LAN navazovat individuální připojení PPPoE, která procházejí NAT.
-PPPC_x_PPPoERelay_in=Povolit PPPoE Relay
+PPPC_x_PPPoERelay_in=PPPoE Relay
 PPPC_x_PPTPOptions_id=Tato položka může být specifikována některými ISP. Prosím ověřte u svého ISP a vyplňte, pokud je zapotřebí.
 PPPC_x_PPTPOptions_in=Možnosti PPTP
 PPPC_x_ServiceName_id=Toto pole může být specifikováno některými ISP. Prosím ověřte u svého ISP a vyplňte, pokud je zapotřebí.
@@ -1704,10 +1758,23 @@ Spectrum_gathering=Probíhá shromažďování dat, spektrální graf bude zobra
 Spectrum_refresh=Tyto grafy budou aktualizovány v (sekundách):
 Spectrum_title=Spectrum
 SReboot_btn=Save/Reboot (Uložit/restartovat)
+Standby_str_cold=Cold-Standby
+Standby_str=Hot-Standby
+Standby_hint1=Když je aktivován aktivní pohotovostní režim a primární rozhraní je vypnuté nebo nedostupné, systém rychle přepne připojení na jiné rozhraní.
+Standby_hint2=Systém bude udržovat pohotovostní síťWAN v připojeném stavu a omezí interval detekce na
+Statistic=Statistika
+Statistic_display_type=Zobrazení
+Statistic_last_date=Poslední datum
+Statistic_show_type=Zobraz pomocí
+Retry_interval=Interval opakování
+Retry_interval2=Detekovat interval
+Retry_count=Počet opakování
 statusTitle_Client=Stav klienta
 statusTitle_Internet=Stav Internetu
 statusTitle_Printer=Stav tiskárny
 statusTitle_USB_Disk=Stav externího USB disku
+statusTitle_Primary_WAN=Stav primární sítě WAN
+statusTitle_Secondary_WAN=Stav sekundární sítě WAN
 step_use_aicloud=Pokyny pro používání AiCloud :
 Step1_desp=Zvolte způsob sdílení složek.
 Step2_desp=Vytvořte název vaší domény pomocí služby ASUS DDNS.
@@ -2169,3 +2236,5 @@ wsc_mode_hint2=abyste provedli změnu, povolte WPS.
 yoursharesetting=Nastavení vaší sdílené složky je
 zero_disable=Deaktivaci : 0
 FreeWiFi_Idle=Idle Timeout
+menu_privacy=Privacy
+ASUS_Notice_Privacy=ASUS NOTICE( for privacy )

@@ -24,6 +24,8 @@ end if
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/js/asus_eula.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <!--script type="text/javascript" src="/client_function.js"></script-->
 <style>
 #switch_menu{
@@ -53,11 +55,6 @@ end if
 </style>
 <script>
 var $j = jQuery.noConflict();
-window.onresize = function() {
-	if(document.getElementById("agreement_panel").style.display == "block") {
-		cal_panel_block("agreement_panel", 0.25);
-	}
-} 
 
 var apps_filter = "<% get_wrs_web_rulslist() %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
 var wrs_filter = "<% get_wrs_web_rulslist() %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
@@ -90,6 +87,7 @@ function initial(){
 function update_FAQ(){
 	if(document.getElementById("connect_status").className == "connectstatuson"){		
 		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1008720");
+		//httpApi.faqURL("1008720", function(url){document.getElementById("faq").href=url;});
 	}
 }
 function redirect(){
@@ -703,39 +701,24 @@ function translate_category_id(){
 	apps_filter = apps_filter_temp;
 }
 
-function show_tm_eula(){
-	$j.get("/tm_eula.asp", function(data){
-		document.getElementById('agreement_panel').innerHTML= data;
-		adjust_TM_eula_height("agreement_panel");
-		var url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/";
-        $j("#eula_url").attr("href",url);
-	});
-	dr_advise();
-	cal_panel_block("agreement_panel", 0.25);
-	$j("#agreement_panel").fadeIn(300);
-}
-
 function cancel(){
-	$j("#agreement_panel").fadeOut(100);
 	$j('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
 	curState = 0;
-	document.getElementById("hiddenMask").style.visibility = "hidden";
 }
 
 function eula_confirm(){
 	document.form.TM_EULA.value = 1;
-	document.form.wrs_web_enable.value = 1;	
-	document.form.wrs_app_enable.value = 1;	
+	document.form.wrs_web_enable.value = 1;
+	document.form.wrs_app_enable.value = 1;
 	applyRule();
 }
 
 </script>
 </head>
 
-<body onload="initial();" onunload="unload_body();" onselectstart="return false;">
+<body onload="initial();" onunload="unload_body();">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
-<div id="agreement_panel" class="eula_panel_container" style="margin-top: -100px;"></div>
 <div id="hiddenMask" class="popup_bg" style="z-index:999;">
 	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center"></table>
 	<!--[if lte IE 6.5]><script>alert("<#ALERT_TO_CHANGE_BROWSER#>");</script><![endif]-->
@@ -833,14 +816,18 @@ function eula_confirm(){
 														function(){
 															curState = 1;
 															if(document.form.TM_EULA.value == 0){
-																show_tm_eula();
-																return;
-															}	
-															
-															document.form.wrs_web_enable.value = 1;	
-															document.form.wrs_app_enable.value = 1;
-															showhide("list_table",1);
-															
+																ASUS_EULA.config(eula_confirm, cancel);
+																if(ASUS_EULA.check("tm")){
+																	document.form.wrs_web_enable.value = 1;
+																	document.form.wrs_app_enable.value = 1;
+																	showhide("list_table",1);
+																}
+															}
+															else{
+																document.form.wrs_web_enable.value = 1;
+																document.form.wrs_app_enable.value = 1;
+																showhide("list_table",1);
+															}
 														},
 														function(){
 															document.form.wrs_web_enable.value = 0;

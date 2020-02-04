@@ -27,6 +27,9 @@
 function initial(){
 	show_menu();
 
+	if(!smart_sync_support){
+		document.getElementById("ssLink").style.display = "none";
+	}
 	if(rrsut_support == -1)
                 document.getElementById("rrsLink").style.display = "none";
 }
@@ -61,7 +64,7 @@ function initial(){
 							<a href="cloud_main.asp"><div class="tab"><span><%tcWebApi_Get("String_Entry", "AiCloud_Title","s")%></span></div></a>
 						</td>
 						<td>
-							<a href="cloud_sync.asp"><div class="tab"><span><% tcWebApi_Get("String_Entry","smart_sync","s") %></span></div></a>
+							<a id="ssLink" href="cloud_sync.asp"><div class="tab"><span><% tcWebApi_Get("String_Entry","smart_sync","s") %></span></div></a>
 						</td>
 						<td>
 							<a id="rrsLink" href="cloud_router_sync.asp"><div class="tab"><span><% tcWebApi_Get("String_Entry","Server_Sync","s") %></span></div></a>

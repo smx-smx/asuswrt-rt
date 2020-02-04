@@ -183,6 +183,7 @@ extern int wan_ifunit(char *wan_ifname);
 extern int wanx_ifunit(char *wan_ifname);
 extern int preset_wan_routes(char *wan_ifname);
 extern int found_default_route(int wan_unit);
+extern int find_default_route_ifname(char *ifname, size_t size);
 extern int autodet_main(int argc, char *argv[]);
 extern int add_multi_routes(void);
 extern int do_dns_detect();
@@ -331,6 +332,8 @@ extern int pppstatus(void);
 extern void time_zone_x_mapping(void);
 
 // ssh.c
+extern void start_sshd(void);
+extern void stop_sshd(void);
 
 // usb.c
 #ifdef RTCONFIG_USB

@@ -99,7 +99,7 @@ int read_header(request * req)
 				lang_type = getLangType(ttc, str_lang);
 				snprintf(str_type, sizeof(str_type), "%d", lang_type);
 				tcapi_set("WebCurSet_Entry", "detected_lang_type", str_type);
-
+				tcapi_set("LanguageSwitch_Entry", "init_lang_type", str_type); /*ACRU SKIP 5G BAND3*/
 				initandparserfile();
 				if(lang_type == LANG_TYPE_CZ || lang_type == LANG_TYPE_DE)
 				{

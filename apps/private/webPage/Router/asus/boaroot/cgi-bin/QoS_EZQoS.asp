@@ -32,6 +32,8 @@ End If
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/js/asus_eula.js"></script>
 <script>
 var $j = jQuery.noConflict();
 </script>
@@ -167,10 +169,11 @@ function initial(){
 }
 
 function update_FAQ(){
-	if(document.getElementById("connect_status").className == "connectstatuson"){		
-		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1008718");
-	}
+    if(document.getElementById("connect_status").className == "connectstatuson"){
+        faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1008718");
+    }
 }
+
 function init_changeScale(){
 	
 	//if((WebCurSet_dev_pvc == "0" || WebCurSet_dev_pvc == "8") && ((!upload || upload == "0") && (!download || download == "0"))){

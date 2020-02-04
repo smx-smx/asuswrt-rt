@@ -1282,7 +1282,7 @@ hint_string += "<% tcWebApi_Get("String_Entry", "routerSync_rule_CtoS", "s") %>"
 <div id="footer"></div>
 </form>
 <form method="post" name="enableform" action="cloud_apply.asp" target="hidden_frame">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="<%tcWebApi_Get("SysInfo_Entry", "preferred_lang", "s")%>">
+<input type="hidden" name="preferred_lang" value="<%tcWebApi_Get("SysInfo_Entry", "preferred_lang", "s")%>">
 <input type="hidden" name="firmver" value="<% tcWebApi_Get("DeviceInfo", "FwVer", "s") %>">
 <input type="hidden" name="current_page" value="cloud_sync.asp">
 <input type="hidden" name="next_page" value="cloud_sync.asp">

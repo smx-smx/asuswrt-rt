@@ -597,8 +597,20 @@ var webmon_support = rc_support.search("ipt_webmon");
 var access_log_support = rc_support.search("access_log");
 var bwdpi_support = rc_support.search("bwdpi");
 var app_support = true;	//all model incleded for now
+var ifttt_support = rc_support.search("ifttt");
+var alexa_support = rc_support.search("alexa");
 // rc_support end
 
+// parsing ss_support (Smart Sync)
+var ss_support = '<% tcWebApi_Get("AiCloud_Entry","ss_support","s") %>';
+var smart_sync_support = false;
+function isSupport(_nvramvalue, _ptn){
+	return (_nvramvalue.search(_ptn) == -1) ? false : true;
+}
+if( isSupport(ss_support, "asuswebstorage") || isSupport(ss_support, "dropbox") ||
+	isSupport(ss_support, "ftp") || isSupport(ss_support, "samba") || isSupport(ss_support, "usb")){ 
+	smart_sync_support = true;
+}
 
 var tabtitle = new Array();
 tabtitle[0] = new Array("", "<%tcWebApi_get("String_Entry","menu5_1_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_1_2","s")%>", "WDS" ,"<%tcWebApi_get("String_Entry","menu5_1_4","s")%>", "<%tcWebApi_get("String_Entry","menu5_1_5","s")%>", "<%tcWebApi_get("String_Entry","menu5_1_6","s")%>");
@@ -608,7 +620,7 @@ tabtitle[3] = new Array("", "<%tcWebApi_get("String_Entry","UPnPMediaServer","s"
 tabtitle[4] = new Array("", "IPv6");
 tabtitle[5] = new Array("", "<%tcWebApi_get("String_Entry","BOP_isp_heart_item","s")%>", "VPN Client", "IPSec VPN");
 tabtitle[6] = new Array("", "<%tcWebApi_get("String_Entry","menu5_1_1","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_5","s")%>", "<%tcWebApi_get("String_Entry","menu5_5_4","s")%>");
-tabtitle[7] = new Array("", "<%tcWebApi_get("String_Entry","menu5_6_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_6_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_6_4","s")%>", "Performance tuning", "<%tcWebApi_get("String_Entry","menu_dsl_setting","s")%>", "<%tcWebApi_get("String_Entry","menu_dsl_feedback","s")%>", "CWMP", "TR069");
+tabtitle[7] = new Array("", "<%tcWebApi_get("String_Entry","menu5_6_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_6_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_6_4","s")%>", "Performance tuning", "<%tcWebApi_get("String_Entry","menu_dsl_setting","s")%>", "<%tcWebApi_get("String_Entry","menu_dsl_feedback","s")%>", "CWMP", "TR069", "<%tcWebApi_get("String_Entry","menu_privacy","s")%>");
 tabtitle[8] = new Array("", "<%tcWebApi_get("String_Entry","menu5_7_2","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_4","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_3","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_6","s")%>", "<%tcWebApi_get("String_Entry","menu5_7_5","s")%>", "<%tcWebApi_get("String_Entry","menu_dsl_log","s")%>", "<%tcWebApi_get("String_Entry","Connections","s")%>", "Access Log");
 tabtitle[9] = new Array("", "<%tcWebApi_get("String_Entry","Network_Analysis","s")%>", "Netstat", "<%tcWebApi_get("String_Entry","NetworkTools_WOL","s")%>");
 tabtitle[10] = new Array("", "QoS", "<%tcWebApi_get("String_Entry","traffic_monitor","s")%>", "<% tcWebApi_get("String_Entry","Adaptive_History","s") %>", "<% tcWebApi_get("String_Entry","Spectrum_title","s") %>");
@@ -626,7 +638,7 @@ tablink[3] = new Array("", "mediaserver.asp", "Advanced_AiDisk_samba.asp", "Adva
 tablink[4] = new Array("", "Advanced_IPv6_Content.asp");
 tablink[5] = new Array("", "Advanced_VPN_PPTP.asp", "Advanced_VPNClient_Content.asp", "adv_vpn_setting.asp");
 tablink[6] = new Array("", "Advanced_BasicFirewall_Content.asp", "Advanced_URLFilter_Content.asp", "Advanced_MACFilter_Content.asp", "Advanced_KeywordFilter_Content.asp", "Advanced_Firewall_Content.asp");
-tablink[7] = new Array("", "Advanced_System_Content.asp", "Advanced_FirmwareUpgrade_Content.asp", "Advanced_SettingBackup_Content.asp", "Advanced_PerformanceTuning_Content.asp", "Advanced_ADSL_Content.asp", "Advanced_Feedback.asp", "Advanced_CWMP_Content.asp", "Advanced_TR069_Content.asp");
+tablink[7] = new Array("", "Advanced_System_Content.asp", "Advanced_FirmwareUpgrade_Content.asp", "Advanced_SettingBackup_Content.asp", "Advanced_PerformanceTuning_Content.asp", "Advanced_ADSL_Content.asp", "Advanced_Feedback.asp", "Advanced_CWMP_Content.asp", "Advanced_TR069_Content.asp", "Advanced_Privacy.asp");
 tablink[8] = new Array("", "Main_LogStatus_Content.asp", "Main_WStatus_Content.asp", "Main_DHCPStatus_Content.asp", "Main_RouteStatus_Content.asp", "Main_IPTStatus_Content.asp", "Main_AdslStatus_Content.asp", "Main_ConnStatus_Content.asp", "Main_AccessLog_Content.asp");
 tablink[9] = new Array("", "Main_Analysis_Content.asp", "Main_Netstat_Content.asp", "Main_WOL_Content.asp");
 tablink[10] = new Array("", "QoS_EZQoS.asp", "Main_TrafficMonitor_realtime.asp", "Main_WebHistory_Content.asp", "Main_Spectrum_Content.asp", "Main_TrafficMonitor_last24.asp", "Main_TrafficMonitor_daily.asp", "Advanced_QOSUserPrio_Content.asp", "Advanced_QOSUserRules_Content.asp");
@@ -1300,7 +1312,7 @@ cal_height();
 	if(dsl_diag_support >= 0 && wan_diag_state == "4"){               //case11
 		notification.array[11] = 'noti_send_debug_log';
 		notification.send_debug_log = 1;
-		notification.desc[11] = "-	The debug log of diagnostic DSL captured.";
+		notification.desc[11] = "-	The debug log of diagnostic DSL / Wi-Fi captured.";
 		notification.action_desc[11] = "Send debug log now";
 		notification.clickCallBack[11] = "setTimeout('notification.redirectFeedbackInfo()', 1000);";
 	
@@ -1705,7 +1717,7 @@ function reboot(){
 			preferred_lang.disabled = true;
 			flag.disabled = true;
 			if(model_name == "DSL-N66U" || model_name == "DSL-AC52U"){
-				showLoadingBar(220);
+				showLoading(220);
 				setTimeout("redirect(location.pathname);", 220100);
 			}
 			else{

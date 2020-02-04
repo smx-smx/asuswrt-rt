@@ -100,7 +100,6 @@
 	/lib/modules/tcledctrl.ko
 
 /lib/modules/rt5592ap.ko:	/lib/modules/tccicmd.ko \
-	/lib/modules/tcledctrl.ko \
 	/lib/modules/module_sel.ko
 
 /lib/modules/2.6.22.15/kernel/net/ipv6/netfilter/ip6table_filter.ko:	/lib/modules/2.6.22.15/kernel/net/ipv6/netfilter/ip6_tables.ko

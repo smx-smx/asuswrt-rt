@@ -12,6 +12,44 @@ APS_msg_connect_open_wlan=You are trying to connect to an unsecured network.\n T
 APS_msg_connected=You have already connected to this AP.
 APS_msg_waiting_to_connect=Please wait, the DSL-N55U_D1 is connecting to
 ASUS_Registration=Become an ASUS Member and receive the latest product information. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Sign Up Now!</a>
+ASUS_Notice=ASUS NOTICE
+ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk) and AiProtection. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
+ASUS_eula_desc0=Welcome to use DDNS/ Remote connection(ASUS Router APP/Lyra APP/AiCloud/AiDisk). Please read the following information carefully:
+ASUS_eula_desc1=In order to assess and improve ASUS product services and stability, based on your usage, ASUS may collect your information through the above functions:
+ASUS_eula_desc1_1=When you start to use the above functions, ASUS may collect your anonymous information which cannot characterize nor identify you:
+ASUS_eula_desc1_1_1=Log information: log information associated with your product, including model name, firmware version, Internet status, and auto-generated activation code (only applied to Alexa™/IFTTT™ functions).
+ASUS_eula_desc1_1_12=Log information: log information associated with your product, including model name, firmware version, Internet status, and auto-generated activation code (only applied to Alexa™ functions).
+ASUS_eula_desc1_1_13=Log information: log information associated with your product, including model name, firmware version, and Internet status.
+ASUS_eula_desc1_2_s1=By clicking [Agree] below, it will be deemed that you consent to sharing the following information with ASUS.
+ASUS_eula_desc1_2_s2=To protect children's privacy, we will not collect the following information of children.
+ASUS_eula_desc1_2_1=Product information: information associated with your product, including product serial number, IP Address, MAC Address, and DDNS name.
+ASUS_eula_desc1_3=Besides, in order to enable your remote control function of Alexa™ via your product, ASUS may share auto-generated activation code to Amazon for the above purposes.
+ASUS_eula_desc1_4=Besides, in order to enable your remote control function of IFTTT™ via your product, ASUS may share auto-generated activation code to IFTTT™ for the above purposes.
+ASUS_eula_desc2=ASUS is committed to protecting and respecting your privacy;You may visit Advanced Settings > Administration > Privacy to enable/disable sharing your product information with ASUS at all times. To know more about how ASUS protects your privacy, please visit <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS Privacy Policy</a>.
+ASUS_eula_age=I am above the age of 16 years.
+ASUS_eula_age_confirm=Please confirm your age is above 16.
+ASUS_eula_withdraw0_AlexaIFTTT=For DDNS, Alexa™, IFTTT™, and Remote connection(ASUS Router APP/ Lyra APP/ AiCloud/AiDisk):
+ASUS_eula_withdraw0_Alexa=For DDNS, Alexa™, and Remote connection(ASUS Router APP/ Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw0=For DDNS, and Remote connection(ASUS Router APP/Lyra APP/AiCloud/AiDisk):
+ASUS_eula_withdraw_desc1=Please note that your information, including your product model name, firmware version, Internet status, IP Address, MAC Address and DDNS name, will be collected by ASUS through the above functions.
+ASUS_eula_withdraw_desc1_2=If you would like to disable sharing your information with ASUS through the above functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please note that such features/functions may not work if you stop sharing your information with ASUS.
+ASUS_eula_withdraw_desc2=After you click <span style="font-weight: bold;">[Withdraw]</span>, there will be some changes as listed below:
+ASUS_eula_withdraw_desc2_1=The DDNS name you are currently using will not be kept in your router.
+ASUS_eula_withdraw_desc2_2=You are able to use ASUS Router APP, Lyra APP, AiCloud, AiDisk under LAN connection, but not under the remote connection mode.
+ASUS_eula_withdraw_desc2_Alexa=In the future, if you intend to enable the functions of Alexa™, you need to provide new activation code to the web page of Alexa™.
+ASUS_eula_withdraw_desc2_AlexaIFTTT=In the future, if you intend to enable the functions of Alexa™ and IFTTT™, you need to provide new activation code to the web page of Alexa™ and IFTTT™.
+ASUS_eula_withdraw_note=You are not able to complete the withdrawal procedure without Internet connection. Please withdraw when connected to the Internet.
+ASUS_eula_withdraw_unstable=You are not able to complete the withdrawal procedure because the Internet status is unstable. Please withdraw again later.
+TM_eula_desc1=By using AiProtection, you agree to the <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro End User License Agreement.</a>
+TM_eula_desc2=Please note that your information will be collected by Trend Micro through AiProtection. You also acknowledge and agree that ASUS is not responsible for neither the agreement between you and Trend Micro nor any content of the service provided by Trend Micro. If you may have any inquires about how Trend Micro collects, processes and uses your above information, please refer to the privacy- related statement issued by Trend Micro or contact Trend Micro for more details.
+TM_eula_desc3=If you would like to disable sharing your information with Trend Micro through the above functions, please go to:  Router web GUI > Advanced settings > Administration > Privacy.
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
+TM_eula_withdraw0=For AiProtection :
+TM_eula_withdraw_desc1=Please note that your information will be collected by Trend Micro through the above functions.
+TM_eula_withdraw_desc2=If you would like to disable sharing your information with Trend Micro through the following functions, please click <span style="font-weight: bold;">[Withdraw]</span> below. However, please note that such features/functions may not work if you stop sharing your information with Trend Micro.
+withdraw_confirm=Are you sure you want to withdraw?
+withdraw_str=Withdraw
 asusddns_inputhint=Key in the name
 Auto=Auto
 BM_alert_IP2=is invalid IP address.
@@ -249,7 +287,7 @@ QIS_detectWAN_desc2=Wait a while for verifying...
 qis_fail_desc1=Authentication failed.
 qis_fail_desc2=The account name and password are not correct.
 qis_fail_desc3=If you set the router offline, click <b>Wireless Setting</b> to skip Internet connection detection and go to next step to setup wireless name and password.
-qis_fail_desc4=Click <b>Select Internet Type</b> to retype the user name password provided by ISP.
+qis_fail_desc4=Click <b>Select Internet Type</b> to retype the username and password provided by ISP.
 qis_fail_desc5=Unable to connect to the Internet. Please double-check your account data with your ISP or contact ASUS Support Hotline for technical inquiries and support.
 qis_fail_desc6=The account name and password has passed authentication but failed to get an IP address from your ISP. Please contact your ISP for assistance.
 qis_fail_desc7=Unable to connect to the Internet
@@ -322,7 +360,7 @@ qis_wireless_help2=A security key is the password that is assigned to secure a w
 qis_wireless_setting=Assign a unique name or SSID (Service Set Identifier) to help identify your wireless network.
 qis_wireless_setting_skdesc=Enter a network key between 8 and 63 characters(letters, numbers or a combination) or 64 hex digits. The default wireless security setting is WPA2-Personal AES. If you do not want to set the network security, leave the security key field blank, but this exposes your network to unauthorized access.
 QKS_account_nameblank=Account name cannot be blank.
-QKS_account_empty=User Name/Password fields cannot be empty.
+QKS_account_empty=Username/Password fields cannot be empty.
 QKS_account_webtitle=ISP Account Setting
 QKS_all_title=Quick Start
 QKS_detect_desc1=Detecting your connection type
@@ -385,44 +423,48 @@ web_redirect_case2_suggestion1=Your PPPoE account or password is not accepted, p
 web_redirect_case2_title1=PPPoE Authentication Failure
 web_redirect_case3_button=Change WAN type
 web_redirect_case3_suggestion1=Please check the <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>connection settings</a> is correct.
-web_redirect_case5_suggestion1=We suggest you turn on the <a style='color:#FFF' href='/index.asp'>WAN connection button</a>.
+web_redirect_case5_suggestion1=We suggest you turn on the <a style='color:#FFF' href='/'>WAN connection button</a>.
 web_redirect_case5_suggestion2=Please check USB modem is power on.
 web_redirect_case5_suggestion3=Change <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB modem setting</a>.
 web_redirect_case5_title1=The WAN cnnection is turned off
 web_redirect_case5_title2=USB modem is not ready
-web_redirect_case6_desc1=Click (Next) to have the router automatically get a new IP address. The new IP address is:
-web_redirect_case6_desc2=Please ensure that you configure each services, such as Port Forwarding or DMZ, to use the new IP address.
+web_redirect_case6_desc1=Click (Next) to get a new IP address. The new IP address is:
+web_redirect_case6_desc2=Please confirm that related services using the new IP address, such as Port Forwarding or DMZ.
 web_redirect_case8_suggestion1=Please confirm Parent AP can connect to Internet.
 web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Change the connection setting</a>.
 web_redirect_case8_title=Unable to connect to Parent AP
 w_r_fail_r0=Reason for failed connection
 w_r_message=You failed to access to the web page that you want to view.
-w_r_r1=The network cable is not connected.
+w_r_r1=The network cable is unplugged.
 w_r_r2_1=Your PPPoE or VPN authentification failed.
-w_r_r2_2=There is no response from the remote server.
+w_r_r2_2=Connecting to remote server now.
 w_r_r3_1=Your ISP's DHCP does not function properly.
 w_r_r3_2=We have detected that your WAN Connection Type is PPPoE. But your PPPoE Setting is not complete.
 w_r_r4=The Internet connection failed. The router's IP address is the same as the gateway's IP address.
 w_r_r5_1=You have probably stopped the WAN connection manually.
 w_r_r5_2=The router's dynamic or static IP address settings are not correct.
-w_r_r6=IP conflict detected. Click Next to get a new IP address.
-w_r_suggestion_etc=Click here to go to the setup page.
+w_r_r6=IP conflict detected.
+w_r_suggestion_etc=Click here to go to the setup page
 w_r_suggestion_etc_desc=You can check and config your setting by yourself.
 w_r_suggestion_final=If a problem still persists, manually change the connection settings.
 w_r_suggestion_mnl_start_wan=Turn on the WAN.
 w_r_suggestion0=We suggest you
 w_r_suggestion0_1=Need account and password of administrator.
-w_r_suggestion1=Please ensure that the cable is properly connected between the router's and the modem's WAN port.
+w_r_suggestion1=Please ensure that the cable is properly connected between DSL-N55U_D1 WAN port and the modem.
 w_r_suggestion2_1=Go to Account Setting page
-w_r_suggestion2_1_desc= and check your account and password again.
-w_r_suggestion2_2=Go to WAN type detecting page
-w_r_suggestion2_2_desc= and DSL-N55U_D1 will detect your WAN type automatically.
+w_r_suggestion2_1_desc=and check your account and password again.
+w_r_suggestion2_2=Go to the Quick Internet Setup page to automatically detect the connection type.
+w_r_suggestion2_2_desc=and DSL-N55U_D1 will detect your WAN type automatically.
 w_r_suggestion3=Please contact your ISP(Internet Service Provider) to find out the root cause of DHCP failure.
 w_r_suggestion4=Please reconfigure the router's IP address and ensure that it is different from the gateway IP address.
 w_r_suggestion5_1=Please build the WAN connection manually.
 w_r_suggestion5_2=Please check that the IP and DNS settings are correct.
 w_r_suggestion6=Plese reconfigure the local IP address for your DSL-N55U_D1, and ensure that it is different from your WAN's gateway.Ex: 192.168.X.X; X is the number between 2 to 254.
+w_r_suggestion7=After connecting the router to the modem, click "GO" to launch the Quick Setup Wizard.
+w_r_suggestion8=To set up the WAN connection offline or change the operation mode to Access Point, click Manual Setting.
+w_r_suggestion9=In the next step, set up the login name and password for security.
 Web_Title2=DSL-N55U_D1
+wireless_configured=Configured
 Wireless_name=Wireless name
 wireless_router=Wireless router
 wl_securitylevel_0=None
@@ -485,14 +527,17 @@ aicloud_disk_case12=To modify the ddns name, please click <a style="font-weight:
 aicloud_disk_case21=Access the cloud disk from <a style="font-weight: bolder;text-decoration: underline;" href="https://router.asus.com" target="_blank">https://router.asus.com</a>.
 aicloud_disk_case22=Register for an ASUS DDNS <a style="font-weight: bolder;text-decoration: underline;" href="/cgi-bin/Advanced_ASUSDDNS_Content.asp" target="_blank">here</a> to access the cloud disk online.
 aicloud_disk_desc=Enables USB-attached storage devices to be accessed, streamed or shared through an Internet-connected PC or device.
-aicloud_disk1=To create a cloud disk, you need to install a USB storage device into this router, then turn Cloud Disk <b>ON</b>.
-aicloud_disk2=Use the router login account to log into the default cloud disk.
+aicloud_disk1=To create a Cloud Disk, you need to install a USB storage device into this router, then turn Cloud Disk <b>ON</b>.
+aicloud_disk2=Use the router login account to log into the default Cloud Disk.
 AiCloud_enter=Enter AiCloud 2.0
 aicloud_for_privateIP1=You can set up <a style="font-weight: bolder;text-decoration:underline;" class="hyperlink" href="/cgi-bin/Advanced_VirtualServer_Content.asp" target="_blank">Port forwarding</a> or <a style="font-weight: bolder;text-decoration:underline;" class="hyperlink" href="/cgi-bin/Advanced_Exposed_Content.asp" target="_blank">DMZ</a> to access a private ip address remotely.
 aicloud_for_privateIP2=Use ports 8082 and 443 for AiCloud. You can change the port setting <a style="font-weight: bolder;text-decoration: underline;" href="/cgi-bin/Advanced_VirtualServer_Content.asp" target="_blank">here</a>.
 aicloud_for_privateIP3=For more detail, you can also refer to the <a id="faq1" href="https://www.asus.com/support/FAQ/114093" target="_blank" style="font-weight: bolder;text-decoration:underline;">Port forwarding FAQ</a> and <a id="faq2" href="https://www.asus.com/support/FAQ/1001253" target="_blank" style="font-weight: bolder;text-decoration:underline;">DMZ FAQ</a>.
 aicloud_invitation_invalid=Invalid invitation code!
 AiCloud_Log_desc=This page displays a log of AiCloud's activities.
+AiCloud_maintext_note=ASUS AiCloud 2.0 keeps you connected to your data wherever and whenever you have an Internet connection. It links your home network and online storage service and lets you access your data through the AiCloud mobile app on your iOS or Android mobile device or through a personalized web link in a web browser. Now all your data can go where you go.
+AiCloud_maintext_note0=IP Address is not valid. You can set the WAN IP address <a href=\"Advanced_WAN_Content.asp\" style=\"text-decoration:underline\">here</a>, or go to <a href=\"https://
+AiCloud_maintext_note1=\" style=\"text-decoration:underline\">AiCloud</a>.
 aicloud_no_record=There is no record.
 AiCloud_PWD_enable=Enable Password Protection Feature.
 AiCloud_PWD_Mechanism=Password Protection feature:
@@ -707,6 +752,7 @@ btn_Export=Export
 btn_go=GO
 btn_pre=Previous
 btn_remove=Remove
+btn_send=Send
 btn_to_WAN=WAN setting
 ButtonResetOOBText=Reset to OOB
 Captcha=Captcha
@@ -973,6 +1019,12 @@ feedback_fail_WAN_connected=<span style="color:#FC0;">The system failed to conne
 feedback_fail_WAN_disconnected=However, <span style="color:#FC0;">due to WAN connection not established.</span> 
 feedback_Frequent_interrupt=Frequent interruptions
 feedback_isp=Your ISP / Internet Service Provider
+feedback_max_counts=Maximum of 2000 characters - characters left
+feedback_note0=Now this function can't work, because your ASUS Router isn't connected to the Internet. Please send your Feedback to this email address :
+feedback_note1=The Firmware and DSL Driver Version will be submitted in addition to any info you choose to include above.
+feedback_note2=Feedback will be used to diagnose problems and help to improve the firmware of DSL-N55U_D1, any personal information you submitted, whether explicitly or incidentally will be protected in accordance with our <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy/" target="_blank">privacy policy</a>.
+feedback_note3=By submitting this Feedback, you agree that ASUS may use feedback that you provided to improve ASUS xDSL modem router product.
+feedback_note4=If you have any urgent matters, please ask local technical support.
 feedback_Occasion_interrupt=Occasional interruptions
 feedback_optional=* Optional
 feedback_stable=Stable connection
@@ -1037,6 +1089,8 @@ FC_x_WanWebEnable_id=This feature allows you to configure the wireless router vi
 FC_x_WanWebEnable_in=Enable Web Access from WAN
 FC_x_WanWebPort_id=To specify the port used to config DSL-N55U_D1 from the Internet. The default port is 8080.
 FC_x_WanWebPort_in=Port of Web Access from WAN
+feedback_eula=I agree to provide the above information, the model name, firmware version of my ASUS router, browser version, MAC address, IP address, Internet status, router system information, the time I submit this Feedback form to ASUS to diagnose and improve problems of my ASUS router, and to analyze user experience for the purpose of development and evaluation of new products and services of ASUS, and also agree to the <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">ASUS Privacy Policy</a>
+feedback_eula_notice=Before you clicking "Send", please agree to the following information.
 File_Pop_content_alert_desc8=There should not be any spaces in the password.
 File_Pop_content_alert_desc9=Password can only contain alphanumeric characters.
 FolderName=Folder Name
@@ -1158,7 +1212,7 @@ IPv6_wan_addr=WAN IPv6 Address
 IPv6_wan_gateway=WAN IPv6 Gateway
 IPv6_wan_Prefix_len=WAN Prefix Length
 IPv6_WAN_Setting=IPv6 WAN Setting
-isp_br_gvt_note=If you are GVT users, please key in the user name <b>turbonet@turbonet</b> and password <b>gvt25</b>. Otherwise, please key in the user name and password provided by your ISP.
+isp_br_gvt_note=If you are GVT users, please key in the username <b>turbonet@turbonet</b> and password <b>gvt25</b>. Otherwise, please key in the username and password provided by your ISP.
 isp_profile=Select the ISP Profile to configure special ISP settings.
 JS_badconnection=The connection to DSL-N55U_D1 has failed. Click OK to send request or Cancel to stop.
 JS_basiconfig1=This field allows you to enable or disable Download Master.
@@ -1186,7 +1240,7 @@ JSVCIInvalid=VCI value should be in the range of 32-65535
 JSVPIInvalid=VPI value should be in the range of 0-255
 JSSCRInvalid=SCR value should be an integer.
 JSSCRSizeInvalid=SCR must be less than or equal to PCR
-jumbo_frame=Enable Jumbo Frame
+jumbo_frame=Jumbo Frame
 LAN_IP=LAN IP
 LAN_IP_client=LAN IP
 LANG_select=Select Language
@@ -1245,7 +1299,7 @@ LHC_x_DDNSStatus_buttonname=Update
 LHC_x_DDNSStatus_id=This button allows you to update DDNS database manually. It is available only when automatic DDNS update failed. You can get current status of DDNS update from the System Log.
 LHC_x_DDNSStatus_in=Update Manually
 LHC_x_DDNSUserName_id=This field is used as an identity to log into the Dynamic-DNS service.
-LHC_x_DDNSUserName_in=User Name or E-mail Address
+LHC_x_DDNSUserName_in=Username or E-mail Address
 LHC_x_DDNSWildcard_id=When enabled, the domain name with wildcard is redirected to your IP address.
 LHC_x_DDNSWildcard_in=Enable wildcard
 LHC_x_Gateway_id=This is the IP address of default gateway for Access Point
@@ -1283,7 +1337,7 @@ List_limit=Max Limit :
 liveupdate=Check
 Log=Log
 login_hint1=Login user IP:
-login_hint2=You cannot Login unless logout another user first.
+login_hint2=You cannot login unless logout another user first.
 logoutmessage=You have Logged out successfully.
 Low=Low
 Lowest=Lowest
@@ -1465,7 +1519,7 @@ Port_SSH=SSH Port
 portConflictHint=This port is for
 PortForward_title=This page shows the port forwarding status. Some P2P programs use the UPnP protocol to open the port and the port number is shown on this page.
 PPP_cfg_desc=DSL-N55U_D1 has detected that the connection type is PPPoE. If yes, please key in the username/password and click Apply.<br>If not, please click Manual Setting to set again.
-PPP_cfg_usersel_desc=Please key in the user name/password that your Internet Service Provider (ISP) has provided and click Next.
+PPP_cfg_usersel_desc=Please key in the username/password that your Internet Service Provider (ISP) has provided and click Next.
 PPPC_Authentication_id=This item may be specified by some ISPs. Check with your ISP and fill them in if required.
 PPPC_Authentication_in=Authentication
 PPPC_dialondemand_in=Dial on demand<br>(with idle timeout timer)
@@ -1488,7 +1542,7 @@ PPPC_x_PPPoEMRU_in=MRU
 PPPC_x_PPPoEMTU_id=The Maximum Transmission Unit (MTU) of PPPoE packet. The default value is 1492. Change this value only if your ISP requires it.
 PPPC_x_PPPoEMTU_in=MTU
 PPPC_x_PPPoERelay_id=Enable PPPoE relay allows devices in LAN to establish a individual PPPoE connections that passes through NAT.
-PPPC_x_PPPoERelay_in=Enable PPPoE Relay
+PPPC_x_PPPoERelay_in=PPPoE Relay
 PPPC_x_PPTPOptions_id=This item may be specified by some ISPs. Check with your ISP and fill them in if required.
 PPPC_x_PPTPOptions_in=PPTP Options
 PPPC_x_ServiceName_id=This field is optional and may be specified by some ISPs. Check with your ISP and fill them in if required.
@@ -1660,10 +1714,23 @@ Spectrum_gathering=Gathering data, Spectrum graph will be displayed in(seconds):
 Spectrum_refresh=These graphs will be updated in(seconds):
 Spectrum_title=Spectrum
 SReboot_btn=Save/Reboot
+Standby_str_cold=Cold-Standby
+Standby_str=Hot-Standby
+Standby_hint1=When Hot-Standby mode is enabled, the system quickly switches connection to another interface when the primary interface is down or not accessible.
+Standby_hint2=System will keep the standby WAN in connected state and reduce the detection interval to
+Statistic=Statistic
+Statistic_display_type=Display for
+Statistic_last_date=Last date
+Statistic_show_type=Show by
+Retry_interval=Retry Interval
+Retry_interval2=Detect Interval
+Retry_count=Retry Count
 statusTitle_Client=Client status
 statusTitle_Internet=Internet Status
 statusTitle_Printer=Printer status
 statusTitle_USB_Disk=External USB disk status
+statusTitle_Primary_WAN=Primary WAN status
+statusTitle_Secondary_WAN=Secondary WAN status
 step_use_aicloud=To use AiCloud :
 Step1_desp=Decide how to share your folders.
 Step2_desp=Create your domain name via the ASUS DDNS services.
@@ -2125,3 +2192,5 @@ wsc_mode_hint2=to modify it then enable WPS.
 yoursharesetting=Your share folder setting is
 zero_disable=Disable : 0
 FreeWiFi_Idle=Idle Timeout
+menu_privacy=Privacy
+ASUS_Notice_Privacy=ASUS NOTICE( for privacy )

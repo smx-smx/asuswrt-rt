@@ -85,10 +85,6 @@ function submitForm(){
 	}
 	<%end if%>
 
-	if(document.form.text_dsltmp_dhcp_clientid.value != ""){
-		document.form.dsltmp_dhcp_clientid.value = document.form.text_dsltmp_dhcp_clientid.value;
-	}
-
 	if (vpi_val == "0" && vci_val == "40" && encap_val == "vc")
 	{
 		//Only for UK ISP SKY Broadband
@@ -105,8 +101,13 @@ function submitForm(){
 	}
 	else
 	{
-		document.form.dsltmp_dhcp_clientid.value = "";
-		document.form.dsltmp_dhcp_hostname.value = "";
+		if(document.form.text_dsltmp_dhcp_clientid.value != ""){
+        	document.form.dsltmp_dhcp_clientid.value = document.form.text_dsltmp_dhcp_clientid.value;
+    	}
+		else{
+			document.form.dsltmp_dhcp_clientid.value = "";
+			document.form.dsltmp_dhcp_hostname.value = "";
+		}
 	}
 
 	document.form.next_page.value = "/cgi-bin/qis/QIS_wireless.asp";
@@ -329,7 +330,6 @@ function setIptvNumPvc() {
 <input type="hidden" name="with_wan_setting" value="1">
 <input type="hidden" name="dsltmp_dhcp_hostname" value="">
 
-<input type="hidden" name="dsltmp_dhcp_vendorid" value="">
 <input type="hidden" name="dsltmp_dhcp_clientid_type" value="">
 <input type="hidden" name="dsltmp_dhcp_clientid" value="">
 <div class="QISmain">
@@ -430,7 +430,7 @@ function setIptvNumPvc() {
 		<tr id="ISP_tr">
 			<th width="40%">Class-identifier (option 61):</th>
 			<td>
-				<input type="checkbox" name="dsltmp_dhcp_clientid_type_tmp" onclick="showDiableDHCPclientID(this);">IAID/DUID<br>
+				<input type="checkbox" name="dsltmp_dhcp_clientid_type_tmp" onclick="showDisableDHCPclientID(this);">IAID/DUID<br>
 				<input type="text" name="text_dsltmp_dhcp_clientid" class="input_25_table" value="" maxlength="126" autocapitalization="off" autocomplete="off">
 			</td>
 		</tr>

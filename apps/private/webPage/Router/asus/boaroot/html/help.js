@@ -620,7 +620,7 @@ function openHint(hint_array_id, hint_show_id, flag){
 		
 		if(hint_show_id == 8){	//2014.10 Viz add for dsl dslx_diag_state
 			statusmenu = "<span class='StatusClickHint' onclick='cancel_diag();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>Cancel debug capture</span>";
-			_caption = "DSL Line Diagnostic capture";
+			_caption = "DSL Line / Wi-Fi Diagnostic capture";
 		}
 		else if(hint_show_id == 7){
 			statusmenu = "<span class='StatusClickHint' onclick='gotoModem();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>";

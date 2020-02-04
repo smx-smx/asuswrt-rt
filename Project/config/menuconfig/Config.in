@@ -1282,6 +1282,11 @@ config TCSUPPORT_LSOF
 	help
 		Support lsof
 
+config TCSUPPORT_ATE11
+	bool "ATE Command v1.1"
+	help
+		Support ATE Command v1.1: Add HwId, HwVersion, DateCode, HwBom
+
 endmenu
 
 config TCSUPPORT_IPV6

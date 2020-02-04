@@ -1650,6 +1650,9 @@ static int http_client_ip_check(request * req)
 #define APPLYAPPSTR 	"applyapp.cgi"
 #define GETAPPSTR	"getapp"
 #define GETWEBDAVINFO	"get_webdavInfo.asp"
+#define SETASUSEULASTR "set_ASUS_EULA.cgi"
+#define SETTMEULASTR "set_TM_EULA.cgi"
+#define UNREGASUSDDNSSTR "unreg_ASUSDDNS.cgi"
 
 void _dump_request(request * req)
 {
@@ -1955,6 +1958,13 @@ int process_header_end(request * req)
 	}
 
 #endif
+	else if((strstr(req->request_uri, SETASUSEULASTR)) || (strstr(req->request_uri, SETTMEULASTR)) || (strstr(req->request_uri, UNREGASUSDDNSSTR))) {
+		//change .cgi to .asp
+		p = strstr(req->request_uri, ".cgi");
+		strncpy(p, ".asp", 4);
+		fromapp=0;
+	}
+
 	retry_tmp = get_login_retry_by_url(req->remote_ip_addr);
 
 	if(!retry_tmp)
@@ -2256,7 +2266,7 @@ int process_header_end(request * req)
 				if (!(isalnum(req->query_string[i]) != 0 || req->query_string[i] == ':' || req->query_string[i] == '-'
 					|| req->query_string[i] == '_' || req->query_string[i] == '.' || isspace(req->query_string[i]) != 0
 					|| req->query_string[i] == '&' || req->query_string[i] == '=' || req->query_string[i] == '/'
-					|| req->query_string[i] == '+'))
+					|| req->query_string[i] == '+' || req->query_string[i] == '(' || req->query_string[i] == ')' || req->query_string[i] == ';'))
 				{
 					dbgprintf("[%s, %d] Invalid system command.<%s>error char<%c>\n", __FUNCTION__, __LINE__, req->query_string, req->query_string[i]);
 					send_r_bad_request(req);

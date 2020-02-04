@@ -18,11 +18,18 @@
 <script language="JavaScript" type="text/javascript" src="/detect.js"></script>
 <script language="JavaScript" type="text/javaScript" src="/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <script>
 wan_route_x = '';
 wan_nat_x = '1';
 wan_proto = 'pppoe';
 <% wanlink(); %>
+var ddns_hostname_x_t = '<% tcWebApi_get("Ddns_Entry","MYHOST","s"); %>';
+var ddns_server_x = '<% tcWebApi_get("Ddns_Entry","SERVERNAME","s"); %>';
+
+var ddns_return_code = '<% nvram_get_ddns("Vram_Entry","ddns_return_code"); %>';
+var ddns_old_name = '<% tcWebApi_get("Vram_Entry","ddns_old_name","s"); %>';
+var ddns_enable_x = '<% tcWebApi_get("Ddns_Entry","Active","s"); %>';
 
 <% login_state_hook(); %>
 var wireless = []; // [[MAC, associated, authorized], ...]
@@ -32,8 +39,27 @@ function init(){
 	show_banner(1);
 	show_footer();
 	ddns_load_body();
+	update_ddns_wan_unit_option();
  	autoFocus('<% get_parameter("af"); %>');
+
+    ASUS_EULA.config(applyRule, refreshpage);
+    if(ddns_enable_x == "1" && ddns_server_x == "WWW.ASUS.COM"){
+        ASUS_EULA.check('asus');
+    }
 }
+
+function update_ddns_wan_unit_option(){
+	var wans_dualwan_array = '<% tcWebApi_get("Dualwan_Entry","wans_dualwan","s"); %>'.split(" ");
+	var wans_mode = '<% tcWebApi_get("Dualwan_Entry","wans_mode","s"); %>';
+	if(document.form.ddns_enable_x.value == "0" || !dualWAN_support || wans_mode != "lb" || wans_dualwan_array.indexOf("none") != -1){
+		document.getElementById("ddns_wan_unit_th").style.display = "none";
+		document.getElementById("ddns_wan_unit_td").style.display = "none";
+	}else{
+		document.getElementById("ddns_wan_unit_th").style.display = "";
+		document.getElementById("ddns_wan_unit_td").style.display = "";
+	}
+}
+
 function valid_wan_ip() {
 	var A_class_start = inet_network("10.0.0.0");
 	var A_class_end = inet_network("10.255.255.255");
@@ -63,20 +89,14 @@ function ddns_load_body(){
 	show_menu();
 	valid_wan_ip();
 
-	var hostname_x = '<% tcWebApi_get("Ddns_Entry","MYHOST","s"); %>';
-	var ddns_return_code = '<% nvram_get_ddns("Vram_Entry","ddns_return_code"); %>';
-	var ddns_old_name = '<% tcWebApi_get("Vram_Entry","ddns_old_name","s"); %>';
-	var ddns_server_x = '<% tcWebApi_get("Ddns_Entry","SERVERNAME","s"); %>';
-	var ddns_enable_x = '<% tcWebApi_get("Ddns_Entry","Active","s"); %>';
-
 	if(ddns_enable_x == '1'){
 		inputCtrl(document.form.ddns_server_x, 1);
 		document.getElementById('ddns_hostname_tr').style.display = "";
 		if(ddns_server_x == "WWW.ASUS.COM" || ddns_server_x == ""){
 			document.form.ddns_hostname_x.parentNode.style.display = "none";
 			document.form.DDNSName.parentNode.style.display = "";
-			var ddns_hostname_title = hostname_x.substring(0, hostname_x.indexOf('.asuscomm.com'));
-			if(hostname_x != '' && ddns_hostname_title)
+			var ddns_hostname_title = ddns_hostname_x_t.substring(0, ddns_hostname_x_t.indexOf('.asuscomm.com'));
+			if(ddns_hostname_x_t != '' && ddns_hostname_title)
 				document.getElementById("DDNSName").value = ddns_hostname_title;
 			else
 				document.getElementById("DDNSName").value = "<% tcWebApi_Get("String_Entry", "asusddns_inputhint", "s") %>";
@@ -85,8 +105,8 @@ function ddns_load_body(){
 			document.form.DDNSName.parentNode.style.display = "none";
 			inputCtrl(document.form.ddns_username_x, 1);
 			inputCtrl(document.form.ddns_passwd_x, 1);
-			if(hostname_x != '')
-				document.getElementById("ddns_hostname_x").value = hostname_x;
+			if(ddns_hostname_x_t != '')
+				document.getElementById("ddns_hostname_x").value = ddns_hostname_x_t;
 			else
 				document.getElementById("ddns_hostname_x").value = "<% tcWebApi_Get("String_Entry", "asusddns_inputhint", "s") %>";
 		}
@@ -103,57 +123,29 @@ function ddns_load_body(){
 	}
 
 	hideLoading();
-	if(ddns_return_code == 'register,-1')
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2","s")%>");
-	else if(ddns_return_code.indexOf('200')!=-1){
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_3","s")%>");
-		showhide("wan_ip_hide2", 0);
-		if(ddns_server_x == "WWW.ASUS.COM")
-			showhide("wan_ip_hide3", 1);   
-	}
-	else if(ddns_return_code.indexOf('203')!=-1)
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_hostname","s")%> '"+hostname_x+"' <%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_registered","s")%>");
-	else if(ddns_return_code.indexOf('220')!=-1){
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_4","s")%>");
-		showhide("wan_ip_hide2", 0);
-		if(ddns_server_x == "WWW.ASUS.COM")
-			showhide("wan_ip_hide3", 1);   
-	}
-	else if(ddns_return_code == 'register,230'){
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_5","s")%>");
-		showhide("wan_ip_hide2", 0);
-		if(ddns_server_x == "WWW.ASUS.COM")
-			showhide("wan_ip_hide3", 1);   
-	}
-	else if(ddns_return_code.indexOf('233')!=-1)
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_hostname","s")%> '"+hostname_x+"' <%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_registered_2","s")%> '"+ddns_old_name+"'");
-	else if(ddns_return_code.indexOf('296')!=-1)
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_6","s")%>");
-	else if(ddns_return_code.indexOf('297')!=-1)
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_7","s")%>");
-	else if(ddns_return_code.indexOf('298')!=-1)
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_8","s")%>");
-	else if(ddns_return_code.indexOf('299')!=-1)
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_9","s")%>");
-	else if(ddns_return_code.indexOf('401')!=-1)
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_10","s")%>");
-	else if(ddns_return_code.indexOf('407')!=-1)
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_11","s")%>");
-	else if(ddns_return_code == 'Time-out')
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_1","s")%>");
-	else if(ddns_return_code =='unknown_error')
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2","s")%>");
-	else if(ddns_return_code =='connect_fail')
-		alert("<%tcWebApi_get("String_Entry","qis_fail_desc7","s")%>");
-	else if(ddns_return_code =='no_change')
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_nochange","s")%>");
-	else if(ddns_return_code =='auth_fail')
-		alert("<%tcWebApi_get("String_Entry","qis_fail_desc1","s")%>");
-	else if(ddns_return_code =='Updating' || ddns_return_code =='ddns_query')
-		alert("Still query ASUS DDNS registration status. Please wait.");
-	else if(ddns_return_code != '')
-		alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_2","s")%>");
+
+	if(ddns_enable_x == "1")
+    {
+        var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
+
+        if(ddnsHint != "")
+            alert(ddnsHint);
+        if(ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230'){
+            showhide("wan_ip_hide2", 0);
+            if(ddns_server_x == "WWW.ASUS.COM"){
+                showhide("wan_ip_hide3", 1);
+            }
+        }
+    }
 }
+
+function apply_eula_check(){
+    if(document.form.ddns_enable_x[0].checked == true && document.form.ddns_server_x.value == "WWW.ASUS.COM"){
+        if(!ASUS_EULA.check("asus")) return false;
+    }
+    applyRule();
+}
+
 function applyRule(){
 	if(validForm()){
 		with(document.form){
@@ -290,6 +282,16 @@ function cleandef(){
 						</td>
 					</tr>
 					<tr>
+						<th id="ddns_wan_unit_th"><%tcWebApi_get("String_Entry","wan_interface","s")%></th>
+						<td id="ddns_wan_unit_td">
+							<select name="ddns_wan_unit" class="input_option">
+								<option class="content_input_fd" value="-1" <% if tcWebApi_get("Ddns_Entry","ddns_wan_unit","h") = "-1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","Auto","s")%></option>
+								<option class="content_input_fd" value="0" <% if tcWebApi_get("Ddns_Entry","ddns_wan_unit","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","dualwan_primary","s")%></option>
+								<option class="content_input_fd" value="1" <% if tcWebApi_get("Ddns_Entry","ddns_wan_unit","h") = "1" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","dualwan_secondary","s")%></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
 						<th><%tcWebApi_get("String_Entry","LHC_x_DDNSServer_in","s")%></th>
 						<td>
 							<select name="ddns_server_x"class="input_option"onchange="return change_common(this, 'LANHostConfig', 'ddns_server_x')">
@@ -346,7 +348,7 @@ function cleandef(){
 					</tr>
 				</table>
 				<div class="apply_gen">
-					<input class="button_gen" onclick="applyRule();" type="button" value="<%tcWebApi_get("String_Entry","CTL_apply","s")%>" />
+					<input class="button_gen" onclick="apply_eula_check();" type="button" value="<%tcWebApi_get("String_Entry","CTL_apply","s")%>" />
 				</div>
 			</td>
 			</tr>

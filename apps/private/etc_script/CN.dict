@@ -12,6 +12,44 @@ APS_msg_connect_open_wlan=您正在联机到不安全的网络。\n在这个网�
 APS_msg_connected=您已经连上此基地台。
 APS_msg_waiting_to_connect=请稍候，ZVMODELVZ 正在联机到
 ASUS_Registration=加入华硕会员，华硕将不定时提供您最新的产品资讯。 <a style='color:#FC0' target='_blank' href='https://account.asus.com'>立即注册！</a>
+ASUS_Notice=华硕提醒您
+ASUS_privacy_desc=Please note that users are required to agree to share information before using DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk) and AiProtection. At any time, users can search for the contents of the terms at this page or stop sharing the information with other parties by choosing <a style="font-weight: bolder;">Withdraw</a>.
+ASUS_eula_desc0=欢迎使用 DDNS/远程连接功能（ASUS Router APP/Lyra APP/AiCloud/AiDisk）。敬请您详细阅读以下条款:
+ASUS_eula_desc1=为评估并提升华硕产品的服务与稳定性，华硕将通过本功能收集以下信息:
+ASUS_eula_desc1_1=当您开始启用上述功能时，华硕将会通过该功能收集下述无法识别您个人身份的信息:
+ASUS_eula_desc1_1_1=日志信息：您产品的日志信息，包括您的产品型号、固件版本、互联网状态、产品自动生成的激活码（仅适用于 Alexa™ 与 IFTTT™ 功能）。
+ASUS_eula_desc1_1_12=日志信息：您产品的日志信息，包括您的产品型号、固件版本、互联网状态、产品自动生成的激活码（仅适用于 Alexa™ 功能）
+ASUS_eula_desc1_1_13=日志信息：您产品的日志信息，包括您的产品型号、固件版本、互联网状态
+ASUS_eula_desc1_2_s1=当您点击下面的“同意”按键，将视为您同意我们通过本功能收集下述信息。
+ASUS_eula_desc1_2_s2=为了保障未成年人的隐私权益，我们不会收集未成年人的以下信息。
+ASUS_eula_desc1_2_1=产品信息: 与您的产品相关连的产品识别信息，包括您的产品序号、产品的网络协议地址（IP Address）、MAC 地址以及动态域名（DDNS）。
+ASUS_eula_desc1_3=此外，当你启用 Alexa™ 功能时，为了使您能够通过 Alexa™ 功能远程控制您的产品，华硕将与 Amazon 分享您产品自动生成的激活码。
+ASUS_eula_desc1_4=当你启用 IFTTT™ 功能时，为了使您能够通过 IFTTT™ 功能远程控制您的产品，华硕将在此目的范围内，与 IFTTT™ 分享您产品自动生成的激活码。
+ASUS_eula_desc2=华硕致力于保护并十分尊重您的个人隐私和权益。您可以通过以下方式随时开启或关闭与华硕共享您的产品信息 : 高级设置 > 系统管理 > 隐私权。若想进一步了解华硕如何保护您的隐私，亦建议您访问<a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">华硕隐私权保护政策</a>。
+ASUS_eula_age=我已满 16 岁。
+ASUS_eula_age_confirm=请确认您已满 16 岁。
+ASUS_eula_withdraw0_AlexaIFTTT=使用 DDNS、Alexa™、IFTTTTM 与远程连接功能 （ASUS Router APP/Lyra APP/AiCloud/AiDisk）:
+ASUS_eula_withdraw0_Alexa=使用 DDNS、Alexa™ 与远程连接功能（ASUS Router APP/Lyra APP/AiCloud/AiDisk）:
+ASUS_eula_withdraw0=使用 DDNS 与远程连接功能（ASUS Router APP、Lyra APP、AiCloud、AiDisk）:
+ASUS_eula_withdraw_desc1=华硕将通过以上功能搜集下列信息：您的产品型号、固件版本、网络状态、IP 地址、MAC 地址与 DDNS 名称。
+ASUS_eula_withdraw_desc1_2=如果您不想通过以上功能与华硕分享信息，请点击下方<span style="font-weight: bold;">[关闭信息传送]</span> 选项。请注意，一旦您停止与华硕间的信息分享，上述功能将被停用。
+ASUS_eula_withdraw_desc2=当您点选<span style="font-weight: bold;">[关闭信息传送]</span>后，将会有以下影响
+ASUS_eula_withdraw_desc2_1=你所使用的 DDNS 名称将不会被保留。
+ASUS_eula_withdraw_desc2_2=您可以在局域网络内使用 ASUS Router APP、Lyra APP、AiCloud 与 AiDisk，但是无法在远程连接下使用。
+ASUS_eula_withdraw_desc2_Alexa=若要重新使用 Alexa™ 功能，需至 Alexa™ 网页输入新的激活码。
+ASUS_eula_withdraw_desc2_AlexaIFTTT=若要重新使用 Alexa™ 与 IFTTT™ 功能，需至 Alexa™ 与 IFTTT™ 网页输入新的激活码。
+ASUS_eula_withdraw_note=无法连接至互联网并完成设置，请在连接至互联网的状态下点击[关闭信息传送]。
+ASUS_eula_withdraw_unstable=互联网状态不稳定，无法完成设置。请稍后再试。
+TM_eula_desc1=使用 AiProtection 智能安全防护功能前，请先同意<a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro 最终用户许可协议</a>。
+TM_eula_desc2=请注意，AiProtection 智能安全防护功能将会收集您的信息。您了解并同意华硕对于您与 Trend Micro 之间的协议或者是 Trend Micro 所提供的服务内容不承担任何责任。如果您对 Trend Micro 收集信息的方法、过程亦或是如何使用您的信息存在疑虑,请参阅 Trend Micro 所发布之隐私权相关声明，或者请联络 Trend Micro 以获得更多细节。
+TM_eula_desc3=如果您不想通过以上功能与 Trend Micro 分享信息，请通过此路径更改设置：路由器网页管理界面 > 高级设置 > 系统管理 > 隐私权。
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
+TM_eula_withdraw0=使用 AiProtection 智能安全防护：
+TM_eula_withdraw_desc1=请注意，Trend Micro 将通过以上功能收集您的信息。
+TM_eula_withdraw_desc2=如果您不想通过以上功能与 Trend Micro 分享信息，请点击下方<span style="font-weight: bold;">[关闭信息传送]</span>选项。请注意，一旦您停止与 Trend Micro 间的信息分享，上述功能将被停用。
+withdraw_confirm=请确认是否关闭？
+withdraw_str=关闭信息传送
 asusddns_inputhint=请输入名称
 Auto=自动
 BM_alert_IP2=是不合法的 IP 地址
@@ -321,8 +359,8 @@ QIS_welcome_feature1=450+450 同步双带宽无线网络。
 [###MODEL_DEP###][DSL-N55U-D1]QIS_welcome_feature1=同步双带宽 N600。（300 Mbps/ 2.4 GHz + 300 Mbps/ 5 GHz）
 [###MODEL_DEP###][DSL-N17U]QIS_welcome_feature1=单带宽 N300。（300 Mbps/ 2.4 GHz）
 [###MODEL_DEP###][DSL-N16]QIS_welcome_feature1=单带宽 N300。（300 Mbps/ 2.4 GHz）
-[###MODEL_DEP###][DSL-N16P]QIS_welcome_feature1=单带宽 N300。（300 Mbps/ 2.4 GHz）
 [###MODEL_DEP###][DSL-N16U]QIS_welcome_feature1=单带宽 N300。（300 Mbps/ 2.4 GHz）
+[###MODEL_DEP###][DSL-N16P]QIS_welcome_feature1=单带宽 N300。（300 Mbps/ 2.4 GHz）
 [###MODEL_DEP###][DSL-N14U]QIS_welcome_feature1=单带宽 N300。（300 Mbps/ 2.4 GHz）
 [###MODEL_DEP###][DSL-N14U-B1]QIS_welcome_feature1=单带宽 N300。（300 Mbps/ 2.4 GHz）
 [###MODEL_DEP###][DSL-N12E-C1]QIS_welcome_feature1=单带宽 N300。（300 Mbps/ 2.4 GHz）
@@ -429,13 +467,13 @@ web_redirect_case2_suggestion1=您的 PPPoE 或是 VPN 的帐号、密码不被�
 web_redirect_case2_title1=PPPoE 认证失败
 web_redirect_case3_button=切换 WAN 类型
 web_redirect_case3_suggestion1=请确认<a style='color:#FFF' href='/Advanced_WAN_Content.asp'>网路设置</a>内容正确。
-web_redirect_case5_suggestion1=建议开启 WAN 连线。 <a style='color:#FFF' href='/index.asp'>更改设置。</a>
+web_redirect_case5_suggestion1=建议开启 WAN 连线。 <a style='color:#FFF' href='/'>更改设置。</a>
 web_redirect_case5_suggestion2=请检查 USB 网卡是否已正常开机完成。
 web_redirect_case5_suggestion3=更改您的 <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB 网卡设置</a>。
 web_redirect_case5_title1=您已手动中断 WAN 连线
 web_redirect_case5_title2=USB 网卡正在重开机或关闭
-web_redirect_case6_desc1=点击【下一步】使路由器自动获得新的 IP 地址。新的 IP 地址为：
-web_redirect_case6_desc2=请确认您已设置过的每项相关服务，设置为新的 IP 地址；如端口转发或 DMZ 等功能。
+web_redirect_case6_desc1=点击【下一步】更换成新的 IP 地址。新的 IP 地址为：
+web_redirect_case6_desc2=更改 IP 地址后，请确认相关服务的 IP 设置是否需要调整，如端口转发或 DMZ 等功能。
 web_redirect_case8_suggestion1=请确认前端基地台的网路连线正常。
 web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>重新设置连线</a>。
 web_redirect_case8_title=无法与 Parent-AP 连线
@@ -443,14 +481,14 @@ w_r_fail_r0=联机失败原因
 w_r_message=您的网络联机出现问题，导致您无法前往您想要阅读的网页
 w_r_r1=未连接网线。
 w_r_r2_1=您的 PPPoE 或是 VPN 的帐号、密码不被接受。
-w_r_r2_2=远程服务器无响应。
-w_r_r3_1=您 ISP 提供的 DHCP 功能发生错误。
+w_r_r2_2=与远程服务器连线中。
+w_r_r3_1=您 ISP 提供的 DHCP功能发生错误。
 w_r_r3_2=我们侦测到您的网络联机类型应该属于 PPPoE 联机，可是您的 PPPoE 设置并不完全。
 w_r_r4=互联网连接失败。路由器的 IP 地址与网关的 IP 地址相同。
 w_r_r5_1=您可能已手动中断远程联机。
 w_r_r5_2=路由器的动态或静态 IP 地址设置不正确。
-w_r_r6=侦测到 IP 地址冲突。点击下一步获取一个新的 IP 地址。
-w_r_suggestion_etc=点击此处进入设置页面。
+w_r_r6=检测到 IP 地址冲突。
+w_r_suggestion_etc=点击此处进入设置页面
 w_r_suggestion_etc_desc=您能在这里自行检查和调整您的设置。
 w_r_suggestion_final=若问题仍然存在，请手动更改连接设置。
 w_r_suggestion_mnl_start_wan=恢复远程联机。
@@ -459,14 +497,18 @@ w_r_suggestion0_1=此处动作需管理者帐号和密码
 w_r_suggestion1=请确保 ZVMODELVZ 的 WAN 端口与互联网之间的网线正确连接。
 w_r_suggestion2_1=前往「帐号设置」
 w_r_suggestion2_1_desc=，重新输入用户帐号和密码。
-w_r_suggestion2_2=前往「联机模式侦测」
+w_r_suggestion2_2=前往网络设置向导页面自动检测连接类型。
 w_r_suggestion2_2_desc=，让 ZVMODELVZ 为您重新侦测您的网络联机模式。
 w_r_suggestion3=请与您的 ISP ( 网络服务供货商 ) 联系，以取得 DHCP 错误的原因。
 w_r_suggestion4=请再次设置路由器的 IP 地址，路由器 IP 地址需与网关 IP 地址不同。
 w_r_suggestion5_1=请手动重新对远程网络建立联机。
 w_r_suggestion5_2=请检查 IP 与 DNS 设置是否正确。
 w_r_suggestion6=请重新设置您的 ZVMODELVZ 的近端网络地址，并确定它与您远程的网关地址不同。如：192.168.X.X，X为2至254间之一数字。
+w_r_suggestion7=请插入网线，将宽带网线插入路由器 WAN 接口，并选择「自动设置」按钮。
+w_r_suggestion8=如果希望在没有连接网线的状况下完成配置，请选择「手动设置」按钮。
+w_r_suggestion9=下一步，请设定安全的路由器登录名称和密码。
 Web_Title2=ZVMODELVZ
+wireless_configured=配置
 Wireless_name=无线网络名称
 wireless_router=无线路由器
 wl_securitylevel_0=无
@@ -537,6 +579,9 @@ aicloud_for_privateIP2=使用端口 8082 与 443 来访问 AiCloud。您可以�
 aicloud_for_privateIP3=欲了解更多详细信息，请参阅 <a id="faq1" href="https://www.asus.com/support/FAQ/114093" target="_blank" style="font-weight: bolder;text-decoration:underline;">端口转发</a> 与 <a id="faq2" href="https://www.asus.com/support/FAQ/1001253" target="_blank" style="font-weight: bolder;text-decoration:underline;">DMZ</a> 的疑难解答。
 aicloud_invitation_invalid=无效的邀请码！
 AiCloud_Log_desc=此页面显示 AiCloud 活动记录。
+AiCloud_maintext_note=华硕 AiCloud 个人云 2.0 应用让您在互联网连接的情况下能够随时随地查看您的数据。它能够连接至您的家庭网络及在线存储服务，并让您通过 iOS 或 Android 移动设备的 AiCloud 移动应用程序或网页浏览器中的个性化网络链接访问您的数据，让您所有数据随时随地尽在掌握。
+AiCloud_maintext_note0=无效的 IP 地址。您可以在<a href=\"Advanced_WAN_Content.asp\" style=\"text-decoration:underline\">这里</a>设置广域网 IP 地址， 或访问 <a href=\"https://
+AiCloud_maintext_note1=\" style=\"text-decoration:underline\">AiCloud</a>进行相关设置。
 aicloud_no_record=无登录信息
 AiCloud_PWD_enable=开启密码保护功能。
 AiCloud_PWD_Mechanism=密码保护功能：
@@ -751,6 +796,7 @@ btn_Export=导出
 btn_go=前往设置
 btn_pre=上一步
 btn_remove=删除
+btn_send=发送
 btn_to_WAN=外部网络设置
 ButtonResetOOBText=重置为 OOB
 Captcha=验证码
@@ -1017,6 +1063,12 @@ feedback_fail_WAN_connected=<span style="color:#FC0;">系统无法连接至邮�
 feedback_fail_WAN_disconnected=However, <span style="color:#FC0;">due to WAN connection not established.</span> 
 feedback_Frequent_interrupt=频繁中断
 feedback_isp=您的互联网服务供应商（ISP）
+feedback_max_counts=最多可输入 2000 字 - 还可以输入
+feedback_note0=Now this function can't work, because your ASUS Router isn't connected to the Internet. Please send your Feedback to this email address :
+feedback_note1=固件及 DSL 版本将会随您的信息及反馈一同提交。
+feedback_note2=您的反馈将用于诊断问题及完善 ZVMODELVZ 固件。您提交的任何信息，无论是明确的还是出于偶然，都将根据 <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy/" target="_blank">隐私政策</a>受到保护。
+feedback_note3=通过提交您的反馈，您已同意华硕采纳您的意见以完善其 xDSL 调制解调器路由器产品。
+feedback_note4=若您有紧急问题，请联络华硕技术服务咨询。
 feedback_Occasion_interrupt=偶尔中断
 feedback_optional=* 选填
 feedback_stable=稳定的连线
@@ -1081,6 +1133,8 @@ FC_x_WanWebEnable_id=此功能允许您通过互联网设置无线路由器。�
 FC_x_WanWebEnable_in=从互联网设置 ZVMODELVZ
 FC_x_WanWebPort_id=指定通过互联网设置 ZVMODELVZ 所使用的通信端口，默认为8080。
 FC_x_WanWebPort_in=互联网设置通信端口
+feedback_eula=我同意提供以上信息、我的华硕路由器型号、固件版本、浏览器版本、MAC 地址、IP 地址、互联网状态、路由器系统信息以及我向华硕提交此反馈的时间，以用于诊断及改善路由器问题，调查及分析用户体验，从而开发并评估华硕的新服务与新功能，并同意华硕“<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/us/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">隐私权保护政策</a>”。
+feedback_eula_notice=请先勾选同意以下条款，再点击“发送”。
 File_Pop_content_alert_desc8=密码不能含有空格。
 File_Pop_content_alert_desc9=密码只能包含数字与字母。
 FolderName=文件夹名称
@@ -1230,7 +1284,7 @@ JSVCIInvalid=VCI 值须在 32-65535 范围内
 JSVPIInvalid=VPI 值须在 0-255 范围内
 JSSCRInvalid=SCR 值须为整数。
 JSSCRSizeInvalid=SCR 必须少于或等于 PCR
-jumbo_frame=启动巨型帧 (Jumbo Frame)
+jumbo_frame=巨型帧 (Jumbo Frame)
 LAN_IP=内部网络 IP
 LAN_IP_client=内部网络 IP
 LANG_select=选择语系
@@ -1532,7 +1586,7 @@ PPPC_x_PPPoEMRU_in=最大接收单位（MRU）
 PPPC_x_PPPoEMTU_id=PPPoE 数据包的最大传送单位。默认值为 1492。仅当您的 ISP 需要时更变此设置值。
 PPPC_x_PPPoEMTU_in=最大传输单位（MTU）
 PPPC_x_PPPoERelay_id=开启 PPPoE 中继允许 LAN 中的装置建立一个可穿过 NAT 的独立 PPPoE 连接。
-PPPC_x_PPPoERelay_in=启用 PPPoE Relay
+PPPC_x_PPPoERelay_in=PPPoE Relay
 PPPC_x_PPTPOptions_id=本项或许某些ISP运营商能够指定。请向您的ISP运营商确认并于需要时将它们填入。
 PPPC_x_PPTPOptions_in=PPTP 选项
 PPPC_x_ServiceName_id=本栏为选填，某些网络联机需要您填入网络服务名称。请向您的网络服务供货商（ISP）确认并于需要时将它们填入。
@@ -1704,10 +1758,23 @@ Spectrum_gathering=收集数据中，频谱图表显示所需的时间（秒）�
 Spectrum_refresh=这些图表自动更新所需的时间（秒）：
 Spectrum_title=Spectrum
 SReboot_btn=保存/重新启动
+Standby_str_cold=闲置待机
+Standby_str=热机待命
+Standby_hint1=当启用双线路热机待命保护模式时， 一旦正常工作的线路中断或无法访问时，备份线路马上接替正常线路开始传送数据。
+Standby_hint2=系统将保持当前 WAN 待机状态，并将监测时间间隔缩短为
+Statistic=统计数值
+Statistic_display_type=统计类别
+Statistic_last_date=统计最终日
+Statistic_show_type=显示方式
+Retry_interval=重试间隔
+Retry_interval2=时间间隔
+Retry_count=重试次数
 statusTitle_Client=客户端状态
 statusTitle_Internet=互联网状态
 statusTitle_Printer=打印机状态
 statusTitle_USB_Disk=外接 USB 硬盘状态
+statusTitle_Primary_WAN=首选 WAN 状态
+statusTitle_Secondary_WAN=第二 WAN 状态
 step_use_aicloud=依据以下步骤使用 AiCloud：
 Step1_desp=选择您的共享方式。
 Step2_desp=使用华硕 DDNS 服务，建立一组您专属的网域名。
@@ -2169,3 +2236,5 @@ wsc_mode_hint2=修改后再启用 WPS。
 yoursharesetting=即将设置文件共享方式为：
 zero_disable=关闭：0
 FreeWiFi_Idle=Idle Timeout
+menu_privacy=Privacy
+ASUS_Notice_Privacy=ASUS NOTICE( for privacy )

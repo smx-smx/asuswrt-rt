@@ -1306,7 +1306,7 @@ function updateVpnServerClientAccess() {
 		<input type="hidden" name="action_mode" value="apply">
 		<input type="hidden" name="action_script" value="saveNvram">
 		<input type="hidden" name="action_wait" value="1">
-		<input type="hidden" name="preferred_lang" id="preferred_lang" value="EN">
+		<input type="hidden" name="preferred_lang" value="EN">
 		<input type="hidden" name="firmver" value="">
 		<input type="hidden" name="vpn_crt_server1_static" value="" disabled>
 		<input type="hidden" name="formname" value="openvpnStaticKeyForm">
@@ -1360,7 +1360,7 @@ function updateVpnServerClientAccess() {
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_wait" value="10">
 <input type="hidden" name="action_script" value="">
-<input type="hidden" name="preferred_lang" id="preferred_lang" value="EN">
+<input type="hidden" name="preferred_lang" value="EN">
 <input type="hidden" name="firmver" value="">
 <input type="hidden" name="VPNServer_enable" value="<%tcWebApi_Get("VPNControl_Entry", "VPNServer_enable", "s")%>">
 <input type="hidden" name="VPNServer_mode" value="<%tcWebApi_Get("VPNControl_Entry", "VPNServer_mode", "s")%>">

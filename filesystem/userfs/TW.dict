@@ -12,6 +12,44 @@ APS_msg_connect_open_wlan=您正在連線到不安全的網路。\n在這個網�
 APS_msg_connected=您已經連上此基地台。
 APS_msg_waiting_to_connect=請稍候，DSL-N55U_D1 正在連線到
 ASUS_Registration=加入華碩會員，華碩將不定時提供您最新的產品資訊。 <a style='color:#FC0' target='_blank' href='https://account.asus.com'>立即註冊！</a>
+ASUS_Notice=華碩提醒您
+ASUS_privacy_desc=當使用 DDNS、遠端連線(ASUS Router APP、Lyra APP、AiCloud、AiDisk) 、AiProtection、功能前，需先簽屬同意資料傳送之協定。您可以隨時在此頁面查詢您所同意過的條款內容，與關閉傳送資料。
+ASUS_eula_desc0=歡迎使用 DDNS/遠端連線功能（ASUS Router APP/Lyra APP/AiCloud/AiDisk）。敬請您詳細閱讀以下條款：
+ASUS_eula_desc1=為評估並提升華碩產品的服務與穩定性，華碩將透過本功能蒐集以下資料：
+ASUS_eula_desc1_1=當您開始啟用上述功能時，華碩將會透過該功能蒐集下述無法辨識您個人身份的資料：
+ASUS_eula_desc1_1_1=紀錄資料：您產品的紀錄資料，包括您的產品型號、韌體版本、網際網路狀態、產品自動生成的啟用代碼（僅適用於 Alexa™ 與 IFTTT™ 功能）。
+ASUS_eula_desc1_1_12=紀錄資料：您產品的紀錄資料，包括您的產品型號、韌體版本、網際網路狀態、產品自動生成的啟用代碼（僅適用於 Alexa™功能）。
+ASUS_eula_desc1_1_13=紀錄資料：您產品的紀錄資料，包括您的產品型號、韌體版本、網際網路狀態。
+ASUS_eula_desc1_2_s1=當您點選下面的「同意」按鍵，將視為您同意我們透過本功能蒐集下述資料。
+ASUS_eula_desc1_2_s2=為了保障未成年人的隱私權益，我們不會蒐集未成年人的以下資料：
+ASUS_eula_desc1_2_1=產品資料: 與您的產品相關連之產品識別資料，包括您的產品序號、產品的網際網路協定位址（IP Address）、MAC 位址以及動態網域名稱（DDNS）。
+ASUS_eula_desc1_3=此外，當你啟用 Alexa™ 功能時，為了使您能夠透過 Alexa™ 功能遠端控制您的產品，華碩將與 Amazon 分享您產品自動生成的啟用代碼。
+ASUS_eula_desc1_4=當你啟用 IFTTT™ 功能時，為了使您能夠透過 IFTTT™ 功能遠端控制您的產品，華碩將在此目的範圍內，與 IFTTT™ 分享您產品自動生成的啟用代碼。
+ASUS_eula_desc2=華碩致力於保護並十分尊重您的個人隱私和權益，您可以透過以下方式隨時開啟或關閉與華碩共享您的產品資料 : 進階設定 > 系統管理 > 隱私權。若想進一步了解華碩如何保護您的隱私，亦建議您造訪<a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">華碩隱私權保護政策</a>。
+ASUS_eula_age=我已滿16歲。
+ASUS_eula_age_confirm=請確認您已滿 16 歲。
+ASUS_eula_withdraw0_AlexaIFTTT=使用 DDNS、Alexa™、IFTTTTM 與遠端連線功能 （ASUS Router APP/Lyra APP/AiCloud/ AiDisk）：
+ASUS_eula_withdraw0_Alexa=使用 DDNS、Alexa™ 與遠端連線功能（ASUS Router APP/Lyra APP/AiCloud/AiDisk）：
+ASUS_eula_withdraw0=使用 DDNS 與遠端連線功能（ASUS Router APP、Lyra APP、AiCloud、AiDisk）：
+ASUS_eula_withdraw_desc1=華碩將透過以上功能蒐集下列資訊：您的產品型號、韌體版本、網際網路狀態、IP 位址、MAC 位址與 DDNS 名稱。
+ASUS_eula_withdraw_desc1_2=如果您不想透過以上功能與華碩分享資訊，請點選下方<span style="font-weight: bold;">[關閉傳送資料]</span>選項。請注意，一旦您停止與華碩間的資訊分享，上述功能將被停用。
+ASUS_eula_withdraw_desc2=當您點選<span style="font-weight: bold;">[關閉資料傳送]</span>後，將會有以下影響:
+ASUS_eula_withdraw_desc2_1=你所使用的 DDNS 名稱將不會被保留。
+ASUS_eula_withdraw_desc2_2=您可以在區域網路內使用 ASUS Router APP、Lyra APP、AiCloud 與 AiDisk，但是無法在遠端連線下使用。
+ASUS_eula_withdraw_desc2_Alexa=若要重新使用 Alexa™ 功能，需至 Alexa™ 網頁輸入新的啟用代碼。
+ASUS_eula_withdraw_desc2_AlexaIFTTT=若要重新使用 Alexa™ 與 IFTTT™ 功能，需至 Alexa™ 與 IFTTT™ 網頁輸入新的啟用代碼。
+ASUS_eula_withdraw_note=無法連線至網際網路並完成設定，請在連線至網際網路的狀態下點選「關閉資料傳送」。
+ASUS_eula_withdraw_unstable=網際網路狀態不穩定，無法完成設定。請稍後再試。
+TM_eula_desc1=使用 AiProtection 智慧安全防護功能前，請先同意<a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro 使用者授權協定</a>。
+TM_eula_desc2=請注意，AiProtection 智慧安全防護功能將會蒐集您的資料。您了解並同意華碩對於您與 Trend Micro 之間的協議或者是 Trend Micro 所提供的服務內容不承擔任何責任。如果您對 Trend Micro 蒐集資料的方法、過程亦或是如何使用您的資料存在疑慮，請參閱 Trend Micro 所發佈之隱私權相關聲明，或者請聯絡 Trend Micro 以獲得更多細節。
+TM_eula_desc3=如果您不想透過以上功能與 Trend Micro 分享資訊，請透過此路徑更改設定：路由器網頁管理介面 > 進階設定 > 系統管理 > 隱私權。
+TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro隱私權條款</a>
+TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">TrendMicro隱私與個人資料收集</a>
+TM_eula_withdraw0=使用 AiProtection 智慧安全防護：
+TM_eula_withdraw_desc1=請注意，Trend Micro 將透過以上功能蒐集您的資訊。
+TM_eula_withdraw_desc2=如果您不想透過以上功能與 Trend Micro 分享資訊，請點選下方<span style="font-weight: bold;">[關閉資料傳送]</span>選項。請注意，一旦您停止與 Trend Micro 間的資訊分享，上述功能將被停用。
+withdraw_confirm=請確認是否關閉？
+withdraw_str=關閉資料傳送
 asusddns_inputhint=請輸入名稱
 Auto=自動
 BM_alert_IP2=是不合法的 IP 位址
@@ -385,28 +423,28 @@ web_redirect_case2_suggestion1=您的 PPPoE 或是 VPN 的帳號、密碼不被�
 web_redirect_case2_title1=PPPoE 認證失敗
 web_redirect_case3_button=切換 WAN 類型
 web_redirect_case3_suggestion1=請確認<a style='color:#FFF' href='/Advanced_WAN_Content.asp'>網路設定</a>內容正確。
-web_redirect_case5_suggestion1=建議開啟 WAN 連線。 <a style='color:#FFF' href='/index.asp'>更改設定</a>。
+web_redirect_case5_suggestion1=建議開啟 WAN 連線。 <a style='color:#FFF' href='/'>更改設定</a>。
 web_redirect_case5_suggestion2=請檢查 USB 網卡是否已正常開機完成。
 web_redirect_case5_suggestion3=更改您的 <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB 網卡設定</a>。
 web_redirect_case5_title1=您已手動中斷 WAN 連線
 web_redirect_case5_title2=USB 網卡正在重開機或關閉
-web_redirect_case6_desc1=點擊【下一步】使得路由器自動取得新的 IP 地址。新的 IP 地址為：
-web_redirect_case6_desc2=請確認您設定過的每個相關服務，更新 IP 位址設定；如虛擬伺服器或 DMZ 等功能。
+web_redirect_case6_desc1=點擊【下一步】更換成新的 IP 地址。新的 IP 地址為：
+web_redirect_case6_desc2=更改 IP 地址後，請確認相關服務的 IP 設定是否需要調整，如虛擬伺服器或 DMZ 等功能。
 web_redirect_case8_suggestion1=請確認前端基地台的網路連線正常。
 web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>重新設定連線</a>。
 web_redirect_case8_title=無法與前端基地台連線
 w_r_fail_r0=連線失敗原因
-w_r_message=您的網路連線出現問題，導致您無法前往您想要閱讀的網頁
+w_r_message=您的網路連線出現問題，導致您無法前往您想要瀏覽的網頁
 w_r_r1=尚未接上網路線。
 w_r_r2_1=您的 PPPoE 或是 VPN 的帳號、密碼不被接受。
-w_r_r2_2=遠端伺服器無回應。
+w_r_r2_2=與遠端伺服器連線中。
 w_r_r3_1=您 ISP 提供的 DHCP 功能發生錯誤。
 w_r_r3_2=我們偵測到您的網路連線類型應該屬於 PPPoE 連線，可是您的 PPPoE 設定並不完全。
 w_r_r4=網際網路連線失敗。路由器的 IP 地址與閘道器的 IP 地址相同。
 w_r_r5_1=您可能已手動中斷遠端連線。
 w_r_r5_2=路由器的動態或靜態 IP 地址設定不正確。
-w_r_r6=偵測到 IP 位址衝突。點選下一步獲取一個新的 IP 位址。
-w_r_suggestion_etc=點擊這裡進入設定頁面。
+w_r_r6=偵測到 IP 位址衝突。
+w_r_suggestion_etc=點擊這裡進入設定頁面
 w_r_suggestion_etc_desc=您能在這裡自行檢查和調整您的設定。
 w_r_suggestion_final=若問題依然存在，請手動更改連接設定。
 w_r_suggestion_mnl_start_wan=恢復遠端連線。
@@ -415,14 +453,18 @@ w_r_suggestion0_1=此處動作需管理者帳號和密碼
 w_r_suggestion1=請確保 DSL-N55U_D1 的 WAN 埠與網際網路之間的網路線已正確連接。
 w_r_suggestion2_1=前往「帳號設定」
 w_r_suggestion2_1_desc=，重新輸入使用者帳號和密碼。
-w_r_suggestion2_2=前往「連線模式偵測」
+w_r_suggestion2_2=前往網路設定精靈自動偵測連線類型。
 w_r_suggestion2_2_desc=，讓 DSL-N55U_D1 為您重新偵測您的網路連線模式。
 w_r_suggestion3=請與您的 ISP ( 網路服務供應商 ) 聯繫，以取得 DHCP 錯誤的原因。
 w_r_suggestion4=請再次設定路由器的 IP 地址，路由器 IP 地址需與閘道器 IP 地址不同。
 w_r_suggestion5_1=請手動重新對遠端網路建立連線。
 w_r_suggestion5_2=請檢查 IP 和 DNS 等設定是否正確。
 w_r_suggestion6=請重新設定您的 DSL-N55U_D1 的近端網路位址，並確定它與您遠端的閘道器位址不同。如：192.168.X.X，X為2至254間之一數字。
+w_r_suggestion7=請將網路線插入路由器 WAN 埠，並選擇「自動設定」按鈕。
+w_r_suggestion8=如果希望在沒有連接網路的情況下完成設定，請選擇「手動設定」按鈕。
+w_r_suggestion9=下一步，請設定安全的路由器登入名稱和密碼。
 Web_Title2=DSL-N55U_D1
+wireless_configured=配置
 Wireless_name=無線網路名稱
 wireless_router=無線路由器
 wl_securitylevel_0=無
@@ -485,14 +527,17 @@ aicloud_disk_case12=要修改 DDNS 名稱，請點選<a style="font-weight: bold
 aicloud_disk_case21=由 <a style="font-weight: bolder;text-decoration: underline;" href="https://router.asus.com" target="_blank">https://router.asus.com</a> 存取 Cloud Disk。
 aicloud_disk_case22=點擊 <a style="font-weight: bolder;text-decoration: underline;" href="/Advanced_ASUSDDNS_Content.asp" target="_blank">這裡</a> 註冊華碩 DDNS 來線上存取雲端資料。
 aicloud_disk_desc=開啟透過網際網路分享 USB 已連機的存儲設備。
-aicloud_disk1=要建立 Cloud Disk，您需要在路由器上連接 USB 儲存裝置，接著將 Cloud Disk 功能設為開啟 <b>ON</b>。
-aicloud_disk2=使用路由器的登入帳號來登入預設的 Cloud Disk。
+aicloud_disk1=要建立雲端資料，您需要在路由器上連接 USB 儲存裝置，接著將雲端資料功能設為開啟 <b>ON</b>。
+aicloud_disk2=使用路由器的登入帳號來登入預設的雲端資料。
 AiCloud_enter=進入 AiCloud 個人雲 2.0 應用
 aicloud_for_privateIP1=您可以設定 <a style="font-weight: bolder;text-decoration:underline;" class="hyperlink" href="/cgi-bin/Advanced_VirtualServer_Content.asp" target="_blank">虛擬伺服器</a> 或 <a style="font-weight: bolder;text-decoration:underline;" class="hyperlink" href="/cgi-bin/Advanced_Exposed_Content.asp" target="_blank">DMZ</a> 來遠端存取私人 IP 位址。
 aicloud_for_privateIP2=使用埠 8082 與 443 來存取 AiCloud。您可以在 <a style="font-weight: bolder;text-decoration: underline;" href="/cgi-bin/Advanced_VirtualServer_Content.asp" target="_blank">這裡</a> 變更埠設定。
 aicloud_for_privateIP3=直接按此進行設定或是參考 <a id="faq1" href="https://www.asus.com/support/FAQ/114093" target="_blank" style="font-weight: bolder;text-decoration:underline;">虛擬伺服器 FAQ</a> 、<a id="faq2" href="https://www.asus.com/support/FAQ/1001253" target="_blank" style="font-weight: bolder;text-decoration:underline;">DMZ FAQ</a> 獲得更詳細的說明。
 aicloud_invitation_invalid=無效的邀請碼！
 AiCloud_Log_desc=此頁面顯示 AiCloud 活動記錄。
+AiCloud_maintext_note=華碩 AiCloud 個人雲 2.0 應用讓您在網際網路連線的情況下能夠隨時隨地查看您的資料。它能夠連線至您的家庭網路及線上儲存服務，並讓您透過 iOS 或 Android 行動裝置的 AiCloud 行動應用程式或網頁瀏覽器中的個人化網路連結存取您的資料，讓您所有資料隨時隨地盡在掌握。
+AiCloud_maintext_note0=無效的 IP 位址。您可以在 <a href=\"Advanced_WAN_Content.asp\" style=\"text-decoration:underline\">這裡</a>設定廣域網路 IP 位址，或造訪 <a href=\"https://
+AiCloud_maintext_note1=\" style=\"text-decoration:underline\">AiCloud</a> 進行相關設定。
 aicloud_no_record=無登錄檔資訊
 AiCloud_PWD_enable=開啟密碼保護功能。
 AiCloud_PWD_Mechanism=密碼保護功能：
@@ -707,6 +752,7 @@ btn_Export=匯出
 btn_go=前往設定
 btn_pre=上一步
 btn_remove=移除
+btn_send=發送
 btn_to_WAN=外部網路設定
 ButtonResetOOBText=重置為 OOB
 Captcha=驗證碼
@@ -973,6 +1019,12 @@ feedback_fail_WAN_connected=<span style="color:#FC0;">系統未能連線到郵�
 feedback_fail_WAN_disconnected=However, <span style="color:#FC0;">due to WAN connection not established.</span> 
 feedback_Frequent_interrupt=頻繁中斷
 feedback_isp=您的網路電信業者（ISP）
+feedback_max_counts=最多可輸入 2000 字 - 還可以輸入
+feedback_note0=Now this function can't work, because your ASUS Router isn't connected to the Internet. Please send your Feedback to this email address :
+feedback_note1=韌體及 DSL 版本將會隨您的資訊及反饋一同提交。
+feedback_note2=您的反饋將用於診斷問題及完善 DSL-N55U_D1 韌體。您提交的任何資訊，無論是明確的還是出於偶然，都將根據 <a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="http://www.asus.com/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy/" target="_blank">隱私政策</a>受到保護。
+feedback_note3=透過提交您的反饋，你已同意華碩採納您的意見以完善其 xDSL 數據機路由器產品。
+feedback_note4=若您有緊急問題，請聯絡華碩客戶服務諮詢。
 feedback_Occasion_interrupt=偶爾中斷
 feedback_optional=* 選填
 feedback_stable=穩定的連線
@@ -1037,6 +1089,8 @@ FC_x_WanWebEnable_id=此功能允許您透過網際網路設定無線路由器�
 FC_x_WanWebEnable_in=從網際網路設定 DSL-N55U_D1
 FC_x_WanWebPort_id=指定透過網際網路設定 DSL-N55U_D1 所使用的通訊埠，預設為8080。
 FC_x_WanWebPort_in=網際網路設定通訊埠
+feedback_eula=我同意提供以上資訊、我的華碩路由器型號、韌體版本、瀏覽器版本、MAC 位址、IP 位址、網際網路狀態、路由器系統資訊以及我向華碩提交此表單的時間，以用於診斷及改善路由器問題、調查及分析使用者體驗，從而開發並評估華碩的新服務與新功能，並同意華碩「<a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/tw/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy" target="_blank">隱私權保護政策</a>」。
+feedback_eula_notice=請先同意以下條款，再點選「送出」。
 File_Pop_content_alert_desc8=密碼不能含有空白。
 File_Pop_content_alert_desc9=密碼只能包含數字與字母。
 FolderName=資料夾名稱
@@ -1186,7 +1240,7 @@ JSVCIInvalid=VCI 值須在 32-65535 範圍內
 JSVPIInvalid=VPI 值須在 0-255 範圍內
 JSSCRInvalid=SCR 值須為整數。
 JSSCRSizeInvalid=SCR 必須少於或等於 PCR
-jumbo_frame=啟動 Jumbo Frame
+jumbo_frame=Jumbo Frame
 LAN_IP=區域網路 IP
 LAN_IP_client=區域網路 IP
 LANG_select=選擇語系
@@ -1488,7 +1542,7 @@ PPPC_x_PPPoEMRU_in=最大接收單位（MRU）
 PPPC_x_PPPoEMTU_id=PPPoE 資料包的最大傳送單位。預設值為 1492。僅當您的 ISP 需要時更變此設定值。
 PPPC_x_PPPoEMTU_in=最大傳輸單位（MTU）
 PPPC_x_PPPoERelay_id=開啟 PPPoE 中繼允許 LAN 中的裝置建立 一個不經過 NAT 的獨立 PPPoE 連接。
-PPPC_x_PPPoERelay_in=啟用 PPPoE Relay
+PPPC_x_PPPoERelay_in=PPPoE Relay
 PPPC_x_PPTPOptions_id=本項或許某些 ISP 業者能夠指定。請向您的 ISP 業者確認並於需要時將它們填入。
 PPPC_x_PPTPOptions_in=PPTP 選項
 PPPC_x_ServiceName_id=本欄為選填，某些網路連線需要您填入網路服務名稱。請向您的網路服務供應商（ISP）確認並於需要時將它們填入。
@@ -1660,10 +1714,23 @@ Spectrum_gathering=蒐集資料中，圖表內容顯示所需的時間(秒)
 Spectrum_refresh=這些圖表自動更新所需的時間(秒)：
 Spectrum_title=Spectrum
 SReboot_btn=儲存/重新啟動
+Standby_str_cold=閒置待機
+Standby_str=熱機待命
+Standby_hint1=當雙 WAN 熱機待命保護模式啟用時，一旦目前工作的線路發生故障或無法連線時， 備份線路馬上接管並開始工作。
+Standby_hint2=系統將保持目前 WAN 的待機狀態，並將監測時間間隔縮短為
+Statistic=統計數值
+Statistic_display_type=統計類別
+Statistic_last_date=統計最終日
+Statistic_show_type=顯示方式
+Retry_interval=重試間隔
+Retry_interval2=時間間隔
+Retry_count=重試次數
 statusTitle_Client=用戶端狀態
 statusTitle_Internet=網際網路狀態
 statusTitle_Printer=印表機狀態
 statusTitle_USB_Disk=外接 USB 磁碟狀態
+statusTitle_Primary_WAN=主要 WAN 狀態
+statusTitle_Secondary_WAN=第二 WAN 狀態
 step_use_aicloud=依據以下步驟使用 AiCloud：
 Step1_desp=選擇您的分享方式。
 Step2_desp=使用華碩 DDNS 服務，建立一組您專屬的網域名。
@@ -2125,3 +2192,5 @@ wsc_mode_hint2=修改後再啟用 WPS。
 yoursharesetting=即將設定檔案分享方式為：
 zero_disable=關閉：0
 FreeWiFi_Idle=Idle Timeout
+menu_privacy=Privacy
+ASUS_Notice_Privacy=ASUS NOTICE( for privacy )

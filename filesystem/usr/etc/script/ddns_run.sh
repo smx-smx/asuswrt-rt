@@ -79,7 +79,7 @@ IPUPDATE_CONF=/etc/ipupdate.conf
 /userfs/bin/tcapi set Vram_Entry ddns_check "1"
 
 if [ $SERVERNAME = "WWW.ASUS.COM" ]; then
-	/userfs/bin/ez-ipupdate -c $IPUPDATE_CONF -i $WANIF -F $IPUPDATE_PID -e /sbin/ddns_updated -b /tmp/ddns.cache -A 2 -s ns1.asuscomm.com
+	/userfs/bin/ez-ipupdate -c $IPUPDATE_CONF -i $WANIF -F $IPUPDATE_PID -e /sbin/ddns_updated -b /tmp/ddns.cache -A 2 -s nwsrv-ns1.asus.com
 
 elif [ $SERVERNAME = "DOMAINS.GOOGLE.COM" ]; then
 	/etc/script/GoogleDNS_Update.sh $USERNAME $PASSWORD $MYHOST $WanIP
