@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# Thu Nov  9 18:20:37 2017
+# Wed Apr 11 15:13:34 2018
 #
 TCSUPPORT_CPU_RT63365=y
 # TCSUPPORT_CPU_RT63368 is not set
@@ -135,6 +135,7 @@ ASUS_USER_LOW_RSSI=y
 ASUS_CFGMGR_RESTART=y
 # TCSUPPORT_CUSTOMIZE is not set
 # TCSUPPORT_ISP_CUSTOMIZE_ROMFILE is not set
+# TCSUPPORT_CUSTOMIZE_FW_CHECK is not set
 # TCSUPPORT_ADD_JFFS is not set
 TCSUPPORT_ARPSTORM=y
 # TCSUPORT_CLEAN_CACHE is not set

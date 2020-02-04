@@ -773,7 +773,7 @@ confirm_enableAccount=Włączenie udostępniania folderu z kontem uaktywnia dost
 confirm_enablecifs=Jesteś pewien, że chcesz udostępnić dysk w otoczeniu sieciowym?
 confirm_enableftp=Jesteś pewien, że chcesz udostępnić dysk poprzez serwer FTP?
 Confirmpassword=Wpisz hasło ponownie
-connect_failed=Router nie może połączyć się z serwerem ASUS w celu sprawdzenia aktualizacji oprogramowania sprzętowego. Po ponownym podłączeniu do Internetu, powróć do tej strony i kliknij przycisk Check (Sprawdź), aby sprawdzić, czy dostępne są najnowsze aktualizacje oprogramowania sprzętowego.
+connect_failed=Ustawienia zostały zaktualizowane. Strona sieci Web zostanie teraz odświeżona.Zmieniono adres IP lub aktualizacji oprogramowania sprzętowego. Po ponownym podłączeniu do Internetu, powróć do tej strony i kliknij przycisk Check (Sprawdź), aby sprawdzić, czy dostępne są najnowsze aktualizacje oprogramowania sprzętowego.
 connect_through_wifi=Podłącz urządzenia z systemem iOS lub Android do ZVMODELVZ przez Wi-Fi. Aplikacja AiCloud automatycznie przeprowadzi użytkownika przez proces konfiguracji.
 ConnectedClient=Lista Klientów
 Connecting_str=Trwa łączenie...
@@ -1084,7 +1084,7 @@ FTP_desc=Ustaw konto i pozwolenie na korzystanie z usługi FTP.
 Full_Clients=Klienci
 FW_desc0=Uzyskaj najnowszą wersję firmware ze strony sieci web pomocy technicznej ASUS, pod adresem <a style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="http://www.asus.com/support/" target="_blank">http://www.asus.com/support/</a>
 FW_desc1=Odwiedź stronę pomocy technicznej ASUS http://www.asus.com/support/ w celu uzyskania najnowszego firmware.
-fw_downloading=Pobierz oprogramowanie układowe
+fw_downloading=Pobieranie oprogramowania układowego
 FW_item1=Kod produktu
 FW_item2=Wersja firmware
 FW_item5=Nowy plik firmware

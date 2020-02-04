@@ -398,7 +398,7 @@ function doLoad(){
 <td style="padding:5px 10px 0px 10px; ">
 <p class="formfonttitle_nwm" ><%tcWebApi_get("String_Entry","WC11b_WEPType_in","s")%></p>
 	<select name="wl_wep_x" class="input_option" onChange="wep_encryption_change(this);" onClick="check_state();"><!-- return change_common(this, 'WLANConfig11b', 'wl_wep_x'); -->
-		<option value="0" <% if tcWebApi_get("WLan_Entry","wep_x","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>ne</option>
+		<option value="0" <% if tcWebApi_get("WLan_Entry","wep_x","h") = "0" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","wl_securitylevel_0","s")%></option>
 		<option value="1" <% if tcWebApi_get("WLan_Entry","wep_x","h") = "1" then asp_Write("selected") end if %>>WEP-64bits</option>
 		<option value="2" <% if tcWebApi_get("WLan_Entry","wep_x","h") = "2" then asp_Write("selected") end if %>>WEP-128bits</option>
 	</select><br>

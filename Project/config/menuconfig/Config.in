@@ -1168,6 +1168,11 @@ config TCSUPPORT_ISP_CUSTOMIZE_ROMFILE
 	help	   
 		Support ISP set and keep the romfile (asus_config, user_default).
 
+config TCSUPPORT_CUSTOMIZE_FW_CHECK
+	bool "Customization Firmware check Support"	
+	help	   
+		Check customerversion in the header of the image.
+
 config ASUS_DISK_UTILITY
 	depends TCSUPPORT_USBHOST
 	bool "Disk Utility Support"

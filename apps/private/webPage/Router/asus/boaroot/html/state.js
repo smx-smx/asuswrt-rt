@@ -1365,35 +1365,6 @@ function Block_chars(obj, keywordArray){
 	return true;
 }
 
-
-function Block_chars(obj, keywordArray){
-	// bolck ascii code 32~126 first
-	var invalid_char = "";		
-	for(var i = 0; i < obj.value.length; ++i){
-		if(obj.value.charCodeAt(i) < '32' || obj.value.charCodeAt(i) > '126'){
-			invalid_char += obj.value.charAt(i);
-		}
-	}
-	if(invalid_char != ""){
-		alert('<%tcWebApi_get("String_Entry","JS_validstr2","s")%>" '+ invalid_char +'" !');
-		obj.focus();
-		return false;
-	}
-
-	// check if char in the specified array
-	if(obj.value){
-		for(var i=0; i<keywordArray.length; i++){
-				if( obj.value.indexOf(keywordArray[i]) >= 0){						
-					alert(keywordArray+ " are invalid characters.");
-					obj.focus();
-					return false;
-				}	
-		}
-	}
-	
-	return true;
-}
-
 function cal_height(){
 	var tableClientHeight;
 	var optionHeight = 52;
@@ -1733,8 +1704,14 @@ function reboot(){
 			action = "reboot.asp";
 			preferred_lang.disabled = true;
 			flag.disabled = true;
-			showLoading(125); //90
-			setTimeout("redirect(location.pathname);", 125100); //90000
+			if(model_name == "DSL-N66U" || model_name == "DSL-AC52U"){
+				showLoadingBar(220);
+				setTimeout("redirect(location.pathname);", 220100);
+			}
+			else{
+				showLoading(150); //90
+				setTimeout("redirect(location.pathname);", 150100); //90000
+			}
 			document.titleForm.rebootFlag.disabled = false;
 			document.titleForm.restoreFlag.disabled = false;
 			stopFlag = 1;

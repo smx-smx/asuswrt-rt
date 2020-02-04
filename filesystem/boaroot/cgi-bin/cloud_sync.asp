@@ -2097,7 +2097,7 @@ function onDropBoxLogin(token, uid){
 									<td>&nbsp;&nbsp;</td>
 									<td>
 										<div style="padding:10px;width:95%;font-style:italic;font-size:14px;word-break:break-all;">
-											<% tcWebApi_Get("String_Entry","smart_sync_help","s") %> <a href="http://aicloud-faq.asuscomm.com/aicloud-faq/" style="text-decoration:underline;font-weight:bolder;">http://aicloud-faq.asuscomm.com/aicloud-faq/</a>
+											<% tcWebApi_Get("String_Entry","smart_sync_help","s") %> <a href="https://www.asus.com/support/FAQ/1010006/" style="text-decoration:underline;font-weight:bolder;">FAQ</a>
 										</div>
 									</td>
 								</tr>

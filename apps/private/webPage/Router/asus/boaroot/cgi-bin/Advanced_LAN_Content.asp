@@ -4,10 +4,13 @@ If Request_Form("lanFlag") <> "" Then
   TCWebApi_set("Lan_Entry","netmask","uiViewNetMask")
 
   If Request_Form("dhcpFlag") ="0" Then
+  	If Request_Form("dhcppoolFlag") ="1" Then
+	    	TCWebApi_set("Dhcpd_Common","start","dhcp_start")
+	    	TCWebApi_set("Dhcpd_Common","end","dhcp_end")
+  	End If		
+		tcWebApi_Save()
 		tcWebApi_CommitWithoutSave("Lan")
   	If Request_Form("dhcppoolFlag") ="1" Then
-    	TCWebApi_set("Dhcpd_Common","start","dhcp_start")
-    	TCWebApi_set("Dhcpd_Common","end","dhcp_end")
 		tcWebApi_CommitWithoutSave("Dhcpd")
   		update_variables()
   	End If		

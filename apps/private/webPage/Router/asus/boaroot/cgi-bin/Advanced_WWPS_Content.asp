@@ -167,12 +167,23 @@ accum += 1 * (parseInt(PIN / 1) % 10);
 return ((accum % 10) == 0);
 }
 function PIN_PBC_Check(){
-	if(document.form.wps_sta_pin.value != ""){
-		if(document.form.wps_sta_pin.value.length != 8 || !ValidateChecksum(document.form.wps_sta_pin.value)){
-			alert("<%tcWebApi_get("String_Entry","JS_InvalidPIN","s")%>");
-			document.form.wps_sta_pin.focus();
-			document.form.wps_sta_pin.select();
-			return false;
+	var array_temp = new Array();
+    if(document.form.wps_sta_pin.value != ""){
+		if(document.form.wps_sta_pin.value.indexOf(' ')!= -1){
+			array_temp = document.form.wps_sta_pin.value.split(" ");
+			document.form.wps_sta_pin.value = array_temp[0] + array_temp[1];
+		}
+		else if(document.form.wps_sta_pin.value.indexOf('-')!= -1){
+			array_temp = document.form.wps_sta_pin.value.split("-");
+			document.form.wps_sta_pin.value = array_temp[0] + array_temp[1];
+		}
+    
+		if(document.form.wps_sta_pin.value.length != 4 || isNaN(document.form.wps_sta_pin.value/1)){        //new format, 4 digits and doesn't need to checksum
+			if(document.form.wps_sta_pin.value.length != 8 || !ValidateChecksum(document.form.wps_sta_pin.value)){
+				alert("<%tcWebApi_get("String_Entry","JS_InvalidPIN","s")%>");
+				document.form.wps_sta_pin.focus();
+				return false;
+			}
 		}
 	}
 	return true;
@@ -588,7 +599,7 @@ function show_wsc_status(wps_infos){
 		<td>
 			<input type="radio" value="0" name="WPSMode_Selection" class="input" onClick="changemethod(0);" <%If tcWebApi_get("WLan_Entry","WPSMode","h") = "0" then asp_Write("checked") end if%> >PBC
 			<input type="radio" value="1" name="WPSMode_Selection" class="input" onClick="changemethod(1);" <%If tcWebApi_get("WLan_Entry","WPSMode","h") = "1" then asp_Write("checked") end if%> <%If tcWebApi_get("WLan_Entry","WPSMode","h") = "" then asp_Write("checked") end if%> >PIN Code
-			<input type="text" id="wps_sta_pin" size="9" maxlength="9" class="input_12_table" name="WPSEnrolleePINCode" onblur="PIN_PBC_Check()" value="" onKeyPress="return validator.isString(this, event)">
+			<input type="text" id="wps_sta_pin" size="9" maxlength="9" class="input_12_table" name="WPSEnrolleePINCode" value="" onKeyPress="return validator.isString(this, event)">
 			<div id="starBtn" style="margin-top:10px;">
 				<input class="button_gen" type="button" id="addEnrolleebtn_client" style="margin-left:5px;" name="StartWPS" onClick="doStartWPS()" value="<% tcWebApi_Get("String_Entry", "WlanWPStimerRunning0Text", "s") %>">
 			</div>

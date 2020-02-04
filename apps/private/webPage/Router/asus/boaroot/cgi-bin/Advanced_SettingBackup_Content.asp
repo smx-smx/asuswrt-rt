@@ -48,25 +48,23 @@ function redirect_self(){
 
 function uploadSetting()
 {
-	var form=document.uiPostUpdateForm;
+	var string3 = document.getElementById("tools_FW_UploadFile").value.search(/Settings_<%ej_get_productid()%>/);
 
-	var string3 = form.tools_FW_UploadFile.value.search(/Settings_<%ej_get_productid()%>/);
-
-	if (form.tools_FW_UploadFile.value=="") {
+	if (document.getElementById("tools_FW_UploadFile").value=="") {
 		alert("<%tcWebApi_get("String_Entry","JS_fieldblank","s")%>");
-		form.tools_FW_UploadFile.focus();
+		document.getElementById("tools_FW_UploadFile").focus();
 	}
 	else {
 		if (string3 >= 0) {
 			showtext(document.getElementById("loading_block2"), "<%tcWebApi_get("String_Entry","SET_ok_desc","s")%>");
 			document.getElementById('loading_block3').style.display = "none";
 			showLoadingBar(120);
-			form.postflag.value = "1";
-			form.submit();
+			document.uiPostUpdateForm.postflag.value = "1";
+			document.uiPostUpdateForm.submit();
 		}
 		else{
 			alert("<%tcWebApi_get("String_Entry","Setting_upload_hint","s")%>");
-			form.tools_FW_UploadFile.focus();
+			document.getElementById("tools_FW_UploadFile").focus();
 		}	
 	}
 }
@@ -87,8 +85,14 @@ function restoreRule()
 		document.tools_System_Restore.rebootFlag.value=1;
 		showtext(document.getElementById("loading_block2"), "<%tcWebApi_get("String_Entry","SAVE_restart_desc","s")%>");
 		document.getElementById('loading_block3').style.display = "none";
-		showLoading(120);
-		setTimeout("redirect();", 120000);
+		if(model_name == "DSL-N66U" || model_name == "DSL-AC52U"){
+			showLoading(220);
+                        setTimeout("redirect();", 220100);
+		}
+		else{
+			showLoading(150);
+			setTimeout("redirect();", 150100);
+		}
 		document.tools_System_Restore.submit();
 	}
 	else
@@ -189,21 +193,21 @@ function chk_upgrade(){
 <tr>
             <th width="25%" align="right"><a class="hintstyle"  href="javascript:void(0);" onclick="openHint(19,1)"><%tcWebApi_get("String_Entry","Setting_factorydefault_in","s")%></a></th>
 <td>
-<FORM METHOD="POST" ACTION="/Advanced_SettingBackup_Content.asp" name="tools_System_Restore" target="hidden_frame">
-<INPUT TYPE="HIDDEN" NAME="testFlag" VALUE="0">
-<INPUT TYPE="HIDDEN" NAME="restoreFlag" VALUE="2">
-<INPUT TYPE="HIDDEN" NAME="rebootFlag" value="0">
+<form method="POST" action="/Advanced_SettingBackup_Content.asp" name="tools_System_Restore" target="hidden_frame">
+<input type="hidden" name="testFlag" value="0">
+<input type="hidden" name="restoreFlag" value="2">
+<input type="hidden" name="rebootFlag" value="0">
 <input class="button_gen" onclick="restoreRule();" type="button" value="<%tcWebApi_get("String_Entry","CTL_restore","s")%>" name="RestartBtn" />
 </form>
 </td>
 </tr>
-<FORM ENCTYPE="multipart/form-data" METHOD="POST" name="uiPostUpdateForm" target="hidden_frame" action="/start_apply.asp">
-<INPUT TYPE="HIDDEN" NAME="current_page" VALUE="Advanced_SettingBackup_Content.asp">
-<INPUT TYPE="HIDDEN" NAME="postflag" VALUE="1">
-<INPUT TYPE="HIDDEN" NAME="HTML_HEADER_TYPE" VALUE="2">
-<INPUT TYPE="HIDDEN" NAME="value_NONE" VALUE="NONE">
+<form enctype="multipart/form-data" method="POST" name="uiPostUpdateForm" target="hidden_frame" action="/start_apply.asp">
+<input type="hidden" name="current_page" value="Advanced_SettingBackup_Content.asp">
+<input type="hidden" name="postflag" value="1">
+<input type="hidden" name="HTML_HEADER_TYPE" value="2">
+<input type="hidden" name="value_NONE" value="NONE">
 <tr>
-            <th align="right"><a class="hintstyle"  href="javascript:void(0);" onclick="openHint(19,2)"><%tcWebApi_get("String_Entry","Setting_save_in","s")%></a></th>
+<th align="right"><a class="hintstyle"  href="javascript:void(0);" onclick="openHint(19,2)"><%tcWebApi_get("String_Entry","Setting_save_in","s")%></a></th>
 <td>
 <input class="button_gen" onclick="backup_settings();" type="button" value="<%tcWebApi_get("String_Entry","CTL_onlysave","s")%>" name="action2" />
 </td>
@@ -213,7 +217,7 @@ function chk_upgrade(){
 <td>
 <div style="margin-left:-10px;"><table><tr>
 <td style="border:0px"><input type="button" class="button_gen" onclick="uploadSetting();" value="<% tcWebApi_Get("String_Entry", "CTL_upload", "s") %>"/></td>
-<td style="border:0px"><input type="file" name="tools_FW_UploadFile" class="input" style="color:#FFCC00;"/></td>
+<td style="border:0px"><input type="file" id="tools_FW_UploadFile" name="tools_FW_UploadFile" class="input" style="color:#FFCC00;"/></td>
 </tr></table></div>
 </td>
 </tr>

@@ -2684,7 +2684,7 @@ function ppp_echo_control(flag){
 							<th>Ripng Direction</th>
 							<td>
 								<SELECT NAME="wan_Ripng_Dir" SIZE="1" class="input_option">
-									<OPTION <% if tcWebApi_get("Wan_PVC","RIPNGDIRECTION","h") = "None" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","checkbox_No","s")%>ne
+									<OPTION <% if tcWebApi_get("Wan_PVC","RIPNGDIRECTION","h") = "None" then asp_Write("selected") end if %>><%tcWebApi_get("String_Entry","wl_securitylevel_0","s")%>
 									<OPTION <% if tcWebApi_get("Wan_PVC","RIPNGDIRECTION","h") = "Both" then asp_Write("selected") end if %>>Both
 									<OPTION <% if tcWebApi_get("Wan_PVC","RIPNGDIRECTION","h") = "IN Only" then asp_Write("selected") end if %>>IN Only
 									<OPTION <% if tcWebApi_get("Wan_PVC","RIPNGDIRECTION","h") = "OUT Only" then asp_Write("selected") end if %>>OUT Only
