@@ -46,7 +46,6 @@
 
 #define DEFAULT_SCAN_INTERVAL 5
 #define TCPCHECK_TIMEOUT 3
-#define PING_RESULT_FILE "/tmp/ping_success"
 #define RX_THRESHOLD 40
 
 
@@ -157,7 +156,7 @@ int boot_end;
 char dualwan_mode[8];
 
 char wandog_target[PATH_MAX];
-int wandog_delay, delay_detect;
+int wandog_delay, delay_detect, wandog_target_timeout = 0;
 int WAN_FB_UNIT;
 #endif
 #ifdef RTCONFIG_USB_MODEM

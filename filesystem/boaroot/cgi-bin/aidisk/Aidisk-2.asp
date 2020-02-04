@@ -12,6 +12,7 @@
 <link rel="stylesheet" type="text/css" href="/aidisk/aidisk.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script type="text/javascript" src="/state.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
 <script>
 var next_page = "";
 var dummyShareway = 0;

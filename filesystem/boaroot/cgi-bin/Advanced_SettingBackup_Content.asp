@@ -185,7 +185,7 @@ function chk_upgrade(){
 <tr>
 <td bgcolor="#4D595D" valign="top">
 <div>&nbsp;</div>
-		  <div class="formfonttitle"><%tcWebApi_get("String_Entry","menu5_6_adv","s")%> - <%tcWebApi_get("String_Entry","menu5_6_4","s")%></div>
+		  <div class="formfonttitle"><%tcWebApi_get("String_Entry","menu5_6","s")%> - <%tcWebApi_get("String_Entry","menu5_6_4","s")%></div>
 <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 		  <div class="formfontdesc"><%tcWebApi_get("String_Entry","Setting_save_upload_desc","s")%></div>
 

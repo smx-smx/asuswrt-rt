@@ -80,6 +80,7 @@ function check_wan_state(){
 		document.adv_adsl.fb_ISP.disabled = "true";
 		document.adv_adsl.fb_Subscribed_Info.disabled = "true";
 		document.adv_adsl.fb_email.disabled = "true";		
+		document.adv_adsl.fb_serviceno.disabled = "true";
 		document.adv_adsl.attach_syslog.disabled = "true";
 		document.adv_adsl.attach_cfgfile.disabled = "true";
 		document.adv_adsl.attach_iptables.disabled = "true";
@@ -102,6 +103,7 @@ function check_wan_state(){
 		document.adv_adsl.fb_ISP.disabled = "";
 		document.adv_adsl.fb_Subscribed_Info.disabled = "";
 		document.adv_adsl.fb_email.disabled = "";
+		document.adv_adsl.fb_serviceno.disabled = "";
 		document.adv_adsl.attach_syslog.disabled = "";
 		document.adv_adsl.attach_cfgfile.disabled = "";
 		document.adv_adsl.attach_iptables.disabled = "";
@@ -349,6 +351,13 @@ function change_dsl_diag_enable(value) {
 </tr>
 
 <tr>
+<th>ASUS Service No./Case#</th>
+<td>
+	<input type="text" name="fb_serviceno" maxlength="50" class="input_25_table" value="">
+</td>
+</tr>
+<tr>
+
 <th>Extra information for debugging *</th>
 <td>
 	<input type="checkbox" class="input" name="attach_syslog">Syslog&nbsp;&nbsp;&nbsp;

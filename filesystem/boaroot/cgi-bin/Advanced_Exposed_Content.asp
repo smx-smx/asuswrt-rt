@@ -67,7 +67,7 @@ load_body();
 }
 function update_FAQ(){
 	if(document.getElementById("connect_status").className == "connectstatuson"){		
-		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1001253");
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1011722");
 	}
 }
 </script>
@@ -111,7 +111,7 @@ function update_FAQ(){
 <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 <div class="formfontdesc"><% tcWebApi_Get("String_Entry", "IPC_ExposedIP_sd", "s") %><br/>Special Applications: Some applications require special handler against NAT. These special handlers are disabled in default.</div>
 <div class="formfontdesc" style="margin-top:-10px;">
-<a id="faq" href="https://www.asus.com/US/support/FAQ/1001253" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">DMZ FAQ</a>
+<a id="faq" href="https://www.asus.com/US/support/FAQ/1011722" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">DMZ FAQ</a>
 </div>
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 <tr>

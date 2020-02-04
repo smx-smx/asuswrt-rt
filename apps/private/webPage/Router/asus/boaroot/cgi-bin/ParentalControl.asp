@@ -235,7 +235,7 @@ function register_event(){
 	show_menu();
 	if(bwdpi_support != -1){
 		//show_inner_tab();
-		document.getElementById('guest_image').style.background = "url(images/New_ui/TimeLimits.png)";
+		document.getElementById('guest_image').style.background = "url(/images/New_ui/TimeLimits.png)";
 		document.getElementById('content_title').innerHTML = "<% tcWebApi_get("String_Entry","AiProtection_title","s") %> - <% tcWebApi_get("String_Entry","Time_Scheduling","s") %>";
 		document.getElementById('desc_title').innerHTML = "<% tcWebApi_get("String_Entry","ParentalCtrl_Desc_TS","s") %>";
 		document.getElementById('web_title').innerHTML = "ASUS <%tcWebApi_get("String_Entry","Web_Title2","s")%> <% tcWebApi_staticGet("SysInfo_Entry","ProductTitle","s") %> - <% tcWebApi_get("String_Entry","Time_Scheduling","s") %>";
@@ -526,17 +526,17 @@ function gen_lantowanTable(client){
 	redraw_selected_time(MULTIFILTER_MACFILTER_DAYTIME_col);
 	
 	var code_temp = "";
-	code_temp = '<table style="width:450px;margin-left:-100px;"><tr>';
-	code_temp += "<td><div style=\"width:140px;font-family:Arial,sans-serif,Helvetica;font-size:18px;\"><%tcWebApi_get("String_Entry","Clock_Format","s")%></div></td>";
+	code_temp = '<table><tr>';
+	code_temp += "<td><div style=\"font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0 10px\"><%tcWebApi_get("String_Entry","Clock_Format","s")%></div></td>";
 	code_temp += '<td><div>';
 	code_temp += '<select id="clock_type_select" class="input_option" onchange="change_clock_type(this.value);">';
-	code_temp += '<option value="0" >12-hour</option>';
-	code_temp += '<option value="1" >24-hour</option>';
+	code_temp += '<option value="0">12-hour</option>';
+	code_temp += '<option value="1">24-hour</option>';
 	code_temp += '</select>';
 	code_temp += '</div></td>';
-	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;"><%tcWebApi_get("String_Entry","ParentalCtrl_allow","s")%></div></td>';	/*<%tcWebApi_get("String_Entry","FC_MFMethod_item1","s")%>*/
+	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0 10px;"><%tcWebApi_get("String_Entry","ParentalCtrl_allow","s")%></div></td>';
 	code_temp += '<td><div style="width:90px;height:20px;background:#9CB2BA;"></div></td>';
-	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0px 30px;"><%tcWebApi_get("String_Entry","ParentalCtrl_deny","s")%></div></td>';
+	code_temp += '<td><div align="left" style="font-family:Arial,sans-serif,Helvetica;font-size:18px;margin:0px 5px 0 10px;"><%tcWebApi_get("String_Entry","ParentalCtrl_deny","s")%></div></td>';
 	code_temp += '<td><div style="width:90px;height:20px;border:solid 1px #000"></div></td>';
 	code_temp += '</tr></table>';
 	document.getElementById('hintBlock').innerHTML = code_temp;
@@ -1080,26 +1080,25 @@ function saveto_lantowan(client){
 				</td>
 			</tr>
 			</table>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
+		</td>
+	</tr>
+	</tbody>
+	</table>
+</td>
+		</tr>
+		</table>
+	</td>
 
-                <td width="10" align="center" valign="top">&#160;</td>
-            </tr>
-        </table>
+	<td width="10" align="center" valign="top">&#160;</td>
+	</tr>
+</table>
 
 <!--copy from tools_times.asp of MTK.B-->
 
 <!--copy from tools_times.asp of MTK.E-->
 
-        <div id="footer"></div>
-    </form><script type="text/javascript">
-</script><!--ParentalControl.asp-->
+<div id="footer"></div>
+</form>
 </body>
 </html>
 

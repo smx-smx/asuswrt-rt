@@ -75,7 +75,7 @@
 #define DNSOMATIC_DEFAULT_PORT "80"
 #define DNSOMATIC_REQUEST "/nic/update"
 
-#define DYNDNS_DEFAULT_SERVER "members.dyndns.org"
+#define DYNDNS_DEFAULT_SERVER "api.dynu.com"
 #define DYNDNS_DEFAULT_PORT "80"
 #define DYNDNS_REQUEST "/nic/update"
 #define DYNDNS_STAT_REQUEST "/nic/update"

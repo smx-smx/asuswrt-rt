@@ -39,42 +39,103 @@
 		$j("#asus_eula_content").html($j("#asus_eula_content").html().replace(/\\'/g, "'"))
 
 		var fn_array = ["DDNS"];
-		if(ifttt_support){fn_array.push("IFTTT™");}
-		if(alexa_support){fn_array.push("Alexa™");}
+		if(ifttt_support >= 0){fn_array.push("IFTTT™");}
+		if(alexa_support >= 0){fn_array.push("Alexa™");}
 		$j("#asus_eula_desc").html($j("#asus_eula_desc").html().replace('DDNS', fn_array.join("/")));
 
-		if(alexa_support && !ifttt_support){
+		if(alexa_support >= 0 && ifttt_support == "-1"){
 			$j("#asus_eula_desc1_1_1").html("<%tcWebApi_get("String_Entry","ASUS_eula_desc1_1_12","s")%>");
 			$j("#ifttt_desc").css("display", "none");
 		}
-		else if(!alexa_support && !ifttt_support){
+		else if(alexa_support == "-1"&& ifttt_support == "-1"){
 			$j("#asus_eula_desc1_1_1").html("<%tcWebApi_get("String_Entry","ASUS_eula_desc1_1_13","s")%>");
 			$j("#alexa_desc").css("display", "none");
 			$j("#ifttt_desc").css("display", "none");
 		}
 
-		httpApi.nvramGetAsync({
-			data: ["preferred_lang"],
-			success: function(resp){
-				var preferredLang = resp.preferred_lang;
-				lang_str = (preferredLang == "EN" || preferredLang == "SL") ? "" : (preferredLang.toLowerCase() + '/');
+		var preferredLang = parent.get_preferred_lang_type();
+		var url="";
+		switch(preferredLang){
+				case '1':
+					url = "https://www.asus.com/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
 
-				if(preferredLang == "CN")
+				case '3':
 					url = "https://www.asus.com.cn/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
-				else{
-					if(preferredLang == "SV")
-						lang_str = "se/";
-					else if(preferredLang == "UK")
-						lang_str = "ua-ua/";
-					else if(preferredLang == "MS")
-						lang_str = "my/";
-					else if(preferredLang == "DA")
-						lang_str = "dk/";
+					break;
 
-					url = "https://www.asus.com/" + lang_str +"Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
-				}
+				case '18':
+					url = "https://www.asus.com/tw/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
 
-				$j("#eula_url").attr("href", url);
-			}
-		})
+				case '2':
+					url = "https://www.asus.com/br/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '4':
+					url = "https://www.asus.com/cz/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '5':
+					url = "https://www.asus.com/dk/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '6':
+					url = "https://www.asus.com/de/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '7':
+					url = "https://www.asus.com/es/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '8':
+					url = "https://www.asus.com/fi/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '9':
+					url = "https://www.asus.com/fr/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '10':
+					url = "https://www.asus.com/it/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '11':
+					url = "https://www.asus.com/my/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '12':
+					url = "https://www.asus.com/no/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '13':
+					url = "https://www.asus.com/pl/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '14':
+					url = "https://www.asus.com/ru/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '15':
+					url = "https://www.asus.com/se/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '16':
+					url = "https://www.asus.com/th/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '17':
+					url = "https://www.asus.com/tr/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				case '19':
+					url = "https://www.asus.com/ua-ua/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+				default:
+					url = "https://www.asus.com/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy";
+					break;
+
+        }
+		$j("#eula_url").attr("href", url);
 	</script>

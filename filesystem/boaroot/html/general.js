@@ -2738,7 +2738,7 @@ function change_channel() {
 	var band = document.form.wl_unit.value;
 
 	if(band == 0){
-		if(document.form.wl_channel.value  == '0'){
+		if(document.form.wl_channel.value  == '0' && document.getElementById("wl_channel").length > 12) {	//with channel 12, 13
 			document.getElementById('acs_ch13_checkbox').style.display = "";
 			document.form.acs_ch13.disabled = false;					
 		}

@@ -238,8 +238,8 @@ function initial(){
 }
 function update_FAQ(){
 	if(document.getElementById("connect_status").className == "connectstatuson"){
-		//id="faq" href="https://www.asus.com/US/support/FAQ/1000906"
-		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1000906");
+		//id="faq" href="https://www.asus.com/US/support/FAQ/1036677"
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1036677");
 	}
 }
 
@@ -703,7 +703,7 @@ $("check_mac").innerHTML="The format for the MAC address is six groups of two he
 <div id="router_in_pool" class="formfontdesc" style="color:#FFCC00;display:none;">#LHC_DHCPServerConfigurable_sd2","s")%>  <span id="LANIP"></span></div>
 <div id="VPN_conflict" class="formfontdesc" style="color:#FFCC00;display:none;"><span id="VPN_conflict_span"></span></div>
 <div class="formfontdesc" style="margin-top:-10px;">
-<a id="faq" href="https://www.asus.com/support/FAQ/1000906" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><% tcWebApi_Get("String_Entry", "LHC_MnlDHCPList_groupitemdesc", "s") %> FAQ</a>
+<a id="faq" href="https://www.asus.com/support/FAQ/1036677" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><% tcWebApi_Get("String_Entry", "LHC_MnlDHCPList_groupitemdesc", "s") %> FAQ</a>
 </div>
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 <thead>

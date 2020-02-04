@@ -134,6 +134,7 @@ elseif Request_Form("current_page") = "Advanced_Feedback.asp" then
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_ISP","fb_ISP")
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_Subscribed_Info","fb_Subscribed_Info")
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_email","fb_email")
+		tcWebApi_Set("GUITemp_Entry0","fb_tmp_serviceno","fb_serviceno")
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_availability","fb_availability")
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_comment0","fb_comment0")
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_comment1","fb_comment1")
@@ -155,6 +156,7 @@ elseif Request_Form("current_page") = "Feedback_Info.asp" then
 		tcWebApi_commit("DslDiag")
 	end if	
 elseif Request_Form("current_page") = "Advanced_WANPort_Content.asp" then
+	tcWebApi_Set("WebCurSet_Entry","wandog_pingfail","wandog_pingfail")
 	tcWebApi_Set("Dualwan_Entry","wans_mode","wans_mode")
 	tcWebApi_Set("Dualwan_Entry","wans_dualwan","wans_dualwan")
 	tcWebApi_Set("Dualwan_Entry","wans_lanport","wans_lanport")
@@ -337,7 +339,7 @@ function initial(){
 		}
 	}
 	else if(action_script.indexOf("restart_ddns") >= 0) {
-		setTimeout("parent.parent.checkDDNSReturnCode();", 1000);
+		setTimeout("parent.checkDDNSReturnCode();", 1000);
 	}
 	else if(action_script.indexOf("start_webs_upgrade") >= 0) {
 		setTimeout("parent.showLoadingBar(restart_time);", 1000);

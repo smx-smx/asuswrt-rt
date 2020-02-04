@@ -327,7 +327,7 @@ function TR_pass_checked(obj){
 <tr>
 <td bgcolor="#4D595D" valign="top">
 <div>&nbsp;</div>
-		  <div class="formfonttitle"><%tcWebApi_get("String_Entry","menu5_6_adv","s")%> - TR069</div>
+		  <div class="formfonttitle"><%tcWebApi_get("String_Entry","menu5_6","s")%> - TR069</div>
 <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 		  <div class="formfontdesc">TR069 Setup</div>
 

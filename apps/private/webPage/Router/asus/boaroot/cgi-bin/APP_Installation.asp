@@ -161,7 +161,7 @@ function initial(){
 function update_FAQ(){
 	//console.log(document.getElementById("connect_status").className);
 	if(document.getElementById("connect_status").className == "connectstatuson"){
-		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "1009773");
+		faqURL("faq", "https://www.asus.com", "/support/FAQ/", "114001");
 		faqURL("faq2", "https://www.asus.com", "/support/FAQ/", "1016385");
 	}
 }

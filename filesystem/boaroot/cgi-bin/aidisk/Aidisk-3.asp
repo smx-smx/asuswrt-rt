@@ -12,7 +12,9 @@
 <link rel="stylesheet" type="text/css" href="/aidisk/aidisk.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/jquery.js"></script>
+<script type="text/javaScript" src="/general.js"></script>
+<script type="text/javaScript" src="/validator.js"></script>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script>
 var ddns_server_x = '<%tcWebApi_get("Ddns_Entry","SERVERNAME","s")%>';
 var ddns_hostname_x = '<%tcWebApi_get("Ddns_Entry","MYHOST","s")%>';
@@ -251,8 +253,13 @@ function checkDDNSReturnCode(){
 }
 
 function apply_eula_check(){
-    if(top.ASUS_EULA.check('asus'))
-        go_next_page();
+	if(document.form.check_asus_ddns[0].checked){
+		if(top.ASUS_EULA.check('asus'))
+			go_next_page();
+	}
+	else{
+		go_next_page();
+	}
 }
 </script>
 </head>

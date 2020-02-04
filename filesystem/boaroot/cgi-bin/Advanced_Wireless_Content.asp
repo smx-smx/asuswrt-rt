@@ -145,7 +145,7 @@ function initial(){
 		document.getElementById("auto_channel").style.display = "";
 		document.getElementById("auto_channel").innerHTML = "Current control channel: "+cur_control_channel[document.form.wl_unit.value];
 
-		if (wl_unit == '0') {
+		if (wl_unit == '0' && document.getElementById("wl_channel").length > 12) {	//with channel 12, 13
 			document.getElementById('acs_ch13_checkbox').style.display = "";				
 		}
 	}
@@ -520,7 +520,7 @@ function check_NOnly_to_GN(){
 	<tr id="wl_channel_field">
 		<th><a id="wl_channel_select" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 3);"><% tcWebApi_Get("String_Entry", "WC11b_Channel_in", "s") %></a></th>
 		<td>
-			<select name="wl_channel" class="input_option" onChange="change_channel();"></select>
+			<select id="wl_channel" name="wl_channel" class="input_option" onChange="change_channel();"></select>
 			<span id="auto_channel" style="display:none;margin-left:10px;"></span><br>
 			<span id="acs_ch13_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_ch13_support(this);"  <% tcWebApi_MatchThenWrite("WLan_Common","acs_ch13","1","checked") %>>Auto select channel including channel 12, 13</input></span>
 		</td>

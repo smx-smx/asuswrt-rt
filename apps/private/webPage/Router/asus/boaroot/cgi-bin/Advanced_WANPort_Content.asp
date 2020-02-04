@@ -73,6 +73,8 @@ var wans_caps_primary;
 var wans_caps_secondary;
 var wandog_fb_count_orig = '<% tcWebApi_Get("Dualwan_Entry", "wandog_fb_count", "s") %>';
 var wandog_maxfail_orig = '<% tcWebApi_Get("Dualwan_Entry", "wandog_maxfail", "s") %>';
+var wandog_pingfail = '<% tcWebApi_Get("WebCurSet_Entry", "wandog_pingfail", "s") %>';
+var wandog_target_orig = '<% tcWebApi_Get("WebCurSet_Entry", "wandog_target_orig", "s") %>';
 
 var $j = jQuery.noConflict();
 
@@ -169,7 +171,11 @@ function form_show(v){
 		if(document.form.wans_mode.value == "lb")
 			document.getElementById("wans_mode_option").value = "lb";
 		else{
-			document.getElementById("wans_mode_option").value = "fo";			
+			document.getElementById("wans_mode_option").value = "fo";
+			if(wandog_pingfail == 1){
+				document.getElementById("wandog_target_orig_desc").style.display = "";
+				document.getElementById("wandog_target_orig_desc").innerHTML = wandog_target_orig +" has been pinged timeout and changed to <b>8.8.8.8</b>";
+			}
 		}
 
 		appendModeOption(document.form.wans_mode.value);
@@ -184,6 +190,8 @@ function applyRule(){
 
 		document.form.wan_unit.value = "0";
 		if(document.form.wans_mode.value == "lb"){
+
+			document.form.wandog_pingfail.disabled = true;
 			if(!validator.range(document.form.wans_lb_ratio_0, 1, 9))
 					return false;
 			if(!validator.range(document.form.wans_lb_ratio_1, 1, 9))
@@ -848,6 +856,7 @@ function enable_GNTS(flag){
 <input type="hidden" name="wan0_routing_isp" value="<% tcWebApi_Get("Dualwan_Entry", "wan0_routing_isp", "s") %>">
 <input type="hidden" name="wan1_routing_isp_enable" value="<% tcWebApi_Get("Dualwan_Entry", "wan0_routing_isp_enable", "s") %>">
 <input type="hidden" name="wan1_routing_isp" value="<% tcWebApi_Get("Dualwan_Entry", "wan1_routing_isp", "s") %>">
+<input type="hidden" name="wandog_pingfail" value="0">
 <input type="hidden" name="wans_routing_rulelist" value=''>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
@@ -1023,6 +1032,7 @@ function enable_GNTS(flag){
 														<input type="text" class="input_32_table" name="wandog_target" maxlength="100" value="<% tcWebApi_Get("Dualwan_Entry", "wandog_target", "s"); %>" placeholder="ex: www.google.com">
 														<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<%tcWebApi_Get("String_Entry", "select_network_host", "s")%>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 														<div id="ClientList_Block_PC" class="ClientList_Block_PC" style="display:none;"></div>
+														<div id="wandog_target_orig_desc" style="margin-left:5px;color:#FFCC00;display:none;"></div>
 												</td>
 											</tr>
 										</table>

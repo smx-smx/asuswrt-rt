@@ -56,7 +56,6 @@ function initial(){
 			break;
 		/* public */
 		case 1:
-			document.getElementById("privateIpOnly").style.display = "none";
 			if('<% tcWebApi_get("Ddns_Entry", "Active", "s") %>' == '1' && ddns_hostname != ''){
 				if(https_port == 443) // if the port number of https is 443, hide it
 					document.getElementById("accessMethod").innerHTML = '<%tcWebApi_Get("String_Entry", "aicloud_disk_case11", "s")%> <a style="font-weight: bolder;text-decoration: underline;word-break:break-all;" href="https://'+ ddns_hostname + ':'+ https_port +' "target="_blank">https://'+ ddns_hostname +'</a><br />';

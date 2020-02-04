@@ -199,7 +199,7 @@ function initial(){
 
 function update_FAQ(){
 	if(document.getElementById("connect_status").className == "connectstatuson"){		
-		faqURL("faq3", "https://www.asus.com", "/support/FAQ/", "1009775");	//id in string tag : smart_access3
+		faqURL("faq3", "https://www.asus.com", "/support/FAQ/", "1011268");	//id in string tag : smart_access3
 	}
 }
 function showwollist(){

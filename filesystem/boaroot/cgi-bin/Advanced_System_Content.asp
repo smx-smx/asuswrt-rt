@@ -1329,7 +1329,7 @@ function update_rewanDateTime()
 				<tr>
 					<td bgcolor="#4D595D" valign="top">
 						<div>&nbsp;</div>
-						<div class="formfonttitle"><%tcWebApi_get("String_Entry","menu5_6_adv","s")%> - <%tcWebApi_get("String_Entry","menu5_6_2","s")%></div>
+						<div class="formfonttitle"><%tcWebApi_get("String_Entry","menu5_6","s")%> - <%tcWebApi_get("String_Entry","menu5_6_2","s")%></div>
 						<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 						<div class="formfontdesc"><%tcWebApi_get("String_Entry","Syste_title","s")%></div>
 						<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">

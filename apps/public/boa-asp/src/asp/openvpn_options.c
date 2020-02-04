@@ -471,6 +471,17 @@ add_option (char *p[], int line, int unit)
 			return VPN_UPLOAD_NEED_CERT;
 		}
 	}
+	else if (streq (p[0], "extra-certs") && p[1])
+	{
+		if (streq (p[1], INLINE_FILE_TAG) && p[2])
+		{
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_EXTRA, p[2], NULL);
+		}
+		else
+		{
+			return VPN_UPLOAD_NEED_EXTRA;
+		}
+	}
 	else if  (streq (p[0], "key") && p[1])
 	{
 		if (streq (p[1], INLINE_FILE_TAG) && p[2])
@@ -536,6 +547,8 @@ add_option (char *p[], int line, int unit)
 			|| streq (p[0], "nobind")
 			|| streq (p[0], "persist-key")
 			|| streq (p[0], "persist-tun")
+			|| streq (p[0], "user")
+			|| streq (p[0], "group")
 		) {
 			;//ignore
 		}

@@ -9277,22 +9277,39 @@ static int appDo_rc_service(char *rc_service, char *wp, json_object *root)
 		}
 		/* [SET] [General] Firmware Upgrade */
 		else if(!strcmp(rc_service, "start_webs_upgrade")) {
-			system("/usr/script/webs_upgrade.sh");
+			eval("/usr/script/webs_upgrade.sh");
 			/*stop_service();*/
 			killall_tk("clean_cache.sh");
 			sleep(1);
 			kill_pidfile_s("/var/run/cfg_manager_pid", SIGUSR2);
-			sleep(1);
-#ifdef RTCONFIG_USB
-			system("ejusb 1 0");	//force ejusb whether usb apps enabled or not
-			system("ejusb 2 0");
-#endif
-			system("rc_call service 0");
 			/*start to upgrade*/
 			tcapi_set("System_Entry","upgrade_fw_status","NONE");
 			tcapi_set("System_Entry","upgrade_fw","1");
-			tcapi_commit("System_Entry");
-			app_method_hit = 2;
+
+			char APP_LIVEUPGRADE_SH[40]="/tmp/etc/app_doLiveUpdate.sh";
+			char cmd[256];
+			FILE *fp = fopen(APP_LIVEUPGRADE_SH, "w");
+			if(fp != NULL) {
+				/*stop_service();*/
+#ifdef RTCONFIG_USB
+				fputs("ejusb 1 0\n", fp);
+				fputs("ejusb 2 0\n", fp);
+#endif
+				fputs("rc_call service 0\n", fp);
+#ifdef RTCONFIG_BWDPI
+				fputs("bwdpi service stop\n", fp);
+#endif
+				/*start to upgrade*/
+				fputs("/userfs/bin/tcapi commit \"System_Entry\"\n", fp);
+				fclose(fp);
+				chmod(APP_LIVEUPGRADE_SH , 755);
+				sprintf(cmd, "%s &", APP_LIVEUPGRADE_SH);
+				system(cmd);
+				app_method_hit = 2;
+			}
+			else {
+				_dprintf("[AiHome] appDo_rc_service: %s open failed\n", APP_LIVEUPGRADE_SH);
+			}
 		}
 		/* [SET] [Change Mode] Repeater mode setting */
 		/* [SET] [General] Reboot */
@@ -14207,7 +14224,9 @@ static void stop_service (asp_reent* reent, const asp_text* params, asp_text* re
 	system("ejusb 2 0");
 #endif
 	system("rc_call service 0");
+#ifdef RTCONFIG_BWDPI
 	system("bwdpi service stop");
+#endif
 
 	return;
 }
@@ -15926,6 +15945,15 @@ static void ej_vpn_crt_server(asp_reent* reent, const asp_text* params, asp_text
 		_webs_clean_write(buf);
 		websWrite(wp, "'];\n");
 
+		//extra
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		snprintf(name, sizeof(name), "vpn_crt_server%d_extra", idx);
+		get_ovpn_key(OVPN_TYPE_SERVER, idx, OVPN_SERVER_EXTRA, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
 		//key
 		memset(buf, 0, sizeof(buf));
 		memset(name, 0, sizeof(name));
@@ -15988,6 +16016,15 @@ static void ej_vpn_crt_client(asp_reent* reent, const asp_text* params, asp_text
 		memset(name, 0, sizeof(name));
 		snprintf(name, sizeof(name), "vpn_crt_client%d_crt", idx);
 		get_ovpn_key(OVPN_TYPE_CLIENT, idx, OVPN_CLIENT_CERT, buf, sizeof(buf));
+		websWrite(wp, "%s=['", name);
+		_webs_clean_write(buf);
+		websWrite(wp, "'];\n");
+
+		//extra
+		memset(buf, 0, sizeof(buf));
+		memset(name, 0, sizeof(name));
+		snprintf(name, sizeof(name), "vpn_crt_client%d_extra", idx);
+		get_ovpn_key(OVPN_TYPE_CLIENT, idx, OVPN_CLIENT_EXTRA, buf, sizeof(buf));
 		websWrite(wp, "%s=['", name);
 		_webs_clean_write(buf);
 		websWrite(wp, "'];\n");
@@ -16090,6 +16127,11 @@ static void do_vpnupload_cgi(asp_reent* reent, const asp_text* params, asp_text*
 			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CERT, NULL, filepath);
 			state = tcapi_get_int("OpenVPN_Common", "vpn_upload_state");
 			tcapi_set_int("OpenVPN_Common", "vpn_upload_state", state & (~VPN_UPLOAD_NEED_CERT));
+		}
+		else if(!strcmp(filetype, "extra")) {
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_EXTRA, NULL, filepath);
+			state = tcapi_get_int("OpenVPN_Common", "vpn_upload_state");
+			tcapi_set_int("OpenVPN_Common", "vpn_upload_state", state & (~VPN_UPLOAD_NEED_EXTRA));
 		}
 		else if(!strcmp(filetype, "key")) {
 			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_KEY, NULL, filepath);

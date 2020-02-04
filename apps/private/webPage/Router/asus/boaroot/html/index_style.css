@@ -674,7 +674,7 @@ width:122px;
   background-position: -0px -0px; width: 43px; height: 43px;
 }
 ._index{
-  background: url(images/New_ui/icon_indexes.png);
+  background: url(/images/New_ui/icon_indexes.png);
   background-position: -0px -40px; width: 43px; height: 43px;
 }
 #index_img1{
@@ -738,7 +738,7 @@ width:122px;
   background-position: -0px -293px; width: 43px; height: 40px;
 }
 #bottom_help_icon{
-  background: url(images/New_ui/bottom_help.png);
+  background: url(/images/New_ui/bottom_help.png);
   background-position: -0px -0px; width: 19px; height: 19px;
 }
 #bottom_help_title{
@@ -760,15 +760,15 @@ width:122px;
 	color:#FFFFFF;
 }
 .bottom_help_FAQ_icon{
-  background: url(images/New_ui/bottom_search.png);
+  background: url(/images/New_ui/bottom_search.png);
   background-position: -0px -0px; width: 32px; height: 32px;
 }
 .bottom_help_FAQ_icon:hover{
-  background: url(images/New_ui/bottom_search.png);
+  background: url(/images/New_ui/bottom_search.png);
 	background-position: -0px -32px; width: 32px; height: 32px;
 }
 .bottom_help_FAQ_icon:active{
-  background: url(images/New_ui/bottom_search.png);
+  background: url(/images/New_ui/bottom_search.png);
   background-position: -0px -64px; width: 32px; height: 32px;
 }
 

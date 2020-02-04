@@ -151,10 +151,10 @@ void get_related_nvram(){
 		if((!strcmp(dualwan_mode, "fo") || !strcmp(dualwan_mode, "fb"))
 				&& wandog_enable == 1
 				){
-			strcpy(wandog_target,
+			strncpy(wandog_target,
 				nvram_invmatch("wandog_target", "") ?
 				nvram_safe_get("wandog_target") :
-				"8.8.8.8");
+				"8.8.8.8", sizeof(wandog_target)-1);
 		}
 
 		if(!strcmp(dualwan_mode, "fb")){
@@ -257,14 +257,45 @@ int do_ping_detect(int wan_unit){
 		}
 	}
 #elif defined(RTCONFIG_DUALWAN)
-	csprintf("wanduck: ping %s to %s...", wandog_target, PING_RESULT_FILE);
-	sprintf(cmd, "ping -c 1 %s >/dev/null && touch %s", wandog_target, PING_RESULT_FILE);
-	system(cmd);
+	if((wandog_target_timeout >= 3) && (strncmp(wandog_target, "8.8.8.8", 7) != 0)) {
+		tcapi_set(WEBCURSET_DATA, "wandog_pingfail", "1");
+		tcapi_set(WEBCURSET_DATA, "wandog_target_orig", wandog_target);
+		tcapi_set(DUALWAN_DATA, "wandog_target", "8.8.8.8");
+		strncpy(wandog_target, "8.8.8.8", sizeof(wandog_target)-1);
+	}
+	char *delim = ".";
+	char *pch;
+	char buf[128], tmp[128];
+	snprintf(buf, sizeof(buf), "%s", wandog_target);
+	pch = strtok(buf, delim);
+	sprintf(tmp, "%d", atoi(pch));
 
-	if(check_if_file_exist(PING_RESULT_FILE)){
-		csprintf("ok.\n");
-		unlink(PING_RESULT_FILE);
-		return 1;
+	if(strncmp(tmp, pch, strlen(pch)) == 0) {
+		csprintf("wanduck: gethostbyaddr %s ...", wandog_target);
+		struct hostent *stHost = (struct hostent *)NULL;
+		struct in_addr stInAddr, stTempInAddr;
+		int idx = -1;
+		struct sockaddr_in stSkAddr;
+
+		bzero((void *)&stInAddr, sizeof(struct in_addr));
+		inet_aton(wandog_target, &stInAddr);
+		if(gethostbyaddr(&stInAddr, sizeof(struct in_addr), AF_INET) != NULL) {
+			csprintf("ok.\n");
+			wandog_target_timeout = 0;
+			return 1;
+		}
+		else
+			wandog_target_timeout++;
+	}
+	else {
+		csprintf("wanduck: gethostbyname %s ...", wandog_target);
+		if(gethostbyname(wandog_target) != NULL) {
+			csprintf("ok.\n");
+			wandog_target_timeout = 0;
+			return 1;
+		}
+		else
+			wandog_target_timeout++;
 	}
 #else
 	return 1;
@@ -1070,30 +1101,6 @@ void parse_dst_url(char *page_src){
 	sprintf(dst_url, "%s/%s", host, dest);
 }
 
-void parse_req_queries(char *content, char *lp, int len, int *reply_size){
-	int i, rn;
-	
-	rn = *(reply_size);
-	for(i = 0; i < len; ++i){
-		content[rn+i] = lp[i];
-		if(lp[i] == 0){
-			++i;
-			break;
-		}
-	}
-	
-	if(i >= len)
-		return;
-	
-	content[rn+i] = lp[i];
-	content[rn+i+1] = lp[i+1];
-	content[rn+i+2] = lp[i+2];
-	content[rn+i+3] = lp[i+3];
-	i += 4;
-	
-	*reply_size += i;
-}
-
 void handle_http_req(int sfd, char *line){
 	int len;
 	
@@ -1115,68 +1122,105 @@ void handle_http_req(int sfd, char *line){
 		close_socket(sfd, T_HTTP);
 }
 
-void handle_dns_req(int sfd, char *line, int maxlen, struct sockaddr *pcliaddr, int clen){
-	dns_query_packet d_req;
-	dns_response_packet d_reply;
-	int reply_size;
-	char reply_content[MAXLINE];
+void handle_dns_req(int sfd, unsigned char *request, int maxlen, struct sockaddr *pcliaddr, int clen){
 	char buf[MAXLEN_TCAPI_MSG] = {0};
-	in_addr_t lan_ipaddr = inet_addr_(tcapi_get_string("Lan_Entry0", "IP", buf));
 
-	reply_size = 0;
-	memset(reply_content, 0, MAXLINE);
-	memset(&d_req, 0, sizeof(d_req));
-	memcpy(&d_req.header, line, sizeof(d_req.header));
-	
-	// header
-	memcpy(&d_reply.header, &d_req.header, sizeof(dns_header));
-	d_reply.header.flag_set.flag_num = htons(0x8580);
-	//d_reply.header.flag_set.flag_num = htons(0x8180);
-	d_reply.header.answer_rrs = htons(0x0001);
-	memcpy(reply_content, &d_reply.header, sizeof(d_reply.header));
-	reply_size += sizeof(d_reply.header);
-	
-	reply_content[5] = 1;	// Questions
-	reply_content[7] = 1;	// Answer RRS
-	reply_content[9] = 0;	// Authority RRS
-	reply_content[11] = 0;	// Additional RRS
-	
-	// queries
-	parse_req_queries(reply_content, line+sizeof(dns_header), maxlen-sizeof(dns_header), &reply_size);
-	
-	// answers
-	d_reply.answers.name = htons(0xc00c);
-	d_reply.answers.type = htons(0x0001);
-	d_reply.answers.ip_class = htons(0x0001);
-	//d_reply.answers.ttl = htonl(0x00000001);
-	d_reply.answers.ttl = htonl(0x00000000);
-	d_reply.answers.data_len = htons(0x0004);
-	
-	char query_name[PATHLEN];
-	int len, i;
-	
-	strncpy(query_name, line+sizeof(dns_header)+1, PATHLEN);
-	len = strlen(query_name);
-	for(i = 0; i < len; ++i)
-		if(query_name[i] < 32)
-			query_name[i] = '.';
-	
-	if(!upper_strcmp(query_name, router_name)){
-		d_reply.answers.addr = lan_ipaddr;
+	unsigned char reply_content[MAXLINE], *ptr, *end;
+	dns_header *d_req, *d_reply;
+	dns_queries queries;
+	dns_answer answer;
+	uint16_t opcode;
+
+	/* validation */
+	d_req = (dns_header *)request;
+	if (maxlen <= sizeof(dns_header) ||			/* incomplete header */
+	    d_req->flag_set.flag_num & htons(0x8000) ||		/* not query */
+	    d_req->questions == 0)				/* no questions */
+		return;
+	opcode = d_req->flag_set.flag_num & htons(0x7800);
+	ptr = request + sizeof(dns_header);
+	end = request + maxlen;
+
+	/* query, only first so far */
+	memset(&queries, 0, sizeof(queries));
+	while (ptr < end) {
+		size_t len = *ptr++;
+		if (len > 63 || end - ptr < (len ? : 4))
+			return;
+		if (len == 0) {
+			memcpy(&queries.type, ptr, 2);
+			memcpy(&queries.ip_class, ptr + 2, 2);
+			ptr += 4;
+			break;
+		}
+		if (*queries.name)
+			strcat(queries.name, ".");
+		strncat(queries.name, (char *)ptr, len);
+		ptr += len;
 	}
-	else if (!upper_strcmp(query_name, "ntp01.mvp.tivibu.com.tr")) {
-		d_reply.answers.addr = htonl(0xc0a87946);
+	if (queries.type == 0 || queries.ip_class == 0 || strlen(queries.name) > 1025)
+		return;
+	maxlen = ptr - request;
+
+	/* reply */
+	if (maxlen > sizeof(reply_content))
+		return;
+	ptr = memcpy(reply_content, request, maxlen) + maxlen;
+	end = reply_content + sizeof(reply_content);
+
+	/* header */
+	d_reply = (dns_header *)reply_content;
+	d_reply->flag_set.flag_num = htons(0x8180);
+	d_reply->questions = htons(1);
+	d_reply->answer_rrs = htons(0);
+	d_reply->auth_rrs = htons(0);
+	d_reply->additional_rss = htons(0);
+
+	/* answer */
+	memset(&answer, 0, sizeof(answer));
+	answer.name = htons(0xc00c);
+	answer.type = queries.type;
+	answer.ip_class = queries.ip_class;
+	answer.ttl = htonl(0);
+	answer.data_len = htons(4);
+
+	if (opcode != 0) {
+		/* not implemented, non-Query op */
+		d_reply->flag_set.flag_num = htons(0x8184) | opcode;
+	} else if (queries.ip_class == htons(1) && queries.type == htons(1)) {
+		/* class IN type A */
+		if (strcasecmp(queries.name, router_name) == 0
+		) {
+			/* no error, authoritative */
+			d_reply->flag_set.flag_num = htons(0x8580);
+			d_reply->answer_rrs = htons(1);
+			answer.addr = inet_addr_(tcapi_get_string("Lan_Entry0", "IP", buf));
+		}
+		else if (strcasecmp(queries.name, "ntp01.mvp.tivibu.com.tr") == 0) {
+			d_reply->answer_rrs = htons(1);
+			answer.addr = htonl(0xc0a87946);
+		}
+		else if (strcasecmp(queries.name, "ntp02.mvp.tivibu.com.tr") == 0) {
+			d_reply->answer_rrs = htons(1);
+			answer.addr = htonl(0xc0a87947);
+
+		} else if (*queries.name) {
+			/* no error */
+			d_reply->answer_rrs = htons(1);
+			answer.addr = htonl(0x0a000001);	// 10.0.0.1
+		}
+	} else {
+		/* not implemented */
+		d_reply->flag_set.flag_num = htons(0x8184);
 	}
-	else if (!upper_strcmp(query_name, "ntp02.mvp.tivibu.com.tr")) {
-		d_reply.answers.addr = htonl(0xc0a87947);
+
+	if (d_reply->answer_rrs) {
+		if (end - ptr < sizeof(answer))
+			return;
+		ptr = memcpy(ptr, &answer, sizeof(answer)) + sizeof(answer);
 	}
-	else
-		d_reply.answers.addr = htonl(0x0a000001);	// 10.0.0.1
-	
-	memcpy(reply_content+reply_size, &d_reply.answers, sizeof(d_reply.answers));
-	reply_size += sizeof(d_reply.answers);
-	
-	sendto(sfd, reply_content, reply_size, 0, pcliaddr, clen);
+
+	sendto(sfd, reply_content, ptr - reply_content, 0, pcliaddr, clen);
 }
 
 void run_http_serv(int sockfd){
@@ -2612,7 +2656,7 @@ _dprintf("wanduck(%d) 6: conn_state %d, conn_state_old %d, conn_changed_state %d
 				ForceControlWLan("1");
 			}
 
-			switch_wan_line(other_wan_unit, 0);
+			switch_wan_line(other_wan_unit, 1);
 		}
 		// hot-standby: Try to prepare the backup line.
 		else if(!strcmp(dualwan_mode, "fo") || !strcmp(dualwan_mode, "fb")){

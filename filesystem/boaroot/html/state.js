@@ -1,4 +1,5 @@
-﻿document.write('<script type="text/javascript" src="/js/support_site.js"></script>');
+﻿document.write('<script type="text/javascript" src="/require/require.min.js"></script>');
+document.write('<script type="text/javascript" src="/js/support_site.js"></script>');
 /* String splice function */
 String.prototype.splice = function( idx, rem, s ) {
     return (this.slice(0,idx) + s + this.slice(idx + Math.abs(rem)));
@@ -268,7 +269,7 @@ function change_wl_unit_status(_unit){
 	
 	document.change_wunit.wl_unit.value = _unit;	
 	showLoading(2);
-	setTimeout("document.location.href='/Advanced_WAdvanced_Content.asp';", 2000);
+	setTimeout("document.location.href='/Advanced_Wireless_Content.asp';", 2000);
 	document.change_wunit.submit();
 }
 
@@ -365,24 +366,7 @@ if(is_UK_sku){
 	banner_code +='<dd><a onclick="submit_language(5)" id="DA">Dansk</a></dd>\n';
 	banner_code +='<dd><a onclick="submit_language(15)" id="SV">Svensk</a></dd>\n'
 }
-else if(is_EU_sku){
-	banner_code +='<dd><a onclick="submit_language(1)" id="EN">English</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(18)" id="TW">繁體中文</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(3)" id="CN">简体中文</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(4)" id="CZ">Česky</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(13)" id="PL">Polski</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(14)" id="RU">Pусский</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(6)" id="DE">Deutsch</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(9)" id="FR">Français</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(17)" id="TR">Türkçe</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(16)" id="TH">ไทย</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(11)" id="MS">Malay</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(2)" id="BR">Portuguese(Brazil)</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(7)" id="ES">Español</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(10)" id="IT">Italiano</a></dd>\n';
-	banner_code +='<dd><a onclick="submit_language(19)" id="UK">Український</a></dd>\n';
-}
-else{	
+else{ //EU, WE support all langs (19)
 	banner_code +='<dd><a onclick="submit_language(1)" id="EN">English</a></dd>\n';
 	banner_code +='<dd><a onclick="submit_language(18)" id="TW">繁體中文</a></dd>\n';
 	banner_code +='<dd><a onclick="submit_language(3)" id="CN">简体中文</a></dd>\n';
@@ -398,7 +382,7 @@ else{
 	banner_code +='<dd><a onclick="submit_language(8)" id="FI">Suomi</a></dd>\n';
 	banner_code +='<dd><a onclick="submit_language(5)" id="DA">Dansk</a></dd>\n';
 	banner_code +='<dd><a onclick="submit_language(15)" id="SV">Svensk</a></dd>\n'
-	banner_code +='<dd><a onclick="submit_language(2)" id="BR">Portuguese(Brazil)</a></dd>\n';
+	banner_code +='<dd><a onclick="submit_language(2)" id="BR">Português(Brazil)</a></dd>\n';
 	//banner_code +='<dd><a onclick="submit_language(this)" id="JP">日本語</a></dd>\n'
 	banner_code +='<dd><a onclick="submit_language(7)" id="ES">Español</a></dd>\n';
 	banner_code +='<dd><a onclick="submit_language(10)" id="IT">Italiano</a></dd>\n';
@@ -489,7 +473,7 @@ $("TopBanner").innerHTML = banner_code;
 show_loading_obj();
 show_top_status();
 set_Dr_work();
-updateStatus_AJAX();
+updateStatus();
 
 	if(app_support && !isIE8){
 			document.body.addEventListener('click', show_app_table, false);
@@ -2171,59 +2155,21 @@ else
 obj.parentNode.parentNode.style.display = "";
 return true;
 }
-var http_request_status = false;
-function makeRequest_status(url) {
-	http_request_status = new XMLHttpRequest();
-	if (http_request_status && http_request_status.overrideMimeType)
-		http_request_status.overrideMimeType('text/xml');
-	else
-		return false;
-	
-	http_request_status.onreadystatechange = function(){
-		if (http_request_status != null && http_request_status.readyState != null && http_request_status.readyState == 4){
-			if (http_request_status.status != null && http_request_status.status == 200){
-				var xmldoc_mz = http_request_status.responseXML;
-				refresh_info_status(xmldoc_mz);
-			}
-		}
-	}
 
-	http_request_status.open('GET', url, true);
-	http_request_status.send(null);
-}
-var xmlDoc_ie;
-function makeRequest_status_ie(file)
-{
-xmlDoc_ie = new ActiveXObject("Microsoft.XMLDOM");
-xmlDoc_ie.async = "false";
-if (xmlDoc_ie.readyState==4)
-{
-xmlDoc_ie.load(file);
-setTimeout("refresh_info_status(xmlDoc_ie);", 1000);
-}
-}
-
-var updateStatusCounter = 0;
+//Update current system status
 var AUTOLOGOUT_MAX_MINUTE = "";
 if("<% tcWebApi_Get("Misc_Entry", "http_autologout", "s") %>" != "")
-	AUTOLOGOUT_MAX_MINUTE = parseInt("<% tcWebApi_Get("Misc_Entry", "http_autologout", "s") %>");
+	AUTOLOGOUT_MAX_MINUTE = parseInt("<% tcWebApi_Get("Misc_Entry", "http_autologout", "s") %>") * 20;
 else
-	AUTOLOGOUT_MAX_MINUTE = 30;
-function updateStatus_AJAX()
-{
-	if(stopFlag == 1) 
-		return false;
+	AUTOLOGOUT_MAX_MINUTE = 30 * 20;
+function updateStatus(){
+	if(stopFlag == 1) return false;
+	if(AUTOLOGOUT_MAX_MINUTE == 1) location = "Main_Login.asp"; // 0:disable auto logout, 1:trigger auto logout. 
 
-	if(updateStatusCounter > parseInt(20 * AUTOLOGOUT_MAX_MINUTE))
-		location = "Logout.asp";
-		
-	var ie = window.ActiveXObject;
-	if(ie)
-		makeRequest_status_ie('/cgi-bin/ajax_status.xml?hash=' + Math.random().toString());
-	else
-		makeRequest_status('/cgi-bin/ajax_status.xml?hash=' + Math.random().toString());
-
-	//setTimeout("updateStatus_AJAX();", 3000);
+	require(['/require/modules/makeRequest.js'], function(makeRequest){
+		if(AUTOLOGOUT_MAX_MINUTE != 0) AUTOLOGOUT_MAX_MINUTE--;
+		makeRequest.start('/cgi-bin/ajax_status.xml', refreshStatus, function(){stopFlag = 1;});
+	});
 }
 
 var link_status;
@@ -2270,11 +2216,13 @@ if(usb_support != -1){
 	var tmp_mount_1 = foreign_disk_total_mounted_number()[1];		//Viz 2013.07
 }
 
-function refresh_info_status(xmldoc)
+function refreshStatus(xhr)
 {
-	if(AUTOLOGOUT_MAX_MINUTE > 0) updateStatusCounter++;
-
-	var devicemapXML = xmldoc.getElementsByTagName("devicemap");
+	setTimeout(function(){updateStatus();}, 3000);	/* restart ajax */
+	
+	var parser = new DOMParser();
+	var doc = parser.parseFromString(xhr.responseText, 'application/xml');
+	var devicemapXML = doc.getElementsByTagName("devicemap");
 	var SysStatus = devicemapXML[0].getElementsByTagName("sys");
 	uptimeStr_update = SysStatus[0].firstChild.nodeValue.replace("uptimeStr=", "");
 	boottime_update = parseInt(uptimeStr_update.substring(32,42)); 
@@ -2583,8 +2531,7 @@ function refresh_info_status(xmldoc)
 		document.getElementById("cooler_status").onmouseover = function(){overHint(7);}
 		document.getElementById("cooler_status").onmouseout = function(){nd();}
 	}
-	if(window.frames["statusframe"] && window.frames["statusframe"].stopFlag == 1 || stopFlag == 1) return;
-	setTimeout("updateStatus_AJAX();", 3000);
+	if(window.frames["statusframe"] && window.frames["statusframe"].stopFlag == 1 || stopFlag == 1) return;	
 }
 
 var notification = {
@@ -2920,7 +2867,7 @@ var lang_flag = get_preferred_lang_type();
 			break;
 		}
 		case '2':{
-			$('selected_lang').innerHTML = "Portuguese(Brazil)&nbsp&nbsp";
+			$('selected_lang').innerHTML = "Português(Brazil)&nbsp&nbsp";
 			$('BR').parentNode.style.display = "none";
 			break;
 		}

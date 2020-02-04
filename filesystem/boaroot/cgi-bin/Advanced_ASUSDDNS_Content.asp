@@ -148,8 +148,10 @@ function apply_eula_check(){
 
 function applyRule(){
 	if(validForm()){
-		with(document.form){
+		if(document.form.ddns_enable_x[0].checked == true && document.form.ddns_server_x.selectedIndex == 0){
+			document.form.ddns_hostname_x.value = document.form.DDNSName.value+".asuscomm.com";
 		}
+
 		showLoading();
 		document.form.submit();
 	}
@@ -158,58 +160,64 @@ function applyRule(){
 function redirect(){
 	document.location.href = "/cgi-bin/Advanced_ASUSDDNS_Content.asp";
 }
+
 function validForm(){
-	if(document.form.ddns_server_x.value == "WWW.ASUS.COM"){
-		if(!validate_string(document.form.DDNSName)
-		|| !validate_ddns_hostname(document.form.DDNSName)){
-			document.form.DDNSName.focus();
-			document.form.DDNSName.select();
-			return false;
-		}
-	}
-	else{
-		if(!validate_string(document.form.ddns_username_x)
-		|| !validate_string(document.form.ddns_passwd_x))
-		return false;
-	}
-	if(document.form.ddns_enable_x[0].checked){
+	if(document.form.ddns_enable_x[0].checked){	//ddns enable
+
 		if(document.form.ddns_server_x.selectedIndex == 0){ //WWW.ASUS.COM
 			if(document.form.DDNSName.value == ""){
-			alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_14","s")%>");
-			document.form.DDNSName.focus();
-			document.form.DDNSName.select();
-			return false;
-			}else{
-			document.form.ddns_hostname_x.value = document.form.DDNSName.value+".asuscomm.com";
-			return true;
+				alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_14","s")%>");
+				document.form.DDNSName.focus();
+				document.form.DDNSName.select();
+				return false;
 			}
+			else if(!validate_ddns_hostname(document.form.DDNSName)){
+					document.form.DDNSName.focus();
+					document.form.DDNSName.select();
+					return false;
+			}
+			else
+				return true;
 		}
 		else{
+
 			if(document.form.ddns_hostname_x.value == ""){
 				alert("<%tcWebApi_get("String_Entry","LHC_x_DDNS_alarm_14","s")%>");
 				document.form.ddns_hostname_x.focus();
 				document.form.ddns_hostname_x.select();
 				return false;
 			}
-			else if(document.form.ddns_server_x.selectedIndex != 0 && document.form.ddns_username_x.value == ""){
+			else if(!validator.string(document.form.ddns_hostname_x)){
+				return false;
+			}
+			
+			if(document.form.ddns_username_x.value == ""){
 				alert("<%tcWebApi_get("String_Entry","QKS_account_nameblank","s")%>");
 				document.form.ddns_username_x.focus();
 				document.form.ddns_username_x.select();
 				return false;
 			}
-			else if(document.form.ddns_server_x.selectedIndex != 0 && document.form.ddns_passwd_x.value == ""){
+			else if(!validator.string(document.form.ddns_username_x)){
+				return false;
+			}
+			
+			if(document.form.ddns_passwd_x.value == ""){
 				alert("<%tcWebApi_get("String_Entry","File_Pop_content_alert_desc6","s")%>");
 				document.form.ddns_passwd_x.focus();
 				document.form.ddns_passwd_x.select();
 				return false;
 			}
-			else
+			else if(!validator.string(document.form.ddns_passwd_x)){
+				return false;
+			}
+			
 			return true;
 		}
 	}
 	else
-	return true;
+		return true;
 }
+
 function checkDDNSReturnCode(){
 	$j.ajax({
 	url: '/cgi-bin/ajax_ddnscode.asp',
