@@ -279,7 +279,7 @@ helpcontent[25] = new Array("",
 							"This item allows system to monitor the DSL line, designed to maintain stability of the line. Based on current line condition necessary changes will be adopted.",
 							"This item configures Rx AGC(Auto Gain Control) GAIN for VDSL, if after tweak the Stability Adjustment (VDSL) setting, VDSL connection is still unstable and has some CRC then could set to Stable mode.",
 							"This item configures Rx AGC(Auto Gain Control) GAIN for ADSL, if tweak the Stability Adjustment (ADSL) setting still could not get desired downstream speed, then could try to set Rx AGC GAIN Adjustment to High Performance mode. However if your ADSL connection is unstable and has some CRC then could set to Stable mode.",
-							"This item configures Rx AGC(Auto Gain Control) GAIN for ADSL, if after tweak the Stability Adjustment (ADSL) setting, ADSL connection is still unstable and has some CRC then could set to Stable mode.",
+							"This item configures Rx AGC(Auto Gain Control) GAIN for ADSL, if after tweak the Stability Adjustment (ADSL) setting, ADSL connection is still unstable and has some CRC then could set to Stable mode.",	//15
 							"This item supports G.vector. With G.vector crosstalk among the signals in the same cable could be canceled, such as far-end crosstalk (FEXT). Which would significantly improve Signal-to-Noise Ratio (SNR) that leads to higher achievable bit rates. However CO must deploy Vectored VDSL2 DSLAM in order for this feature to work. If you find it doesn't work well or you know the G.vector of your ISP is non-standard, please enable both of this option and Non-standard G.vector.",
 							"This item supports Non-standard G.vector for specific countries. Please note that if your G.vector is standard, please do not enable this option for optimized performance.",
 							"This command is helpful for some impulse noise environment to enhance line stability.",
@@ -327,4 +327,8 @@ helpcontent[32] = new Array("",
 							" If you would like other clients to be able to this specific client's subnet, choose Yes and Enable \"Allow Client <-> Client\".",/*untranslated*/
 							"The message digest algorithm which is used to authenticate packets with HMAC. HMAC usually adds 16 or 20 bytes per packet."/*untranslated*/
 							);
-
+//Feedback
+helpcontent[34] = new Array("",
+							"This feature allows system to capture diagnostic System debug log in the background, duration depends on the “Diagnostic debug log capture duration” option, depends on the option selected, system might transmit single debug log automatically to ASUS Support Team for analysis after capture completed or transmit multiple debug logs over a period of time. Click on the yellow System icon could cancel the debug log capture.",/*untranslated*/
+							"<% tcWebApi_Get("String_Entry", "Feedback_case_No_desc", "s") %>"
+							);

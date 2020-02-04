@@ -639,7 +639,7 @@ function initial(){
 <%end if%>
 <%end if%>
 
-	if((document.form.wan_8021q.value != 1) || (document.form.disp_wan_8021q.value != 1)){
+	if(document.form.wan_8021q.value != 1 || document.form.disp_wan_8021q.value != 1){
 		showhide("div_8021q", 0);
 	}
 
@@ -1292,18 +1292,19 @@ function validForm(){
 			break;
 	}
 
-        if(document.form.wan_hostname.value.length > 0){
-                var alert_str = validate_hostname(document.form.wan_hostname);
+	if(document.form.wan_hostname.value.length > 0){
+		var alert_str = validate_hostname(document.form.wan_hostname);
 
-                if(alert_str != ""){
-                        showtext(document.getElementById("alert_msg1"), alert_str);
-                        document.getElementById("alert_msg1").style.display = "";
-                        document.form.wan_hostname.focus();
-                        document.form.wan_hostname.select();
-                        return false;
-                }else{
-                        document.getElementById("alert_msg1").style.display = "none";
-	        }
+		if(alert_str != ""){
+			showtext(document.getElementById("alert_msg1"), alert_str);
+			document.getElementById("alert_msg1").style.display = "";
+			document.form.wan_hostname.focus();
+			document.form.wan_hostname.select();
+			return false;
+		}else{
+			document.getElementById("alert_msg1").style.display = "none";
+		}
+
 		document.form.wan_hostname.value = trim(document.form.wan_hostname.value);
 	}
 
@@ -1562,7 +1563,7 @@ function doIPVersionChange() {
 // "WebCurSet_Entry","wan_pvc"		/ ATM
 //"WebCurSet_Entry","wan_pvc_ext"	/ PTM | Ethernet
 function doConTypeChange() {
-	with (document.form){		
+	with (document.form){	
 		switch(wanTypeOption.selectedIndex) {
 			case 0:	//Automatic IP
 				if(isForInternet()){
@@ -1573,7 +1574,7 @@ function doConTypeChange() {
 				else{
 					inputCtrl(document.form.UPnP_active[0], 0);
 					inputCtrl(document.form.UPnP_active[1], 0);
-				}	
+				}
 				if (is8021xsupport.value == "1") {
 					showhide("div_802_1x", 1);
 				}
@@ -1652,7 +1653,7 @@ function doConTypeChange() {
 				else{
 					inputCtrl(document.form.UPnP_active[0], 0);
 					inputCtrl(document.form.UPnP_active[1], 0);
-				}	
+				}
 				if (is8021xsupport.value == "1") {
 					showhide("div_802_1x", 1);
 				}
@@ -1888,18 +1889,20 @@ function rm_IPTV_LANPort(){	//remove wans_lanport if dual wan with Ethernet LAN
 
 function doEncapChange() {
 	with (document.form){
-		switch(wanTypeOption.selectedIndex) {
-			case 2:	//pppoa, pppoe
-				if((0 == wan_Encap2.selectedIndex) || (1 == wan_Encap2.selectedIndex)){
-					showhide("wan_ISPRequirement", 1);
-				}
-				else{
-					showhide("wan_ISPRequirement", 0);
-				}
-				break;
+		if( ( wanTypeOption.value == 0 && (wan_Encap0.value == "1483 Bridged IP LLC" || wan_Encap0.value == "1483 Bridged IP VC-Mux") ) ||
+			( wanTypeOption.value == 1 && (wan_Encap1.value == "1483 Bridged IP LLC" || wan_Encap1.value == "1483 Bridged IP VC-Mux") ) ||
+			( wanTypeOption.value == 2 && (wan_Encap2.value == "PPPoE LLC" || wan_Encap2.value == "PPPoE VC-Mux") ) ||
+			( wanTypeOption.value == 3 && (wan_Encap3.value == "1483 Bridged Only LLC" || wan_Encap3.value == "1483 Bridged Only VC-Mux") ) ){
+			//showhide("wan_ISPRequirement", 1);
+			showhide("div_8021q", 1);
+			document.form.wan_8021q.value = 1;
+			document.form.disp_wan_8021q.value = 1;
+		}
+		else{
+			//showhide("wan_ISPRequirement", 0);
+			showhide("div_8021q", 0);
 		}
 	}
-	return;
 }
 
 function doDefaultRouteYes() {

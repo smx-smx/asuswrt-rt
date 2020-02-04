@@ -766,6 +766,7 @@ autobench_clean:
 endif
 
 obj-$(RTCONFIG_OPENVPN) += lzo
+obj-$(RTCONFIG_OPENVPN) += lz4
 obj-$(RTCONFIG_OPENVPN) += openpam
 obj-$(RTCONFIG_OPENVPN) += openvpn
 obj-$(RTCONFIG_IPSEC) += strongswan
@@ -3644,6 +3645,18 @@ lzo_clean:
 	@rm -f $(APP_LZO_DIR)/stamp-h1
 	@rm -f $(FILESYSTEM_DIR)/usr/lib/liblzo2.so*
 
+lz4:
+	$(MAKE) -C $(APP_LZ4_DIR)
+	cp $(APP_LZ4_DIR)/lib/liblz4.so.1.8.3 $(FILESYSTEM_DIR)/usr/lib/liblz4.so.1.8.3
+	$(STRIP) $(FILESYSTEM_DIR)/usr/lib/liblz4.so.1.8.3
+	cd $(FILESYSTEM_DIR)/usr/lib && ln -sf liblz4.so.1.8.3 liblz4.so.1
+	cd $(FILESYSTEM_DIR)/usr/lib && ln -sf liblz4.so.1.8.3 liblz4.so
+
+lz4_clean:
+	-@$(MAKE) -C $(APP_LZ4_DIR) clean
+	@rm -f $(APP_LZ4_DIR)/stamp-h1
+	@rm -f $(FILESYSTEM_DIR)/usr/lib/liblzo2.so*
+
 openpam/Makefile:
 	cd $(APP_OPENPAM_DIR) && mkdir -p m4 && ./autogen.sh
 	if test ! -e $(APP_OPENPAM_DIR)/stamp-h1; then \
@@ -3671,27 +3684,32 @@ openpam_clean:
 	@rm -f $(FILESYSTEM_DIR)/usr/lib/libpam.so.2
 	@rm -f $(FILESYSTEM_DIR)/usr/lib/pam_unix.so
 
-openvpn/stamp-h1: lzo zlib openpam
+openvpn/stamp-h1:
 	cd $(APP_OPENVPN_DIR) && ./autogen.sh
 	if test ! -e $(APP_OPENVPN_DIR)/stamp-h1; then \
 		cd $(APP_OPENVPN_DIR) && ./autogen.sh && \
-		OPENSSL_CRYPTO_CFLAGS="-I$(APP_OPENSSL_DIR)/include" \
-		OPENSSL_CRYPTO_LIBS="-L$(APP_OPENSSL_DIR)/ -lcrypto" \
-		OPENSSL_SSL_CFLAGS="-I$(APP_OPENSSL_DIR)/include" \
-		OPENSSL_SSL_LIBS="-L$(APP_OPENSSL_DIR)/ -lssl" \
+		OPENSSL_CFLAGS="-I$(APP_OPENSSL_DIR)/include" \
+		OPENSSL_LIBS="-L$(APP_OPENSSL_DIR)/ -lssl -lcrypto" \
+		LIBPAM_CFLAGS="-I$(APP_OPENPAM_DIR)/include" \
 		LIBPAM_LIBS="-L$(APP_OPENPAM_DIR)/lib/libpam/.libs -lpam" \
 		LZO_CFLAGS="-I$(APP_LZO_DIR)/include" \
 		LZO_LIBS="-L$(APP_LZO_DIR)/src/.libs -llzo2" \
-		CFLAGS="-Os -Wall $(TC_CFLAGS) -I$(APP_SHARED_DIR) -I$(APP_TCAPILIB_DIR) -I$(LIB_UTILS_DIR) -I$(APP_OPENPAM_DIR)/include -I$(APP_OPENSSL_DIR)/include"\
-		LDFLAGS="-L$(APP_SHARED_DIR) -lshared -L$(APP_TCAPILIB_DIR) -ltcapi -L$(APP_ZLIB_DIR) -lz -lpthread -ldl -ffunction-sections -fdata-sections -Wl,--gc-sections" \
-		IPROUTE="/usr/sbin/ip" \
+		LZ4_CFLAGS="-I$(APP_LZ4_DIR)/lib" \
+		LZ4_LIBS="-L$(APP_LZ4_DIR)/lib -llz4" \
+		CFLAGS="-Os -Wall -DASUSWRT"\
+		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections \
+			-lpthread -ldl \
+			-L$(APP_ZLIB_DIR) -lz" \
+		IPROUTE="/usr/bin/ip" \
+		IFCONFIG="/sbin/ifconfig" \
+		ROUTE="/sbin/route" \
 		./configure -host=mips-linux \
-		--prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
-		--disable-debug --enable-management --disable-small \
-		--disable-selinux --disable-socks --enable-password-save \
-		--enable-plugin-auth-pam \
-		ac_cv_lib_resolv_gethostbyname=no \
-		&& touch stamp-h1; \
+			--prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
+			--disable-debug --enable-management --disable-small \
+			--disable-selinux --disable-systemd \
+			--enable-plugin-auth-pam \
+			ac_cv_lib_resolv_gethostbyname=no \
+			&& touch stamp-h1; \
 	fi
 
 openvpn: openvpn/stamp-h1
@@ -3702,8 +3720,7 @@ openvpn: openvpn/stamp-h1
 	cp $(APP_OPENVPN_DIR)/src/plugins/auth-pam/.libs/openvpn-plugin-auth-pam.so $(FILESYSTEM_DIR)/usr/lib/openvpn-plugin-auth-pam.so
 	$(STRIP) -s $(FILESYSTEM_DIR)/usr/lib/openvpn-plugin-auth-pam.so
 	@mkdir -p $(FILESYSTEM_DIR)/rom/easy-rsa
-	cp $(APP_OPENVPN_DIR)/easy-rsa/2.0/* $(FILESYSTEM_DIR)/rom/easy-rsa
-	cp $(APP_ETC_SCRIPT_DIR)/updown.sh $(FILESYSTEM_DIR)/usr/script/updown.sh
+	cp $(APP_EASYRSA_DIR)/2.0/* $(FILESYSTEM_DIR)/rom/easy-rsa
 	#crond
 	cp $(APP_ETC_SCRIPT_DIR)/cru $(FILESYSTEM_DIR)/usr/script/cru
 	openssl dhparam -dsaparam -out $(FILESYSTEM_DIR)/rom/dh2048.pem 2048
@@ -4101,8 +4118,7 @@ else
 	rm -f $(FILESYSTEM_DIR)/usr/script/3ginfo.sh
 endif
 
-#copy webs_update.sh and webs_upgrade.sh
-	cp $(APP_PRIVATE_DIR)/etc_script/webs_update.sh $(FILESYSTEM_DIR)/usr/script/webs_update.sh
+#copy webs_upgrade.sh
 	cp $(APP_PRIVATE_DIR)/etc_script/webs_upgrade.sh $(FILESYSTEM_DIR)/usr/script/webs_upgrade.sh
 #copy webs_upgrade2.sh for AiCloud live update
 	cp $(APP_PRIVATE_DIR)/etc_script/webs_upgrade2.sh $(FILESYSTEM_DIR)/usr/script/webs_upgrade2.sh

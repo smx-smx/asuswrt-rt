@@ -59,11 +59,11 @@ function initial(){
 
 	if(eula_status.ASUS_EULA == "1"){
 		document.getElementById("asus_eula").style.display = "";
-		if(alexa_support == "-1" && ifttt_support == "-1"){
+		if(alexa_support < 0 && ifttt_support < 0){
 			document.getElementById("asus_eula_title").innerHTML = "<% tcWebApi_get("String_Entry","ASUS_eula_withdraw0","s") %>";
 			document.getElementById("alexa_ifttt").style.display = "none";
 		}
-		else if(alexa_support >= 0 && ifttt_support == "-1"){
+		else if(alexa_support >= 0 && ifttt_support < 0){
 			document.getElementById("asus_eula_title").innerHTML = "<% tcWebApi_get("String_Entry","ASUS_eula_withdraw0_Alexa","s") %>";
 			document.getElementById("alexa_ifttt").innerHTML = "<% tcWebApi_get("String_Entry","ASUS_eula_withdraw_desc2_Alexa","s") %>";
 		}

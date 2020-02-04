@@ -6,13 +6,13 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-#include "shared.h"
-#include "openvpn_options.h"
-#include "openvpn_config.h"
 #define TYPEDEF_BOOL
-#include "shutils.h"
-#include "tcapi.h"
-#include "libtcapi.h"
+#include <shared.h>
+#include <shutils.h>
+#include <tcapi.h>
+#include <libtcapi.h>
+#include <openvpn_options.h>
+#include <openvpn_config.h>
 
 struct buffer
 alloc_buf (size_t size)
@@ -340,28 +340,43 @@ add_custom(int unit, char *p[])
 	char custom[MAXLEN_TCAPI_MSG] = {0};
 	char *param = NULL;
 	char *final_custom = NULL;
-	int i = 0, size = 0;
+	int i = 0, size = 0, sizeParam = 0;
 
 	if(!p[0])
 		return;
 
 	while(p[i]) {
 		size += strlen(p[i]) + 1;
+		if(strchr(p[i], ' ')) {
+			size += 2;
+		}
 		i++;
 	}
 
 	param = (char*)calloc(size, sizeof(char));
+	sizeParam = size * sizeof(char);
 
 	if(!param)
 		return;
 
 	i = 0;
 	while(p[i]) {
+		//_dprintf("p[%d]: [%s]\n", i, p[i]);
 		if(*param)
-			strcat(param, " ");
-		strcat(param, p[i]);
+			strlcat(param, " ", sizeParam);
+
+		if(strchr(p[i], ' ')) {
+			strlcat(param, "\"", sizeParam);
+			strlcat(param, p[i], sizeParam);
+			strlcat(param, "\"", sizeParam);
+		}
+		else {
+			strlcat(param, p[i], sizeParam);
+		}
+
 		i++;
 	}
+	_dprintf("add [%s]\n", param);
 
 	snprintf(node, sizeof(node), "OpenVPN_Entry%d", OVPN_CLIENT_BASE + unit);
 	tcapi_get(node, "custom", custom);
@@ -372,12 +387,13 @@ add_custom(int unit, char *p[])
 			return;
 		}
 		final_custom = calloc(strlen(custom) + strlen(param) + 2, sizeof(char));
+		sizeParam = (strlen(custom) + strlen(param) + 2)*sizeof(char);
 		if(final_custom) {
 			if(*custom) {
-				strcat(final_custom, custom);
-				strcat(final_custom, "\n");
+				strlcat(final_custom, custom, sizeParam);
+				strlcat(final_custom, "\n", sizeParam);
 			}
-			strcat(final_custom, param);
+			strlcat(final_custom, param, sizeParam);
 			tcapi_set(node, "custom", final_custom);
 			free(final_custom);
 		}
@@ -412,8 +428,6 @@ add_option (char *p[], int line, int unit)
 
 		if(p[2])
 			tcapi_set(node, "port", p[2]);
-		else
-			tcapi_set(node, "port", "1194");
 
 		if(p[3])
 			tcapi_set(node, "proto", p[3]);
@@ -435,6 +449,13 @@ add_option (char *p[], int line, int unit)
 			tcapi_set(node, "comp", p[1]);
 		else
 			tcapi_set(node, "comp", "adaptive");
+	}
+	else if (streq (p[0], "compress"))
+	{
+		if(p[1])
+			tcapi_set(node, "comp", p[1]);
+		else
+			tcapi_set(node, "comp", "no");
 	}
 	else if (streq (p[0], "cipher") && p[1])
 	{
@@ -529,6 +550,16 @@ add_option (char *p[], int line, int unit)
 	else if (streq (p[0], "tls-remote") && p[1])
 	{
 		tcapi_set(node, "tlsremote", "1");
+		tcapi_set(node, "common_name", p[1]);
+	}
+	else if (streq (p[0], "verify-x509-name") && p[1] && p[2])
+	{
+		if (streq(p[2], "name"))
+			tcapi_set(node, "tlsremote", "1");
+		else if (streq(p[2], "name-prefix"))
+			tcapi_set(node, "tlsremote", "2");
+		else if (streq(p[2], "subject"))
+			tcapi_set(node, "tlsremote", "3");
 		tcapi_set(node, "common_name", p[1]);
 	}
 	else if (streq (p[0], "key-direction") && p[1])

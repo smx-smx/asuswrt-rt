@@ -1,6 +1,5 @@
 <%
 	if request_Form("live_update_flag") = "1" then
-		tcWebApi_set("Misc_Entry","firmware_path","firmware_path")
 		update_variables()
 	elseif request_Form("live_upgrade_flag") = "1" then
 		update_variables()
@@ -29,7 +28,7 @@
 	var action_script = "<% get_parameter("action_script"); %>";
 	
 	function initial(){		
-		if(action_script.indexOf("start_webs_update") >= 0) {				
+		if(action_script.indexOf("frs_update") >= 0) {				
 				setTimeout("parent.detect_firmware();", 5000);
 		}
 		if(action_script.indexOf("start_webs_upgrade") >= 0) {

@@ -1,17 +1,10 @@
 ﻿var Untranslated = {
-deviceDiscorvy : '<span style="color:#FC0"><%tcWebApi_get("String_Entry","Web_Title2","s")%> IP will be different after changing to Access Point mode. To help find the wireless router\'s IP, please download the <a href="http://dlcdnet.asus.com/pub/ASUS/wireless/ASUSWRT/Discovery.zip" style="font-family:Lucida Console;text-decoration:underline;color:#FC0;">Device Discovery</a> first.</span>',
-ContinuedPrevWLKey : 'Continuation of the previous wireless security setting?',
-dhcp_conflict_vpn : 'There is a conflict with VPN clients: ',
-vpn_conflict_LANip : '* It is a conflict with router\'s LAN ip:',
-vpn_conflict_DHCPpool : '* It is a conflict with router\'s DHCP pool:',
-vpn_conflict_DHCPstatic : '* It is a conflict with router\'s DHCP static ip:',
 valid_range_int : 'Please enter a positive integer',
 ASUSGATE_note9 : "Your DSL (Digital Suscriber Line) seems unstable. DLA (Dynamic Line Adjustment) enabled by default has modified the necessary setting to improve the network stability. If failed, please submit feedback to our support team.",
 ASUSGATE_note6 : 'Your DSL (Digital Suscriber Line) seems unstable. We strongly recommend that you submit feedback to our support team.',
 ASUSGATE_note7 : 'If you are experiencing any DSL related issues or you have any comments, please feel free to inform our support team.',
 ASUSGATE_act_feedback : 'Feedback now',
 ASUSGATE_DSL_setting : "Go setting DSL",
-Email_validation : 'The format of E-mail address is not valid.',
 ISP_not_support : 'We currently do not support this location, please use <b>Manual</b>.',
 IPv6_prefix_validation : 'Invalid IPv6 Prefix',
 IPv6_addr_validation : 'Invalid IPv6 Address',
@@ -174,9 +167,11 @@ function overHint(itemNum){
                 else
                         lineDesc += "Link down";
 
-		if(wan_diag_state == "1" && 
-			((rc_support.search("usbX1") >= 0 && usb_path1.search("storage") >= 0) || 
-				(rc_support.search("usbX2") >= 0 && (usb_path1.search("storage") >= 0 || usb_path2.search("storage") >= 0)))
+		if(wan_diag_state == "1" &&
+			(	Diag2jffs_support ||
+				(rc_support.search("usbX1") >= 0 && usb_path1.search("storage") >= 0) || 
+				(rc_support.search("usbX2") >= 0 && (usb_path1.search("storage") >= 0 || usb_path2.search("storage") >= 0))
+			)
 		){
 			lineDesc += "<br>Diagnostic debug log capture in progress.<br>";
 			lineDesc += show_diagTime(boottime_update);
@@ -1900,7 +1895,10 @@ function check_common_string(pwd, flag){
 
 // ---------- Viz add for pwd strength check [Start] 2012.12 -----
 
-function chkPass(pwd, flag) {
+function chkPass(pwd, flag, max) {
+	if(pwd.length == max){
+		alert("<%tcWebApi_get("String_Entry","JS_max_password","s")%>");
+	}
 	var orig_pwd = "";
 
 	// Simultaneous variable declaration and value assignment aren't supported in IE apparently

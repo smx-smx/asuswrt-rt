@@ -22,7 +22,7 @@
 #endif
 
 #if defined(TCSUPPORT_ATE11) && defined(TCSUPPORT_WLAN_RT6856) /* ATE Command v1.1 in reservearea */
-#define MTD_DATA_AREA_LEN 117 /* The total size of all parameters */
+#define MTD_DATA_AREA_LEN 130 /* The total size of all parameters */
 #else
 #define MTD_DATA_AREA_LEN 92
 #endif
@@ -42,6 +42,7 @@
 #define ATE_HWVERSION_LEN 3
 #define ATE_DATECODE_LEN 8
 #define ATE_HWBOM_LEN 19
+#define ATE_SN_LEN 12
 #endif
 
 #if defined(TCSUPPORT_DUAL_WLAN)
@@ -68,6 +69,7 @@
 #define ATE_HWVERSION_OFFSET (ATE_HWID_OFFSET + ATE_HWID_LEN + 1)
 #define ATE_DATECODE_OFFSET (ATE_HWVERSION_OFFSET + ATE_HWVERSION_LEN + 1)
 #define ATE_HWBOM_OFFSET (ATE_DATECODE_OFFSET + ATE_DATECODE_LEN + 1)
+#define ATE_SN_OFFSET (ATE_HWBOM_OFFSET + ATE_HWBOM_LEN + 1)
 #endif
 
 #define ATE_FLASH_QUIETREAD_CMD		"/userfs/bin/mtd -q -q readflash %s %lu %lu %s"
@@ -86,6 +88,7 @@ typedef enum ate_param_id{
 	ATE_PARAM_HWVERSION,
 	ATE_PARAM_DATECODE,
 	ATE_PARAM_HWBOM,
+	ATE_PARAM_SN,
 #endif
 	ATE_PARAM_MAX
 } ate_param_id_t;
@@ -103,6 +106,7 @@ typedef struct ate_param{
 	char hwversion[4];
 	char datecode[9];
 	char hwbom[20];
+	char sn[13];
 #endif
 } ate_param_t;
 

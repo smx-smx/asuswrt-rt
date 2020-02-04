@@ -1348,7 +1348,7 @@ function update_rewanDateTime()
 							<tr>
 								<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,4)"><%tcWebApi_get("String_Entry","PASS_new","s")%></a></th>
 								<td>
-									<input type="password" autocapitalization="off" autocomplete="off" name="uiViewTools_Password" maxlength="16" value="" onKeyPress="return validator.isString(this, event);" onkeyup="chkPass(this.value, 'http_passwd');" onpaste="return false;" class="input_18_table" onBlur="clean_scorebar(this);">
+									<input type="password" autocapitalization="off" autocomplete="off" name="uiViewTools_Password" maxlength="16" value="" onKeyPress="return validator.isString(this, event);" onKeyUp="chkPass(this.value, 'http_passwd', 16);" onPaste="return false;" class="input_18_table" onBlur="clean_scorebar(this);">
 										&nbsp;&nbsp;
 									<div id="scorebarBorder" name="scorebarBorder" style="margin-left:180px; margin-top:-25px; display:none;" title="<%tcWebApi_get("String_Entry","LHC_x_Password_itemSecur","s")%>">
 										<div id="score" name="score"></div>
@@ -1375,7 +1375,7 @@ function update_rewanDateTime()
 							<tr id="btn_ez_radiotoggle_tr">
 								<th><%tcWebApi_get("String_Entry","WPS_btn_behavior","s")%></th>
 								<td>
-									<input type="radio" id="radio2" name="btn_ez_radiotoggle" class="input" value="2" <% if tcWebApi_get("SysInfo_Entry","btn_ez_radiotoggle","h") = "2" then asp_Write("checked") end if %>><label id="radio_text2">Turn LED On/Off</label>
+									<input type="radio" id="radio2" name="btn_ez_radiotoggle" class="input" value="2" <% if tcWebApi_get("SysInfo_Entry","btn_ez_radiotoggle","h") = "2" then asp_Write("checked") end if %>><label id="radio_text2"><%tcWebApi_get("String_Entry","LED_switch","s")%></label>
 									<input type="radio" id="radio1" name="btn_ez_radiotoggle" class="input" value="1" <% if tcWebApi_get("SysInfo_Entry","btn_ez_radiotoggle","h") = "1" then asp_Write("checked") end if %>><label id="radio_text1"><%tcWebApi_get("String_Entry","WPS_btn_toggle","s")%></label>
 									<input type="radio" id="radio0" name="btn_ez_radiotoggle" class="input" value="0" <% if tcWebApi_get("SysInfo_Entry","btn_ez_radiotoggle","h") = "0" then asp_Write("checked") end if %>><label id="radio_text0"><%tcWebApi_get("String_Entry","WPS_btn_actWPS","s")%></label>
 								</td>

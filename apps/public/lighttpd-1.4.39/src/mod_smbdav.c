@@ -58,6 +58,11 @@
 #include <curl/curl.h>
 #include <openssl/md5.h>
 #include <openssl/x509.h>
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#define X509_getm_notBefore X509_get_notBefore
+#define X509_getm_notAfter X509_get_notAfter
+#define ASN1_STRING_get0_data(x) ASN1_STRING_data(x)
+#endif
 
 #if (defined APP_IPKG) && (defined I686)
 extern char actual_s_system[10];
@@ -5480,11 +5485,7 @@ propmatch_cleanup:
 
 #if EMBEDDED_EANBLE
 
-#ifdef USE_TCAPI
-		system("/usr/script/webs_update.sh");
-#else
-		system("/usr/sbin/webs_update.sh");
-#endif
+		system("frs_update &");
 
 		char* newest_version = nvram_get_latest_version();
 		int webs_state_error = nvram_get_webs_state_error();
@@ -6414,8 +6415,8 @@ propmatch_cleanup:
 				X509_NAME_oneline(X509_get_issuer_name(x509data), issuer_name, sizeof(issuer_name));
 				X509_NAME_oneline(X509_get_subject_name(x509data), subject_name, sizeof(subject_name));
 
-				strcpy(crt_start_date, x509data->cert_info->validity->notBefore->data);
-				strcpy(crt_end_date, x509data->cert_info->validity->notAfter->data);
+				snprintf(crt_start_date, sizeof(crt_start_date), "%s", ASN1_STRING_get0_data(X509_getm_notBefore(x509data)));
+				snprintf(crt_end_date, sizeof(crt_end_date), "%s", ASN1_STRING_get0_data(X509_getm_notAfter(x509data)));
 				
 				Cdbg(DBE, "Issuer  name: %s", issuer_name);
 			}
@@ -7928,6 +7929,7 @@ propmatch_cleanup:
 		}
 #endif
 
+#if MULTIACCOUNT_EANBLE
 		int userid = -1;
 		buffer *username = buffer_init();
 		buffer *password = buffer_init();
@@ -8101,6 +8103,7 @@ propmatch_cleanup:
 			buffer_free(permission);
 				
 		}
+#endif
 
 		con->http_status = 200;
 		con->file_finished = 1;
@@ -8117,7 +8120,8 @@ propmatch_cleanup:
 			return HANDLER_FINISHED;
 		}
 #endif
-		
+
+#if MULTIACCOUNT_EANBLE		
 		buffer* username = NULL;
 		
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "USERNAME"))) {
@@ -8209,13 +8213,13 @@ propmatch_cleanup:
 #endif
 			
 		}
+#endif
 		
 		con->http_status = 200;
 		con->file_finished = 1;
 		return HANDLER_FINISHED;
 	}
 
-#if MULTIACCOUNT_EANBLE
 	case HTTP_METHOD_GETACCOUNTINFO:{
 		Cdbg(DBE, "do HTTP_METHOD_GETACCOUNTINFO");
 
@@ -8277,7 +8281,8 @@ propmatch_cleanup:
 		response_header_overwrite(srv, con, CONST_STR_LEN("Content-Type"), CONST_STR_LEN("text/xml; charset=\"utf-8\""));
 
 		b = buffer_init();
-		
+
+#if MULTIACCOUNT_EANBLE		
 		buffer_copy_string_len(b, CONST_STR_LEN("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
 		buffer_append_string_len(b, CONST_STR_LEN("<result>"));
 		buffer_append_string_len(b, CONST_STR_LEN("<username>"));
@@ -8297,7 +8302,7 @@ propmatch_cleanup:
 		else
 			buffer_append_string_len(b, CONST_STR_LEN("user"));
 		buffer_append_string_len(b, CONST_STR_LEN("</permission>"));
-				
+		
 		if(var_type == T_ACCOUNT_AICLOUD){
 
 			aicloud_acc_info_t* c;
@@ -8324,7 +8329,17 @@ propmatch_cleanup:
 			buffer_append_string_buffer(b, username);
 			buffer_append_string_len(b, CONST_STR_LEN("</name>"));			
 		}
-		
+#else
+		buffer_copy_string_len(b, CONST_STR_LEN("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
+		buffer_append_string_len(b, CONST_STR_LEN("<result>"));
+		buffer_append_string_len(b, CONST_STR_LEN("<username>"));
+		buffer_append_string_buffer(b, username);
+		buffer_append_string_len(b, CONST_STR_LEN("</username>"));
+		buffer_append_string_len(b, CONST_STR_LEN("<permission>"));
+		buffer_append_string_len(b, CONST_STR_LEN("admin"));
+		buffer_append_string_len(b, CONST_STR_LEN("</permission>"));
+#endif
+
 		buffer_append_string_len(b, CONST_STR_LEN("</result>"));
 				
 		chunkqueue_append_buffer(con->write_queue, b);
@@ -8344,7 +8359,8 @@ propmatch_cleanup:
 			return HANDLER_FINISHED;
 		}
 #endif
-		
+
+#if MULTIACCOUNT_EANBLE
 		//- Only admin can get account's info
 		if(is_connection_admin_permission(srv, con)==0){
 			con->http_status = 400;
@@ -8447,7 +8463,7 @@ propmatch_cleanup:
 
 		chunkqueue_append_buffer(con->write_queue, b);
 		buffer_free(b);
-				
+#endif				
 
 		con->http_status = 200;
 		con->file_finished = 1;
@@ -8463,7 +8479,8 @@ propmatch_cleanup:
 			return HANDLER_FINISHED;
 		}
 #endif
-		
+
+#if MULTIACCOUNT_EANBLE		
 		//- Only admin can get account's info
 		if(is_connection_admin_permission(srv, con)==0){
 			con->http_status = 400;
@@ -8630,7 +8647,8 @@ propmatch_cleanup:
 
 		chunkqueue_append_buffer(con->write_queue, b);
 		buffer_free(b);
-		
+#endif
+
 		con->http_status = 200;
 		con->file_finished = 1;
 		return HANDLER_FINISHED;
@@ -8645,7 +8663,8 @@ propmatch_cleanup:
 			return HANDLER_FINISHED;
 		}
 #endif
-		
+
+#if MULTIACCOUNT_EANBLE		
 		//- Only admin can get account's info
 		if(is_connection_admin_permission(srv, con)==0){
 			con->http_status = 400;
@@ -8698,7 +8717,8 @@ propmatch_cleanup:
 		
 		chunkqueue_append_buffer(con->write_queue, b);
 		buffer_free(b);
-		
+#endif
+
 		con->http_status = 200;
 		con->file_finished = 1;
 		return HANDLER_FINISHED;
@@ -8714,6 +8734,7 @@ propmatch_cleanup:
 		}
 #endif
 
+#if MULTIACCOUNT_EANBLE	
 		buffer* invite_token = NULL;
 				
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "TOKEN"))) {
@@ -8788,7 +8809,8 @@ propmatch_cleanup:
 				
 		chunkqueue_append_buffer(con->write_queue, b);
 		buffer_free(b);
-		
+#endif
+
 		con->http_status = 200;
 		con->file_finished = 1;
 		return HANDLER_FINISHED;
@@ -8803,7 +8825,8 @@ propmatch_cleanup:
 			return HANDLER_FINISHED;
 		}
 #endif
-		
+
+#if MULTIACCOUNT_EANBLE			
 		//- Only admin can get account's info
 		if(is_connection_admin_permission(srv, con)==0){
 			con->http_status = 400;
@@ -8831,6 +8854,7 @@ propmatch_cleanup:
 				break;
 			}
 		}
+#endif
 
 		con->http_status = 200;
 		con->file_finished = 1;
@@ -8969,8 +8993,6 @@ propmatch_cleanup:
 		return HANDLER_FINISHED;
 	}
 #endif
-
-#endif //- end MULTIACCOUNT_EANBLE
 
 	case HTTP_METHOD_OPENSTREAMINGPORT:{
 		Cdbg(DBE, "do HTTP_METHOD_OPENSTREAMINGPORT");

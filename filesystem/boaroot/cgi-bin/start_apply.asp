@@ -128,6 +128,9 @@ elseif Request_Form("current_page") = "Advanced_Feedback.asp" then
 	If Request_Form("DslDiagFlag") = "1" Then
 		tcWebApi_Set("DslDiag_Entry","dslx_diag_enable","dslx_diag_enable")
 		tcWebApi_Set("DslDiag_Entry","dslx_diag_duration","dslx_diag_duration")
+		If Request_Form("chg2jffsFlag") = "1" Then
+			tcWebApi_Set("DslDiag_Entry","dslx_diag_log_path","dslx_diag_log_path")
+		end if
 	end if
 	If Request_Form("saveFlag") = "1" Then
 		tcWebApi_Set("GUITemp_Entry0","fb_tmp_country","fb_country")

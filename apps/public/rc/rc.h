@@ -296,8 +296,6 @@ extern int ntp_main(int argc, char *argv[]);
 extern int ots_main(int argc, char *argv[]);
 
 // common.c
-extern in_addr_t inet_addr_(const char *cp);	// oleg patch
-extern int inet_equal(char *addr1, char *mask1, char *addr2, char *mask2);
 extern void usage_exit(const char *cmd, const char *help) __attribute__ ((noreturn));
 #define modprobe(mod, args...) ({ char *argv[] = { "/sbin/modprobe", mod, ## args, NULL }; _eval(argv, NULL, 0, NULL); })
 extern int insertmod(char *mod_full_path);
@@ -429,6 +427,11 @@ extern int vpnc_ip6up_main(int argc, char **argv);
 extern int vpnc_ip6down_main(int argc, char **argv);
 #endif
 #endif
+
+// ovpn.c
+extern int ovpn_up_main(int argc, char **argv);
+extern int ovpn_down_main(int argc, char **argv);
+extern int ovpn_route_up_main(int argc, char **argv);
 
 // tr069.c
 #ifdef RTCONFIG_TR069

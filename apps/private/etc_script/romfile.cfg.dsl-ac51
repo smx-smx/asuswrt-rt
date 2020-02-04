@@ -409,6 +409,9 @@ FwUpgradeDelay="0" FwUpgradeCfg="1" FwUpgradeRxCnt="50" RandomInform="0" SendHos
 	PM_USE_TLS="true" PM_SMTP_AUTH="LOGIN" PM_SMTP_AUTH_USER="" PM_SMTP_AUTH_PASS="" PM_title="" PM_target="" PM_restart="0" PM_debug="0" PM_freq="0" PM_mon="0" PM_day="0" PM_hour="0"
 	PM_attach_syslog="0" PM_attach_cfgfile="0" PM_attach_iptables="0" />
 </PushMail>
+<DslDiag>
+	<Entry dslx_diag_enable="0" dslx_diag_duration="3600" dslx_diag_state="0" dslx_diag_end_uptime="0" dslx_diag_log_path="/tmp" dslx_diag_log_link="" />
+</DslDiag>
 <Timezone>
 	<Entry TYPE="0" TZ="GMT" DAYLIGHT="Disable" SERVER="pool.ntp.org" PCSyncFlag="0" TZ_second="" />
 </Timezone>

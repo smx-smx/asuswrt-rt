@@ -331,8 +331,10 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 
 			//DSL-N66U seems workless for this option Access Intranet
 			if(sw_mode != "3"){
-					if(gn_array[i][0] == "1")
-							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ gn_array[i][12] +'</td></tr>';
+					if(gn_array[i][0] == "1"){
+							var status_Access_Intranet = (gn_array[i][12]=="on")?"<%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_button1name","s")%>":"<%tcWebApi_get("String_Entry","WC11b_WirelessCtrl_buttonname","s")%>";
+							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ status_Access_Intranet +'</td></tr>';
+					}
 			}
 
 			if(gn_array[i][0] == "1"){

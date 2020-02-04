@@ -287,7 +287,7 @@ void PROCESS_UNPACK_GET_INFO(char *pbuf, struct sockaddr_in from_addr)
 	
 	// copy info to local buffer
     // check whether buffer overflow!
-    if (a_GetRouterCount >= MAX_NO_OF_IBOX)
+    if (a_GetRouterCount >= MAX_SEARCH_ROUTER)
         return;
 	
     //memcpy(txMac, get_discovery_info.MacAddress, 6);

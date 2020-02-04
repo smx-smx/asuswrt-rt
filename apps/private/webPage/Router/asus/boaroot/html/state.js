@@ -216,6 +216,7 @@ var country_code = "<% tcWebApi_get("WLan_Common","wl0_CountryCode","s") %>";
 var notice_acpw_is_default = '<% check_acpw(); %>';
 var noti_auth_mode_2g = '<%tcWebApi_staticGet("WLan_Entry0", "wl0_auth_mode_x", "s")%>';
 var noti_auth_mode_5g = '<%tcWebApi_staticGet("WLan_Entry0", "wl1_auth_mode_x", "s")%>';
+var webs_state_flag = '<% tcWebApi_get("WebCustom_Entry", "webs_state_flag", "s" ) %>';
 var st_ftp_mode = '<%tcWebApi_staticGet("Samba_Entry", "st_ftp_mode", "s") %>';
 var st_ftp_force_mode = '<%tcWebApi_staticGet("Samba_Entry", "st_ftp_force_mode", "s") %>';
 var st_samba_mode = '<%tcWebApi_staticGet("Samba_Entry", "st_samba_mode", "s") %>';
@@ -434,7 +435,7 @@ if(app_support){
 	banner_code +='<div><img src="/images/New_ui/asus_router_android_qr.png" style="width:75px;height:75px;"></div>';
 	banner_code +='</div>';
 	banner_code +='<div style="display:table-cell;vertical-align:middle;width:100%;text-align:center">';
-	banner_code +='<div style="padding-left: 30px;"><a href="https://play.google.com/store/apps/details?id=com.asus.aihome" target="_blank"><div style="width:172px;height:60px;background:url(\'/images/cloudsync/googleplay.png\') no-repeat;"></div></a></div>';
+	banner_code +='<div style="padding-left: 30px;"><a href="https://play.google.com/store/apps/details?id=com.asus.aihome" target="_blank"><div style="width:172px;height:60px;background:url(\'/images/googleplay.png\') no-repeat;"></div></a></div>';
 	banner_code +='</div>';	
 	banner_code +='</div>';
 	//AppStore
@@ -443,7 +444,7 @@ if(app_support){
 	banner_code +='<div><img src="/images/New_ui/asus_router_ios_qr.png" style="width:75px;height:75px;"></div>';
 	banner_code +='</div>';
 	banner_code +='<div style="display:table-cell;vertical-align:middle;width:100%;text-align:center">';
-	banner_code +='<div style="padding-left: 30px;"><a href="https://itunes.apple.com/tw/app/asus-router/id1033794044" target="_blank"><div style="width:172px;height:51px;background:url(\'/images/cloudsync/AppStore.png\') no-repeat;"></div></a></div>';
+	banner_code +='<div style="padding-left: 30px;"><a href="https://itunes.apple.com/tw/app/asus-router/id1033794044" target="_blank"><div style="width:172px;height:51px;background:url(\'/images/AppStore.png\') no-repeat;"></div></a></div>';
 	banner_code +='</div>';	
 	banner_code +='</div>';
 	
@@ -585,6 +586,8 @@ var ifttt_support = rc_support.search("ifttt");
 var alexa_support = rc_support.search("alexa");
 // rc_support end
 
+var Diag2jffs_support = (productid=="DSL-N16" || productid=="DSL-AC51" || productid=="DSL-AC750")?true:false;
+
 // parsing ss_support (Smart Sync)
 var ss_support = '<% tcWebApi_Get("AiCloud_Entry","ss_support","s") %>';
 var smart_sync_support = false;
@@ -692,16 +695,6 @@ var wl_info = {
 	wl_if_total:wl_nband_array.length
 };
 //wireless end
-
-if(live_update_support){
-	if(exist_firmver[0] == 9)
-		var current_firmware_path = 1;
-	else
-		var current_firmware_path = 0;	
-}	
-else{
-	var current_firmware_path = 0;
-}
 
 var QISWIZARD = "QIS_wizard.asp";
 
@@ -1177,17 +1170,17 @@ cal_height();
         }else
                 notification.acpw = 0;
 
-        if(isNewFW('<% tcWebApi_get("WebCustom_Entry", "webs_state_info", "s" ) %>', current_firmware_path, current_firmware_path)){     //case2
+        if(webs_state_flag==1 || webs_state_flag==2){     //case2
                 notification.array[1] = 'noti_upgrade';
                 notification.upgrade = 1;
                 notification.desc[1] = '<%tcWebApi_get("String_Entry","ASUSGATE_note2","s")%>';
                 if(live_update_support == -1 || HTTPS_support == -1){
                 	notification.action_desc[1] = '<a id="link_to_downlodpage" target="_blank" href="'+get_helplink()+'" style="color:#FFCC00;"><%tcWebApi_get("String_Entry","ASUSGATE_act_update","s")%></a>';
-			notification.clickCallBack[1] = "";
+					notification.clickCallBack[1] = "";
                 }
                 else{
                 	notification.action_desc[1] = '<%tcWebApi_get("String_Entry","ASUSGATE_act_update","s")%>';
-                	notification.clickCallBack[1] = "location.href = '/Advanced_FirmwareUpgrade_Content.asp?confirm_show="+current_firmware_path+"'";
+                	notification.clickCallBack[1] = "location.href = '/Advanced_FirmwareUpgrade_Content.asp?confirm_show=0'";
                 }	
         }else
                 notification.upgrade = 0;
@@ -2220,9 +2213,7 @@ function refreshStatus(xhr)
 {
 	setTimeout(function(){updateStatus();}, 3000);	/* restart ajax */
 	
-	var parser = new DOMParser();
-	var doc = parser.parseFromString(xhr.responseText, 'application/xml');
-	var devicemapXML = doc.getElementsByTagName("devicemap");
+	var devicemapXML = xhr.responseXML.getElementsByTagName("devicemap");
 	var SysStatus = devicemapXML[0].getElementsByTagName("sys");
 	uptimeStr_update = SysStatus[0].firstChild.nodeValue.replace("uptimeStr=", "");
 	boottime_update = parseInt(uptimeStr_update.substring(32,42)); 
@@ -2290,8 +2281,10 @@ function refreshStatus(xhr)
 	if(sw_mode == 1){
 		//Viz add 2013.03 for adsl sync status
 		if(wan_diag_state == "1" && 
-				((rc_support.search("usbX1") >= 0 && usb_path1.search("storage") >= 0) || 
-				(rc_support.search("usbX2") >= 0 && (usb_path1.search("storage") >= 0 || usb_path2.search("storage") >= 0)))
+				(Diag2jffs_support ||
+				 ((rc_support.search("usbX1") >= 0 && usb_path1.search("storage") >= 0) || 
+				 (rc_support.search("usbX2") >= 0 && (usb_path1.search("storage") >= 0 || usb_path2.search("storage") >= 0)))
+				)
 		){
 			document.getElementById("adsl_line_status").className = "linestatusdiag";
 			document.getElementById("adsl_line_status").onclick = function(){openHint(24,8);}
@@ -3159,49 +3152,6 @@ function corrected_timezone(_flag, _tz){
 	}
 	else
 		return;
-}
-
-var isNewFW = function(FWVer, check_path, current_path){	//path> 0:stable, 1:beta 	
-	if(check_path != current_path){
-		if(FWVer.length < 5)	//length should be longer than 17 (e.g. //#FW1106_86-g09787df	#FW1106) 
-			return false;
-		else
-			return true;	// suppose new fw on stable path if current_path is beta path.
-	}
-	else{
-			
-		var Latest_firmver = FWVer;	//#FW1106_86-g09787df	#FW1106
-		if(Latest_firmver != ''){
-			if(Latest_firmver.search("_") >= 0){
-				var Latest_firm_buildno = parseInt(Latest_firmver.substring(0,Latest_firmver.search("_")));
-				var Latest_firm_extendno = parseInt(Latest_firmver.substring(Latest_firmver.search("_")+1, Latest_firmver.search("-")));
-			}	
-			else{
-				var Latest_firm_buildno = Latest_firmver;
-				var Latest_firm_extendno = 0;
-			}	
-		
-			var parsed_exist_firmver = '<% tcWebApi_staticGet("DeviceInfo","FwVer","s") %>'.replace(/[.]/gi,"");	//1.1.0.6_300-g41200cf
-			if(parsed_exist_firmver.search("_") >= 0){
-				var current_firm_buildno = parseInt(parsed_exist_firmver.substring(0,parsed_exist_firmver.search("_")).replace(/[.]/gi,""));
-				var current_firm_extendno = parseInt(parsed_exist_firmver.substring(parsed_exist_firmver.search("_")+1, parsed_exist_firmver.search("-")));
-			}	
-			else{	
-				var current_firm_buildno = parsed_exist_firmver;
-				var current_firm_extendno = 0;
-			}	
-				
-			if(current_firm_buildno < Latest_firm_buildno ||
-					(current_firm_buildno == Latest_firm_buildno && current_firm_extendno < Latest_firm_extendno))
-			{
-				return true;
-			}
-			else
-				return false;
-		}		
-		
-		return false;
-	}
 }
 
 var cookie = {

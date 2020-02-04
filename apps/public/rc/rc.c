@@ -252,6 +252,11 @@ static const applets_t applets[] = {
 	{ "vpnc-ipv6-down",		vpnc_ip6down_main				},
 #endif
 #endif
+#ifdef RTCONFIG_OPENVPN
+	{ "ovpn-up",			ovpn_up_main				},
+	{ "ovpn-down",			ovpn_down_main			},
+	{ "ovpn-route-up",		ovpn_route_up_main				},
+#endif
 	{ "hotplug",			hotplug_main			},
 	{ "ddns_updated", 		ddns_updated_main		},
 	{ "udhcpc_wan",			udhcpc_wan			},

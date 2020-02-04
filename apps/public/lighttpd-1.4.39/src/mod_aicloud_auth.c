@@ -775,7 +775,9 @@ static smb_info_t *smbdav_get_smb_info_from_pool(server *srv, connection *con, p
 	char pShare[1280]={0};
 	char pPath[1280]={0};
 	
-	smbc_wrapper_parse_path2(con, pWorkgroup, pServer, pShare, pPath);
+	if(smbc_wrapper_parse_path2(con, pWorkgroup, pServer, pShare, pPath)!=1){
+		return NULL;
+	}
 
 	buffer* buffer_server = buffer_init();
 	if(pServer[0] != '\0')
@@ -835,7 +837,9 @@ static int aicloud_connection_smb_info_init(server *srv, connection *con, plugin
 	char pShare[1280]={0};
 	char pPath[1280]={0};
 	
-	smbc_wrapper_parse_path2(con, pWorkgroup, pServer, pShare, pPath);
+	if(smbc_wrapper_parse_path2(con, pWorkgroup, pServer, pShare, pPath)!=1){
+		return 2;
+	}
 	
 	buffer* bworkgroup = buffer_init();
 	buffer* bserver = buffer_init();

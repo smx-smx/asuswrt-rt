@@ -197,12 +197,10 @@ function initial(){
 	if(rc_support.search("usbX") == -1 || rc_support.search("usbX1") > -1){
 		document.getElementById("deviceIcon_1").style.display = "none";
 		document.getElementById("deviceDec_1").style.display = "none";
-		document.getElementById("usb1_image").style.display = "none";
+		document.getElementById("usb1_text").style.display = "none";
 	}
 	show_USBDevice();
 	//showMapWANStatus();
-	
-	check_usb3();	
 
 	if(sw_mode == "1"){
 		document.getElementById("wanIP_status").innerHTML = '<span style="word-break:break-all;">' + wanlink_ipaddr + '</span>'
@@ -865,17 +863,6 @@ function change_wan_state(primary_status, secondary_status){
 	}
 }
 
-function check_usb3(){
-	/*Viz : Not support USB 3.0 model yet
-	if(based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC69U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68U_V2" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-N18U" || based_modelid == "TM-AC1900"){
-		document.getElementById('usb0_image').src = "images/New_ui/networkmap/USB3.png";
-	}
-	else if(based_modelid == "RT-N65U"){
-		document.getElementById('usb0_image').src = "images/New_ui/networkmap/USB3.png";
-		document.getElementById('usb1_image').src = "images/New_ui/networkmap/USB3.png";
-	}*/
-	return;
-}
 </script>
 </head>
 <body onunload="return unload_body();">
@@ -1014,7 +1001,7 @@ function check_usb3(){
 						<td width="36" rowspan="6" id="clientspace_td"></td>
 						<td id="usb1_tr" width="160" bgcolor="#444f53" align="center" valign="top" class="NM_radius_top">
 							<div style="margin-top:20px;" id="deviceIcon_0"></div>
-							<div><img id="usb0_image" src="/images/New_ui/networkmap/USB2.png"></div>
+							<div id="usb0_text" class="usb_text">USB 2.0</div>
 							<div style="margin:10px 0px;">
 								<span id="deviceText_0"></span>
 								<select id="deviceOption_0" class="input_option" style="display:none;height:20px;width:130px;font-size:12px;"></select>	
@@ -1027,7 +1014,7 @@ function check_usb3(){
 						</td>
 						<td height="150" bgcolor="#444f53" align="center" valign="top" class="NM_radius_bottom">
 							<div style="margin-top:10px;" id="deviceIcon_1"></div>
-							<div><img id="usb1_image" src="/images/New_ui/networkmap/USB2.png"></div>
+							<div id="usb1_text" class="usb_text">USB 2.0</div>
 							<div style="margin:10px 0px;">
 								<span id="deviceText_1"></span>
 								<select id="deviceOption_1" class="input_option" style="display:none;height:20px;width:130px;font-size:12px;"></select>	

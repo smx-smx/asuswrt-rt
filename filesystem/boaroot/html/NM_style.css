@@ -83,6 +83,16 @@
 #iconWebcam{ background:url(/images/New_ui/networkmap/map-iconWebcam.png) no-repeat 0% 0%; width:89px; height:89px; cursor:pointer;}
 .iconNo{ background:url(/images/New_ui/networkmap/devicebt_default.png) no-repeat; width:91px; height:91px;}
 
+.usb_text {
+    font: bold 16px Sans-Serif;
+    text-shadow: 1px 1px 1px #677C84;
+    color:#23292b;
+}
+.usb_text.plugin {
+    color: #FFFFFF;
+    text-shadow: 1px 2px 1px #000000;
+}
+
 .table1px{
 	border:1px solid #4d595d; 
 	background-color:#4d595d;

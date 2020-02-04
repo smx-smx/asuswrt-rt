@@ -152,7 +152,7 @@ function showMethod(flag1, flag2){
 				<ul class="">
 					<li>
 						<a id="faq1" href="https://www.asus.com/support/FAQ/114046/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","asus_ez_print_share","s")%> FAQ</a>&nbsp;&nbsp;
-						<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FC0">Download Now!</a>
+						<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FC0"><%tcWebApi_get("String_Entry","Download_now","s")%></a>
 					</li>
 					<li style="margin-top:10px;">
 						<a id="faq2" href="https://www.asus.com/support/FAQ/114024/" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><%tcWebApi_get("String_Entry","LPR_print_share","s")%> FAQ (Windows)</a>&nbsp;&nbsp;

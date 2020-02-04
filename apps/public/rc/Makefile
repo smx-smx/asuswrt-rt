@@ -45,6 +45,7 @@ endif
 
 ifeq ($(RTCONFIG_OPENVPN),y)
 CFLAGS += -DRTCONFIG_CROND
+OBJS += ovpn.o
 endif
 
 ifeq ($(RTCONFIG_VPNC),y)

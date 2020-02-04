@@ -22,6 +22,7 @@
 <script type="text/javaScript" src="/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
+
 function initial(){
 	show_menu();
 	if(modem_support == -1){
@@ -29,11 +30,13 @@ function initial(){
 		document.getElementById("attach_modem_span").style.display = "none";
 	}
 
-	if(dsl_diag_support >= 0 && usb_support >= 0){
+	if(dsl_diag_support >= 0 && (Diag2jffs_support || usb_support >= 0) ){
 		change_dsl_diag_enable(0);
 		check_dsl_diag_state();
 		if(!wl_info.band5g_support){		//single band
-			inputCtrl(document.adv_adsl.dslx_diag_enable[3], 0);	
+			inputCtrl(document.adv_adsl.dslx_diag_enable[3], 0);
+			document.adv_adsl.dslx_diag_enable[3].style.display = "none";
+			document.getElementById("5GHz_text").style.display = "none";
 		}
 	}
 	else{
@@ -55,7 +58,13 @@ function check_dsl_diag_state(){
 		document.adv_adsl.dslx_diag_enable[0].disabled = "true";
 		document.adv_adsl.dslx_diag_enable[1].disabled = "true";
 		document.adv_adsl.dslx_diag_enable[2].disabled = "true";
-		document.adv_adsl.dslx_diag_enable[3].disabled = "true";
+		if(wl_info.band5g_support){
+			document.adv_adsl.dslx_diag_enable[3].disabled = "true";
+		}
+		else{
+			document.adv_adsl.dslx_diag_enable[3].style.display = "none";
+			document.getElementById("5GHz_text").style.display = "none";
+		}
 		document.adv_adsl.dslx_diag_duration.disabled = "true";
 		document.getElementById("diag_proceeding").style.display = "";
 		document.getElementById("diag_proceeding").innerHTML = "* Diagnostic debug log capture in progress. " +show_diagTime(boottime_update)+"<br><span onclick=\"cancel_diag();\" style=\"cursor:pointer;text-decoration:underline;\">Cancel debug capture</span>";
@@ -64,7 +73,13 @@ function check_dsl_diag_state(){
 		document.adv_adsl.dslx_diag_enable[0].disabled = "";
 		document.adv_adsl.dslx_diag_enable[1].disabled = "";
 		document.adv_adsl.dslx_diag_enable[2].disabled = "";
-		document.adv_adsl.dslx_diag_enable[3].disabled = "";
+		if(wl_info.band5g_support){
+			document.adv_adsl.dslx_diag_enable[3].disabled = "";
+		}
+		else{
+			document.adv_adsl.dslx_diag_enable[3].style.display = "none";
+			document.getElementById("5GHz_text").style.display = "none";
+		}
 		document.adv_adsl.dslx_diag_duration.disabled = "";
 		document.getElementById("diag_proceeding").style.display = "none";
 	}
@@ -121,7 +136,9 @@ function check_wan_state(){
 			document.adv_adsl.dslx_diag_enable[0].disabled = "";
 			document.adv_adsl.dslx_diag_enable[1].disabled = "";
 			document.adv_adsl.dslx_diag_enable[2].disabled = "";
-			document.adv_adsl.dslx_diag_enable[3].disabled = "";
+			if(wl_info.band5g_support){
+				document.adv_adsl.dslx_diag_enable[3].disabled = "";
+			}
 			document.adv_adsl.dslx_diag_duration.disabled = "";
 			document.getElementById("diag_proceeding").style.display = "none";
 		}
@@ -134,7 +151,12 @@ function check_wan_state(){
 	setTimeout("check_wan_state();", 3000);
 }
 
-function updateUSBStatus(){	
+function updateUSBStatus(){
+
+	if(Diag2jffs_support){
+		return;
+	}
+
 	if((rc_support.search("usbX") == -1 || rc_support.search("usbX1") >= 0) && usb_path1.search("storage") == -1){	//single USB port		
 		document.getElementById("be_lack_storage").style.display = "";
 	}
@@ -181,17 +203,24 @@ function applyRule(){
 		split_fb_comment();
 		
 		if(document.adv_adsl.fb_email.value == ""){
-				if(!confirm("E-mail address field is empty. Are you sure you want to proceed?")){
+				if(!confirm("<%tcWebApi_get("String_Entry","feedback_email_confirm","s")%>")){
 						document.adv_adsl.fb_email.focus();
 						return false;
 				}
 		}
 		else{   //validate email                        
 				if(!isEmail(document.adv_adsl.fb_email.value)){
-					alert(Untranslated.Email_validation);
+					alert("<%tcWebApi_get("String_Entry","feedback_email_alert","s")%>");
 					document.adv_adsl.fb_email.focus();
 					return false;
 				}
+		}
+
+		var re = new RegExp("^[a-zA-Z][0-9]{10}","gi");
+		if(!re.test(document.adv_adsl.fb_serviceno.value) && document.adv_adsl.fb_serviceno.value != ""){
+			alert("<%tcWebApi_get("String_Entry","JS_validchar","s")%>");
+			document.adv_adsl.fb_serviceno.focus();
+			return false;
 		}
 		
 		document.adv_adsl.saveFlag.value = 1;
@@ -200,6 +229,9 @@ function applyRule(){
 			document.adv_adsl.dslx_diag_enable[3].checked == true)
 		{
 			document.adv_adsl.DslDiagFlag.value = 1;
+			if(Diag2jffs_support){
+				document.adv_adsl.chg2jffsFlag.value = 1;
+			}
 			showLoading(120);
 			setTimeout("redirect();", 120*1000);
 		}
@@ -238,29 +270,38 @@ function textCounter(field, cnt, upper) {
 
 function change_dsl_diag_enable(value) {
 	if(value > 0) {
-		
-		if(rc_support.search("usbX") == -1 || rc_support.search("usbX1") >= 0){	//single USB port
+		if(Diag2jffs_support){
+			document.adv_adsl.dslx_diag_duration[0].style.display = "none";
+			document.adv_adsl.dslx_diag_duration[1].selected = true;
+			document.adv_adsl.dslx_diag_duration[2].style.display = "none";
+			document.adv_adsl.dslx_diag_duration[3].style.display = "none";
+			document.adv_adsl.dslx_diag_duration[4].style.display = "none";
+			document.adv_adsl.dslx_diag_duration[5].style.display = "none";
+			showhide("dslx_diag_duration_tr",1);
+		}	
+		else if(rc_support.search("usbX") == -1 || rc_support.search("usbX1") >= 0){	//single USB port
 			if(usb_path1.search("storage") == -1){
 				alert("USB disk required in order to store the debug log, please plug-in a USB disk to <%tcWebApi_get("String_Entry","Web_Title2","s")%> and Enable DSL Line / Wi-Fi Diagnostic again.");
-				//document.adv_adsl.dslx_diag_enable[1].checked = true;
+				document.adv_adsl.dslx_diag_enable[0].checked = true;
 				return;
 			}
 			else{
 				alert("While debug log capture in progress, please do not unplug the USB disk as the debug log would be stored in the disk. UI top right globe icon flashing in yellow indicating that debug log capture in progress. Click on the yellow globe icon could cancel the debug log capture.");	/* Please note that xDSL line would resync in one minute after Feedback form submitted.*/
+				showhide("dslx_diag_duration_tr",1);
 			}	
 		}
 		else if(rc_support.search("usbX2") >= 0 ){	//two USB port
 			if(usb_path1.search("storage") == -1 && usb_path2.search("storage") == -1){
 				alert("USB disk required in order to store the debug log, please plug-in a USB disk to <%tcWebApi_get("String_Entry","Web_Title2","s")%> and Enable DSL Line / Wi-Fi Diagnostic again.");
-				//document.adv_adsl.dslx_diag_enable[1].checked = true;
+				document.adv_adsl.dslx_diag_enable[0].checked = true;
 				return;
 			}
 			else{
 				alert("While debug log capture in progress, please do not unplug the USB disk as the debug log would be stored in the disk. UI top right globe icon flashing in yellow indicating that debug log capture in progress. Click on the yellow globe icon could cancel the debug log capture.");	/* Please note that xDSL line would resync in one minute after Feedback form submitted.*/
+				showhide("dslx_diag_duration_tr",1);
 			}
 		}
-		
-		showhide("dslx_diag_duration_tr",1);
+				
 	}
 	else {
 		showhide("dslx_diag_duration_tr",0);
@@ -302,6 +343,8 @@ function change_dsl_diag_enable(value) {
 <input type="hidden" name="WANConnCurState" value="0">
 <input type="hidden" name="saveFlag" value="0">
 <input type="hidden" name="DslDiagFlag" value="0">
+<input type="hidden" name="chg2jffsFlag" value="0">
+<input type="hidden" name="dslx_diag_log_path" value="/jffs">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 <tr>
 <td width="17">&nbsp;</td>
@@ -323,7 +366,7 @@ function change_dsl_diag_enable(value) {
 <div class="formfonttitle"><%tcWebApi_get("String_Entry","menu5_6","s")%> - <%tcWebApi_get("String_Entry","menu_dsl_feedback","s")%></div>
 <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
 <div class="formfontdesc"><%tcWebApi_get("String_Entry","Feedback_desc","s")%></div>
-<div id="fb_desc_disconnect" class="formfontdesc" style="display:none;color:#FC0;">Now this function can't work, because your ASUS Router isn't connected to the Internet. Please send your Feedback to this email address : <a href="mailto:xdsl_feedback@asus.com?Subject=<% tcWebApi_staticGet("SysInfo_Entry","ProductName","s") %>" target="_top" style="color:#FFCC00;">xdsl_feedback@asus.com </a></div><!-- untranslated -->
+<div id="fb_desc_disconnect" class="formfontdesc" style="display:none;color:#FC0;">Now this function can't work, because your ASUS Router isn't connected to the Internet. Please send your Feedback to this email address : <a href="mailto:broadband_feedback@asus.com?Subject=<% tcWebApi_staticGet("SysInfo_Entry","ProductName","s") %>" target="_top" style="color:#FFCC00;">broadband_feedback@asus.com </a></div><!-- untranslated -->
 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 <tr>
 <th width="30%"><%tcWebApi_get("String_Entry","feedback_country","s")%> *</th>
@@ -351,9 +394,9 @@ function change_dsl_diag_enable(value) {
 </tr>
 
 <tr>
-<th>ASUS Service No./Case#</th>
+<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34,2);"><%tcWebApi_get("String_Entry","ASUS_Service_No","s")%></a></th>
 <td>
-	<input type="text" name="fb_serviceno" maxlength="50" class="input_25_table" value="">
+	<input type="text" name="fb_serviceno" maxlength="11" class="input_15_table" value="">
 </td>
 </tr>
 <tr>
@@ -373,7 +416,7 @@ function change_dsl_diag_enable(value) {
 		<input type="radio" name="dslx_diag_enable" class="input" value="0" onclick="change_dsl_diag_enable(0);" checked><%tcWebApi_get("String_Entry","btn_disable","s")%>
 		<input type="radio" name="dslx_diag_enable" class="input" value="1" onclick="change_dsl_diag_enable(1);">xDSL line
 		<input type="radio" name="dslx_diag_enable" class="input" value="2" onclick="change_dsl_diag_enable(2);">Wi-Fi 2.4GHz
-		<input type="radio" name="dslx_diag_enable" class="input" value="3" onclick="change_dsl_diag_enable(3);">Wi-Fi 5GHz
+		<input type="radio" name="dslx_diag_enable" class="input" value="3" onclick="change_dsl_diag_enable(3);"><span id="5GHz_text" style="color:white;">Wi-Fi 5GHz</span>
 		<br>
 		<span id="be_lack_storage" style="display:none;color:#FC0">* No USB disk plug-in.</span>
 		<span id="diag_proceeding" style="display:none;color:#FC0"></span>
@@ -430,7 +473,7 @@ function change_dsl_diag_enable(value) {
 	<td colspan="2">
 		<strong><%tcWebApi_get("String_Entry","FW_note","s")%></strong>
 		<ul>
-			<li><%tcWebApi_get("String_Entry","feedback_note4","s")%></li>
+			<li><%tcWebApi_get("String_Entry","feedback_note4","s")%><br><a style="font-weight: bolder;text-decoration:underline;cursor:pointer;" href="https://www.asus.com/support/CallUs/" target="_blank">https://www.asus.com/support/CallUs/</a></li>
 		</ul>
 	</td>
 </tr>	

@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# Wed Apr 11 15:17:41 2018
+# Wed Jun 26 22:31:01 2019
 #
 # TCSUPPORT_CPU_RT63365 is not set
 # TCSUPPORT_CPU_RT63368 is not set
@@ -139,7 +139,7 @@ ASUS_VPNC=y
 ASUS_DUALWAN=y
 ASUS_PROTECTION_SERVER=y
 # ASUS_NOTIFICATION_CENTER is not set
-ASUSSUPPORT_EMAIL=y
+# ASUSSUPPORT_EMAIL is not set
 # ASUS_WOL is not set
 # ASUS_TR069 is not set
 # ASUS_TR181 is not set
@@ -165,6 +165,8 @@ ASUS_LOGIN_SESSION=y
 # TCSUPPORT_PIMD is not set
 # RTCONFIG_ODMPID is not set
 # TCSUPPORT_LSOF is not set
+# TCSUPPORT_ATE11 is not set
+ASUS_PUSH_EMAIL=y
 TCSUPPORT_IPV6=y
 TCSUPPORT_IPV6_ENHANCEMENT=y
 # TCSUPPORT_ODHCP6C is not set

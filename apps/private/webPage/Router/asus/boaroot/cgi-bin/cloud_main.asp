@@ -345,7 +345,6 @@ function inet_network(ip_str){
 												<div align="center">
 													<img src="/images/cloudsync/003.png">
 													<div align="center" style="margin-top:10px;font-size: 18px;text-shadow: 1px 1px 0px black;"><% tcWebApi_Get("String_Entry","smart_sync","s") %></div>
-													<!--img width="50px" src="/images/cloudsync/Status_fin.png" style="margin-top:-50px;margin-left:80px;"-->
 												</div>
 											</td>
 									    <td>

@@ -5237,8 +5237,7 @@ ifneq ($(strip $(TCSUPPORT_USB_3G_DONGLE)),)
 	cp $(APP_PUBLIC_DIR)/apps_scripts/modem_*.sh $(FILESYSTEM_DIR)/usr/script/
 endif
 
-#copy webs_update.sh and webs_upgrade.sh
-	cp $(APP_PRIVATE_DIR)/etc_script/webs_update.sh $(FILESYSTEM_DIR)/usr/script/webs_update.sh
+#copy webs_upgrade.sh
 	cp $(APP_PRIVATE_DIR)/etc_script/webs_upgrade.sh $(FILESYSTEM_DIR)/usr/script/webs_upgrade.sh
 #copy webs_upgrade2.sh for AiCloud live update
 	cp $(APP_PRIVATE_DIR)/etc_script/webs_upgrade2.sh $(FILESYSTEM_DIR)/usr/script/webs_upgrade2.sh

@@ -425,6 +425,54 @@ int do_tcp_dns_detect(int wan_unit){
 }
 #endif // NO_DETECT_INTERNET
 
+static void do_none_default_route_ping(int wan_unit)
+{
+	int i;
+	char node[MAXLEN_NODE_NAME];
+	char attr[MAXLEN_ATTR_NAME];
+	char gateway[16];
+	char cmd[128];
+
+	//_dprintf("%s: wan_unit: %d\n", __FUNCTION__, wan_unit);
+
+	if(wan_unit == WAN_UNIT_ATM) {
+		for(i = 0; i < 8; i++) {
+			snprintf(node, sizeof(node), "Wan_PVC%d", i);
+			if(tcapi_match(node, "Active", "Yes")
+				&& !tcapi_match(node, "DEFAULTROUTE", "Yes")
+			) {
+				snprintf(attr, sizeof(attr), "wan%d_gateway", i);
+				snprintf(cmd, sizeof(cmd), "ping -c 1 -W 1 %s &", tcapi_get_string("Wanduck_Common", attr, gateway));
+				system(cmd);
+			}
+		}
+	}
+#if (defined(TCSUPPORT_WAN_ETHER) || defined(TCSUPPORT_WAN_PTM)) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+	else if(wan_unit == WAN_UNIT_PTM0 || wan_unit == WAN_UNIT_ETH) {
+		for(i = 0; i < 8; i++) {
+			snprintf(node, sizeof(node), "WanExt_PVC%de%d", wan_unit, i);
+			if(tcapi_match(node, "Active", "Yes")
+				&& !tcapi_match(node, "DEFAULTROUTE", "Yes")
+			) {
+				snprintf(attr, sizeof(attr), "wan%d%d_gateway", wan_unit, i);
+				snprintf(cmd, sizeof(cmd), "ping -c 1 -W 1 %s -&", tcapi_get_string("Wanduck_Common", attr, gateway));
+				system(cmd);
+			}
+		}
+	}
+#endif
+	else {
+		snprintf(node, sizeof(node), "Wan_PVC%d", wan_unit);
+		if(tcapi_match(node, "Active", "Yes")
+			 && !tcapi_match(node, "DEFAULTROUTE", "Yes")
+		) {
+			snprintf(attr, sizeof(attr), "wan%d_gateway", wan_unit);
+			snprintf(cmd, sizeof(cmd), "ping -c 1 -W 1 %s &", tcapi_get_string("Wanduck_Common", attr, gateway));
+			system(cmd);
+		}
+	}
+}
+
 int detect_internet(int wan_unit){
 	int link_internet;
 #ifndef NO_DETECT_INTERNET
@@ -488,6 +536,8 @@ int detect_internet(int wan_unit){
 #endif
 		record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NONE);
 	}
+
+	do_none_default_route_ping(wan_unit);
 
 	//Andy Chiu, 2015/11/11
 #if 0		//Andy Chiu, 2015/11/18. There is some problem on this modification on main trunk. 
@@ -965,8 +1015,27 @@ void handle_wan_line(int wan_unit, int action){
 		sprintf(cmd, "restart_wan_if %d", wan_unit);
 		notify_rc_and_wait(cmd);
 #else
-		sprintf(cmd, "Wan_PVC%d", wan_unit);
-		tcapi_commit(cmd);
+		int i;
+		if(wan_unit == WAN_UNIT_ATM) {
+			for(i = 0; i < 8; i++) {
+				snprintf(cmd, sizeof(cmd), "Wan_PVC%d", i);
+				if(tcapi_match(cmd, "Active", "Yes"))
+					tcapi_commit(cmd);
+			}
+		}
+#if (defined(TCSUPPORT_WAN_ETHER) || defined(TCSUPPORT_WAN_PTM)) && defined(TCSUPPORT_MULTISERVICE_ON_WAN)
+		else if(wan_unit == WAN_UNIT_PTM0 || wan_unit == WAN_UNIT_ETH) {
+			for(i = 0; i < 8; i++) {
+				snprintf(cmd, sizeof(cmd), "WanExt_PVC%de%d", wan_unit, i);
+				if(tcapi_match(cmd, "Active", "Yes"))
+					tcapi_commit(cmd);
+			}
+		}
+#endif
+		else {
+			snprintf(cmd, sizeof(cmd), "Wan_PVC%d", wan_unit);
+			tcapi_commit(cmd);
+		}
 #endif
 	}
 }

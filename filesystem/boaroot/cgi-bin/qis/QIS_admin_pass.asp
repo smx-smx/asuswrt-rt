@@ -200,7 +200,7 @@ function clean_scorebar(obj){
 		<tr>
 		  <th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,4)"><%tcWebApi_get("String_Entry","PASS_new","s")%></a></th>
 		  <td class="QISformtd">
-			<input id="uiViewPassword" type="password" tabindex="2" autocapitalization="off" autocomplete="off" value="" name="uiViewPassword" style="height:25px;" class="input_18_table" maxlength="16" onpaste="return false;" onkeyup="chkPass(this.value, 'http_passwd');" onBlur="clean_scorebar(this);"/>
+			<input id="uiViewPassword" type="password" tabindex="2" autocapitalization="off" autocomplete="off" value="" name="uiViewPassword" style="height:25px;" class="input_18_table" maxlength="16" onpaste="return false;" onKeyUp="chkPass(this.value, 'http_passwd', 16);" onBlur="clean_scorebar(this);"/>
 				&nbsp;&nbsp;
 			<div id="scorebarBorder" style="margin-left:180px; margin-top:-26px; display:none;" title="<%tcWebApi_get("String_Entry","LHC_x_Password_itemSecur","s")%>">
 			<div id="score" name="score" style="margin-top:3px;"></div>

@@ -43,11 +43,11 @@
 		if(alexa_support >= 0){fn_array.push("Alexa™");}
 		$j("#asus_eula_desc").html($j("#asus_eula_desc").html().replace('DDNS', fn_array.join("/")));
 
-		if(alexa_support >= 0 && ifttt_support == "-1"){
+		if(alexa_support >= 0 && ifttt_support < 0){
 			$j("#asus_eula_desc1_1_1").html("<%tcWebApi_get("String_Entry","ASUS_eula_desc1_1_12","s")%>");
 			$j("#ifttt_desc").css("display", "none");
 		}
-		else if(alexa_support == "-1"&& ifttt_support == "-1"){
+		else if(alexa_support < 0 && ifttt_support < 0){
 			$j("#asus_eula_desc1_1_1").html("<%tcWebApi_get("String_Entry","ASUS_eula_desc1_1_13","s")%>");
 			$j("#alexa_desc").css("display", "none");
 			$j("#ifttt_desc").css("display", "none");

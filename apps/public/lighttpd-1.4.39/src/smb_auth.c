@@ -249,66 +249,26 @@ extern int delete_file_or_dir(char *target){
     return ret;
 }
 
-extern char *get_upper_str(const char *const str, char **target){
-	int len, i;
-    char *ptr;
-
-    len = strlen(str);
-    *target = (char *)malloc(sizeof(char)*(len+1));
-    if(*target == NULL){
-    	printf("No memory \"*target\".\n");
-        return NULL;
-    }
-    ptr = *target;
-    for(i = 0; i < len; ++i)
-    	ptr[i] = toupper(str[i]);
-   	ptr[len] = 0;
-
-    return ptr;
-}
-
-extern int upper_strcmp(const char *const str1, const char *const str2){
-    char *upper_str1, *upper_str2;
-    int ret;
-
-    if(str1 == NULL || str2 == NULL)
-    	return -1;
-
-    if(get_upper_str(str1, &upper_str1) == NULL)
-        return -1;
-
-    if(get_upper_str(str2, &upper_str2) == NULL){
-    	free(upper_str1);
-        return -1;
-    }
-
-    ret = strcmp(upper_str1, upper_str2);
-    free(upper_str1);
-    free(upper_str2);
-
-    return ret;
-}
-
 extern int test_if_System_folder(const char *const dirname){
 	const char *const MS_System_folder[] = {"SYSTEM VOLUME INFORMATION", "RECYCLER", "RECYCLED", "$RECYCLE.BIN", NULL};
-    const char *const Linux_System_folder[] = {"lost+found", NULL};
+	const char *const Linux_System_folder[] = {"lost+found", NULL};
 	const char *const Mac_System_folder[] = {"Backups.backupdb", "CNID", NULL};
 	const char *const ASUS_System_folder[] = {"asusware", NULL};
-    int i;
+	int i;
 	char *ptr;
 
-    for(i = 0; MS_System_folder[i] != NULL; ++i){
-    	if(!upper_strcmp(dirname, MS_System_folder[i]))
-        	return 1;
-    }
+	for(i = 0; MS_System_folder[i] != NULL; ++i){
+		if(strcasecmp(dirname, MS_System_folder[i]) == 0)
+			return 1;
+	}
 
-    for(i = 0; Linux_System_folder[i] != NULL; ++i){
-    	if(!upper_strcmp(dirname, Linux_System_folder[i]))
-        	return 1;
-    }
+	for(i = 0; Linux_System_folder[i] != NULL; ++i){
+		if(strcasecmp(dirname, Linux_System_folder[i]) == 0)
+			return 1;
+	}
 
 	for(i = 0; Mac_System_folder[i] != NULL; ++i){
-		if(!upper_strcmp(dirname, Mac_System_folder[i]))
+		if(strcasecmp(dirname, Mac_System_folder[i]) == 0)
 			return 1;
 	}
 
@@ -318,84 +278,52 @@ extern int test_if_System_folder(const char *const dirname){
 		return 1;
 
 	for(i = 0; ASUS_System_folder[i] != NULL; ++i){
-		if(!upper_strncmp(dirname, ASUS_System_folder[i], strlen(ASUS_System_folder[i])))
+		if(strncasecmp(dirname, ASUS_System_folder[i], strlen(ASUS_System_folder[i])) == 0)
 			return 1;
 	}
 
-    return 0;
+	return 0;
 }
 
 extern int get_var_file_name(const char *const account, const char *const path, char **file_name, const int is_group)
 {
-    int len;
-    char *var_file;
-    char ascii_user[64];
+	int len;
+	char *var_file;
+	char ascii_user[64];
 
-    if(path == NULL)
-        return -1;
+	if(path == NULL)
+		return -1;
 
-    len = strlen(path)+strlen("/.___var.txt");
+	len = strlen(path)+strlen("/.___var.txt");
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
 	if(is_group)
 		len += 2;
 #endif
 
-    if(account != NULL){
-        memset(ascii_user, 0, 64);
-        char_to_ascii_safe(ascii_user, account, 64);
+	if(account != NULL){
+		memset(ascii_user, 0, 64);
+		char_to_ascii_safe(ascii_user, account, 64);
 
-        len += strlen(ascii_user);
-    }
-    *file_name = (char *)malloc(sizeof(char)*(len+1));
-    if(*file_name == NULL)
-        return -1;
+		len += strlen(ascii_user);
+	}
+	*file_name = (char *)malloc(sizeof(char)*(len+1));
+	if(*file_name == NULL)
+		return -1;
 
-    var_file = *file_name;
+	var_file = *file_name;
 	if(account != NULL){
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
 		if(is_group)
 			sprintf(var_file, "%s/.__G_%s_var.txt", path, ascii_user);
 		else
 #endif
-        sprintf(var_file, "%s/.__%s_var.txt", path, ascii_user);
-    }
-    else
-        sprintf(var_file, "%s/.___var.txt", path);
-    var_file[len] = 0;
+			sprintf(var_file, "%s/.__%s_var.txt", path, ascii_user);
+	}
+	else
+		sprintf(var_file, "%s/.___var.txt", path);
+	var_file[len] = 0;
 
-    return 0;
-}
-
-extern char *upper_strstr(const char *const str, const char *const target){
-    char *upper_str, *upper_target;
-    char *ret;
-    int len;
-
-    if(str == NULL || target == NULL)
-    	return NULL;
-
-    if(get_upper_str(str, &upper_str) == NULL)
-    	return NULL;
-
-    if(get_upper_str(target, &upper_target) == NULL){
-    	free(upper_str);
-        return NULL;
-    }
-
-    ret = strstr(upper_str, upper_target);
-    if(ret == NULL){
-    	free(upper_str);
-        free(upper_target);
-        return NULL;
-    }
-
-    if((len = upper_str-ret) < 0)
-    	len = ret-upper_str;
-
-    free(upper_str);
-    free(upper_target);
-
-    return (char *)(str+len);
+	return 0;
 }
 
 extern void free_2_dimension_list(int *num, char ***list) {
@@ -540,42 +468,42 @@ extern void set_file_integrity(const char *const file_name){
 }
 
 extern int initial_var_file(const char *const account, const char *const mount_path, const int is_group){
-    FILE *fp;
-    char *var_file;
+	FILE *fp;
+	char *var_file;
 	int i;
-    int sh_num;
-    char **folder_list;
-    int samba_right, ftp_right, dms_right;
+	int sh_num;
+	char **folder_list;
+	int samba_right, ftp_right, dms_right;
 #ifdef RTCONFIG_WEBDAV_OLD
-    int webdav_right;
+	int webdav_right;
 #endif
 
-    if (mount_path == NULL || strlen(mount_path) <= 0) {
-        usb_dbg("No input, mount_path\n");
-        return -1;
-    }
+	if(mount_path == NULL || strlen(mount_path) <= 0){
+		usb_dbg("No input, mount_path\n");
+		return -1;
+	}
 
-    // 1. get the folder number and folder_list
+	// 1. get the folder number and folder_list
 	//get_folder_list(mount_path, &sh_num, &folder_list);
 	get_all_folder(mount_path, &sh_num, &folder_list);
 
-    // 2. get the var file
+	// 2. get the var file
 	if(get_var_file_name(account, mount_path, &var_file, is_group)){
-        usb_dbg("Can't malloc \"var_file\".\n");
-        free_2_dimension_list(&sh_num, &folder_list);
-        return -1;
-    }
+		usb_dbg("Can't malloc \"var_file\".\n");
+		free_2_dimension_list(&sh_num, &folder_list);
+		return -1;
+	}
 
-    // 3. get the default permission of all protocol.
-    if(account == NULL // share mode.
+	// 3. get the default permission of all protocol.
+	if(account == NULL // share mode.
 			|| !strcmp(account, nvram_safe_get("http_username"))){
-        samba_right = DEFAULT_SAMBA_RIGHT;
-        ftp_right = DEFAULT_FTP_RIGHT;
-        dms_right = DEFAULT_DMS_RIGHT;
+		samba_right = DEFAULT_SAMBA_RIGHT;
+		ftp_right = DEFAULT_FTP_RIGHT;
+		dms_right = DEFAULT_DMS_RIGHT;
 #ifdef RTCONFIG_WEBDAV_OLD
-        webdav_right = DEFAULT_WEBDAV_RIGHT;
+		webdav_right = DEFAULT_WEBDAV_RIGHT;
 #endif
-    }
+	}
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
 	else if(is_group){
 		samba_right = DEFAULT_SAMBA_RIGHT;
@@ -586,155 +514,155 @@ extern int initial_var_file(const char *const account, const char *const mount_p
 #endif
 	}
 #endif
-    else{
-        samba_right = 0;
-        ftp_right = 0;
-        dms_right = 0;
+	else{
+		samba_right = 0;
+		ftp_right = 0;
+		dms_right = 0;
 #ifdef RTCONFIG_WEBDAV_OLD
-        webdav_right = 0;
+		webdav_right = 0;
 #endif
-    }
+	}
 
-    // 4. write the default content in the var file
-    if ((fp = fopen(var_file, "w")) == NULL) {
-        usb_dbg("Can't create the var file, \"%s\".\n", var_file);
-        free_2_dimension_list(&sh_num, &folder_list);
-        free(var_file);
-        return -1;
-    }
+	// 4. write the default content in the var file
+	if((fp = fopen(var_file, "w")) == NULL){
+		usb_dbg("Can't create the var file, \"%s\".\n", var_file);
+		free_2_dimension_list(&sh_num, &folder_list);
+		free(var_file);
+		return -1;
+	}
 
-    for (i = -1; i < sh_num; ++i) {
-        fprintf(fp, "*");
-
-        if(i != -1)
-            fprintf(fp, "%s", folder_list[i]);
+	for(i = -1; i < sh_num; ++i){
+		fprintf(fp, "*");
+		
+		if(i != -1)
+			fprintf(fp, "%s", folder_list[i]);
 #ifdef RTCONFIG_WEBDAV_OLD
-        fprintf(fp, "=%d%d%d%d\n", samba_right, ftp_right, dms_right, webdav_right);
+		fprintf(fp, "=%d%d%d%d\n", samba_right, ftp_right, dms_right, webdav_right);
 #else
-        fprintf(fp, "=%d%d%d\n", samba_right, ftp_right, dms_right);
+		fprintf(fp, "=%d%d%d\n", samba_right, ftp_right, dms_right);
 #endif
-    }
+	}
 
-    fclose(fp);
-    free_2_dimension_list(&sh_num, &folder_list);
+	fclose(fp);
+	free_2_dimension_list(&sh_num, &folder_list);
 
-    // 5. set the check target of file.
-    set_file_integrity(var_file);
-    free(var_file);
+	// 5. set the check target of file.
+	set_file_integrity(var_file);
+	free(var_file);
 
-    return 0;
+	return 0;
 }
 
 extern int get_permission(const char *const account,
-                              const char *const mount_path,
-                              const char *const folder,
+						  const char *const mount_path,
+						  const char *const folder,
 						  const char *const protocol,
 						  const int is_group
 						  ){
-    char *var_file, *var_info;
-    char *target, *follow_info;
-    int len, result;
+	char *var_file, *var_info;
+	char *target, *follow_info;
+	int len, result;
 	char *f = (char*) folder;
 
-    // 1. get the var file
-    if(get_var_file_name(account, mount_path, &var_file, is_group)){
-    	usb_dbg("Can't malloc \"var_file\".\n");
-        return -1;
-    }
-
-    // 2. check the file integrity.
-    if(!check_file_integrity(var_file)){
-        usb_dbg("Fail to check the file: %s.\n", var_file);
-	if(initial_var_file(account, mount_path) != 0){
-            usb_dbg("Can't initial \"%s\"'s file in %s.\n", account, mount_path);
-            free(var_file);
-            return -1;
-        }
-    }
-
-    // 3. get the content of the var_file of the account
-    var_info = read_whole_file(var_file);
-    if (var_info == NULL) {
-    	usb_dbg("get_permission: \"%s\" isn't existed or there's no content.\n", var_file);
-        free(var_file);
-    	return -1;
-    }
-    free(var_file);
-
-    // 4. get the target in the content
-retry_get_permission:
-    if(f == NULL)
-    	len = strlen("*=");
-    else
-        len = strlen("*")+strlen(f)+strlen("=");
-    target = (char *)malloc(sizeof(char)*(len+1));
-    if (target == NULL) {
-    	usb_dbg("Can't allocate \"target\".\n");
-        free(var_info);
-        return -1;
-    }
-    if(f == NULL)
-    	strcpy(target, "*=");
-    else
-	sprintf(target, "*%s=", f);
-    target[len] = 0;
-
-    follow_info = upper_strstr(var_info, target);
-    free(target);
-    if (follow_info == NULL) {
-    	if(account == NULL)
-            usb_dbg("No right about \"%s\" with the share mode.\n", f? f:"Pool");
-        else
-            usb_dbg("No right about \"%s\" with \"%s\".\n", f? f:"Pool", account);
-
-	if(f == NULL){
-            free(var_info);
-            return -1;
-	} else {
-	    f = NULL;
-	    goto retry_get_permission;
+	// 1. get the var file
+	if(get_var_file_name(account, mount_path, &var_file, is_group)){
+		usb_dbg("Can't malloc \"var_file\".\n");
+		return -1;
 	}
-   }
 
-    follow_info += len;
+	// 2. check the file integrity.
+	if(!check_file_integrity(var_file)){
+		usb_dbg("Fail to check the file: %s.\n", var_file);
+		if(initial_var_file(account, mount_path, is_group) != 0){
+			usb_dbg("Can't initial \"%s\"'s file in %s.\n", account, mount_path);
+			free(var_file);
+			return -1;
+		}
+	}
 
-    if (follow_info[MAX_PROTOCOL_NUM] != '\n') {
-    	if(account == NULL)
-        	usb_dbg("The var info is incorrect.\nPlease reset the var file of the share mode.\n");
-        else
-            usb_dbg("The var info is incorrect.\nPlease reset the var file of \"%s\".\n", account);
+	// 3. get the content of the var_file of the account
+	var_info = read_whole_file(var_file);
+	if(var_info == NULL){
+		usb_dbg("get_permission: \"%s\" isn't existed or there's no content.\n", var_file);
+		free(var_file);
+		return -1;
+	}
+	free(var_file);
 
-        free(var_info);
-        return -1;
-    }
+	// 4. get the target in the content
+retry_get_permission:
+	if(f == NULL)
+		len = strlen("*=");
+	else
+		len = strlen("*")+strlen(f)+strlen("=");
+	target = (char *)malloc(sizeof(char)*(len+1));
+	if(target == NULL){
+		usb_dbg("Can't allocate \"target\".\n");
+		free(var_info);
+		return -1;
+	}
+	if(f == NULL)
+		strcpy(target, "*=");
+	else
+		sprintf(target, "*%s=", f);
+	target[len] = 0;
 
-    // 5. get the right of folder
-    if (!strcmp(protocol, PROTOCOL_CIFS))
-    	result = follow_info[0]-'0';
-    else if (!strcmp(protocol, PROTOCOL_FTP))
-        result = follow_info[1]-'0';
-    else if (!strcmp(protocol, PROTOCOL_MEDIASERVER))
-        result = follow_info[2]-'0';
+	follow_info = strcasestr(var_info, target);
+	free(target);
+	if(follow_info == NULL){
+		if(account == NULL)
+			usb_dbg("No right about \"%s\" with the share mode.\n", f? f:"Pool");
+		else
+			usb_dbg("No right about \"%s\" with \"%s\".\n", f? f:"Pool", account);
+
+		if(f == NULL){
+			free(var_info);
+			return -1;
+		} else {
+			f = NULL;
+			goto retry_get_permission;
+		}
+	}
+
+	follow_info += len;
+
+	if(follow_info[MAX_PROTOCOL_NUM] != '\n'){
+		if(account == NULL)
+			usb_dbg("The var info is incorrect.\nPlease reset the var file of the share mode.\n");
+		else
+			usb_dbg("The var info is incorrect.\nPlease reset the var file of \"%s\".\n", account);
+
+		free(var_info);
+		return -1;
+	}
+
+	// 5. get the right of folder
+	if(!strcmp(protocol, PROTOCOL_CIFS))
+		result = follow_info[0]-'0';
+	else if(!strcmp(protocol, PROTOCOL_FTP))
+		result = follow_info[1]-'0';
+	else if(!strcmp(protocol, PROTOCOL_MEDIASERVER))
+		result = follow_info[2]-'0';
 #ifdef RTCONFIG_WEBDAV_OLD
-    else if (!strcmp(protocol, PROTOCOL_WEBDAV))
-        result = follow_info[3]-'0';
+	else if(!strcmp(protocol, PROTOCOL_WEBDAV))
+		result = follow_info[3]-'0';
 #endif
-    else{
-        usb_dbg("The protocol, \"%s\", is incorrect.\n", protocol);
-        free(var_info);
-    	return -1;
-    }
-    free(var_info);
+	else{
+		usb_dbg("The protocol, \"%s\", is incorrect.\n", protocol);
+		free(var_info);
+		return -1;
+	}
+	free(var_info);
 
-    if (result < 0 || result > 3) {
-    	if(account == NULL)
-        	usb_dbg("The var info is incorrect.\nPlease reset the var file of the share mode.\n");
-        else
-        	usb_dbg("The var info is incorrect.\nPlease reset the var file of \"%s\".\n", account);
-    	return -1;
-    }
+	if(result < 0 || result > 3){
+		if(account == NULL)
+			usb_dbg("The var info is incorrect.\nPlease reset the var file of the share mode.\n");
+		else
+			usb_dbg("The var info is incorrect.\nPlease reset the var file of \"%s\".\n", account);
+		return -1;
+	}
 
-    return result;
+	return result;
 }
 
 /*???end?*/
@@ -1375,21 +1303,14 @@ int endposizition( char *str, int end )
 
 void getStr( char *str, char *substr, int substrlen, int start, int end )  
 {  
-	int  i=0;	
-	char* temp;
-	temp = (char*)malloc(substrlen);
-	memset(temp,0,sizeof(temp));  
-
-	for( start; start<=end; start++ )  
-    {  
-       	temp[i]=str[start];  
-        i++;  
-    }  
-    temp[i]='\0';  
-	strcpy(substr,temp);  
-
-	free(temp); 
-} 
+	int size = end - start + 1;
+	if (size > substrlen)
+		size = substrlen;
+	for (str += start; size > 1 && *str; size--)
+		*substr++ = *str++;
+	if (size > 0)
+		*substr = '\0';
+}
 
 void  getSubStr( char *str, char *substr, int start, int end )  
 {  
@@ -1627,7 +1548,9 @@ smbc_wrapper_lseek(connection* con, int fd, off_t offset, int whence)
 int smbc_wrapper_parse_path(connection* con, char *pWorkgroup, char *pServer, char *pShare, char *pPath){
 	if(con->mode== SMB_BASIC||con->mode== SMB_NTLM){ 
 
-		smbc_parse_path(con->physical.path->ptr, pWorkgroup, pServer, pShare, pPath);
+		if(smbc_parse_path(con->physical.path->ptr, pWorkgroup, pServer, pShare, pPath)!=0){
+			return -1;
+		}
 		
 		//- Jerry add: replace '\\' to '/'
 		do{
@@ -1642,7 +1565,9 @@ int smbc_wrapper_parse_path(connection* con, char *pWorkgroup, char *pServer, ch
 int smbc_wrapper_parse_path2(connection* con, char *pWorkgroup, char *pServer, char *pShare, char *pPath){	 
 	if(con->mode== SMB_BASIC||con->mode== SMB_NTLM){
 
-		smbc_parse_path(con->physical_auth_url->ptr, pWorkgroup, pServer, pShare, pPath);
+		if(smbc_parse_path(con->physical_auth_url->ptr, pWorkgroup, pServer, pShare, pPath)!=0){
+			return -1;
+		}
 
 		int len = strlen(pPath)+1;
 		
@@ -2032,6 +1957,14 @@ int smbc_parser_basic_authentication(server *srv, connection* con, char** userna
 				free(pass);							
 				return 0;
 			}
+
+			if (basic_msg->used>1024){
+				buffer_free(basic_msg);
+                                free(user);
+                                free(pass);
+                                return 0;
+			}
+
 			char *s, bmsg[1024] = {0};
 
 			//fetech the username and password from credential
@@ -2076,21 +2009,21 @@ int string_starts_with( const char *a, const char *b ){
    	return 0;
 }
 
-int generate_sharelink(server* srv,
-			               connection *con,
-			               const char* filename, 
-			               const char* url, 
-			               const char* base64_auth, 
-			               int expire, 
-			               int toShare,
-			               buffer** out){
+int generate_sharelink( server* srv,
+			connection *con,
+			const char* filename, 
+			const char* url, 
+			const char* base64_auth, 
+			int expire, 
+			int toShare,
+			buffer** out ){
 
-	if(filename==NULL||url==NULL||base64_auth==NULL)
+	if( filename==NULL || url==NULL || base64_auth==NULL )
 		return 0;
 
 	if( is_string_encode_as_integer(url) || 
-		is_string_encode_as_integer(filename) || 
-		is_string_encode_as_integer(base64_auth) ){
+	    is_string_encode_as_integer(filename) || 
+	    is_string_encode_as_integer(base64_auth) ){
 		return 0;
 	}
 
@@ -2129,7 +2062,7 @@ int generate_sharelink(server* srv,
 		*out = buffer_init();
 				
 		while(pch!=NULL){
-					
+			
 			//- check file is exist.
 			buffer* buffer_file_path = buffer_init();
                         buffer_copy_buffer(buffer_file_path, buffer_real_url);
@@ -2235,7 +2168,7 @@ int generate_sharelink(server* srv,
 		char* base64_key = ldb_base64_encode(mac, strlen(mac));
 		
 		expire = 86400; //- 24hr
-		unsigned long expiretime = (expire==0 ? 0 : time(NULL) + expire);		
+		unsigned long expiretime = (expire==0 ? 0 : time(NULL) + expire);
 		snprintf(strTime, sizeof(strTime), "%lu", expiretime);
 		
 		char* share_link;
@@ -2286,7 +2219,7 @@ int generate_sharelink(server* srv,
 		//Cdbg(DBE, "do HTTP_METHOD_GSL decode_str=%s", decode_str);
 	}
 #endif
-
+	
 	buffer_free(buffer_real_url);
 
 	if(buffer_is_empty(*out))
@@ -2607,14 +2540,14 @@ int is_dms_ipk_enabled(void)
     char ms_enable[4]="\0";
     int result = 0;
     if((fp2 = fopen("/opt/lib/ipkg/info/mediaserver.control", "r")) != NULL){
-            memset(line, 0, sizeof(line));
-            while(fgets(line, 128, fp2) != NULL){
-                    if(strncmp(line, "Enabled:", 8)==0){
+    	memset(line, 0, sizeof(line));
+        while(fgets(line, 128, fp2) != NULL){
+        	if(strncmp(line, "Enabled:", 8)==0){
 				//- yes or no
 				snprintf(ms_enable, sizeof(ms_enable), "%s", line + 9);
-                    }
-            }
-            fclose(fp2);
+			}
+		}
+		fclose(fp2);
     }
     Cdbg(DBE, "ms_enable=%s\n", ms_enable);
     if(strncmp(ms_enable, "yes", 3) == 0)
@@ -3585,7 +3518,7 @@ retry_get_permission:
 		sprintf(target, "*%s=", f);
 	target[len] = 0;
 	
-	follow_info = upper_strstr(var_info, target);
+	follow_info = strcasestr(var_info, target);
 	free(target);
 	if (follow_info == NULL) {
 		if(account == NULL)
@@ -3701,7 +3634,7 @@ int set_aicloud_permission(const char *const account,
 	target[len] = 0;
 	
 	// 5. judge if the target is in the var file.
-	follow_info = upper_strstr(var_info, target);
+	follow_info = strcasestr(var_info, target);
 	if (follow_info == NULL) {
 		if(account == NULL)
 			Cdbg(DBE, "No right about \"%s\" with the share mode.", (folder == NULL?"Pool":folder));
@@ -3892,7 +3825,7 @@ int parse_postdata_from_chunkqueue(server *srv, connection *con, chunkqueue *cq,
 	
 	chunk *c;
 	char* result_data = NULL;
-	
+
 	UNUSED(srv);
 	UNUSED(con);
 	

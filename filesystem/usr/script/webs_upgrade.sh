@@ -38,40 +38,54 @@ update_url=`cat /tmp/update_url`
 #testing purpose, must be marked before checkin.
 #update_url="http://192.168.123.198
 
+rm -rf /var/tmp/tclinux.bin &
+rm -rf /var/tmp/rsasign.bin &
+
 # get firmware information
+dl_fw=""
 echo 3 > /proc/sys/vm/drop_caches
 if [ "$update_url" != "" ]; then
 	echo "---- update_url exist upgrade HTTPS----" >> /tmp/webs_upgrade.log
        	wget -q --no-check-certificate ${update_url}/$firmware_file -O /var/tmp/tclinux.bin
+		dl_fw="$?"
 	if [ "$rsa_enabled" != "" ]; then
 		wget -q --no-check-certificate ${update_url}/$firmware_rsasign -O /var/tmp/rsasign.bin
 	fi
 elif [ "$forsq" = "1" ]; then
 	echo "---- sq path upgrade HTTPS----" >> /tmp/webs_upgrade.log
        	wget -q --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$firmware_file -O /var/tmp/tclinux.bin
+		dl_fw="$?"
 	if [ "$rsa_enabled" != "" ]; then
 		wget -q --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$firmware_rsasign -O /var/tmp/rsasign.bin
 	fi
 elif [ "$url_path" = "" ]; then
 	echo "---- Official path upgrade HTTPS----" >> /tmp/webs_upgrade.log
 	wget -q --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$firmware_file -O /var/tmp/tclinux.bin
+	dl_fw="$?"
 	if [ "$rsa_enabled" != "" ]; then
 		wget -q --no-check-certificate https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$firmware_rsasign -O /var/tmp/rsasign.bin
 	fi
 else
 	echo "---- External URL path upgrade HTTPS----" >> /tmp/webs_upgrade.log
 	wget -q --no-check-certificate $url_path/$firmware_file -O /var/tmp/tclinux.bin
+	dl_fw="$?"
 	if [ "$rsa_enabled" != "" ]; then
 		wget -q --no-check-certificate $url_path/$firmware_rsasign -O /var/tmp/rsasign.bin
 	fi
 fi
 
-if [ "$?" != "0" ]; then
+if [ "$dl_fw" != "0" ]; then
 	/userfs/bin/tcapi set WebCustom_Entry webs_state_error 1 &
 	/userfs/bin/tcapi set WebCustom_Entry webs_state_error_msg "download firmware fail" &
+	echo "---- download firmware fail, exit: $dl_fw ----" >> /tmp/webs_upgrade.log
+elif [ "$rsa_enabled" != "" ] && [ "$?" != "0" ]; then
+	/userfs/bin/tcapi set WebCustom_Entry webs_state_error 1 &
+	/userfs/bin/tcapi set WebCustom_Entry webs_state_error_msg "download rsa fail" &
+	echo "---- download rsa fail, exit: $? ----" >> /tmp/webs_upgrade.log
 else
 	echo 3 > /proc/sys/vm/drop_caches
 	/userfs/bin/tcapi set WebCustom_Entry webs_state_error_msg "download firmware successfully" &
+	echo "---- download fw/rsa succesfully, exit: $? ----" >> /tmp/webs_upgrade.log
 fi
 /userfs/bin/tcapi set WebCustom_Entry webs_state_upgrade 1 &
 /userfs/bin/tcapi set WebCustom_Entry webs_rsa_state_upgrade 1 &

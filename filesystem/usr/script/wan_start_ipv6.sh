@@ -839,6 +839,11 @@ setCloneMAC
 	brctl delif br0 $LAN_PORT_ITF_PREFIX$bridge_lan_port
 	brctl addif $br_ifname $LAN_PORT_ITF_PREFIX$bridge_lan_port
 
+	if [ "$isIPTV" = "Yes" ]; then
+		# restart IPTV
+		/userfs/bin/tcapi commit "IPTV" &
+	fi
+
 	#These setting should not be used anymore.
 	#if [ "$isIPTV" = "No" ]; then		
 		#brctl addif br1 $WAN_IF
@@ -874,11 +879,6 @@ if [ "$isIPTV" = "No" ]; then
 /usr/script/start_pppoe_relay.sh $i &
 fi
 #echo "======pppoe-relay end======="
-
-if [ "$isIPTV" = "Yes" ]; then
-	# restart IPTV
-	/userfs/bin/tcapi commit "IPTV" &
-fi
 
 #/usr/bin/qoscmd dev add nas$i &
 #FW_CONF=/etc/firewall.conf

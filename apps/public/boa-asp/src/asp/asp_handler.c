@@ -3086,9 +3086,13 @@ static void update_variables(asp_reent* reent, const asp_text* params, asp_text*
 	{
 		if(strlen(action_script))
 		{
-			if( strstr(action_script, "webs_"))
+			if(strstr(action_script, "frs_update"))
 			{
-				//webs_update.sh or webs_upgrade.sh in "/usr/script"
+				eval("frs_update");
+			}
+			else if(strstr(action_script, "webs_"))
+			{
+				//webs_upgrade.sh in "/usr/script"
 				snprintf(cmd, sizeof(cmd), "/usr/script/%s.sh", action_script+strlen("start_") );
 				//Andy Chiu, 2015/02/13. use eval to launch script for https
 				//system(cmd);
@@ -9264,7 +9268,7 @@ static int appDo_rc_service(char *rc_service, char *wp, json_object *root)
 		}
 		/* [SET] [Firmware Update] download fw server info */
 		else if(!strcmp(rc_service, "start_webs_update")) {
-			eval("/usr/script/webs_update.sh");
+			eval("frs_update");
 			app_method_hit = 2;
 		}
 		else if(!strcmp(rc_service, "restart_wireless")) {
@@ -14653,7 +14657,7 @@ static void dump_fb_fail_content( void )
 
 	memset(tmp_val, 0, sizeof(tmp_val));
 	tcapi_get_string("GUITemp_Entry0", "fb_tmp_country", tmp_val);
-	snprintf(buf, sizeof(buf), "Country: %s\n", tmp_val);
+	snprintf(buf, sizeof(buf), "Country/Region: %s\n", tmp_val);
 	asp_send_response(NULL, buf, strlen(buf));
 
 	memset(tmp_val, 0, sizeof(tmp_val));

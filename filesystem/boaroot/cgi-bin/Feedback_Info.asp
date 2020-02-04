@@ -33,7 +33,7 @@ function check_info(){
 	//0:initial  1:Success  2.Failed  3.Limit?  4.dla
 	if(dsl_diag_support >= 0 && wan_diag_state == "4"){
 		document.getElementById("fb_send_debug_log").style.display = "";		
-		document.getElementById("Email_subject").href = "mailto:xdsl_feedback@asus.com?Subject="+productid;
+		document.getElementById("Email_subject").href = "mailto:broadband_feedback@asus.com?Subject="+productid;
 		get_debug_log_info();
 		gen_dl_diag_log();
 	}
@@ -175,7 +175,7 @@ function get_feedback_tarball(){
 		<%if tcWebApi_get("GUITemp_Entry0","WANConnCurState","h") = "0" then %>
 		<!-- fb_fail_WAN_disconnected -->
 		<div class="feedback_info_1">
-			<%tcWebApi_get("String_Entry","feedback_fail_WAN_disconnected","s")%> <%tcWebApi_get("String_Entry","feedback_fail1","s")%>(<a href="mailto:xdsl_feedback@asus.com?Subject=<%tcWebApi_get("String_Entry","Web_Title2","s")%>" style="color:#FFCC00;" target="_top">xdsl_feedback@asus.com</a>). <%tcWebApi_get("String_Entry","feedback_fail2","s")%> And download <span onClick="get_feedback_tarball();" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">this debug file</span> and add it as email attachment.
+			<%tcWebApi_get("String_Entry","feedback_fail_WAN_disconnected","s")%> <%tcWebApi_get("String_Entry","feedback_fail1","s")%>(<a href="mailto:broadband_feedback@asus.com?Subject=<%tcWebApi_get("String_Entry","Web_Title2","s")%>" style="color:#FFCC00;" target="_top">broadband_feedback@asus.com</a>). <%tcWebApi_get("String_Entry","feedback_fail2","s")%> And download <span onClick="get_feedback_tarball();" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">this debug file</span> and add it as email attachment.
 		<br>
 		<br>	
 		<textarea name="fb_comment" maxlength="2000" cols="55" rows="8" style="width:90%;margin-left:25px;font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;" readonly><% nvram_dump("fb_fail_content", "") %></textarea>
@@ -187,7 +187,7 @@ function get_feedback_tarball(){
 		<%if tcWebApi_get("GUITemp_Entry0","WANConnCurState","h") = "1" then %>
 		<!-- fb_fail_WAN_connected -->
 		<div class="feedback_info_1">			
-			<%tcWebApi_get("String_Entry","feedback_fail_WAN_connected","s")%> <%tcWebApi_get("String_Entry","feedback_fail1","s")%>(<a href="mailto:xdsl_feedback@asus.com?Subject=<%tcWebApi_get("String_Entry","Web_Title2","s")%>" style="color:#FFCC00;" target="_top">xdsl_feedback@asus.com</a>). <%tcWebApi_get("String_Entry","feedback_fail2","s")%> And download <span onClick="get_feedback_tarball();" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">this debug file</span> and add it as email attachment.
+			<%tcWebApi_get("String_Entry","feedback_fail_WAN_connected","s")%> <%tcWebApi_get("String_Entry","feedback_fail1","s")%>(<a href="mailto:broadband_feedback@asus.com?Subject=<%tcWebApi_get("String_Entry","Web_Title2","s")%>" style="color:#FFCC00;" target="_top">broadband_feedback@asus.com</a>). <%tcWebApi_get("String_Entry","feedback_fail2","s")%> And download <span onClick="get_feedback_tarball();" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">this debug file</span> and add it as email attachment.
 		<br>
 		<br>	
 		<textarea name="fb_comment" maxlength="2000" cols="55" rows="8" style="width:90%;margin-left:25px;font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;" readonly><% nvram_dump("fb_fail_content", "") %></textarea>
@@ -220,7 +220,7 @@ function get_feedback_tarball(){
 	<div class="feedback_info_1" id="dl_diag_log_4" onClick="reset_diag_state('d');" style="display:none; text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Partial debug log (Part 4)<br></div>
 	<div class="feedback_info_1" id="dl_diag_log_5" onClick="reset_diag_state('e');" style="display:none; text-decoration: underline; font-family:Lucida Console; cursor:pointer;">Partial debug log (Part 5)<br></div>
 	<br>
-	<div class="feedback_info_1">Please send us an email directly ( <a id="Email_subject" href="" target="_top" style="color:#FFCC00;">xdsl_feedback@asus.com</a> ). <%tcWebApi_get("String_Entry","feedback_fail2","s")%> <br></div>
+	<div class="feedback_info_1">Please send us an email directly ( <a id="Email_subject" href="" target="_top" style="color:#FFCC00;">broadband_feedback@asus.com</a> ). <%tcWebApi_get("String_Entry","feedback_fail2","s")%> <br></div>
 	<textarea name="fb_send_debug_log_content" cols="70" rows="15" style="width:90%;margin-left:25px;font-family:'Courier New', Courier, mono; font-size:13px;background:#475A5F;color:#FFFFFF;" readonly></textarea>
 	<br>	
 </div>	<!-- fb_send_debug_log end -->

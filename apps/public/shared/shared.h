@@ -138,6 +138,11 @@ extern int upper_strcmp(const char *const str1, const char *const str2);
 extern int upper_strncmp(const char *const str1, const char *const str2, int count);
 extern char *upper_strstr(const char *const str, const char *const target);
 
+extern in_addr_t inet_addr_(const char *addr);
+extern int inet_equal(const char *addr1, const char *mask1, const char *addr2, const char *mask2);
+extern int inet_intersect(const char *addr1, const char *mask1, const char *addr2, const char *mask2);
+extern int inet_deconflict(const char *addr1, const char *mask1, const char *addr2, const char *mask2, struct in_addr *result);
+
 extern void chld_reap(int sig);
 extern int get_wan_proto(void);
 #ifdef RTCONFIG_IPV6
